@@ -1,9 +1,12 @@
 import { Component } from '@angular/core';
+import {MatIcon} from "@angular/material/icon";
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [],
+    imports: [
+        MatIcon,
+    ],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.css'
 })

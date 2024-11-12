@@ -1,10 +1,15 @@
 .app-container {
   display: flex;
   height: 100vh;
+  background-color: #f7f7f8;
+  color: #333; /* 设置默认的文本颜色 */
+  font-family: Arial, sans-serif; /* 设置字体 */
+  margin: 0;
+  padding: 0;
 }
 
 app-sidebar {
-  flex: 0 0 60px;
+  flex: 0 0 45px;
 }
 
 app-tab-container {
@@ -12,3 +17,5 @@ app-tab-container {
   display: flex;
   flex-direction: column;
 }
+
+
