@@ -1,6 +1,0 @@
-<mat-tab-group dynamicHeight>
-  <mat-tab *ngFor="let tab of tabs; let i = index" [label]="'Terminal ' + (i + 1)">
-    <app-terminal-tab></app-terminal-tab>
-  </mat-tab>
-</mat-tab-group>
-<button mat-raised-button color="primary" (click)="addTab()">New Terminal</button>
