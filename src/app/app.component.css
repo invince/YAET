@@ -1,2 +1,19 @@
+.sidebar-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Space between buttons */
+}
+
+.mat-drawer-opened {
+  min-width: 45px;
+  max-width: 250px;
+}
+
+.xterm-screen {
+  height: 100%;
+}
 
 
+.xterm .xterm-viewport {
+  overflow-y: auto !important;
+}

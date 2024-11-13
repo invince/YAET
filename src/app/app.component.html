@@ -1,12 +1,32 @@
 <mat-sidenav-container fullscreen>
   <mat-sidenav #sidenav mode="side" opened>
-    <button mat-button (click)="addTerminal()">添加新终端</button>
+    <!-- Sidebar buttons -->
+    <div class="sidebar-buttons">
+      <br>
+      <button mat-mini-fab color="primary" (click)="addTerminal()" aria-label="Add">
+        <mat-icon>add</mat-icon>
+      </button>
+      <button mat-mini-fab color="primary" (click)="saveMenu()" aria-label="Save">
+        <mat-icon>save</mat-icon>
+      </button>
+      <button mat-mini-fab color="primary" (click)="favoriteMenu()" aria-label="Favorite">
+        <mat-icon>favorite</mat-icon>
+      </button>
+
+      <button mat-mini-fab color="primary" (click)="syncMenu()" aria-label="Favorite">
+        <mat-icon>cloud</mat-icon>
+      </button>
+
+      <button mat-mini-fab color="primary" (click)="settingMenu()" aria-label="Favorite">
+        <mat-icon>settings</mat-icon>
+      </button>
+    </div>
   </mat-sidenav>
 
-  <mat-sidenav-content>
-    <mat-tab-group>
+  <mat-sidenav-content >
+    <mat-tab-group dynamicHeight>
       <mat-tab *ngFor="let terminal of terminals; let i = index" [label]="'终端 ' + (i + 1)">
-        <app-terminal-component [terminalId]="terminal.id"></app-terminal-component>
+        <app-terminal [terminalId]="terminal.id"></app-terminal>
       </mat-tab>
     </mat-tab-group>
   </mat-sidenav-content>

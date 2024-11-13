@@ -3,6 +3,7 @@ const pty = require('node-pty');
 const { Client } = require('ssh2');
 
 let mainWindow;
+let terminalMap = new Map();
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -22,6 +23,8 @@ app.on('ready', createWindow);
 
 ipcMain.on('create-local-terminal', (event, data) => {
   const shell = process.platform === 'win32' ? 'cmd.exe' : 'bash';
+  const id = data.terminalId; // cf ElectronService
+
   const ptyProcess = pty.spawn(shell, [], {
     name: 'xterm-color',
     cols: 80,
@@ -34,9 +37,17 @@ ipcMain.on('create-local-terminal', (event, data) => {
     event.sender.send('terminal-output', data);
   });
 
-  event.sender.on('terminal-input', (input) => {
+  terminalMap.set(id, ptyProcess);
+
+});
+
+ipcMain.on('terminal-input', (event, data) => {
+  const id = data.terminalId; // cf terminal.component.ts
+  const input = data.input;
+  const ptyProcess = terminalMap.get(id);
+  if (ptyProcess) {
     ptyProcess.write(input);
-  });
+  }
 });
 
 ipcMain.on('create-ssh-terminal', (event, sshConfig) => {
