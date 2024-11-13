@@ -6,6 +6,7 @@ import {TerminalComponent} from './terminal-component/terminal-component.compone
 import {Profile} from './domain/Profile';
 import {Terminal} from './domain/Terminal';
 import {CommonModule, NgForOf} from '@angular/common';
+import {AppModule} from './app.module';
 
 @Component({
   selector: 'app-root',
@@ -19,6 +20,7 @@ import {CommonModule, NgForOf} from '@angular/common';
     MatTab,
     CommonModule,
 
+    AppModule,
     TerminalComponent,
   ],
   templateUrl: './app.component.html',
