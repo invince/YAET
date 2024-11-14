@@ -1,15 +1,15 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import {MatSidenav, MatSidenavContainer, MatSidenavContent} from '@angular/material/sidenav';
-import {MatTab, MatTabGroup} from '@angular/material/tabs';
+import {MatTab, MatTabGroup, MatTabLabel} from '@angular/material/tabs';
 import {TerminalComponent} from './terminal/terminal.component';
 import {Profile} from './domain/Profile';
-import {Terminal} from './domain/Terminal';
+import {TabInstance} from './domain/TabInstance';
 import {CommonModule, NgForOf} from '@angular/common';
 import {AppModule} from './app.module';
 import {MatIcon} from '@angular/material/icon';
 import {MatNavList} from '@angular/material/list';
-import {MatFabButton, MatMiniFabButton} from '@angular/material/button';
+import {MatFabButton, MatIconButton, MatMiniFabButton} from '@angular/material/button';
 import {MatMenuItem} from '@angular/material/menu';
 
 @Component({
@@ -28,18 +28,24 @@ import {MatMenuItem} from '@angular/material/menu';
     TerminalComponent,
     MatIcon,
     MatMiniFabButton,
+    MatTabLabel,
+    MatIconButton,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent {
   title = 'myTermX';
-  terminals: Terminal[] = [];
+  tabs: TabInstance[] = [];
   settings: any;
   profiles: Profile[] = [];
 
   addTerminal() {
-    this.terminals.push(new Terminal(this.terminals.length)); // Adds a new terminal identifier
+    this.tabs.push(new TabInstance(this.tabs.length, 'terminal')); // Adds a new terminal identifier
+  }
+
+  removeTab(index: number) {
+    this.tabs.splice(index, 1);
   }
 
   saveMenu() {
@@ -57,4 +63,6 @@ export class AppComponent {
   settingMenu() {
 
   }
+
+
 }

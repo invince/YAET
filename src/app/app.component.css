@@ -1,19 +1,23 @@
 .sidebar-buttons {
+  padding-left: 3px;
   display: flex;
   flex-direction: column;
   gap: 15px; /* Space between buttons */
 }
 
 .mat-drawer-opened {
-  min-width: 45px;
+  min-width: 50px;
   max-width: 250px;
 }
 
-.xterm-screen {
+
+#tab-group{
   height: 100%;
 }
 
-
-.xterm .xterm-viewport {
-  overflow-y: auto !important;
+.tab-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }

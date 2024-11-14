@@ -1,37 +1,39 @@
-import {Component, Input, ViewChild, ElementRef, AfterViewInit, OnDestroy, ViewEncapsulation} from '@angular/core';
-import { Terminal } from '@xterm/xterm';
-import { FitAddon } from '@xterm/addon-fit';
-import { ElectronService } from '../electron.service';
+import {Component, Input, ViewChild, AfterViewInit, ViewEncapsulation} from '@angular/core';
+import {ElectronService} from '../electron.service';
+import {NgTerminal, NgTerminalModule} from 'ng-terminal';
+import {WebLinksAddon} from '@xterm/addon-web-links';
+import {Terminal} from '@xterm/xterm';
 
 @Component({
   selector: 'app-terminal',
   templateUrl: './terminal.component.html',
-  styleUrls: ['./terminal.component.css'],
+  styleUrls: ['./terminal.component.scss'],
+  imports: [NgTerminalModule],
   standalone: true,
+  encapsulation: ViewEncapsulation.None
 })
-export class TerminalComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('terminalContainer', { static: true }) terminalContainer!: ElementRef;
+export class TerminalComponent implements AfterViewInit {
   @Input() terminalId!: number;
+  @ViewChild('term', {static: false}) terminal!: NgTerminal;
 
-  private terminal: Terminal;
-
+  private xtermUnderlying : Terminal | undefined;
 
   constructor(private electronService: ElectronService) {
-    this.terminal = new Terminal({
-      theme: {
-        background: 'rgba(0, 0, 0, 0)' // Fully transparent background
-      }
-    });
-
   }
 
   ngAfterViewInit(): void {
     // Open terminal in the container
-    const fitAddon = new FitAddon();
-    this.terminal.loadAddon(fitAddon);
-    this.terminal.open(this.terminalContainer.nativeElement);
-    this.terminal.focus();
-    fitAddon.fit();
+    this.xtermUnderlying = this.terminal.underlying;
+    if (this.xtermUnderlying) {
+      // this.xtermUnderlying.loadAddon(new WebLinksAddon());
+      this.terminal.setXtermOptions({
+        fontFamily: '"Cascadia Code", Menlo, monospace',
+        // theme: {
+        //   background: 'rgba(0, 0, 0, 0)' // Fully transparent background
+        // },
+        cursorBlink: true
+      });
+    }
 
 
     // Set up data listeners and communication with the Electron main process
@@ -43,12 +45,8 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
     });
 
     // Send user input back to Electron main process
-    this.terminal.onData(data => {
+    this.terminal.onData().subscribe(data => {
       this.electronService.sendTerminalInput(this.terminalId, data);
     });
-  }
-
-  ngOnDestroy(): void {
-    this.terminal.dispose();
   }
 }
