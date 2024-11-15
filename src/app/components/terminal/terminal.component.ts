@@ -1,5 +1,5 @@
 import {Component, Input, ViewChild, AfterViewInit, ViewEncapsulation} from '@angular/core';
-import {ElectronService} from '../electron.service';
+import {ElectronService} from '../../electron.service';
 import {NgTerminal, NgTerminalModule} from 'ng-terminal';
 import {WebLinksAddon} from '@xterm/addon-web-links';
 import {Terminal} from '@xterm/xterm';
