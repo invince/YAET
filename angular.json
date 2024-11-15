@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "myTermX": {
+    "yetAnotherElectronTerm": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/my-term-x",
+            "outputPath": "dist/yet-another-electron-term",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -60,10 +60,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "myTermX:build:production"
+              "buildTarget": "yetAnotherElectronTerm:build:production"
             },
             "development": {
-              "buildTarget": "myTermX:build:development"
+              "buildTarget": "yetAnotherElectronTerm:build:development"
             }
           },
           "defaultConfiguration": "development"

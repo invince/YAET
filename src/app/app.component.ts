@@ -35,7 +35,7 @@ import {MatMenuItem} from '@angular/material/menu';
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  title = 'myTermX';
+  title = 'yetAnotherElectronTerm';
   tabs: TabInstance[] = [];
   settings: any;
   profiles: Profile[] = [];
