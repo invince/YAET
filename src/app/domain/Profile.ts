@@ -1,5 +1,6 @@
+import {LocalTerminalProfile} from './LocalTerminalProfile';
 
 export class Profile {
-  type!: string
+  public localTerminal!: LocalTerminalProfile;
 
 }

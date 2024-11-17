@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import {Component, Input, ViewChild} from '@angular/core';
+import {TabInstance} from '../../domain/TabInstance';
+import {NgTerminal} from 'ng-terminal';
 
 @Component({
   selector: 'app-file-explorer',
@@ -8,5 +10,5 @@ import { Component } from '@angular/core';
   styleUrl: './file-explorer.component.css'
 })
 export class FileExplorerComponent {
-
+  @Input() tab!: TabInstance;
 }

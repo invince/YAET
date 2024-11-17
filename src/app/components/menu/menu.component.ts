@@ -9,8 +9,7 @@ import {MatIconButton} from "@angular/material/button";
         MatIcon,
         MatIconButton
     ],
-  templateUrl: './menu.component.html',
-  styleUrl: './menu.component.css'
+  template: `<p>Abstract Menu</p>`,
 })
 export class MenuComponent {
 

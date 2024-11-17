@@ -1,9 +1,13 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const pty = require('node-pty');
 const { Client } = require('ssh2');
+const path = require("path");
+const fs = require("fs");
 
 let mainWindow;
 let terminalMap = new Map();
+
+
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -13,17 +17,47 @@ function createWindow() {
       nodeIntegration: true,
       contextIsolation: false,
       enableRemoteModule: true,
+      // preload: path.join(__dirname, 'preload.js'), // FIXME: preload need contextIsolation, but xterm.js won't work with that
     },
   });
 
   mainWindow.loadURL(`http://localhost:4200`);
+
+
+  load('settings.json', "settings-loaded");
+  load('profiles.json', "profiles-loaded");
 }
 
 app.on('ready', createWindow);
 
+function load(json, loadedEvent) {
+  try {
+    const settingsPath = path.join(process.cwd(), json); // same folder as exe
+    fs.readFile(settingsPath, 'utf-8', (err, data) => {
+      if (!err) {
+        const settings = JSON.parse(data);
+        mainWindow.webContents.once('dom-ready', () => {
+          mainWindow.webContents.send(loadedEvent, settings);
+        });
+      }
+    });
+  } catch (err) {
+    console.error('Error reading ' + json, err);
+    return null; // 返回 null 表示出错
+  }
+}
+
+
+function validate(terminalExec) {
+  if (!terminalExec) {
+    return  process.platform === 'win32' ? 'cmd.exe' : 'bash';
+  }
+  return terminalExec;
+}
+
 ipcMain.on('create-local-terminal', (event, data) => {
-  const shell = process.platform === 'win32' ? 'cmd.exe' : 'bash';
   const id = data.terminalId; // cf ElectronService
+  let shell = validate(data.terminalExec);
 
   const ptyProcess = pty.spawn(shell, [], {
     name: 'xterm-color',

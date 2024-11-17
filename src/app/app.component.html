@@ -1,4 +1,4 @@
-<mat-sidenav-container fullscreen>
+<mat-sidenav-container fullscreen *ngIf="initialized">
   <mat-sidenav #sidenav mode="side" opened>
     <!-- Sidebar buttons -->
     <div class="sidebar-buttons">
@@ -27,23 +27,27 @@
   </mat-sidenav>
 
   <mat-sidenav-content>
-    <mat-tab-group id="tab-group">
+    <mat-tab-group id="tab-group" [selectedIndex]="currentTabIndex">
       <mat-tab *ngFor="let tab of tabs; let i = index">
         <ng-template mat-tab-label>
           <div class="tab-label">
-            <span>{{ tab.type +  (tab.id + 1)}} </span>
+            <span>{{ tab.tabType.get() +  (i + 1)}} </span>
             <button mat-icon-button (click)="removeTab(i)" aria-label="Remove tab">
               <mat-icon>close</mat-icon>
             </button>
           </div>
         </ng-template>
-        <app-terminal [terminalId]="tab.id"></app-terminal>
+        <div [ngSwitch]="tab.category.get()">
+          <app-terminal *ngSwitchCase="'TERMINAL'" [tab]="tab"></app-terminal>
+          <app-remote-desktop *ngSwitchCase="'REMOTE_DESKTOP'" [tab]="tab"></app-remote-desktop>
+          <app-file-explorer *ngSwitchCase="'FILE_EXPLORER'" [tab]="tab"></app-file-explorer>
+        </div>
       </mat-tab>
     </mat-tab-group>
 
     <div class="menu-modal" *ngIf="isMenuModalOpen"  [ngSwitch]="currentOpenedMenu">
       <app-profile-menu [@slideInOut]="'in'" *ngSwitchCase="'add'" (closeEvent)="closeModal()"></app-profile-menu>
-      <app-menu [@slideInOut]="'in'" *ngSwitchCase="'setting'" (closeEvent)="closeModal()" ></app-menu>
+      <app-setting-menu [@slideInOut]="'in'" *ngSwitchCase="'setting'" (closeEvent)="closeModal()" ></app-setting-menu>
     </div>
 
   </mat-sidenav-content>

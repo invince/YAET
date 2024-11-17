@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import {MatSidenav, MatSidenavContainer, MatSidenavContent} from '@angular/material/sidenav';
 import {MatTab, MatTabGroup, MatTabLabel} from '@angular/material/tabs';
@@ -8,9 +8,16 @@ import {TabInstance} from './domain/TabInstance';
 import {CommonModule, NgForOf} from '@angular/common';
 import {MatIcon} from '@angular/material/icon';
 import {MatIconButton, MatMiniFabButton} from '@angular/material/button';
-import {menuAnimation} from './menuAnimation';
+import {menuAnimation} from './animations/menuAnimation';
 import {MenuComponent} from './components/menu/menu.component';
 import {ProfileMenuComponent} from './components/profile-menu/profile-menu.component';
+import {SettingMenuComponent} from './components/setting-menu/setting-menu.component';
+import {SettingService} from './services/setting.service';
+import {ProfileService} from './services/profile.service';
+import {RemoteDesktopComponent} from './components/remote-desktop/remote-desktop.component';
+import {TERMINAL} from './domain/TabCategory';
+import {LOCAL_TERMINAL} from './domain/TabType';
+import {FileExplorerComponent} from './components/file-explorer/file-explorer.component';
 
 @Component({
   selector: 'app-root',
@@ -31,6 +38,9 @@ import {ProfileMenuComponent} from './components/profile-menu/profile-menu.compo
     MatIconButton,
     CommonModule,
     ProfileMenuComponent,
+    SettingMenuComponent,
+    RemoteDesktopComponent,
+    FileExplorerComponent,
 
 
   ],
@@ -41,13 +51,27 @@ import {ProfileMenuComponent} from './components/profile-menu/profile-menu.compo
   ],
 })
 export class AppComponent {
+
+
   title = 'yetAnotherElectronTerm';
   tabs: TabInstance[] = [];
-  settings: any;
   profiles: Profile[] = [];
 
   isMenuModalOpen = false; // if menu modal open
   currentOpenedMenu = '';
+
+  currentTabIndex = 0;
+
+  constructor(
+    private settingService: SettingService,
+    private profileService: ProfileService,
+  ) {
+  }
+
+  initialized() {
+    return this.settingService.isLoaded
+            && this.profileService.isLoaded;
+  }
 
   removeTab(index: number) {
     this.tabs.splice(index, 1);
@@ -55,7 +79,8 @@ export class AppComponent {
 
   addLocalTerminal() {
     this.isMenuModalOpen = false;
-    this.tabs.push(new TabInstance(this.tabs.length, 'terminal')); // Adds a new terminal identifier
+    this.tabs.push(new TabInstance(Date.now(), TERMINAL, LOCAL_TERMINAL, this.settingService.createLocalTerminalProfile())); // Adds a new terminal identifier
+    this.currentTabIndex = this.tabs.length - 1;
   }
 
   openMenu(menu: string) {

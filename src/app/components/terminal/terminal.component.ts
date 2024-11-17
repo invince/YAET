@@ -1,8 +1,9 @@
 import {Component, Input, ViewChild, AfterViewInit, ViewEncapsulation} from '@angular/core';
-import {ElectronService} from '../../electron.service';
+import {ElectronService} from '../../services/electron.service';
 import {NgTerminal, NgTerminalModule} from 'ng-terminal';
 import {WebLinksAddon} from '@xterm/addon-web-links';
 import {Terminal} from '@xterm/xterm';
+import {TabInstance} from '../../domain/TabInstance';
 
 @Component({
   selector: 'app-terminal',
@@ -13,7 +14,7 @@ import {Terminal} from '@xterm/xterm';
   encapsulation: ViewEncapsulation.None
 })
 export class TerminalComponent implements AfterViewInit {
-  @Input() terminalId!: number;
+  @Input() tab!: TabInstance;
   @ViewChild('term', {static: false}) terminal!: NgTerminal;
 
   private xtermUnderlying : Terminal | undefined;
@@ -36,8 +37,10 @@ export class TerminalComponent implements AfterViewInit {
     }
 
 
+    console.log("this.tab");
+    console.log(this.tab);
     // Set up data listeners and communication with the Electron main process
-    this.electronService.createTerminal(this.terminalId);
+    this.electronService.createTerminal(this.tab);
 
     // Listen to output from Electron and display in xterm
     this.electronService.onTerminalOutput((data) => {
@@ -46,7 +49,7 @@ export class TerminalComponent implements AfterViewInit {
 
     // Send user input back to Electron main process
     this.terminal.onData().subscribe(data => {
-      this.electronService.sendTerminalInput(this.terminalId, data);
+      this.electronService.sendTerminalInput(this.tab, data);
     });
   }
 }
