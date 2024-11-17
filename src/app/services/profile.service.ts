@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {Profile} from '../domain/Profile';
-import {Settings} from '../domain/Settings';
+import {MySettings} from '../domain/MySettings';
 import {ElectronService} from './electron.service';
 
 @Injectable({

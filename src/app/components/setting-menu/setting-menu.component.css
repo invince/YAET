@@ -5,4 +5,18 @@
   flex-grow: 1;
   overflow-y: auto;
   width: 1000px;
+  max-height: 400px;
+}
+
+
+
+.tab-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* Adds space between the form fields */
+}
+
+.field{
+  width: 280px;
 }

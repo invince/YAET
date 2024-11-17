@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {Settings} from '../domain/Settings';
+import {MySettings} from '../domain/MySettings';
 import {Profile} from '../domain/Profile';
 import {ElectronService} from './electron.service';
 
@@ -8,7 +8,7 @@ import {ElectronService} from './electron.service';
 })
 export class SettingService {
 
-  private _settings!: Settings;
+  private _settings!: MySettings;
 
   private _loaded: boolean = false;
 
@@ -31,7 +31,7 @@ export class SettingService {
   }
 
 
-  get settings(): Settings {
+  get settings(): MySettings {
     return this._settings;
   }
 
@@ -45,4 +45,7 @@ export class SettingService {
   }
 
 
+  save(settings: MySettings) {
+
+  }
 }
