@@ -1,16 +1,8 @@
-
-
 .modal-content {
-  padding: 16px;
-  flex-grow: 1;
-  overflow-y: auto;
   width: 1000px;
-  max-height: 400px;
 }
 
-
-
-.tab-content {
+.setting-form {
   padding: 16px;
   display: flex;
   flex-direction: column;

@@ -1,0 +1,96 @@
+
+/* Overall modal container */
+.modal-container {
+  position: fixed;
+  top: 0;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  overflow: auto;
+}
+
+/* Modal window */
+.modal {
+  background-color: #fff;
+  border-radius: 8px;
+  width: 100%;
+  height: 100%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header section */
+.modal-header {
+  padding: 16px;
+  background-color: #A9A9A9;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+/* Close button in the header */
+.modal-header button {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #FFFFFF;
+  transition: color 0.3s;
+}
+
+.modal-header button:hover {
+  color: #f44336; /* Red on hover */
+}
+
+/* Content section */
+.modal-content {
+  padding: 16px;
+  overflow-y: auto;
+  flex-grow: 1;  /* This makes the content area take up remaining space */
+  background-color: #696969;
+}
+
+/* Footer section */
+.modal-footer {
+  padding: 16px;
+  background-color: #A9A9A9;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Footer buttons */
+.modal-footer button {
+  padding: 8px 16px;
+  border: none;
+  background-color: #1976d2; /* Blue color */
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.modal-footer button:hover {
+  background-color: #1565c0; /* Darker blue on hover */
+}
+
+.modal-footer button.cancel {
+  background-color: #f44336; /* Red for Cancel */
+}
+
+.modal-footer button.cancel:hover {
+  background-color: #d32f2f; /* Darker red on hover */
+}

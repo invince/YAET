@@ -56,11 +56,8 @@ export class SettingMenuComponent extends MenuComponent {
     return JSON.parse(JSON.stringify(setting));
   }
 
-  cancel() {
-    this.closeSettingModal();
-  }
 
-  save() {
+  override save() {
     this.settingService.save(this.settings);
   }
 

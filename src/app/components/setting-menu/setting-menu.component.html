@@ -1,40 +1,48 @@
-<div class="modal modal-header">
-  <span>Settings</span>
-  <button mat-icon-button (click)="closeSettingModal()">
-    <mat-icon>close</mat-icon>
-  </button>
-</div>
-<div class="modal modal-content">
-  <mat-tab-group>
-    <mat-tab label="General">
-      <div class="tab-content">
-        <h3>General Settings</h3>
-      </div>
-    </mat-tab>
-    <mat-tab label="Local Terminal">
-      <div class="tab-content">
-        <mat-form-field class="field">
-          <mat-label>Terminal Type</mat-label>
-          <mat-select [ngModel]="settings.localTerminalSetting.type" (ngModelChange)="onSelectLocalTerminalType($event)">
-            <mat-option *ngFor="let localTermType of LOCAL_TERM_OPTION | keyvalue : unordered" [value]="localTermType.value">{{localTermType.value}}</mat-option>
-          </mat-select>
-        </mat-form-field>
-        <mat-form-field  class="field" *ngIf="ui_showLocalTerminalCustom">
-          <mat-label>Exec Path</mat-label>
-          <input matInput type="text" [(ngModel)]="settings.localTerminalSetting.execPath"/>
-          @if (settings.localTerminalSetting.execPath) {
-            <button matSuffix mat-icon-button aria-label="Clear" (click)="settings.localTerminalSetting.execPath=''">
-              <mat-icon>close</mat-icon>
-            </button>
-          }
-        </mat-form-field>
-      </div>
-    </mat-tab>
-  </mat-tab-group>
+<div class="modal-container">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Settings</h3>
+      <button mat-icon-button (click)="close()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
 
+    <div class="modal-content">
+      <mat-tab-group>
+        <mat-tab label="General">
+          <div class="tab-content">
+            <h3>General Settings</h3>
+          </div>
+        </mat-tab>
+        <mat-tab label="Local Terminal">
+          <div class="setting-form">
+            <mat-form-field class="field">
+              <mat-label>Terminal Type</mat-label>
+              <mat-select [ngModel]="settings.localTerminalSetting.type"
+                          (ngModelChange)="onSelectLocalTerminalType($event)">
+                <mat-option *ngFor="let localTermType of LOCAL_TERM_OPTION | keyvalue : unordered"
+                            [value]="localTermType.value">{{localTermType.value}}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field class="field" *ngIf="ui_showLocalTerminalCustom">
+              <mat-label>Exec Path</mat-label>
+              <input matInput type="text" [(ngModel)]="settings.localTerminalSetting.execPath"/>
+              @if (settings.localTerminalSetting.execPath) {
+              <button matSuffix mat-icon-button aria-label="Clear" (click)="settings.localTerminalSetting.execPath=''">
+                <mat-icon>close</mat-icon>
+              </button>
+              }
+            </mat-form-field>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+
+    <div class="modal-footer">
+      <button mat-button (click)="close()">Cancel</button>
+      <button mat-raised-button class="mat-primary" (click)="save();close()">Save And Close</button>
+      <button mat-raised-button class="mat-primary" (click)="save()">Save</button>
+    </div>
+  </div>
 </div>
-<!-- Footer Buttons -->
-<div class="modal modal-footer">
-  <button mat-button (click)="cancel()">Cancel</button>
-  <button mat-raised-button color="primary" (click)="save()">Save</button>
-</div>
+

@@ -15,7 +15,11 @@ export class MenuComponent {
 
   @Output() closeEvent = new EventEmitter();
 
-  closeSettingModal() {
+  close() {
     this.closeEvent.emit();
+  }
+
+  save() {
+
   }
 }

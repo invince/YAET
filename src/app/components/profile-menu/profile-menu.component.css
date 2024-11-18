@@ -1,8 +1,4 @@
 
-
 .modal-content {
-  padding: 16px;
-  flex-grow: 1;
-  overflow-y: auto;
-  width: 700px;
+  width: 800px;
 }

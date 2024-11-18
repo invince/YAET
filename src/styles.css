@@ -1,5 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
 
+
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
@@ -10,19 +11,3 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  background-color: #333;
-}
-
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 16px;
-  padding: 16px;
-  border-top: 1px solid #ddd;
-}
