@@ -46,7 +46,7 @@ export class SettingMenuComponent extends MenuComponent {
   constructor(private settingService: SettingService) {
     super();
     this.settings = this.clone(this.settingService.settings);
-    if (this.settings.localTerminalSetting.type === LocalTerminalType.CUSTOM) {
+    if (this.settings.localTerminalSetting && this.settings.localTerminalSetting.type === LocalTerminalType.CUSTOM) {
       this.ui_showLocalTerminalCustom = true;
     }
   }
@@ -66,12 +66,6 @@ export class SettingMenuComponent extends MenuComponent {
   onSelectLocalTerminalType($event: LocalTerminalType) {
     this.settings.localTerminalSetting.type = $event;
     this.ui_showLocalTerminalCustom = this.settings.localTerminalSetting.type === LocalTerminalType.CUSTOM;
-    switch ($event) {
-      case LocalTerminalType.CMD: this.settings.localTerminalSetting.execPath = 'cmd.exe'; break;
-      case LocalTerminalType.POWERSHELL: this.settings.localTerminalSetting.execPath = 'powershell.exe'; break;
-      case LocalTerminalType.WIN_TERMINAL: this.settings.localTerminalSetting.execPath = 'wt.exe'; break;
-      case LocalTerminalType.BASH: this.settings.localTerminalSetting.execPath = 'bash'; break;
-      case LocalTerminalType.CUSTOM: this.settings.localTerminalSetting.execPath = ''; break;
-    }
+    this.settingService.validateLocalTerminalSettings(this.settings.localTerminalSetting);
   }
 }

@@ -36,9 +36,6 @@ export class TerminalComponent implements AfterViewInit {
       });
     }
 
-
-    console.log("this.tab");
-    console.log(this.tab);
     // Set up data listeners and communication with the Electron main process
     this.electronService.createTerminal(this.tab);
 

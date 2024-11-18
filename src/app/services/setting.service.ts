@@ -1,7 +1,9 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import {MySettings} from '../domain/MySettings';
 import {Profile} from '../domain/Profile';
 import {ElectronService} from './electron.service';
+import {SETTINGS_LOADED} from './electronConstant';
+import {LocalTerminalProfile, LocalTerminalType} from '../domain/LocalTerminalProfile';
 
 @Injectable({
   providedIn: 'root'
@@ -13,16 +15,17 @@ export class SettingService {
   private _loaded: boolean = false;
 
   constructor(private electron: ElectronService) {
-    electron.onLoadedEvent('settings-loaded', data => this.apply(data))
+    electron.onLoadedEvent(SETTINGS_LOADED, data => this.apply(data))
   }
 
   private apply(data: any) {
-    let jsonStr;
+    console.log(data);
     if (typeof data === "string") {
       this._settings = JSON.parse(data);
     } else {
       this._settings = data;
     }
+    this.validate(this._settings);
     this._loaded = true;
   }
 
@@ -39,13 +42,32 @@ export class SettingService {
   createLocalTerminalProfile() : Profile {
     let profile = new Profile();
     profile.localTerminal = this._settings.localTerminalSetting;
-    console.log("setting");
-    console.log(profile);
     return profile;
   }
 
 
   save(settings: MySettings) {
+    this.electron.saveSetting(settings);
+  }
 
+  validate(_settings: MySettings) {
+    if (_settings) {
+      this.validateLocalTerminalSettings(_settings.localTerminalSetting);
+    }
+  }
+
+  validateLocalTerminalSettings(localTerminalSetting: LocalTerminalProfile) {
+    if (localTerminalSetting) {
+      if (!localTerminalSetting.type) {
+        localTerminalSetting.type = LocalTerminalType.CMD;
+      }
+      switch (localTerminalSetting.type) {
+        case LocalTerminalType.CMD: localTerminalSetting.execPath = 'cmd.exe'; break;
+        case LocalTerminalType.POWERSHELL: localTerminalSetting.execPath = 'powershell.exe'; break;
+        case LocalTerminalType.WIN_TERMINAL: localTerminalSetting.execPath = 'wt.exe'; break;
+        case LocalTerminalType.BASH: localTerminalSetting.execPath = 'bash'; break;
+        case LocalTerminalType.CUSTOM: localTerminalSetting.execPath = ''; break;
+      }
+    }
   }
 }

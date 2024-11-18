@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import {Profile} from '../domain/Profile';
 import {MySettings} from '../domain/MySettings';
 import {ElectronService} from './electron.service';
+import {PROFILES_LOADED} from './electronConstant';
 
 @Injectable({
   providedIn: 'root'
@@ -13,10 +14,10 @@ export class ProfileService {
   private _loaded: boolean = false;
 
   constructor(private electron: ElectronService) {
-    electron.onLoadedEvent('profiles-loaded', data => this.apply(data))
+    electron.onLoadedEvent(PROFILES_LOADED, data => this.apply(data))
   }
 
-  private apply(data: string) {
+  private apply(data: any) {
     if (typeof data === "string") {
       this._profiles = JSON.parse(data);
     } else {

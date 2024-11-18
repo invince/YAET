@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { IpcRenderer } from 'electron';
 import {TabInstance} from '../domain/TabInstance';
-import {CREATION_LOCAL_TERMINAL, TERMINAL_INPUT, TERMINAL_OUTPUT} from './electronConstant';
+import {CREATION_LOCAL_TERMINAL, SETTINGS_SAVE, TERMINAL_INPUT, TERMINAL_OUTPUT} from './electronConstant';
 import {LOCAL_TERMINAL} from '../domain/TabType';
 import {LocalTerminalProfile} from '../domain/LocalTerminalProfile';
 import {Profile} from '../domain/Profile';
+import {MySettings} from '../domain/MySettings';
 
 @Injectable({
   providedIn: 'root',
@@ -42,6 +43,12 @@ export class ElectronService {
   onTerminalOutput(callback: (data: string) => void) {
     if (this.ipc) {
       this.ipc.on(TERMINAL_OUTPUT, (event, data) => callback(data));
+    }
+  }
+
+  saveSetting(settings: MySettings) {
+    if (this.ipc) {
+      this.ipc.send(SETTINGS_SAVE, {data: settings});
     }
   }
 

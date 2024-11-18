@@ -30,9 +30,9 @@ function createWindow() {
 
 app.on('ready', createWindow);
 
-function load(json, loadedEvent) {
+function load(jsonFileName, loadedEvent) {
   try {
-    const settingsPath = path.join(process.cwd(), json); // same folder as exe
+    const settingsPath = path.join(process.cwd(), jsonFileName); // same folder as exe
     fs.readFile(settingsPath, 'utf-8', (err, data) => {
       if (!err) {
         const settings = JSON.parse(data);
@@ -42,11 +42,40 @@ function load(json, loadedEvent) {
       }
     });
   } catch (err) {
-    console.error('Error reading ' + json, err);
-    return null; // 返回 null 表示出错
+    console.error('Error reading ' + jsonFileName, err);
+    return null;
   }
 }
 
+function save(jsonFileName, data) {
+  return new Promise((resolve, reject) => {
+    try {
+      const settingsPath = path.join(process.cwd(), jsonFileName); // same folder as exe
+      // Convert content to JSON string with pretty format
+      const jsonString = JSON.stringify(data, null, 2);
+
+      // Write the JSON string to the specified file
+      fs.writeFile(settingsPath, jsonString, 'utf8', (err) => {
+        if (err) {
+          console.error('Error writing JSON file:', err);
+          reject(err);
+        } else {
+          console.log('JSON file written successfully.');
+          resolve();
+        }
+      });
+    } catch (error) {
+      console.error('Error serializing content:', error);
+      reject(error);
+    }
+  });
+}
+
+ipcMain.on('settings-save', (event, obj) => {
+  save('settings.json', obj.data)
+    .then(() => console.log('File saved successfully!'))
+    .catch((error) => console.error('Error saving file:', error));
+});
 
 function validate(terminalExec) {
   if (!terminalExec) {
