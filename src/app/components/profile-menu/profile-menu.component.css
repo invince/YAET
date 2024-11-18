@@ -2,3 +2,14 @@
 .modal-content {
   width: 800px;
 }
+
+.profile-form{
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* Adds space between the form fields */
+}
+
+.field{
+  width: 280px;
+}

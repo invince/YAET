@@ -1,5 +1,3 @@
-import {Profile} from './Profile';
-
 export enum LocalTerminalType {
   CMD = 'cmd',
   POWERSHELL = 'powershell', // powershell.exe

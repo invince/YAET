@@ -1,11 +1,11 @@
-import {Component, OnInit} from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import {Component} from '@angular/core';
+import {RouterOutlet} from '@angular/router';
 import {MatSidenav, MatSidenavContainer, MatSidenavContent} from '@angular/material/sidenav';
 import {MatTab, MatTabGroup, MatTabLabel} from '@angular/material/tabs';
 import {TerminalComponent} from './components/terminal/terminal.component';
-import {Profile} from './domain/Profile';
-import {TabInstance} from './domain/TabInstance';
-import {CommonModule, NgForOf} from '@angular/common';
+import {Profile, ProfileCategory} from './domain/Profile';
+import {TabInstance, TabType} from './domain/TabInstance';
+import {CommonModule} from '@angular/common';
 import {MatIcon} from '@angular/material/icon';
 import {MatIconButton, MatMiniFabButton} from '@angular/material/button';
 import {menuAnimation} from './animations/menuAnimation';
@@ -15,9 +15,8 @@ import {SettingMenuComponent} from './components/setting-menu/setting-menu.compo
 import {SettingService} from './services/setting.service';
 import {ProfileService} from './services/profile.service';
 import {RemoteDesktopComponent} from './components/remote-desktop/remote-desktop.component';
-import {TERMINAL} from './domain/TabCategory';
-import {LOCAL_TERMINAL} from './domain/TabType';
 import {FileExplorerComponent} from './components/file-explorer/file-explorer.component';
+import {v4 as uuidv4} from 'uuid';
 
 @Component({
   selector: 'app-root',
@@ -79,7 +78,7 @@ export class AppComponent {
 
   addLocalTerminal() {
     this.isMenuModalOpen = false;
-    this.tabs.push(new TabInstance(Date.now(), TERMINAL, LOCAL_TERMINAL, this.settingService.createLocalTerminalProfile())); // Adds a new terminal identifier
+    this.tabs.push(new TabInstance(uuidv4(), ProfileCategory.TERMINAL, TabType.LOCAL_TERMINAL, this.settingService.createLocalTerminalProfile())); // Adds a new terminal identifier
     this.currentTabIndex = this.tabs.length - 1;
   }
 

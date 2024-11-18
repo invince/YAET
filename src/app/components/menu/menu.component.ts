@@ -15,6 +15,8 @@ export class MenuComponent {
 
   @Output() closeEvent = new EventEmitter();
 
+  // @ts-ignore
+  unordered = (a,b)=>0
   close() {
     this.closeEvent.emit();
   }

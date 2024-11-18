@@ -20,7 +20,7 @@
               <mat-label>Terminal Type</mat-label>
               <mat-select [ngModel]="settings.localTerminalSetting.type"
                           (ngModelChange)="onSelectLocalTerminalType($event)">
-                <mat-option *ngFor="let localTermType of LOCAL_TERM_OPTION | keyvalue : unordered"
+                <mat-option *ngFor="let localTermType of LOCAL_TERM_OPTIONS | keyvalue : unordered"
                             [value]="localTermType.value">{{localTermType.value}}</mat-option>
               </mat-select>
             </mat-form-field>

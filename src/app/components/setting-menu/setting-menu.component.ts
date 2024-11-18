@@ -35,11 +35,10 @@ import {MatInput} from '@angular/material/input';
 })
 export class SettingMenuComponent extends MenuComponent {
 
-  // @ts-ignore
-  unordered = (a,b)=>0
+
   settings: MySettings;
 
-  LOCAL_TERM_OPTION = LocalTerminalType;
+  LOCAL_TERM_OPTIONS = LocalTerminalType;
 
   ui_showLocalTerminalCustom = false;
 

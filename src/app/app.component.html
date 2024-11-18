@@ -31,13 +31,13 @@
       <mat-tab *ngFor="let tab of tabs; let i = index">
         <ng-template mat-tab-label>
           <div class="tab-label">
-            <span>{{ tab.tabType.get() +  (i + 1)}} </span>
+            <span>{{ tab.tabType +  (i + 1)}} </span>
             <button mat-icon-button (click)="removeTab(i)" aria-label="Remove tab">
               <mat-icon>close</mat-icon>
             </button>
           </div>
         </ng-template>
-        <div [ngSwitch]="tab.category.get()">
+        <div [ngSwitch]="tab.category">
           <app-terminal *ngSwitchCase="'TERMINAL'" [tab]="tab"></app-terminal>
           <app-remote-desktop *ngSwitchCase="'REMOTE_DESKTOP'" [tab]="tab"></app-remote-desktop>
           <app-file-explorer *ngSwitchCase="'FILE_EXPLORER'" [tab]="tab"></app-file-explorer>
