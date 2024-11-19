@@ -1,9 +1,15 @@
 import {Injectable} from '@angular/core';
 import {IpcRenderer} from 'electron';
-import {TabInstance, TabType} from '../domain/TabInstance';
-import {CREATION_LOCAL_TERMINAL, SETTINGS_SAVE, TERMINAL_INPUT, TERMINAL_OUTPUT} from './electronConstant';
+import {TabInstance} from '../domain/TabInstance';
+import {
+  CREATION_LOCAL_TERMINAL,
+  SETTINGS_RELOAD,
+  SETTINGS_SAVE,
+  TERMINAL_INPUT,
+  TERMINAL_OUTPUT
+} from './electronConstant';
 import {LocalTerminalProfile} from '../domain/LocalTerminalProfile';
-import {Profile} from '../domain/Profile';
+import {Profile, ProfileType} from '../domain/Profile';
 import {MySettings} from '../domain/MySettings';
 
 @Injectable({
@@ -20,7 +26,7 @@ export class ElectronService {
 
   createTerminal(tab: TabInstance) {
     if (this.ipc) {
-      if (tab.tabType == TabType.LOCAL_TERMINAL) {
+      if (tab.tabType == ProfileType.LOCAL_TERMINAL) {
         if (!tab.profile) {
           tab.profile = new Profile();
         }
@@ -58,4 +64,9 @@ export class ElectronService {
   }
 
 
+  reloadSettings() {
+    if (this.ipc) {
+      this.ipc.send(SETTINGS_RELOAD, {});
+    }
+  }
 }

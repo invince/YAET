@@ -23,6 +23,8 @@
     "@angular/platform-browser-dynamic": "^18.2.0",
     "@angular/router": "^18.2.0",
     "@xterm/addon-web-links": "^0.11.0",
+    "crypto-js": "^4.2.0",
+    "keytar": "^7.9.0",
     "ng-terminal": "^6.2.0",
     "node-pty": "^1.0.0",
     "rxjs": "~7.8.0",

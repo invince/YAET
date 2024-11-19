@@ -1,16 +1,17 @@
-import {Component} from '@angular/core';
-import {MenuComponent} from '../menu/menu.component';
+import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import {MenuComponent} from '../menu.component';
 import {MatIcon} from '@angular/material/icon';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatTab, MatTabGroup} from '@angular/material/tabs';
-import {MySettings} from '../../domain/MySettings';
-import {SettingService} from '../../services/setting.service';
-import {MatFormField, MatLabel} from '@angular/material/form-field';
+import {MySettings} from '../../../domain/MySettings';
+import {SettingService} from '../../../services/setting.service';
+import {MatFormField, MatLabel, MatSuffix} from '@angular/material/form-field';
 import {MatOption, MatSelect} from '@angular/material/select';
-import {LocalTerminalType} from '../../domain/LocalTerminalProfile';
+import {LocalTerminalType} from '../../../domain/LocalTerminalProfile';
 import {CommonModule, KeyValuePipe} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {MatInput} from '@angular/material/input';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-setting-menu',
@@ -29,25 +30,43 @@ import {MatInput} from '@angular/material/input';
     KeyValuePipe,
     MatInput,
     MatButton,
+    MatSuffix,
   ],
   templateUrl: './setting-menu.component.html',
   styleUrl: './setting-menu.component.css'
 })
-export class SettingMenuComponent extends MenuComponent {
+export class SettingMenuComponent extends MenuComponent implements OnInit, OnDestroy {
 
 
-  settings: MySettings;
+  settings!: MySettings;
 
   LOCAL_TERM_OPTIONS = LocalTerminalType;
 
   ui_showLocalTerminalCustom = false;
+  private subscription!: Subscription;
 
-  constructor(private settingService: SettingService) {
+  constructor(private settingService: SettingService, private cdr: ChangeDetectorRef) {
     super();
+    this.init();
+
+  }
+  private init() {
     this.settings = this.clone(this.settingService.settings);
     if (this.settings.localTerminalSetting && this.settings.localTerminalSetting.type === LocalTerminalType.CUSTOM) {
       this.ui_showLocalTerminalCustom = true;
     }
+
+  }
+
+  ngOnInit() {
+    this.subscription =  this.settingService.settingLoadedEvent.subscribe(() => {
+      this.init();
+      this.cdr.detectChanges(); // mat select doesn't detect well change from event subscription
+    })
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe(); // Clean up the subscription
   }
 
 
@@ -67,4 +86,10 @@ export class SettingMenuComponent extends MenuComponent {
     this.ui_showLocalTerminalCustom = this.settings.localTerminalSetting.type === LocalTerminalType.CUSTOM;
     this.settingService.validateLocalTerminalSettings(this.settings.localTerminalSetting);
   }
+
+  reload() {
+    this.settingService.reload();
+  }
+
+
 }

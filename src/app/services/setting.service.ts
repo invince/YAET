@@ -4,12 +4,15 @@ import {Profile} from '../domain/Profile';
 import {ElectronService} from './electron.service';
 import {SETTINGS_LOADED} from './electronConstant';
 import {LocalTerminalProfile, LocalTerminalType} from '../domain/LocalTerminalProfile';
+import {Subject} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SettingService {
 
+  private settingLoadedSubject = new Subject<any>();
+  settingLoadedEvent = this.settingLoadedSubject.asObservable(); // Expose as Observable
   private _settings!: MySettings;
 
   private _loaded: boolean = false;
@@ -19,7 +22,6 @@ export class SettingService {
   }
 
   private apply(data: any) {
-    console.log(data);
     if (typeof data === "string") {
       this._settings = JSON.parse(data);
     } else {
@@ -27,6 +29,7 @@ export class SettingService {
     }
     this.validate(this._settings);
     this._loaded = true;
+    this.settingLoadedSubject.next({})
   }
 
   get isLoaded() {
@@ -35,6 +38,9 @@ export class SettingService {
 
 
   get settings(): MySettings {
+    if (!this._settings) {
+      this._settings = new MySettings();
+    }
     return this._settings;
   }
 
@@ -69,5 +75,9 @@ export class SettingService {
         case LocalTerminalType.CUSTOM: localTerminalSetting.execPath = ''; break;
       }
     }
+  }
+
+  reload() {
+    this.electron.reloadSettings();
   }
 }

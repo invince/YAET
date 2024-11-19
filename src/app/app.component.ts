@@ -3,15 +3,15 @@ import {RouterOutlet} from '@angular/router';
 import {MatSidenav, MatSidenavContainer, MatSidenavContent} from '@angular/material/sidenav';
 import {MatTab, MatTabGroup, MatTabLabel} from '@angular/material/tabs';
 import {TerminalComponent} from './components/terminal/terminal.component';
-import {Profile, ProfileCategory} from './domain/Profile';
-import {TabInstance, TabType} from './domain/TabInstance';
+import {Profile, ProfileCategory, ProfileType} from './domain/Profile';
+import {TabInstance} from './domain/TabInstance';
 import {CommonModule} from '@angular/common';
 import {MatIcon} from '@angular/material/icon';
 import {MatIconButton, MatMiniFabButton} from '@angular/material/button';
 import {menuAnimation} from './animations/menuAnimation';
 import {MenuComponent} from './components/menu/menu.component';
-import {ProfileMenuComponent} from './components/profile-menu/profile-menu.component';
-import {SettingMenuComponent} from './components/setting-menu/setting-menu.component';
+import {ProfileMenuComponent} from './components/menu/profile-menu/profile-menu.component';
+import {SettingMenuComponent} from './components/menu/setting-menu/setting-menu.component';
 import {SettingService} from './services/setting.service';
 import {ProfileService} from './services/profile.service';
 import {RemoteDesktopComponent} from './components/remote-desktop/remote-desktop.component';
@@ -78,7 +78,7 @@ export class AppComponent {
 
   addLocalTerminal() {
     this.isMenuModalOpen = false;
-    this.tabs.push(new TabInstance(uuidv4(), ProfileCategory.TERMINAL, TabType.LOCAL_TERMINAL, this.settingService.createLocalTerminalProfile())); // Adds a new terminal identifier
+    this.tabs.push(new TabInstance(uuidv4(), ProfileCategory.TERMINAL, ProfileType.LOCAL_TERMINAL, this.settingService.createLocalTerminalProfile())); // Adds a new terminal identifier
     this.currentTabIndex = this.tabs.length - 1;
   }
 
@@ -98,8 +98,8 @@ export class AppComponent {
   }
 
 
-  saveMenu() {
-    this.openMenu('save');
+  secureMenu() {
+    this.openMenu('secure');
   }
 
   favoriteMenu() {
@@ -111,7 +111,6 @@ export class AppComponent {
   }
 
 
-  // 打开设置窗口
   settingMenu() {
     this.openMenu('setting');
   }
@@ -120,4 +119,5 @@ export class AppComponent {
     this.isMenuModalOpen = false;
     this.currentOpenedMenu = '';
   }
+
 }

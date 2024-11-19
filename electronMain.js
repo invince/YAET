@@ -9,6 +9,7 @@ let terminalMap = new Map();
 
 
 
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -23,12 +24,15 @@ function createWindow() {
 
   mainWindow.loadURL(`http://localhost:4200`);
 
-
-  load('settings.json', "settings-loaded");
-  load('profiles.json', "profiles-loaded");
+  mainWindow.webContents.once('dom-ready', () => {
+    load('settings.json', "settings-loaded");
+    load('profiles.json', "profiles-loaded");
+    load('secrets.json', "secrets-loaded");
+  })
 }
 
 app.on('ready', createWindow);
+
 
 function load(jsonFileName, loadedEvent) {
   try {
@@ -36,9 +40,8 @@ function load(jsonFileName, loadedEvent) {
     fs.readFile(settingsPath, 'utf-8', (err, data) => {
       if (!err) {
         const settings = JSON.parse(data);
-        mainWindow.webContents.once('dom-ready', () => {
-          mainWindow.webContents.send(loadedEvent, settings);
-        });
+        console.debug(jsonFileName + " loaded, event sent");
+        mainWindow.webContents.send(loadedEvent, settings);
       }
     });
   } catch (err) {
@@ -70,6 +73,11 @@ function save(jsonFileName, data) {
     }
   });
 }
+
+ipcMain.on('settings-reload', (event, obj) => {
+  console.log("reloading...")
+  load('settings.json', "settings-loaded");
+});
 
 ipcMain.on('settings-save', (event, obj) => {
   save('settings.json', obj.data)
