@@ -78,6 +78,7 @@ export class SettingService {
   }
 
   reload() {
+    this._loaded = false;
     this.electron.reloadSettings();
   }
 }

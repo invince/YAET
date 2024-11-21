@@ -1,0 +1,57 @@
+<form [formGroup]="resetPasswordForm" (ngSubmit)="update()">
+
+  <h1 mat-dialog-title>Set Master Key</h1>
+  <div mat-dialog-content>
+    <mat-form-field *ngIf="hasMasterKey">
+      <mat-label>Old Master Key</mat-label>
+      <input matInput
+             type="password"
+             formControlName="oldPassword"
+             placeholder="Old Master Key, if you don't fill this correctly, all your secrets won't work anymore"
+             >
+    </mat-form-field>
+
+    <!-- New Password -->
+    <mat-form-field appearance="fill">
+      <mat-label>New Password</mat-label>
+      <input
+        matInput
+        type="password"
+        formControlName="newPassword"
+        placeholder="Enter new password"
+        required
+      />
+      <mat-error *ngIf="resetPasswordForm.get('newPassword')?.hasError('required')">
+        Password is required
+      </mat-error>
+      <mat-error *ngIf="resetPasswordForm.get('newPassword')?.hasError('minlength')">
+        Password must be at least 6 characters long
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Confirm Password -->
+    <mat-form-field appearance="fill">
+      <mat-label>Confirm Password</mat-label>
+      <input
+        matInput
+        type="password"
+        formControlName="confirmPassword"
+        placeholder="Confirm new password"
+        required
+      />
+      <mat-error *ngIf="resetPasswordForm.get('confirmPassword')?.hasError('required')">
+        Confirming your password is required
+      </mat-error>
+      <mat-error *ngIf="resetPasswordForm.hasError('passwordMismatch')">
+        Passwords do not match
+      </mat-error>
+      <mat-error *ngIf="resetPasswordForm.hasError('passwordSimilar')">
+        Password is similar to old one
+      </mat-error>
+    </mat-form-field>
+  </div>
+  <div mat-dialog-actions>
+    <button mat-button (click)="close()">Abort</button>
+    <button mat-button color="primary" type="submit" cdkFocusInitial>Ok</button>
+  </div>
+</form>

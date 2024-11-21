@@ -10,8 +10,14 @@
     <div class="modal-content" *ngIf="settings">
       <mat-tab-group>
         <mat-tab label="General">
-          <div class="tab-content">
-            <h3>General Settings</h3>
+          <div class="setting-form">
+            <div>
+              <mat-label>Set Master Key</mat-label>
+              <button mat-button class="mat-primary" (click)="openMasterKeyModal()">
+                <mat-icon>password</mat-icon>
+              </button>
+            </div>
+
           </div>
         </mat-tab>
         <mat-tab label="Local Terminal">
@@ -40,7 +46,7 @@
 
     <div class="modal-footer">
       <button mat-button (click)="close()">Cancel</button>
-      <button mat-stroked-button (click)="reload()">Reload</button>
+      <button mat-stroked-button class="mat-accent" (click)="reload()">Reload</button>
       <button mat-raised-button class="mat-primary" (click)="save();close()">Save And Close</button>
       <button mat-raised-button class="mat-primary" (click)="save()">Save</button>
     </div>

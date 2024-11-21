@@ -17,6 +17,7 @@ import {ProfileService} from './services/profile.service';
 import {RemoteDesktopComponent} from './components/remote-desktop/remote-desktop.component';
 import {FileExplorerComponent} from './components/file-explorer/file-explorer.component';
 import {v4 as uuidv4} from 'uuid';
+import {SecureMenuComponent} from './components/menu/secure-menu/secure-menu.component';
 
 @Component({
   selector: 'app-root',
@@ -40,6 +41,7 @@ import {v4 as uuidv4} from 'uuid';
     SettingMenuComponent,
     RemoteDesktopComponent,
     FileExplorerComponent,
+    SecureMenuComponent,
 
 
   ],

@@ -1,0 +1,131 @@
+import {Component, Inject, OnInit} from '@angular/core';
+import {
+  MAT_DIALOG_DATA, MatDialog,
+  MatDialogActions,
+  MatDialogContent,
+  MatDialogRef,
+  MatDialogTitle
+} from '@angular/material/dialog';
+import {MatError, MatFormField, MatLabel} from '@angular/material/form-field';
+import {MatInput} from '@angular/material/input';
+import {MatButton} from '@angular/material/button';
+import {SecretsService} from '../../../services/secrets.service';
+import {CommonModule, NgIf} from '@angular/common';
+import {FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {ConfirmationComponent} from '../confirmation/confirmation.component';
+
+@Component({
+  selector: 'app-master-key',
+  standalone: true,
+  imports: [
+    MatFormField,
+    MatDialogTitle,
+    MatDialogContent,
+    MatDialogActions,
+    MatInput,
+    MatButton,
+    MatLabel,
+    MatError,
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+  ],
+  templateUrl: './master-key.component.html',
+  styleUrl: './master-key.component.css'
+})
+export class MasterKeyComponent implements OnInit{
+  resetPasswordForm: FormGroup;
+  hasMasterKey:boolean = false;
+  constructor(
+    public secretsService: SecretsService,
+    public dialogRef: MatDialogRef<MasterKeyComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private fb: FormBuilder,
+    private dialog: MatDialog,
+  ) {
+    this.resetPasswordForm = this.fb.group(
+      {
+        newPassword: ['', [Validators.required, Validators.minLength(6)]],
+        confirmPassword: ['', Validators.required],
+        oldPassword: [''],
+      },
+      {validators: [this.passwordMatchValidator, this.passwordNotSimilar]}
+    );
+  }
+
+  ngOnInit() {
+    this.secretsService.hasMasterKey().then(result => {
+      this.hasMasterKey = result;
+    });
+  }
+
+  passwordNotSimilar(group: FormGroup) {
+    const password = group.get('newPassword')?.value;
+    const oldPassword = group.get('oldPassword')?.value;
+    if (oldPassword && password) {
+      if (password.toLowerCase().includes(oldPassword.toLowerCase()) ||
+        oldPassword.toLowerCase().includes(password.toLowerCase())) {
+        return { passwordSimilar: true };
+      }
+    }
+    return null;
+
+  }
+
+  passwordMatchValidator(group: FormGroup) {
+    const password = group.get('newPassword')?.value;
+    const confirmPassword = group.get('confirmPassword')?.value;
+    return password === confirmPassword ? null : { passwordMismatch: true };
+  }
+
+  async update() {
+    if (this.resetPasswordForm.valid) {
+      let hasMasterKey = await this.secretsService.hasMasterKey();
+      if (hasMasterKey) {
+        let willSecretsInvalid = false;
+        let oldPassword = this.resetPasswordForm.get("oldPassword");
+        if (oldPassword && oldPassword.value) {
+          if (!await this.secretsService.matchMasterKey(oldPassword.value)) {
+            willSecretsInvalid = true;
+          }
+        } else {
+          willSecretsInvalid = true;
+        }
+        if (willSecretsInvalid) {
+          this.openConfirmationDialog();
+        } else {
+          this.doSubmit();
+        }
+      } else {
+        this.doSubmit();
+      }
+      this.dialogRef.close();
+    }
+  }
+
+  doSubmit() {
+    let newPassword = this.resetPasswordForm.get("newPassword");
+    if (newPassword) {
+      this.secretsService.saveMasterKey(newPassword.value);
+    }
+  }
+
+  close() {
+    this.dialogRef.close();
+  }
+
+
+  openConfirmationDialog(): void {
+    const dialogRef = this.dialog.open(ConfirmationComponent, {
+      width: '300px',
+      data: { message: 'Old password doesn\'t match, if you continue, all existing secrets will be invalid. Do you want continue ?' },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.doSubmit();
+      }
+    });
+  }
+
+}

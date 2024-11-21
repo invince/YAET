@@ -6,7 +6,7 @@ const fs = require("fs");
 
 let mainWindow;
 let terminalMap = new Map();
-
+const keytar = require('keytar');
 
 
 
@@ -136,3 +136,15 @@ ipcMain.on('create-ssh-terminal', (event, sshConfig) => {
     });
   }).connect(sshConfig);
 });
+
+
+
+
+ipcMain.handle('keytar-save-password', async (event, service, account, password) => {
+  return keytar.setPassword(service, account, password);
+});
+
+ipcMain.handle('keytar-get-password', async (event, service, account) => {
+  return keytar.getPassword(service, account);
+});
+

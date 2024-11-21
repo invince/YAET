@@ -1,0 +1,17 @@
+.modal-content {
+  width: 850px;
+  display: flex;
+}
+
+
+mat-tab-group {
+  flex: 1;
+}
+
+.add-tab-button {
+  margin-left: 8px; /* Add spacing between the tabs and the button */
+}
+
+.field {
+  margin: 16px
+}

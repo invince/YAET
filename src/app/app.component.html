@@ -46,6 +46,7 @@
 
     <div *ngIf="isMenuModalOpen"  [ngSwitch]="currentOpenedMenu">
       <app-profile-menu [@slideInOut]="'in'" *ngSwitchCase="'add'" (closeEvent)="closeModal()"></app-profile-menu>
+      <app-secure-menu [@slideInOut]="'in'" *ngSwitchCase="'secure'" (closeEvent)="closeModal()" ></app-secure-menu>
       <app-setting-menu [@slideInOut]="'in'" *ngSwitchCase="'setting'" (closeEvent)="closeModal()" ></app-setting-menu>
     </div>
 

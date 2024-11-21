@@ -7,4 +7,6 @@ export class Secret {
   pass!: string;
 
   key!: string;
+
+  isNew: boolean = true;
 }

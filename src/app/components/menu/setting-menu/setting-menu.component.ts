@@ -12,6 +12,8 @@ import {CommonModule, KeyValuePipe} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {MatInput} from '@angular/material/input';
 import {Subscription} from 'rxjs';
+import {MatDialog} from '@angular/material/dialog';
+import {MasterKeyComponent} from '../master-key/master-key.component';
 
 @Component({
   selector: 'app-setting-menu',
@@ -45,7 +47,11 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   ui_showLocalTerminalCustom = false;
   private subscription!: Subscription;
 
-  constructor(private settingService: SettingService, private cdr: ChangeDetectorRef) {
+  constructor(
+    private settingService: SettingService,
+    private cdr: ChangeDetectorRef,
+    public dialog: MatDialog
+  ) {
     super();
     this.init();
 
@@ -92,4 +98,14 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
 
+  openMasterKeyModal() {
+    const dialogRef = this.dialog.open(MasterKeyComponent, {
+      width: '260px',
+      data: {}
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('The dialog was closed');
+    });
+  }
 }

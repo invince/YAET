@@ -1,1 +1,39 @@
-<p>secure-menu works!</p>
+<div class="modal-container">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Secrets</h3>
+      <button mat-icon-button (click)="close()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="modal-content">
+      <mat-tab-group [(selectedIndex)]="selectedIndex" (selectedTabChange)="onTabChange($event)">
+        <mat-tab *ngFor="let secret of secretsService.secrets; let i = index">
+          <ng-template mat-tab-label>
+            {{ secret.name ?
+                ((secret.name.length > 6) ? (secret.name | slice:0:6) + '...' : (secret.name))
+                : 'New *'
+            }}
+            <button mat-icon-button color="warn" (click)="removeTab(i)" *ngIf="!secret.isNew || i > 0">
+              <mat-icon>close</mat-icon>
+            </button>
+          </ng-template>
+
+          <mat-form-field class="field">
+            <mat-label>Name</mat-label>
+            <input matInput type="text" [(ngModel)]="secret.name" required/>
+            @if (secret.name) {
+            <button matSuffix mat-icon-button aria-label="Clear" (click)="secret.name=''">
+              <mat-icon>close</mat-icon>
+            </button>
+            }
+          </mat-form-field>
+        </mat-tab>
+      </mat-tab-group>
+      <button mat-icon-button color="primary" class="add-tab-button" (click)="addTab()">
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
