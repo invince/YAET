@@ -37,4 +37,23 @@ export class ProfileService {
     return this._profiles;
   }
 
+  save(profile: Profile) {
+    if (!profile) {
+      return;
+    }
+    if (!this._profiles) {
+      this._profiles = [];
+    }
+    for (let i = 0; i < this._profiles.length; i++) {
+      const one = this._profiles[i];
+      if (one.id == profile.id) {
+        this._profiles[i] = profile;
+        return;
+      }
+    }
+
+    this._profiles.push(profile);
+
+    this.electron.saveProfiles(this._profiles);
+  }
 }

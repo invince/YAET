@@ -81,7 +81,14 @@ ipcMain.on('settings-reload', (event, obj) => {
 
 ipcMain.on('settings-save', (event, obj) => {
   save('settings.json', obj.data)
-    .then(() => console.log('File saved successfully!'))
+    .then(() => console.log('Setting saved successfully!'))
+    .catch((error) => console.error('Error saving file:', error));
+});
+
+
+ipcMain.on('profiles-save', (event, obj) => {
+  save('profiles.json', obj.data)
+    .then(() => console.log('Profiles saved successfully!'))
     .catch((error) => console.error('Error saving file:', error));
 });
 

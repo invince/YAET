@@ -5,6 +5,7 @@ export const SETTINGS_RELOAD = 'settings-reload';
 export const SETTINGS_SAVE = 'settings-save';
 export const SETTINGS_LOADED = 'settings-loaded';
 export const PROFILES_LOADED = 'profiles-loaded';
+export const PROFILES_SAVE = 'profiles-save';
 export const SECRETS_LOADED = 'secrets-loaded';
 export const SAVE_PASSWORD = 'keytar-save-password';
 export const GET_PASSWORD = 'keytar-get-password';

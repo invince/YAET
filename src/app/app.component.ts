@@ -122,4 +122,15 @@ export class AppComponent {
     this.currentOpenedMenu = '';
   }
 
+  createNewProfile(): Profile {
+    return new Profile();
+  }
+
+  onProfileConnect($event: Profile) {
+    if ($event) {
+      this.isMenuModalOpen = false;
+      this.tabs.push(new TabInstance(uuidv4(), $event.category, $event.profileType, $event)); // Adds a new terminal identifier
+      this.currentTabIndex = this.tabs.length - 1;
+    }
+  }
 }

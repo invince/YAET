@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {IpcRenderer} from 'electron';
 import {TabInstance} from '../domain/TabInstance';
 import {
-  CREATION_LOCAL_TERMINAL, GET_PASSWORD, SAVE_PASSWORD,
+  CREATION_LOCAL_TERMINAL, GET_PASSWORD, PROFILES_SAVE, SAVE_PASSWORD,
   SETTINGS_RELOAD,
   SETTINGS_SAVE,
   TERMINAL_INPUT,
@@ -80,6 +80,12 @@ export class ElectronService {
   async setPassword(service: string, account: string, masterKey: string) {
     if (this.ipc) {
       await this.ipc.invoke(SAVE_PASSWORD,  service, account, masterKey);
+    }
+  }
+
+  saveProfiles(_profiles: Profile[]) {
+    if(this.ipc) {
+      this.ipc.send(PROFILES_SAVE, {data: _profiles});
     }
   }
 }

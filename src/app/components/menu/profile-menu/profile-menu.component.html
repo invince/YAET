@@ -1,58 +1,63 @@
-<div class="modal-container">
-  <div class="modal">
-    <div class="modal-header">
-      <h3>Profile</h3>
-      <button mat-icon-button (click)="close()">
-        <mat-icon>close</mat-icon>
-      </button>
-    </div>
-
-    <div class="modal-content">
-      <div class="profile-form-left-part">
-        <mat-form-field class="field">
-          <mat-label>Name</mat-label>
-          <input matInput type="text" [(ngModel)]="profile.name" required/>
-          @if (profile.name) {
-          <button matSuffix mat-icon-button aria-label="Clear" (click)="profile.name=''">
-            <mat-icon>close</mat-icon>
-          </button>
-          }
-        </mat-form-field>
-
-        <mat-form-field class="field">
-          <mat-label>Description</mat-label>
-          <textarea matInput type="text" [(ngModel)]="profile.comment"></textarea>
-          @if (profile.comment) {
-          <button matSuffix mat-icon-button aria-label="Clear" (click)="profile.comment=''">
-            <mat-icon>close</mat-icon>
-          </button>
-          }
-        </mat-form-field>
-        <mat-form-field class="field">
-          <mat-label>Terminal Category</mat-label>
-          <mat-select [(ngModel)]="profile.category" required>
-            <mat-option *ngFor="let oneCat of CATEGORY_OPTIONS | keyvalue : unordered "
-                        [value]="oneCat.value">{{oneCat.value}}</mat-option>
-          </mat-select>
-        </mat-form-field>
-        <mat-form-field class="field" *ngIf="profile.category">
-          <mat-label>Terminal Type</mat-label>
-          <mat-select [ngModel]="profile.profileType"
-                      (ngModelChange)="onSelectType($event)" required>
-            <mat-option *ngFor="let oneCat of CATEGORY_TYPE_MAP.get(profile.category) | keyvalue : unordered "
-                        [value]="oneCat.value">{{oneCat.value}}</mat-option>
-          </mat-select>
-        </mat-form-field>
+<form [formGroup]="editProfileForm">
+  <div class="modal-container">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Profile</h3>
+        <button mat-icon-button (click)="close()">
+          <mat-icon>close</mat-icon>
+        </button>
       </div>
 
-      <div class="profile-form-right-part" [ngSwitch]="profile.profileType">
-        <app-ssh-profile-menu *ngSwitchCase="'SSH_TERMINAL'" [(ssh)]="profile.sshTerminalProfile"></app-ssh-profile-menu>
-      </div>
-    </div>
+      <div class="modal-content">
+        <div class="profile-form-left-part">
+          <mat-form-field class="field">
+            <mat-label>Name</mat-label>
+            <input matInput type="text"
+                   formControlName="name"
+                   required/>
+            @if (profile.name) {
+            <button matSuffix mat-icon-button aria-label="Clear" (click)="profile.name=''">
+              <mat-icon>close</mat-icon>
+            </button>
+            }
+          </mat-form-field>
 
-    <div class="modal-footer">
-      <button mat-button (click)="close()">Cancel</button>
-      <button mat-raised-button class="mat-primary" (click)="save()">Save</button>
+          <mat-form-field class="field">
+            <mat-label>Description</mat-label>
+            <textarea matInput type="text" formControlName="comment"></textarea>
+            @if (profile.comment) {
+            <button matSuffix mat-icon-button aria-label="Clear" (click)="profile.comment=''">
+              <mat-icon>close</mat-icon>
+            </button>
+            }
+          </mat-form-field>
+          <mat-form-field class="field">
+            <mat-label>Terminal Category</mat-label>
+            <mat-select  (selectionChange)="onSelectCategory($event)" required formControlName="category">
+              <mat-option *ngFor="let oneCat of CATEGORY_OPTIONS | keyvalue : unordered "
+                          [value]="oneCat.value">{{oneCat.value}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field class="field" *ngIf="editProfileForm.get('category')?.value">
+            <mat-label>Terminal Type</mat-label>
+            <mat-select (selectionChange)="onSelectType($event)" required formControlName="profileType">
+              <mat-option *ngFor="let oneType of getTypeOptions()  | keyvalue : unordered "
+                          [value]="oneType.value">{{oneType.value}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="profile-form-right-part" [ngSwitch]="editProfileForm.get('profileType')?.value">
+          <app-ssh-profile-menu *ngSwitchCase="'SSH_TERMINAL'"
+                                [(ssh)]="profile.sshTerminalProfile"></app-ssh-profile-menu>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button mat-button (click)="close()">Cancel</button>
+        <button mat-raised-button class="mat-primary" (click)="save()" cdkFocusInitial>Save</button>
+        <button mat-raised-button class="mat-primary" (click)="connect()" >Connect</button>
+      </div>
     </div>
   </div>
-</div>
+</form>
