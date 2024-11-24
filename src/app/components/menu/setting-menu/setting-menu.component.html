@@ -16,6 +16,12 @@
               <button mat-button class="mat-primary" (click)="openMasterKeyModal()">
                 <mat-icon>password</mat-icon>
               </button>
+
+              <button mat-button class="mat-primary"
+                      *ngIf="secretService.hasMasterKey"
+                      (click)="openDeleteMasterKeyConfirmationDialog()">
+                <mat-icon>remove</mat-icon>
+              </button>
             </div>
 
           </div>

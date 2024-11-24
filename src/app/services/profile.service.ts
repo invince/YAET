@@ -37,7 +37,7 @@ export class ProfileService {
     return this._profiles;
   }
 
-  save(profile: Profile) {
+  async save(profile: Profile) {
     if (!profile) {
       return;
     }
@@ -54,6 +54,12 @@ export class ProfileService {
 
     this._profiles.push(profile);
 
-    this.electron.saveProfiles(this._profiles);
+    await this.electron.saveProfiles(this._profiles);
+  }
+
+
+  reload() {
+    this._loaded = false;
+    this.electron.reloadProfiles();
   }
 }

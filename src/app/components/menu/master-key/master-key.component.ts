@@ -9,7 +9,7 @@ import {
 import {MatError, MatFormField, MatLabel} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatButton} from '@angular/material/button';
-import {SecretsService} from '../../../services/secrets.service';
+import {SecretService} from '../../../services/secret.service';
 import {CommonModule, NgIf} from '@angular/common';
 import {FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ConfirmationComponent} from '../confirmation/confirmation.component';
@@ -35,9 +35,9 @@ import {ConfirmationComponent} from '../confirmation/confirmation.component';
 })
 export class MasterKeyComponent implements OnInit{
   resetPasswordForm: FormGroup;
-  hasMasterKey:boolean = false;
+
   constructor(
-    public secretsService: SecretsService,
+    public secretService: SecretService,
     public dialogRef: MatDialogRef<MasterKeyComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private fb: FormBuilder,
@@ -54,9 +54,6 @@ export class MasterKeyComponent implements OnInit{
   }
 
   ngOnInit() {
-    this.secretsService.hasMasterKey().then(result => {
-      this.hasMasterKey = result;
-    });
   }
 
   passwordNotSimilar(group: FormGroup) {
@@ -80,12 +77,11 @@ export class MasterKeyComponent implements OnInit{
 
   async update() {
     if (this.resetPasswordForm.valid) {
-      let hasMasterKey = await this.secretsService.hasMasterKey();
-      if (hasMasterKey) {
+      if (this.secretService.hasMasterKey) {
         let willSecretsInvalid = false;
         let oldPassword = this.resetPasswordForm.get("oldPassword");
         if (oldPassword && oldPassword.value) {
-          if (!await this.secretsService.matchMasterKey(oldPassword.value)) {
+          if (!await this.secretService.matchMasterKey(oldPassword.value)) {
             willSecretsInvalid = true;
           }
         } else {
@@ -106,7 +102,7 @@ export class MasterKeyComponent implements OnInit{
   doSubmit() {
     let newPassword = this.resetPasswordForm.get("newPassword");
     if (newPassword) {
-      this.secretsService.saveMasterKey(newPassword.value);
+      this.secretService.saveMasterKey(newPassword.value);
     }
   }
 
@@ -124,6 +120,7 @@ export class MasterKeyComponent implements OnInit{
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.doSubmit();
+        this.dialogRef.close();
       }
     });
   }

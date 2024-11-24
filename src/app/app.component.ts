@@ -18,6 +18,8 @@ import {RemoteDesktopComponent} from './components/remote-desktop/remote-desktop
 import {FileExplorerComponent} from './components/file-explorer/file-explorer.component';
 import {v4 as uuidv4} from 'uuid';
 import {SecuresMenuComponent} from './components/menu/secure-menu/secures-menu.component';
+import {SecretService} from './services/secret.service';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-root',
@@ -66,12 +68,18 @@ export class AppComponent {
   constructor(
     private settingService: SettingService,
     private profileService: ProfileService,
+    private secretService: SecretService,
+
+    private _snackBar: MatSnackBar,
   ) {
   }
 
   initialized() {
     return this.settingService.isLoaded
-            && this.profileService.isLoaded;
+            && this.profileService.isLoaded
+            && this.secretService.isLoaded
+            && this.secretService.isMasterKeyLoaded
+      ;
   }
 
   removeTab(index: number) {
@@ -84,7 +92,7 @@ export class AppComponent {
     this.currentTabIndex = this.tabs.length - 1;
   }
 
-  openMenu(menu: string) {
+  toggleMenu(menu: string) {
     if (this.currentOpenedMenu == menu) {
       this.isMenuModalOpen = !this.isMenuModalOpen;
     } else {
@@ -96,25 +104,36 @@ export class AppComponent {
 
 
   addMenu() {
-    this.openMenu('add');
+    this.toggleMenu('add');
   }
 
 
   secureMenu() {
-    this.openMenu('secure');
+    if (this.secretService.hasMasterKey) {
+      this.toggleMenu('secure');
+    } else {
+      const snackBarRef = this._snackBar.open('Please define Master key in Settings first', 'Go to Settings', {
+        duration: 3000
+      });
+
+      snackBarRef.onAction().subscribe(() => {
+        this.currentOpenedMenu = 'setting';
+        this.isMenuModalOpen = true;
+      });
+    }
   }
 
   favoriteMenu() {
-    this.openMenu('favorite');
+    this.toggleMenu('favorite');
   }
 
   syncMenu() {
-    this.openMenu('cloud');
+    this.toggleMenu('cloud');
   }
 
 
   settingMenu() {
-    this.openMenu('setting');
+    this.toggleMenu('setting');
   }
 
   closeModal() {

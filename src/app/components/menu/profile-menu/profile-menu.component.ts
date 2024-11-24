@@ -84,21 +84,21 @@ export class ProfileMenuComponent extends MenuComponent implements OnInit {
 
   override save() {
     if (this.editProfileForm.valid) {
-      this.prepareModel();
-      this.profileService.save(this.profile);
-      this.closeEvent.emit();
+      this.formToModel();
+      this.profileService.save(this.profile)
+        .then(r => this.closeEvent.emit());
     }
   }
 
   connect() {
     if (this.editProfileForm.valid) {
-      this.prepareModel();
+      this.formToModel();
       this.onProfileConnect.emit(this.profile);
       this.closeEvent.emit();
     }
   }
 
-  prepareModel() {
+  formToModel() {
     this.profile.name = this.editProfileForm.get('name')?.value;
     this.profile.comment = this.editProfileForm.get('comment')?.value;
     this.profile.category = this.editProfileForm.get('category')?.value;

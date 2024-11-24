@@ -2,7 +2,14 @@ import {Injectable} from '@angular/core';
 import {IpcRenderer} from 'electron';
 import {TabInstance} from '../domain/TabInstance';
 import {
-  CREATION_LOCAL_TERMINAL, GET_PASSWORD, PROFILES_SAVE, SAVE_PASSWORD,
+  CREATION_LOCAL_TERMINAL,
+  DELETE_MASTERKEY,
+  GET_MASTERKEY,
+  PROFILES_RELOAD,
+  PROFILES_SAVE,
+  SAVE_MASTERKEY,
+  SECRETS_RELOAD,
+  SECRETS_SAVE,
   SETTINGS_RELOAD,
   SETTINGS_SAVE,
   TERMINAL_INPUT,
@@ -11,6 +18,7 @@ import {
 import {LocalTerminalProfile} from '../domain/LocalTerminalProfile';
 import {Profile, ProfileType} from '../domain/Profile';
 import {MySettings} from '../domain/MySettings';
+import {Secret} from '../domain/Secret';
 
 @Injectable({
   providedIn: 'root',
@@ -72,20 +80,45 @@ export class ElectronService {
 
   async getPassword(service: string, account: string): Promise<string|undefined>  {
     if(this.ipc) {
-      return await this.ipc.invoke(GET_PASSWORD,  service, account);
+      return await this.ipc.invoke(GET_MASTERKEY,  service, account);
     }
     return;
   }
 
   async setPassword(service: string, account: string, masterKey: string) {
     if (this.ipc) {
-      await this.ipc.invoke(SAVE_PASSWORD,  service, account, masterKey);
+      await this.ipc.invoke(SAVE_MASTERKEY,  service, account, masterKey);
     }
   }
 
-  saveProfiles(_profiles: Profile[]) {
+  async deletePassword(service: string, account: string) {
+    if (this.ipc) {
+      await this.ipc.invoke(DELETE_MASTERKEY,  service, account);
+    }
+  }
+
+  async saveProfiles(_profiles: Profile[]) {
     if(this.ipc) {
-      this.ipc.send(PROFILES_SAVE, {data: _profiles});
+      await this.ipc.send(PROFILES_SAVE, {data: _profiles});
+    }
+  }
+
+  reloadProfiles() {
+    if (this.ipc) {
+      this.ipc.send(PROFILES_RELOAD, {});
+    }
+  }
+
+
+  async saveSecrets(_secrets: Secret[] | string) {
+    if (this.ipc) {
+      await this.ipc.send(SECRETS_SAVE, {data: _secrets});
+    }
+  }
+
+  reloadSecrets() {
+    if (this.ipc) {
+      this.ipc.send(SECRETS_RELOAD, {});
     }
   }
 }

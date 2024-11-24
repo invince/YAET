@@ -14,6 +14,9 @@ import {MatInput} from '@angular/material/input';
 import {Subscription} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
 import {MasterKeyComponent} from '../master-key/master-key.component';
+import {ConfirmationComponent} from '../confirmation/confirmation.component';
+import {SecretService} from '../../../services/secret.service';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-setting-menu',
@@ -49,8 +52,10 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
   constructor(
     private settingService: SettingService,
+    public secretService: SecretService,
     private cdr: ChangeDetectorRef,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private _snackBar: MatSnackBar,
   ) {
     super();
     this.init();
@@ -62,6 +67,22 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       this.ui_showLocalTerminalCustom = true;
     }
 
+  }
+
+  openDeleteMasterKeyConfirmationDialog(): void {
+    const dialogRef = this.dialog.open(ConfirmationComponent, {
+      width: '300px',
+      data: { message: 'Delete master key, if you continue, all existing secrets will be invalid. Do you want continue ?' },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.secretService.deleteMasterKey();
+        this._snackBar.open('Master Key Deleted', 'OK', {
+          duration: 3000
+        });
+      }
+    });
   }
 
   ngOnInit() {
