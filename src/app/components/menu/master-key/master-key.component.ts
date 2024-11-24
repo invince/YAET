@@ -45,9 +45,9 @@ export class MasterKeyComponent implements OnInit{
   ) {
     this.resetPasswordForm = this.fb.group(
       {
-        newPassword: ['', [Validators.required, Validators.minLength(6)]],
-        confirmPassword: ['', Validators.required],
-        oldPassword: [''],
+        newPassword:      ['', [Validators.required, Validators.minLength(6)]],
+        confirmPassword:  ['', Validators.required],
+        oldPassword:      [''],
       },
       {validators: [this.passwordMatchValidator, this.passwordNotSimilar]}
     );

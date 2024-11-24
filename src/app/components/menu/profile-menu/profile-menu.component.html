@@ -15,21 +15,27 @@
             <input matInput type="text"
                    formControlName="name"
                    required/>
-            @if (profile.name) {
-            <button matSuffix mat-icon-button aria-label="Clear" (click)="profile.name=''">
+            <button
+              matSuffix
+              mat-icon-button
+              aria-label="Clear"
+              (click)="clear(editProfileForm,'name')"
+              *ngIf="editProfileForm.get('name')?.value">
               <mat-icon>close</mat-icon>
             </button>
-            }
           </mat-form-field>
 
           <mat-form-field class="field">
             <mat-label>Description</mat-label>
             <textarea matInput type="text" formControlName="comment"></textarea>
-            @if (profile.comment) {
-            <button matSuffix mat-icon-button aria-label="Clear" (click)="profile.comment=''">
+            <button
+              matSuffix
+              mat-icon-button
+              aria-label="Clear"
+              (click)="clear(editProfileForm,'comment')"
+              *ngIf="editProfileForm.get('comment')?.value">
               <mat-icon>close</mat-icon>
             </button>
-            }
           </mat-form-field>
           <mat-form-field class="field">
             <mat-label>Terminal Category</mat-label>

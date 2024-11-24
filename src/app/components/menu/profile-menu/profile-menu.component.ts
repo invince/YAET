@@ -57,10 +57,10 @@ export class ProfileMenuComponent extends MenuComponent implements OnInit {
   ngOnInit(): void {
     this.editProfileForm = this.fb.group(
       {
-        name: [this.profile.name, [Validators.required, Validators.minLength(3)]], // we shall avoid use ngModel and formControl at same time
-        comment: [this.profile.comment],
-        category: [this.profile.category, Validators.required],
-        profileType: [this.profile.profileType, Validators.required],
+        name:         [this.profile.name, [Validators.required, Validators.minLength(3)]], // we shall avoid use ngModel and formControl at same time
+        comment:      [this.profile.comment],
+        category:     [this.profile.category, Validators.required],
+        profileType:  [this.profile.profileType, Validators.required],
 
       },
       {validators: []}
@@ -104,4 +104,6 @@ export class ProfileMenuComponent extends MenuComponent implements OnInit {
     this.profile.category = this.editProfileForm.get('category')?.value;
     this.profile.profileType = this.editProfileForm.get('profileType')?.value;
   }
+
+
 }

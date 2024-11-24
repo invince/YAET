@@ -1,6 +1,7 @@
 import {Component, EventEmitter, Output} from '@angular/core';
 import {MatIcon} from '@angular/material/icon';
 import {MatIconButton} from "@angular/material/button";
+import {FormGroup} from '@angular/forms';
 
 @Component({
   selector: 'app-menu',
@@ -23,5 +24,14 @@ export class MenuComponent {
 
   save() {
 
+  }
+
+  clear(group: FormGroup, fieldName: string) {
+    if (group) {
+      let field = group.get(fieldName);
+      if (field) {
+        field.setValue(null);
+      }
+    }
   }
 }

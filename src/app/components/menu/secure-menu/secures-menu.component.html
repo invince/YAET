@@ -1,0 +1,43 @@
+<div class="modal-container">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Secrets</h3>
+      <button mat-icon-button (click)="close()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="modal-content">
+      <mat-sidenav-container class="sidenav-container">
+        <!-- Sidebar -->
+        <mat-sidenav mode="side" opened class="sidenav">
+          <div class="sidenav-item">
+            <button mat-button (click)="addTab()" aria-label="Add Secret" >
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+
+          <div *ngFor="let secret of secretsService.secrets; let i = index" class="sidenav-item">
+            <button mat-button (click)="onTabChange(i)">
+              {{
+              secretTabLabel(secret)
+              }}
+            </button>
+          </div>
+        </mat-sidenav>
+
+        <!-- Main Content -->
+        <mat-sidenav-content class="one-secret-form">
+          <ng-container *ngIf="secretsService.secrets[selectedIndex] as secret">
+            <app-secret-form [secret]="secret"
+                             (dirtyStateChange)="onFormDirtyStateChange($event)">
+                             (onSecretCancel)="onCancel($event)"
+                             (onSecretDelete)="onDelete($event)"
+                             (onSecretSave)="onSaveOne($event)"
+            ></app-secret-form>
+          </ng-container>
+        </mat-sidenav-content>
+      </mat-sidenav-container>
+    </div>
+  </div>
+</div>

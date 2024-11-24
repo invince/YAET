@@ -68,4 +68,14 @@ export class SecretsService {
     const account = 'ac13ba1ac2f841d19a9f73bd8c335086';
     await this.electron.setPassword(service, account, masterKey);
   }
+
+  deleteLocal(secret: Secret) {
+    if (!secret) {
+      return;
+    }
+    if (!this.secrets) {
+      this.secrets = [];
+    }
+    this.secrets = this.secrets.filter(one => one.id != secret.id);
+  }
 }
