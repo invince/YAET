@@ -12,7 +12,7 @@
         <!-- Sidebar -->
         <mat-sidenav mode="side" opened class="sidenav">
           <div class="sidenav-item">
-            <button mat-button (click)="addTab()" [disabled]="editSecretForm.dirty || hasNewSecret()" aria-label="Add Secret" >
+            <button mat-button (click)="addTab()" [disabled]="lastFormDirtyState || hasNewSecret()" aria-label="Add Secret" >
               <mat-icon>add</mat-icon>
             </button>
           </div>
@@ -29,114 +29,14 @@
         <!-- Main Content -->
         <mat-sidenav-content class="one-secret-form">
           <ng-container *ngIf="secretService.secrets[selectedIndex] as secret">
-            <div class="secret-form-container" [formGroup]="editSecretForm">
-              <div class="secret-form">
-                <div class="secret-form-left-part">
-                  <mat-form-field class="field">
-                    <mat-label>Name</mat-label>
-                    <input matInput type="text"
-                           formControlName="name"
-                           required/>
-                    <button
-                      matSuffix
-                      mat-icon-button
-                      aria-label="Clear"
-                      (click)="clearField('name')"
-                      *ngIf="editSecretForm.get('name')?.value">
-                      <mat-icon>close</mat-icon>
-                    </button>
-                  </mat-form-field>
-
-
-                  <mat-form-field class="field">
-                    <mat-label>Type</mat-label>
-                    <mat-select (selectionChange)="onSelectType($event)" required formControlName="secretType">
-                      <mat-option *ngFor="let oneType of SECRET_TYPE_OPTIONS | keyvalue : unordered "
-                                  [value]="oneType.value">{{oneType.value}}</mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-
-                <div class="secret-form-right-part">
-                  <mat-form-field class="field" *ngIf="shouldShowField('login')">
-                    <mat-label>Login</mat-label>
-                    <input matInput type="text"
-                           formControlName="login"
-                           required/>
-                    <button
-                      matSuffix
-                      mat-icon-button
-                      aria-label="Clear"
-                      (click)="clearField('login')"
-                      *ngIf="editSecretForm.get('login')?.value">
-                      <mat-icon>close</mat-icon>
-                    </button>
-                  </mat-form-field>
-
-
-                  <mat-form-field class="field" *ngIf="shouldShowField('password')">
-                    <mat-label>Password</mat-label>
-                    <input matInput type="password"
-                           formControlName="password"
-                           required/>
-                    <button
-                      matSuffix
-                      mat-icon-button
-                      aria-label="Clear"
-                      (click)="clearField('password')"
-                      *ngIf="editSecretForm.get('password')?.value">
-                      <mat-icon>close</mat-icon>
-                    </button>
-                  </mat-form-field>
-
-                  <mat-form-field class="field" *ngIf="shouldShowField('key')">
-                    <mat-label>SSH Key</mat-label>
-                    <textarea matInput type="text" formControlName="key"></textarea>
-                    <button
-                      matSuffix
-                      mat-icon-button
-                      aria-label="Clear"
-                      (click)="clearField('key')"
-                      *ngIf="editSecretForm.get('key')?.value">
-                      <mat-icon>close</mat-icon>
-                    </button>
-                  </mat-form-field>
-
-                  <mat-form-field class="field" *ngIf="shouldShowField('keyPhrase')">
-                    <mat-label>Key Phrase</mat-label>
-                    <input matInput type="password"
-                           formControlName="keyPhrase"
-                    />
-                    <button
-                      matSuffix
-                      mat-icon-button
-                      aria-label="Clear"
-                      (click)="clearField('keyPhrase')"
-                      *ngIf="editSecretForm.get('keyPhrase')?.value">
-                      <mat-icon>close</mat-icon>
-                    </button>
-                  </mat-form-field>
-
-
-                  <mat-error *ngIf="editSecretForm.hasError('emptyLogin')">
-                    Login is required
-                  </mat-error>
-                  <mat-error *ngIf="editSecretForm.hasError('emptyPassword')">
-                    Password is required
-                  </mat-error>
-                  <mat-error *ngIf="editSecretForm.hasError('emptyKey')">
-                    SSH Key is required
-                  </mat-error>
-                </div>
-              </div>
-              <div class="secret-form-footer modal-footer">
-                <button mat-raised-button color="warn" (click)="onCancel(secret)">Cancel</button>
-<!--                <button mat-stroked-button class="mat-accent" (click)="reload()">Reload</button>-->
-                <button mat-raised-button color="warn" (click)="onDelete(secret)" *ngIf="!secret.isNew">Delete</button>
-                <button mat-raised-button color="primary" (click)="onSaveOne(secret)"
-                        [disabled]="editSecretForm.invalid || !editSecretForm.dirty">Save</button>
-              </div>
-            </div>
+            <app-secret-form
+              [secret]="secret"
+              (onSecretCancel)="onCancel($event)"
+              (onSecretDelete)="onDelete($event)"
+              (onSecretSave)="onSaveOne($event)"
+              (invalidStateChange)="lastFormInvalidState = $event"
+              (dirtyStateChange)="lastFormDirtyState = $event"
+            ></app-secret-form>
           </ng-container>
         </mat-sidenav-content>
       </mat-sidenav-container>

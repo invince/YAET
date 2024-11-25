@@ -113,6 +113,9 @@ export class SecretService implements OnDestroy{
     if (!this._secrets || this._secrets.length == 0) {
       return;
     }
+    for (let one of this._secrets) {
+      one.isNew = false;
+    }
     const service = 'io.github.invince.YAET';
     const account = 'ac13ba1ac2f841d19a9f73bd8c335086';
     this.electron.getPassword(service, account).then(
