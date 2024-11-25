@@ -102,7 +102,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
 
-  override save() {
+  override onSave() {
     this.settingService.save(this.settings);
   }
 

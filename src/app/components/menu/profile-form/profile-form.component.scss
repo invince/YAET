@@ -4,39 +4,37 @@
   width: 100%;    /* Optional, full width if required */
 }
 
-.field {
-  margin: 16px;
-  width: 280px;
-}
-
-.secret-form {
-  display: flex;
-  flex-direction: row;
-}
-
-.secret-form-container h2 {
-  padding-left: 16px;
-}
-
-.secret-form-container {
+.profile-form-container {
   margin: auto;
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
-.secret-form-left-part {
+.profile-form {
+  display: flex;
+  flex-direction: row;
+}
+
+
+.profile-form-left-part {
   flex: 0 0 300px; /* Fixed width for the left part */
   display: flex;
   flex-direction: column;
 }
 
-.secret-form-right-part {
+.profile-form-right-part {
   flex: 0 0 300px; /* Fixed width for the right part */
+  padding-left: 30px
 }
 
-
-.secret-form-footer {
+.profile-form-footer {
   margin-top: auto; /* Pushes it to the bottom */
   margin-bottom: 0; /* Adds the offset from the bottom */
+}
+
+.field {
+  margin-left: 16px;
+  margin-top: 16px;
+  width: 280px;
 }

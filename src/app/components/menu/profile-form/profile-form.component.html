@@ -1,0 +1,63 @@
+<div class="profile-form-container" [formGroup]="editProfileForm">
+  <div class="profile-form">
+    <div class="profile-form-left-part">
+      <mat-form-field class="field">
+        <mat-label>Name</mat-label>
+        <input matInput type="text"
+               formControlName="name"
+               required/>
+        <button
+          matSuffix
+          mat-icon-button
+          aria-label="Clear"
+          (click)="clear(editProfileForm,'name')"
+          *ngIf="editProfileForm.get('name')?.value">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+
+      <mat-form-field class="field">
+        <mat-label>Description</mat-label>
+        <textarea matInput type="text" formControlName="comment"></textarea>
+        <button
+          matSuffix
+          mat-icon-button
+          aria-label="Clear"
+          (click)="clear(editProfileForm,'comment')"
+          *ngIf="editProfileForm.get('comment')?.value">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+      <mat-form-field class="field">
+        <mat-label>Terminal Category</mat-label>
+        <mat-select  (selectionChange)="onSelectCategory($event)" required formControlName="category">
+          <mat-option *ngFor="let oneCat of CATEGORY_OPTIONS | keyvalue : unordered "
+                      [value]="oneCat.value">{{oneCat.value}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field class="field" *ngIf="editProfileForm.get('category')?.value">
+        <mat-label>Terminal Type</mat-label>
+        <mat-select (selectionChange)="onSelectType($event)" required formControlName="profileType">
+          <mat-option *ngFor="let oneType of getTypeOptions()  | keyvalue : unordered "
+                      [value]="oneType.value">{{oneType.value}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="profile-form-right-part" [ngSwitch]="editProfileForm.get('profileType')?.value">
+      <app-ssh-profile-form *ngSwitchCase="'SSH_TERMINAL'"
+                            [(ssh)]="profile.sshTerminalProfile"></app-ssh-profile-form>
+    </div>
+  </div>
+
+  <div class="profile-form-footer modal-footer">
+    <button mat-button (click)="close()">Cancel</button>
+    <!--                <button mat-stroked-button class="mat-accent" (click)="reload()">Reload</button>-->
+    <button mat-raised-button color="warn" (click)="onDelete()" *ngIf="!profile.isNew">Delete</button>
+    <button mat-raised-button class="mat-primary" (click)="onSave()"
+            [disabled]="editProfileForm.invalid || !editProfileForm.dirty" cdkFocusInitial>Save</button>
+    <button mat-raised-button class="mat-primary" (click)="onConnect()"
+            [disabled]="editProfileForm.invalid || !editProfileForm.dirty" >Connect</button>
+  </div>
+</div>
+

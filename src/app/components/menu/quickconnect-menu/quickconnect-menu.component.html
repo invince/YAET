@@ -1,0 +1,20 @@
+<div class="modal-container">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Connection</h3>
+      <button mat-icon-button (click)="close()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="modal-content">
+      <app-profile-form
+        [profile]="createNewProfile()"
+        (onProfileCancel)="onCancel($event)"
+        (onProfileSave)="onSaveOne($event)"
+
+      ></app-profile-form>
+
+    </div>
+  </div>
+</div>

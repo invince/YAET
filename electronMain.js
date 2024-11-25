@@ -173,6 +173,6 @@ ipcMain.handle('keytar-get-password', async (event, service, account) => {
 });
 
 ipcMain.handle('keytar-delete-password', async (event, service, account) => {
-  console.log("master key deleting...")
+  console.log("master key deleting...");
   return keytar.deletePassword(service, account);
 });

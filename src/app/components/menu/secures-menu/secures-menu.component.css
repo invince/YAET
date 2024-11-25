@@ -1,0 +1,46 @@
+.modal-content {
+  width: 850px;
+  display: flex;
+}
+
+
+
+.sidenav-container {
+  height: 100%;
+}
+
+.sidenav {
+  width: 150px; /* Adjust the width as needed */
+}
+
+.sidenav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+}
+
+.sidenav-item button {
+  width: 100%;
+  text-align: left;
+}
+
+.mat-sidenav-content {
+  width: 700px;
+}
+
+.one-form {
+  background-color: #696969;
+  flex: 1; /* Allow the child to grow */
+  display: flex;
+  flex-direction: column; /* Adjust for your layout */
+}
+
+app-secret-form {
+  margin: 0;
+}
+
+.modal-content {
+  padding: 0;
+}
+

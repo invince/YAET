@@ -15,11 +15,11 @@
       <button mat-mini-fab color="primary" (click)="secureMenu()" aria-label="Save">
         <mat-icon>password</mat-icon>
       </button>
-      <button mat-mini-fab color="primary" (click)="syncMenu()" aria-label="Favorite">
+      <button mat-mini-fab color="primary" (click)="syncMenu()" aria-label="Sync">
         <mat-icon>cloud</mat-icon>
       </button>
 
-      <button mat-mini-fab color="primary" (click)="settingMenu()" aria-label="Favorite">
+      <button mat-mini-fab color="primary" (click)="settingMenu()" aria-label="Settings">
         <mat-icon>settings</mat-icon>
       </button>
     </div>
@@ -45,8 +45,11 @@
     </mat-tab-group>
 
     <div *ngIf="isMenuModalOpen"  [ngSwitch]="currentOpenedMenu">
-      <app-profile-menu [@slideInOut]="'in'" *ngSwitchCase="'add'" [profile]="createNewProfile()" (onProfileConnect)="onProfileConnect($event)" (closeEvent)="closeModal()"></app-profile-menu>
-      <app-secure-menu [@slideInOut]="'in'" *ngSwitchCase="'secure'" (closeEvent)="closeModal()" ></app-secure-menu>
+<!--      <app-profile-menu [@slideInOut]="'in'" *ngSwitchCase="'add'" [profile]="createNewProfile()"-->
+<!--                        (onProfileConnect)="onProfileConnect($event)" (closeEvent)="closeModal()"></app-profile-menu>-->
+      <app-quickconnect-menu [@slideInOut]="'in'" *ngSwitchCase="'add'" (closeEvent)="closeModal()"></app-quickconnect-menu>
+      <app-profiles-menu [@slideInOut]="'in'" *ngSwitchCase="'favorite'" (closeEvent)="closeModal()" ></app-profiles-menu>
+      <app-secures-menu [@slideInOut]="'in'" *ngSwitchCase="'secure'" (closeEvent)="closeModal()" ></app-secures-menu>
       <app-setting-menu [@slideInOut]="'in'" *ngSwitchCase="'setting'" (closeEvent)="closeModal()" ></app-setting-menu>
     </div>
 

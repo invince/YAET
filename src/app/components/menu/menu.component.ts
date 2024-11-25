@@ -22,7 +22,7 @@ export class MenuComponent {
     this.closeEvent.emit();
   }
 
-  save() {
+  onSave() {
 
   }
 

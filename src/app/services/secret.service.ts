@@ -18,6 +18,9 @@ export class SecretService implements OnDestroy{
 
   private readonly intervalId: NodeJS.Timeout;
 
+  private static readonly service:string = 'io.github.invince.YAET';
+  private static readonly account:string = 'ac13ba1ac2f841d19a9f73bd8c335086';
+
   constructor(private electron: ElectronService) {
     electron.onLoadedEvent(SECRETS_LOADED, data => {
       this.apply(data);
@@ -73,9 +76,7 @@ export class SecretService implements OnDestroy{
   }
 
   deleteMasterKey() {
-    const service = 'io.github.invince.YAET';
-    const account = 'ac13ba1ac2f841d19a9f73bd8c335086';
-    this.electron.deletePassword(service, account).then(r => {
+    this.electron.deletePassword(SecretService.service, SecretService.account).then(r => {
       this.refreshHasMasterKey();
     });
   }
@@ -85,16 +86,12 @@ export class SecretService implements OnDestroy{
   }
 
   async matchMasterKey(masterKey: string) : Promise<boolean> {
-    const service = 'io.github.invince.YAET';
-    const account = 'ac13ba1ac2f841d19a9f73bd8c335086';
-    const key = await this.electron.getPassword(service, account);
+    const key = await this.electron.getPassword(SecretService.service, SecretService.account);
     return masterKey === key;
   }
 
   saveMasterKey(masterKey: string) {
-    const service = 'io.github.invince.YAET';
-    const account = 'ac13ba1ac2f841d19a9f73bd8c335086';
-    this.electron.setPassword(service, account, masterKey).then(r => {
+    this.electron.setPassword(SecretService.service, SecretService.account, masterKey).then(r => {
       this.refreshHasMasterKey();
     });
   }
@@ -110,15 +107,14 @@ export class SecretService implements OnDestroy{
   }
 
   async saveAll() {
-    if (!this._secrets || this._secrets.length == 0) {
+    if (!this._secrets) {
       return;
     }
     for (let one of this._secrets) {
       one.isNew = false;
     }
-    const service = 'io.github.invince.YAET';
-    const account = 'ac13ba1ac2f841d19a9f73bd8c335086';
-    this.electron.getPassword(service, account).then(
+
+    this.electron.getPassword(SecretService.service, SecretService.account).then(
       masterKey => {
         if (masterKey) {
           const json = JSON.stringify(this._secrets, null, 2);
@@ -137,9 +133,7 @@ export class SecretService implements OnDestroy{
 
 
   private refreshHasMasterKey() {
-    const service = 'io.github.invince.YAET';
-    const account = 'ac13ba1ac2f841d19a9f73bd8c335086';
-    this.electron.getPassword(service, account).then(key => {
+    this.electron.getPassword(SecretService.service, SecretService.account).then(key => {
       if (key && key.length > 0) {
         this._hasMasterKey = true;
       } else {

@@ -3,6 +3,8 @@ import {Profile} from '../domain/Profile';
 import {MySettings} from '../domain/MySettings';
 import {ElectronService} from './electron.service';
 import {PROFILES_LOADED} from './electronConstant';
+import {Subject} from 'rxjs';
+import CryptoJS from 'crypto-js';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +14,13 @@ export class ProfileService {
   private _profiles!: Profile[];
 
   private _loaded: boolean = false;
+
+  private connectionEventSubject = new Subject<Profile>();
+  connectionEvent$ = this.connectionEventSubject.asObservable();
+
+  onProfileConnect(data: Profile) {
+    this.connectionEventSubject.next(data);
+  }
 
   constructor(private electron: ElectronService) {
     electron.onLoadedEvent(PROFILES_LOADED, data => this.apply(data))
@@ -34,6 +43,9 @@ export class ProfileService {
     this._profiles = value;
   }
   get profiles(): Profile[] {
+    if (!this._profiles) {
+      this._profiles = [];
+    }
     return this._profiles;
   }
 
@@ -61,5 +73,25 @@ export class ProfileService {
   reload() {
     this._loaded = false;
     this.electron.reloadProfiles();
+  }
+
+  deleteLocal($event: Profile) {
+    if (!$event) {
+      return;
+    }
+    if (!this._profiles) {
+      this._profiles = [];
+    }
+    this._profiles = this._profiles.filter(one => one.id != $event.id);
+  }
+
+  async saveAll() {
+    if (!this._profiles) {
+      return;
+    }
+    for (let one of this._profiles) {
+      one.isNew = false;
+    }
+    await this.electron.saveProfiles(this._profiles);
   }
 }

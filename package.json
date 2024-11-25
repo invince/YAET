@@ -5,7 +5,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "node build.js",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "electron": "electron ."
@@ -39,7 +39,8 @@
     "@angular/compiler-cli": "^18.2.0",
     "@types/crypto-js": "^4.2.2",
     "@types/jasmine": "~5.1.0",
-    "electron": "^31",
+    "electron": "^31.7.5",
+    "electron-packager": "^17.1.2",
     "electron-rebuild": "^3.2.9",
     "jasmine-core": "~5.2.0",
     "karma": "~6.4.0",

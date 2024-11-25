@@ -56,11 +56,12 @@ export class SecretFormComponent implements OnInit {
         secretType: [this.secret.secretType, Validators.required],
         login: [this.secret.login],
         password: [this.secret.password],
+        confirmPassword: [this.secret.password],
         key: [this.secret.key],
         keyPhrase: [this.secret.keyphrase],
 
       },
-      {validators: [this.checkCurrentSecret]}
+      {validators: [this.checkCurrentSecret, this.passwordMatchValidator]}
     );
 
     this.editSecretForm.valueChanges.subscribe(() => {
@@ -76,6 +77,22 @@ export class SecretFormComponent implements OnInit {
         this.invalidStateChange.emit(invalid);
       }
     });
+  }
+
+  passwordMatchValidator(group: FormGroup) {
+    const type = group.get('secretType')?.value;
+    if ([SecretType.LOGIN_PASSWORD, SecretType.LOGIN_PASSWORD].includes(type)) {
+      group.get('password')?.addValidators(Validators.required);
+      group.get('confirmPassword')?.addValidators(Validators.required);
+
+      const password = group.get('password')?.value;
+      const confirmPassword = group.get('confirmPassword')?.value;
+      return password === confirmPassword ? null : { passwordMismatch: true };
+    } else {
+      group.get('password')?.removeValidators(Validators.required);
+      group.get('confirmPassword')?.removeValidators(Validators.required);
+    }
+    return null;
   }
 
   checkCurrentSecret(group: FormGroup) {

@@ -10,43 +10,46 @@ import {MatIcon} from '@angular/material/icon';
 import {MatIconButton, MatMiniFabButton} from '@angular/material/button';
 import {menuAnimation} from './animations/menuAnimation';
 import {MenuComponent} from './components/menu/menu.component';
-import {ProfileMenuComponent} from './components/menu/profile-menu/profile-menu.component';
+import {ProfileFormComponent} from './components/menu/profile-form/profile-form.component';
 import {SettingMenuComponent} from './components/menu/setting-menu/setting-menu.component';
 import {SettingService} from './services/setting.service';
 import {ProfileService} from './services/profile.service';
 import {RemoteDesktopComponent} from './components/remote-desktop/remote-desktop.component';
 import {FileExplorerComponent} from './components/file-explorer/file-explorer.component';
 import {v4 as uuidv4} from 'uuid';
-import {SecuresMenuComponent} from './components/menu/secure-menu/secures-menu.component';
+import {SecuresMenuComponent} from './components/menu/secures-menu/secures-menu.component';
 import {SecretService} from './services/secret.service';
 import {MatSnackBar} from '@angular/material/snack-bar';
+import {ProfilesMenuComponent} from './components/menu/profiles-menu/profiles-menu.component';
+import {QuickconnectMenuComponentextends} from "./components/menu/quickconnect-menu/quickconnect-menu.component";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [
-    RouterOutlet,
-    TerminalComponent,
-    MenuComponent,
+    imports: [
+        RouterOutlet,
+        TerminalComponent,
+        MenuComponent,
 
-    MatSidenavContent,
-    MatSidenav,
-    MatSidenavContainer,
-    MatTabGroup,
-    MatTab,
-    MatIcon,
-    MatMiniFabButton,
-    MatTabLabel,
-    MatIconButton,
-    CommonModule,
-    ProfileMenuComponent,
-    SettingMenuComponent,
-    RemoteDesktopComponent,
-    FileExplorerComponent,
-    SecuresMenuComponent,
+        MatSidenavContent,
+        MatSidenav,
+        MatSidenavContainer,
+        MatTabGroup,
+        MatTab,
+        MatIcon,
+        MatMiniFabButton,
+        MatTabLabel,
+        MatIconButton,
+        CommonModule,
 
-
-  ],
+        ProfileFormComponent,
+        SettingMenuComponent,
+        RemoteDesktopComponent,
+        FileExplorerComponent,
+        SecuresMenuComponent,
+        ProfilesMenuComponent,
+        QuickconnectMenuComponentextends,
+    ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   animations: [
@@ -139,10 +142,6 @@ export class AppComponent {
   closeModal() {
     this.isMenuModalOpen = false;
     this.currentOpenedMenu = '';
-  }
-
-  createNewProfile(): Profile {
-    return new Profile();
   }
 
   onProfileConnect($event: Profile) {

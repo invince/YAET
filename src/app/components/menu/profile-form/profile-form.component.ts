@@ -8,12 +8,11 @@ import {MatOption, MatSelect, MatSelectChange} from '@angular/material/select';
 import {CommonModule, KeyValuePipe} from '@angular/common';
 import {MatInput} from '@angular/material/input';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {SshProfileMenuComponent} from '../ssh-profile-menu/ssh-profile-menu.component';
-import {SSHTerminalProfile} from '../../../domain/SSHTerminalProfile';
+import {SshProfileFormComponent} from '../ssh-profile-form/ssh-profile-form.component';
 import {ProfileService} from '../../../services/profile.service';
 
 @Component({
-  selector: 'app-profile-menu',
+  selector: 'app-profile-form',
   standalone: true,
   imports: [
     CommonModule,
@@ -31,23 +30,32 @@ import {ProfileService} from '../../../services/profile.service';
     MatLabel,
     MatSuffix,
 
-    SshProfileMenuComponent,
+    SshProfileFormComponent,
   ],
-  templateUrl: './profile-menu.component.html',
-  styleUrl: './profile-menu.component.css'
+  templateUrl: './profile-form.component.html',
+  styleUrl: './profile-form.component.scss'
 })
-export class ProfileMenuComponent extends MenuComponent implements OnInit {
+export class ProfileFormComponent extends MenuComponent implements OnInit {
   @Input() profile!: Profile;
-
   @Output() onProfileConnect = new EventEmitter<Profile>();
   editProfileForm!: FormGroup;
+
+  @Output() onProfileSave = new EventEmitter<Profile>();
+  @Output() onProfileDelete = new EventEmitter<Profile>();
+  @Output() onProfileCancel = new EventEmitter<Profile>();
+
+  @Output() dirtyStateChange = new EventEmitter<boolean>();
+  private lastDirtyState = false;
+  @Output() invalidStateChange = new EventEmitter<boolean>();
+  private lastInvalidState = false;
+
 
   CATEGORY_OPTIONS = ProfileCategory;
   CATEGORY_TYPE_MAP = ProfileCategoryTypeMap;
 
   constructor(
     private fb: FormBuilder,
-    private profileService: ProfileService
+    private profileService: ProfileService,
   ) {
     super();
 
@@ -65,6 +73,20 @@ export class ProfileMenuComponent extends MenuComponent implements OnInit {
       },
       {validators: []}
     );
+
+    this.editProfileForm.valueChanges.subscribe(() => {
+      const isDirty = this.editProfileForm.dirty;
+      if (isDirty !== this.lastDirtyState) {
+        this.lastDirtyState = isDirty;
+        this.dirtyStateChange.emit(isDirty);
+      }
+
+      const invalid = this.editProfileForm.invalid;
+      if (invalid !== this.lastInvalidState) {
+        this.lastInvalidState = invalid;
+        this.invalidStateChange.emit(invalid);
+      }
+    });
   }
 
   onSelectType($event: MatSelectChange) {
@@ -82,7 +104,7 @@ export class ProfileMenuComponent extends MenuComponent implements OnInit {
     return this.CATEGORY_TYPE_MAP.get(selectedCategory);
   }
 
-  override save() {
+  override onSave() {
     if (this.editProfileForm.valid) {
       this.formToModel();
       this.profileService.save(this.profile)
@@ -90,7 +112,7 @@ export class ProfileMenuComponent extends MenuComponent implements OnInit {
     }
   }
 
-  connect() {
+  onConnect() {
     if (this.editProfileForm.valid) {
       this.formToModel();
       this.onProfileConnect.emit(this.profile);
@@ -106,4 +128,7 @@ export class ProfileMenuComponent extends MenuComponent implements OnInit {
   }
 
 
+  onDelete() {
+
+  }
 }

@@ -53,6 +53,8 @@ export class Profile {
   public localTerminal!: LocalTerminalProfile;
   public sshTerminalProfile!: SSHTerminalProfile;
 
+  isNew: boolean = true;
+
 
   constructor() {
     this.localTerminal = new LocalTerminalProfile();

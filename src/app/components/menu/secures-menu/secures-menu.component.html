@@ -27,7 +27,7 @@
         </mat-sidenav>
 
         <!-- Main Content -->
-        <mat-sidenav-content class="one-secret-form">
+        <mat-sidenav-content class="one-form">
           <ng-container *ngIf="secretService.secrets[selectedIndex] as secret">
             <app-secret-form
               [secret]="secret"

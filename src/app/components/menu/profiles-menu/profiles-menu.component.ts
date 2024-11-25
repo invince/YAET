@@ -1,21 +1,23 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
+import {MatIcon} from "@angular/material/icon";
+import {MatSidenav, MatSidenavContainer, MatSidenavContent} from '@angular/material/sidenav';
 import {MenuComponent} from '../menu.component';
 import {SecretService} from '../../../services/secret.service';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {Secret} from '../../../domain/Secret';
+import {ProfileService} from '../../../services/profile.service';
+import {Profile} from '../../../domain/Profile';
+import {CommonModule} from '@angular/common';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatError, MatFormField, MatLabel, MatSuffix} from '@angular/material/form-field';
 import {MatOption} from '@angular/material/autocomplete';
 import {MatInput} from '@angular/material/input';
-import {MatIcon} from '@angular/material/icon';
 import {MatButton, MatIconButton, MatMiniFabButton} from '@angular/material/button';
-import {CommonModule} from '@angular/common';
-import {Secret} from '../../../domain/Secret';
-import {FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {MatSidenav, MatSidenavContainer, MatSidenavContent} from '@angular/material/sidenav';
 import {MatSelect} from '@angular/material/select';
-import {MatSnackBar} from '@angular/material/snack-bar';
-import {SecretFormComponent} from '../secret-form/secret-form.component';
+import {ProfileFormComponent} from '../profile-form/profile-form.component';
 
 @Component({
-  selector: 'app-secure-menu',
+  selector: 'app-profiles-menu',
   standalone: true,
   imports: [
     CommonModule,
@@ -37,42 +39,42 @@ import {SecretFormComponent} from '../secret-form/secret-form.component';
     MatMiniFabButton,
     MatError,
     MatSelect,
-    SecretFormComponent,
+    ProfileFormComponent,
   ],
-  templateUrl: './secures-menu.component.html',
-  styleUrl: './secures-menu.component.css'
+  templateUrl: './profiles-menu.component.html',
+  styleUrl: './profiles-menu.component.css'
 })
-export class SecuresMenuComponent extends MenuComponent implements OnInit, OnDestroy {
+export class ProfilesMenuComponent extends MenuComponent implements OnInit, OnDestroy {
 
   selectedIndex!: number;
   lastFormDirtyState = false;
   lastFormInvalidState = false;
   constructor(
-    public secretService: SecretService,
+
+    public profileService: ProfileService,
     private _snackBar: MatSnackBar,
-    ) {
+  ) {
     super();
   }
+
   ngOnDestroy(): void {
   }
 
   ngOnInit(): void {
   }
 
-
   addTab() {
-    this.secretService.secrets.push(new Secret());
-    this.selectedIndex = this.secretService.secrets.length - 1; // Focus on the newly added tab
+    this.profileService.profiles.push(new Profile());
+    this.selectedIndex = this.profileService.profiles.length - 1; // Focus on the newly added tab
     // this.refreshSecretForm();
   }
-
 
   onTabChange(i: number) {
     if (this.selectedIndex == i) {
       return;
     }
     if (this.selectedIndex &&
-        (this.lastFormInvalidState || this.lastFormDirtyState)) {
+      (this.lastFormInvalidState || this.lastFormDirtyState)) {
       this._snackBar.open('Please finish current form', 'Ok', {
         duration: 3000
       });
@@ -82,35 +84,36 @@ export class SecuresMenuComponent extends MenuComponent implements OnInit, OnDes
     // this.refreshSecretForm();
   }
 
-  async onDelete($event: Secret) {
-    this.secretService.deleteLocal($event);
+
+  async onDelete($event: Profile) {
+    this.profileService.deleteLocal($event);
     if (!$event.isNew) {
-      await this.secretService.saveAll();
+      await this.profileService.saveAll();
     }
-    this.selectedIndex = Math.min(this.selectedIndex, this.secretService.secrets.length - 1);
+    this.selectedIndex = Math.min(this.selectedIndex, this.profileService.profiles.length - 1);
     // this.refreshSecretForm();
   }
 
-  async onSaveOne($event: Secret) {
-    this.secretService.secrets[this.selectedIndex] = $event;
-    await this.secretService.saveAll();
+  async onSaveOne($event: Profile) {
+    this.profileService.profiles[this.selectedIndex] = $event;
+    await this.profileService.saveAll();
     // this.refreshSecretForm();
   }
 
-  onCancel($event: Secret) {
+  onCancel($event: Profile) {
     if ($event) {
       if ($event.isNew) {
-        this.secretService.deleteLocal($event);
+        this.profileService.deleteLocal($event);
       }
     }
     this.close();
   }
 
-  secretTabLabel(secret: Secret, index: number) {
+  profileTabLabel(profile: Profile, index: number) {
     let label = 'New';
-    if (secret && secret.name) {
-      label = secret.name;
-      if (secret.name.length > 6) {
+    if (profile && profile.name) {
+      label = profile.name;
+      if (profile.name.length > 6) {
         label = label.slice(0, 6) + '...';
       }
     }
@@ -120,8 +123,8 @@ export class SecuresMenuComponent extends MenuComponent implements OnInit, OnDes
     return label;
   }
 
-  hasNewSecret() {
-    let currentSecret = this.secretService.secrets[this.selectedIndex];
-    return currentSecret?.isNew;
+  hasNewProfile() {
+    let currentProfile = this.profileService.profiles[this.selectedIndex];
+    return currentProfile?.isNew;
   }
 }
