@@ -5,6 +5,8 @@ import {ElectronService} from './electron.service';
 import {PROFILES_LOADED} from './electronConstant';
 import {Subject} from 'rxjs';
 import CryptoJS from 'crypto-js';
+import {Secret} from '../domain/Secret';
+import {SecretService} from './secret.service';
 
 @Injectable({
   providedIn: 'root'
@@ -18,11 +20,13 @@ export class ProfileService {
   private connectionEventSubject = new Subject<Profile>();
   connectionEvent$ = this.connectionEventSubject.asObservable();
 
-  onProfileConnect(data: Profile) {
-    this.connectionEventSubject.next(data);
-  }
 
-  constructor(private electron: ElectronService) {
+
+  constructor(
+    private electron: ElectronService,
+    private secretService: SecretService,
+
+  ) {
     electron.onLoadedEvent(PROFILES_LOADED, data => this.apply(data))
   }
 
@@ -93,5 +97,10 @@ export class ProfileService {
       one.isNew = false;
     }
     await this.electron.saveProfiles(this._profiles);
+  }
+
+
+  onProfileConnect(data: Profile) {
+    this.connectionEventSubject.next(data);
   }
 }

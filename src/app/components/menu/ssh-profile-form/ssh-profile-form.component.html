@@ -1,13 +1,26 @@
-<div [formGroup]="sshProfileForm">
+<div [formGroup]="form">
   <mat-form-field class="field">
     <mat-label>Host Name</mat-label>
-    <input matInput type="text" formControlName="'host'" required/>
+    <input matInput type="text" formControlName="host" required/>
     <button
       matSuffix
       mat-icon-button
       aria-label="Clear"
-      (click)="clear(sshProfileForm,'host')"
-      *ngIf="sshProfileForm.get('host')?.value">
+      (click)="clear(form,'host')"
+      *ngIf="form.get('host')?.value">
+      <mat-icon>close</mat-icon>
+    </button>
+  </mat-form-field>
+
+  <mat-form-field class="field">
+    <mat-label>Login</mat-label>
+    <input matInput type="text" formControlName="login"/>
+    <button
+      matSuffix
+      mat-icon-button
+      aria-label="Clear"
+      (click)="clear(form,'host')"
+      *ngIf="form.get('login')?.value">
       <mat-icon>close</mat-icon>
     </button>
   </mat-form-field>
@@ -16,7 +29,7 @@
     <mat-label>Password</mat-label>
     <input matInput type="password"
            formControlName="password"
-           required/>
+           />
   </mat-form-field>
 
 
@@ -24,7 +37,7 @@
     <mat-label>Confirm Password</mat-label>
     <input matInput type="password"
            formControlName="confirmPassword"
-           required/>
+           />
   </mat-form-field>
 
   <mat-form-field class="field">
@@ -37,8 +50,8 @@
       matSuffix
       mat-icon-button
       aria-label="Clear"
-      (click)="clear(sshProfileForm,'secretId')"
-      *ngIf="sshProfileForm.get('secretId')?.value">
+      (click)="clear(form,'secretId')"
+      *ngIf="form.get('secretId')?.value">
       <mat-icon>close</mat-icon>
     </button>
   </mat-form-field>

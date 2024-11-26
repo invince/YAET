@@ -1,15 +1,10 @@
 import {Component, EventEmitter, Output} from '@angular/core';
-import {MatIcon} from '@angular/material/icon';
-import {MatIconButton} from "@angular/material/button";
 import {FormGroup} from '@angular/forms';
 
 @Component({
   selector: 'app-menu',
   standalone: true,
-    imports: [
-        MatIcon,
-        MatIconButton
-    ],
+  imports: [],
   template: `<p>Abstract Menu</p>`,
 })
 export class MenuComponent {
@@ -17,7 +12,7 @@ export class MenuComponent {
   @Output() closeEvent = new EventEmitter();
 
   // @ts-ignore
-  unordered = (a,b)=>0
+  unordered = (a: any, b: any)=>0
   close() {
     this.closeEvent.emit();
   }

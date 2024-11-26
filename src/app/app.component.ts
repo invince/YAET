@@ -21,7 +21,9 @@ import {SecuresMenuComponent} from './components/menu/secures-menu/secures-menu.
 import {SecretService} from './services/secret.service';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {ProfilesMenuComponent} from './components/menu/profiles-menu/profiles-menu.component';
-import {QuickconnectMenuComponentextends} from "./components/menu/quickconnect-menu/quickconnect-menu.component";
+import {QuickconnectMenuComponent} from "./components/menu/quickconnect-menu/quickconnect-menu.component";
+import {MasterKeyComponent} from './components/menu/master-key/master-key.component';
+import {MatDialog} from '@angular/material/dialog';
 
 @Component({
   selector: 'app-root',
@@ -48,7 +50,7 @@ import {QuickconnectMenuComponentextends} from "./components/menu/quickconnect-m
         FileExplorerComponent,
         SecuresMenuComponent,
         ProfilesMenuComponent,
-        QuickconnectMenuComponentextends,
+        QuickconnectMenuComponent,
     ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
@@ -74,6 +76,7 @@ export class AppComponent {
     private secretService: SecretService,
 
     private _snackBar: MatSnackBar,
+    public dialog: MatDialog,
   ) {
   }
 
@@ -115,15 +118,25 @@ export class AppComponent {
     if (this.secretService.hasMasterKey) {
       this.toggleMenu('secure');
     } else {
-      const snackBarRef = this._snackBar.open('Please define Master key in Settings first', 'Go to Settings', {
+      const snackBarRef = this._snackBar.open('Please define Master key in Settings first', 'Set it', {
         duration: 3000
       });
 
       snackBarRef.onAction().subscribe(() => {
-        this.currentOpenedMenu = 'setting';
-        this.isMenuModalOpen = true;
+        this.openMasterKeyModal();
       });
     }
+  }
+
+  openMasterKeyModal() {
+    const dialogRef = this.dialog.open(MasterKeyComponent, {
+      width: '260px',
+      data: {}
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('The dialog was closed');
+    });
   }
 
   favoriteMenu() {

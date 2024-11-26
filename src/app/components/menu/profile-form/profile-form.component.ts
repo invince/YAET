@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {MenuComponent} from '../menu.component';
 import {MatIcon} from '@angular/material/icon';
 import {MatButton, MatIconButton} from '@angular/material/button';
@@ -10,6 +10,11 @@ import {MatInput} from '@angular/material/input';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {SshProfileFormComponent} from '../ssh-profile-form/ssh-profile-form.component';
 import {ProfileService} from '../../../services/profile.service';
+import {HasChildForm, IsAChildForm} from '../enhanced-form-mixin';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {SecretService} from '../../../services/secret.service';
+import {MasterKeyComponent} from '../master-key/master-key.component';
+import {MatDialog} from '@angular/material/dialog';
 
 @Component({
   selector: 'app-profile-form',
@@ -35,58 +40,50 @@ import {ProfileService} from '../../../services/profile.service';
   templateUrl: './profile-form.component.html',
   styleUrl: './profile-form.component.scss'
 })
-export class ProfileFormComponent extends MenuComponent implements OnInit {
-  @Input() profile!: Profile;
-  @Output() onProfileConnect = new EventEmitter<Profile>();
-  editProfileForm!: FormGroup;
+export class ProfileFormComponent extends HasChildForm(IsAChildForm(MenuComponent)) implements OnInit {
 
+  private _profile!: Profile;
+  @Output() onProfileConnect = new EventEmitter<Profile>();
   @Output() onProfileSave = new EventEmitter<Profile>();
   @Output() onProfileDelete = new EventEmitter<Profile>();
   @Output() onProfileCancel = new EventEmitter<Profile>();
 
-  @Output() dirtyStateChange = new EventEmitter<boolean>();
-  private lastDirtyState = false;
-  @Output() invalidStateChange = new EventEmitter<boolean>();
-  private lastInvalidState = false;
-
-
   CATEGORY_OPTIONS = ProfileCategory;
   CATEGORY_TYPE_MAP = ProfileCategoryTypeMap;
+
+  @ViewChild(SshProfileFormComponent) sshChild!: SshProfileFormComponent;
 
   constructor(
     private fb: FormBuilder,
     private profileService: ProfileService,
+    private secretService: SecretService,
+
+    public dialog: MatDialog,
+    private _snackBar: MatSnackBar,
   ) {
     super();
-
-
   }
 
-  ngOnInit(): void {
-    this.editProfileForm = this.fb.group(
+  get profile(): Profile {
+    return this._profile;
+  }
+  @Input()
+  set profile(value: Profile) {
+    this._profile = value;
+    this.refreshForm();
+  }
+
+  onInitForm(): FormGroup {
+    return  this.fb.group(
       {
-        name:         [this.profile.name, [Validators.required, Validators.minLength(3)]], // we shall avoid use ngModel and formControl at same time
-        comment:      [this.profile.comment],
-        category:     [this.profile.category, Validators.required],
-        profileType:  [this.profile.profileType, Validators.required],
+        name:         [this._profile.name, [Validators.required, Validators.minLength(3)]], // we shall avoid use ngModel and formControl at same time
+        comment:      [this._profile.comment],
+        category:     [this._profile.category, Validators.required],
+        profileType:  [this._profile.profileType, Validators.required],
 
       },
       {validators: []}
     );
-
-    this.editProfileForm.valueChanges.subscribe(() => {
-      const isDirty = this.editProfileForm.dirty;
-      if (isDirty !== this.lastDirtyState) {
-        this.lastDirtyState = isDirty;
-        this.dirtyStateChange.emit(isDirty);
-      }
-
-      const invalid = this.editProfileForm.invalid;
-      if (invalid !== this.lastInvalidState) {
-        this.lastInvalidState = invalid;
-        this.invalidStateChange.emit(invalid);
-      }
-    });
   }
 
   onSelectType($event: MatSelectChange) {
@@ -94,41 +91,102 @@ export class ProfileFormComponent extends MenuComponent implements OnInit {
   }
 
   onSelectCategory($event: MatSelectChange) {
-    this.editProfileForm.patchValue({
+    this.form.patchValue({
       profileType: null, // Reset dependent fields if needed
     });
   }
 
   getTypeOptions() {
-    const selectedCategory = this.editProfileForm.get('category')?.value; // we work with formGroup, so ngModel to bind profile doesn't work
+    const selectedCategory = this.form.get('category')?.value; // we work with formGroup, so ngModel to bind profile doesn't work
     return this.CATEGORY_TYPE_MAP.get(selectedCategory);
   }
 
   override onSave() {
-    if (this.editProfileForm.valid) {
+    if (this.form.valid && !this.lastChildFormInvalidState) {
       this.formToModel();
-      this.profileService.save(this.profile)
-        .then(r => this.closeEvent.emit());
+      if (this.containsPassword(this.profile) && !this.secretService.hasMasterKey) {
+        const snackBarRef = this._snackBar.open('You have password in this profile, but you haven\'t defined Master Key.', 'Set it', {
+          duration: 3000
+        });
+        snackBarRef.onAction().subscribe(() => {
+          this.openMasterKeyModal();
+        });
+      } else {
+        this.profileService.save(this._profile)
+          .then(r => {
+            // Reset the dirty state
+            this.onSubmit();
+            this.closeEvent.emit()
+          });
+      }
+    }
+  }
+
+  public override onChildFormDirtyStateChange($event: any) {
+    super.onChildFormDirtyStateChange($event);
+    if (!$event) {
+      this.form.markAsTouched();
+      this.dirtyStateChange.emit(true);
     }
   }
 
   onConnect() {
-    if (this.editProfileForm.valid) {
+    if (this.form.valid) {
       this.formToModel();
-      this.onProfileConnect.emit(this.profile);
+      this.onProfileConnect.emit(this._profile);
+      // Reset the dirty state
+      this.onSubmit();
       this.closeEvent.emit();
     }
   }
 
+  openMasterKeyModal() {
+    const dialogRef = this.dialog.open(MasterKeyComponent, {
+      width: '260px',
+      data: {}
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('The dialog was closed');
+    });
+  }
+
+
+  private refreshForm() {
+    if (this.form) {
+      this.form.reset();
+
+      let profile = this.profile;
+      this.form.get('name')?.setValue(profile.name);
+      this.form.get('comment')?.setValue(profile.comment);
+      this.form.get('category')?.setValue(profile.category);
+      this.form.get('profileType')?.setValue(profile.profileType);
+    }
+  }
+
+
   formToModel() {
-    this.profile.name = this.editProfileForm.get('name')?.value;
-    this.profile.comment = this.editProfileForm.get('comment')?.value;
-    this.profile.category = this.editProfileForm.get('category')?.value;
-    this.profile.profileType = this.editProfileForm.get('profileType')?.value;
+    this._profile.name = this.form.get('name')?.value;
+    this._profile.comment = this.form.get('comment')?.value;
+    this._profile.category = this.form.get('category')?.value;
+    this._profile.profileType = this.form.get('profileType')?.value;
+
+    this._profile.sshTerminalProfile = this.sshChild?.formToModel();
+
+
   }
 
 
   onDelete() {
 
+  }
+
+  private containsPassword(profile: Profile): boolean{
+    if (profile) {
+      if (profile.sshTerminalProfile && profile.sshTerminalProfile.password ) {
+         return true;
+      }
+    }
+    return false;
   }
 }

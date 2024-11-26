@@ -1,4 +1,4 @@
-<div class="profile-form-container" [formGroup]="editProfileForm">
+<div class="profile-form-container" [formGroup]="form">
   <div class="profile-form">
     <div class="profile-form-left-part">
       <mat-form-field class="field">
@@ -10,8 +10,8 @@
           matSuffix
           mat-icon-button
           aria-label="Clear"
-          (click)="clear(editProfileForm,'name')"
-          *ngIf="editProfileForm.get('name')?.value">
+          (click)="clear(form,'name')"
+          *ngIf="form.get('name')?.value">
           <mat-icon>close</mat-icon>
         </button>
       </mat-form-field>
@@ -23,8 +23,8 @@
           matSuffix
           mat-icon-button
           aria-label="Clear"
-          (click)="clear(editProfileForm,'comment')"
-          *ngIf="editProfileForm.get('comment')?.value">
+          (click)="clear(form,'comment')"
+          *ngIf="form.get('comment')?.value">
           <mat-icon>close</mat-icon>
         </button>
       </mat-form-field>
@@ -35,7 +35,7 @@
                       [value]="oneCat.value">{{oneCat.value}}</mat-option>
         </mat-select>
       </mat-form-field>
-      <mat-form-field class="field" *ngIf="editProfileForm.get('category')?.value">
+      <mat-form-field class="field" *ngIf="form.get('category')?.value">
         <mat-label>Terminal Type</mat-label>
         <mat-select (selectionChange)="onSelectType($event)" required formControlName="profileType">
           <mat-option *ngFor="let oneType of getTypeOptions()  | keyvalue : unordered "
@@ -44,9 +44,14 @@
       </mat-form-field>
     </div>
 
-    <div class="profile-form-right-part" [ngSwitch]="editProfileForm.get('profileType')?.value">
+    <div class="profile-form-right-part" [ngSwitch]="form.get('profileType')?.value">
       <app-ssh-profile-form *ngSwitchCase="'SSH_TERMINAL'"
-                            [(ssh)]="profile.sshTerminalProfile"></app-ssh-profile-form>
+                            [ssh]="profile.sshTerminalProfile"
+                            (invalidStateChange)="onChildFormInvalidStateChange($event)"
+                            (dirtyStateChange)="onChildFormDirtyStateChange($event)"
+      ></app-ssh-profile-form>
+
+
     </div>
   </div>
 
@@ -55,9 +60,9 @@
     <!--                <button mat-stroked-button class="mat-accent" (click)="reload()">Reload</button>-->
     <button mat-raised-button color="warn" (click)="onDelete()" *ngIf="!profile.isNew">Delete</button>
     <button mat-raised-button class="mat-primary" (click)="onSave()"
-            [disabled]="editProfileForm.invalid || !editProfileForm.dirty" cdkFocusInitial>Save</button>
+            [disabled]="form.invalid || !form.dirty" cdkFocusInitial>Save</button>
     <button mat-raised-button class="mat-primary" (click)="onConnect()"
-            [disabled]="editProfileForm.invalid || !editProfileForm.dirty" >Connect</button>
+            [disabled]="form.invalid || !form.dirty" >Connect</button>
   </div>
 </div>
 

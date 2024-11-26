@@ -7,6 +7,8 @@ import {MatInput} from '@angular/material/input';
 import {MatIcon} from '@angular/material/icon';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatOption, MatSelect, MatSelectChange} from '@angular/material/select';
+import {MenuComponent} from '../menu.component';
+import {IsAChildForm} from '../enhanced-form-mixin';
 
 @Component({
   selector: 'app-secret-form',
@@ -31,52 +33,44 @@ import {MatOption, MatSelect, MatSelectChange} from '@angular/material/select';
   templateUrl: './secret-form.component.html',
   styleUrl: './secret-form.component.scss'
 })
-export class SecretFormComponent implements OnInit {
-  editSecretForm!: FormGroup;
-  @Input() secret!: Secret;
+export class SecretFormComponent extends IsAChildForm(MenuComponent) implements OnInit {
+  private _secret!: Secret;
   @Output() onSecretSave = new EventEmitter<Secret>();
   @Output() onSecretDelete = new EventEmitter<Secret>();
   @Output() onSecretCancel = new EventEmitter<Secret>();
 
-  @Output() dirtyStateChange = new EventEmitter<boolean>();
-  private lastDirtyState = false;
-  @Output() invalidStateChange = new EventEmitter<boolean>();
-  private lastInvalidState = false;
   SECRET_TYPE_OPTIONS = SecretType;
 
-  unordered = (a: any, b: any) => 0
 
-  constructor(private fb: FormBuilder) {
+  get secret(): Secret {
+    return this._secret;
   }
 
-  ngOnInit(): void {
-    this.editSecretForm = this.fb.group(
+  @Input() // input on setter, so we can combine trigger, it's easier than ngOnChange
+  set secret(value: Secret) {
+    this._secret = value;
+    this.refreshForm();
+  }
+
+  constructor(private fb: FormBuilder) {
+    super();
+  }
+
+  onInitForm(): FormGroup {
+    return  this.fb.group(
       {
-        name: [this.secret.name, [Validators.required, Validators.minLength(3)]], // we shall avoid use ngModel and formControl at same time
-        secretType: [this.secret.secretType, Validators.required],
-        login: [this.secret.login],
-        password: [this.secret.password],
-        confirmPassword: [this.secret.password],
-        key: [this.secret.key],
-        keyPhrase: [this.secret.keyphrase],
+        name: [this._secret.name, [Validators.required, Validators.minLength(3)]], // we shall avoid use ngModel and formControl at same time
+        secretType: [this._secret.secretType, Validators.required],
+        login: [this._secret.login],
+        password: [this._secret.password],
+        confirmPassword: [this._secret.password],
+        key: [this._secret.key],
+        keyPhrase: [this._secret.keyphrase],
 
       },
       {validators: [this.checkCurrentSecret, this.passwordMatchValidator]}
     );
 
-    this.editSecretForm.valueChanges.subscribe(() => {
-      const isDirty = this.editSecretForm.dirty;
-      if (isDirty !== this.lastDirtyState) {
-        this.lastDirtyState = isDirty;
-        this.dirtyStateChange.emit(isDirty);
-      }
-
-      const invalid = this.editSecretForm.invalid;
-      if (invalid !== this.lastInvalidState) {
-        this.lastInvalidState = invalid;
-        this.invalidStateChange.emit(invalid);
-      }
-    });
   }
 
   passwordMatchValidator(group: FormGroup) {
@@ -130,7 +124,7 @@ export class SecretFormComponent implements OnInit {
   }
 
   clearField(fieldName: string) {
-    let field = this.editSecretForm.get(fieldName);
+    let field = this.form.get(fieldName);
     if (field) {
       field.setValue(null);
     }
@@ -141,7 +135,7 @@ export class SecretFormComponent implements OnInit {
   }
 
   shouldShowField(fieldName: string) {
-    let secretType = this.editSecretForm.get('secretType')?.value;
+    let secretType = this.form.get('secretType')?.value;
     switch (secretType) {
       case SecretType.LOGIN_PASSWORD:
         return ['login', 'password'].includes(fieldName);
@@ -155,42 +149,45 @@ export class SecretFormComponent implements OnInit {
   }
 
   onSaveOne() {
-    if (this.editSecretForm.valid) {
-      this.secret = this.formToModel();
-      this.onSecretSave.emit(this.secret);
+    if (this.form.valid) {
+      this._secret = this.formToModel();
+      // Reset the dirty state
+      this.onSubmit();
+      this.onSecretSave.emit(this._secret);
     }
   }
 
   onDelete() {
-    this.onSecretDelete.emit(this.secret);
+    this.onSecretDelete.emit(this._secret);
   }
 
   onCancel() {
-    this.onSecretCancel.emit(this.secret);
+    this.onSecretCancel.emit(this._secret);
   }
 
+  private refreshForm() {
+    if (this.form) {
+      this.form.reset();
 
-  private refreshSecretForm() {
-    this.editSecretForm.reset();
-
-    let currentSecret = this.secret;
-    this.editSecretForm.get('name')?.setValue(currentSecret.name);
-    this.editSecretForm.get('secretType')?.setValue(currentSecret.secretType);
-    this.editSecretForm.get('login')?.setValue(currentSecret.login);
-    this.editSecretForm.get('password')?.setValue(currentSecret.password);
-    this.editSecretForm.get('key')?.setValue(currentSecret.key);
-    this.editSecretForm.get('keyphrase')?.setValue(currentSecret.keyphrase);
-
+      let currentSecret = this.secret;
+      this.form.get('name')?.setValue(currentSecret.name);
+      this.form.get('secretType')?.setValue(currentSecret.secretType);
+      this.form.get('login')?.setValue(currentSecret.login);
+      this.form.get('password')?.setValue(currentSecret.password);
+      this.form.get('confirmPassword')?.setValue(currentSecret.password);
+      this.form.get('key')?.setValue(currentSecret.key);
+      this.form.get('keyphrase')?.setValue(currentSecret.keyphrase);
+    }
   }
 
   formToModel(): Secret {
     let secret = new Secret();
-    secret.name        = this.editSecretForm.get('name')?.value;
-    secret.secretType  = this.editSecretForm.get('secretType')?.value;
-    secret.login       = this.editSecretForm.get('login')?.value;
-    secret.password    = this.editSecretForm.get('password')?.value;
-    secret.key         = this.editSecretForm.get('key')?.value;
-    secret.keyphrase   = this.editSecretForm.get('keyphrase')?.value;
+    secret.name        = this.form.get('name')?.value;
+    secret.secretType  = this.form.get('secretType')?.value;
+    secret.login       = this.form.get('login')?.value;
+    secret.password    = this.form.get('password')?.value;
+    secret.key         = this.form.get('key')?.value;
+    secret.keyphrase   = this.form.get('keyphrase')?.value;
     return secret;
   }
 

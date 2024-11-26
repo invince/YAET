@@ -2,9 +2,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {MatIcon} from "@angular/material/icon";
 import {MatSidenav, MatSidenavContainer, MatSidenavContent} from '@angular/material/sidenav';
 import {MenuComponent} from '../menu.component';
-import {SecretService} from '../../../services/secret.service';
 import {MatSnackBar} from '@angular/material/snack-bar';
-import {Secret} from '../../../domain/Secret';
 import {ProfileService} from '../../../services/profile.service';
 import {Profile} from '../../../domain/Profile';
 import {CommonModule} from '@angular/common';
@@ -15,6 +13,7 @@ import {MatInput} from '@angular/material/input';
 import {MatButton, MatIconButton, MatMiniFabButton} from '@angular/material/button';
 import {MatSelect} from '@angular/material/select';
 import {ProfileFormComponent} from '../profile-form/profile-form.component';
+import {HasChildForm} from '../enhanced-form-mixin';
 
 @Component({
   selector: 'app-profiles-menu',
@@ -44,13 +43,11 @@ import {ProfileFormComponent} from '../profile-form/profile-form.component';
   templateUrl: './profiles-menu.component.html',
   styleUrl: './profiles-menu.component.css'
 })
-export class ProfilesMenuComponent extends MenuComponent implements OnInit, OnDestroy {
+export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
 
   selectedIndex!: number;
-  lastFormDirtyState = false;
-  lastFormInvalidState = false;
-  constructor(
 
+  constructor(
     public profileService: ProfileService,
     private _snackBar: MatSnackBar,
   ) {
@@ -74,7 +71,7 @@ export class ProfilesMenuComponent extends MenuComponent implements OnInit, OnDe
       return;
     }
     if (this.selectedIndex &&
-      (this.lastFormInvalidState || this.lastFormDirtyState)) {
+      (this.lastChildFormInvalidState || this.lastChildFormDirtyState)) {
       this._snackBar.open('Please finish current form', 'Ok', {
         duration: 3000
       });
@@ -117,7 +114,7 @@ export class ProfilesMenuComponent extends MenuComponent implements OnInit, OnDe
         label = label.slice(0, 6) + '...';
       }
     }
-    if (index == this.selectedIndex && this.lastFormDirtyState) {
+    if (index == this.selectedIndex && this.lastChildFormDirtyState) {
       label += '*'
     }
     return label;
@@ -127,4 +124,6 @@ export class ProfilesMenuComponent extends MenuComponent implements OnInit, OnDe
     let currentProfile = this.profileService.profiles[this.selectedIndex];
     return currentProfile?.isNew;
   }
+
+
 }

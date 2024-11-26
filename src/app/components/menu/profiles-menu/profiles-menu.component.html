@@ -12,7 +12,7 @@
         <!-- Sidebar -->
         <mat-sidenav mode="side" opened class="sidenav">
           <div class="sidenav-item">
-            <button mat-button (click)="addTab()" [disabled]="lastFormDirtyState || hasNewProfile()" aria-label="Add Profile" >
+            <button mat-button (click)="addTab()" [disabled]="lastChildFormDirtyState || hasNewProfile()" aria-label="Add Profile" >
               <mat-icon>add</mat-icon>
             </button>
           </div>
@@ -34,8 +34,8 @@
               (onProfileCancel)="onCancel($event)"
               (onProfileDelete)="onDelete($event)"
               (onProfileSave)="onSaveOne($event)"
-              (invalidStateChange)="lastFormInvalidState = $event"
-              (dirtyStateChange)="lastFormDirtyState = $event"
+              (invalidStateChange)="onChildFormInvalidStateChange($event)"
+              (dirtyStateChange)="onChildFormDirtyStateChange($event)"
             ></app-profile-form>
           </ng-container>
         </mat-sidenav-content>

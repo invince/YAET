@@ -13,6 +13,7 @@ import {MatSidenav, MatSidenavContainer, MatSidenavContent} from '@angular/mater
 import {MatSelect} from '@angular/material/select';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {SecretFormComponent} from '../secret-form/secret-form.component';
+import {HasChildForm} from '../enhanced-form-mixin';
 
 @Component({
   selector: 'app-secures-menu',
@@ -42,11 +43,9 @@ import {SecretFormComponent} from '../secret-form/secret-form.component';
   templateUrl: './secures-menu.component.html',
   styleUrl: './secures-menu.component.css'
 })
-export class SecuresMenuComponent extends MenuComponent implements OnInit, OnDestroy {
+export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
 
   selectedIndex!: number;
-  lastFormDirtyState = false;
-  lastFormInvalidState = false;
   constructor(
     public secretService: SecretService,
     private _snackBar: MatSnackBar,
@@ -72,7 +71,7 @@ export class SecuresMenuComponent extends MenuComponent implements OnInit, OnDes
       return;
     }
     if (this.selectedIndex &&
-        (this.lastFormInvalidState || this.lastFormDirtyState)) {
+        (this.lastChildFormInvalidState || this.lastChildFormDirtyState)) {
       this._snackBar.open('Please finish current form', 'Ok', {
         duration: 3000
       });
@@ -114,7 +113,7 @@ export class SecuresMenuComponent extends MenuComponent implements OnInit, OnDes
         label = label.slice(0, 6) + '...';
       }
     }
-    if (index == this.selectedIndex && this.lastFormDirtyState) {
+    if (index == this.selectedIndex && this.lastChildFormDirtyState) {
       label += '*'
     }
     return label;

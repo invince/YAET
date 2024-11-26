@@ -12,7 +12,7 @@
         <!-- Sidebar -->
         <mat-sidenav mode="side" opened class="sidenav">
           <div class="sidenav-item">
-            <button mat-button (click)="addTab()" [disabled]="lastFormDirtyState || hasNewSecret()" aria-label="Add Secret" >
+            <button mat-button (click)="addTab()" [disabled]="lastChildFormDirtyState || hasNewSecret()" aria-label="Add Secret" >
               <mat-icon>add</mat-icon>
             </button>
           </div>
@@ -34,8 +34,8 @@
               (onSecretCancel)="onCancel($event)"
               (onSecretDelete)="onDelete($event)"
               (onSecretSave)="onSaveOne($event)"
-              (invalidStateChange)="lastFormInvalidState = $event"
-              (dirtyStateChange)="lastFormDirtyState = $event"
+              (invalidStateChange)="onChildFormInvalidStateChange($event)"
+              (dirtyStateChange)="onChildFormDirtyStateChange($event)"
             ></app-secret-form>
           </ng-container>
         </mat-sidenav-content>

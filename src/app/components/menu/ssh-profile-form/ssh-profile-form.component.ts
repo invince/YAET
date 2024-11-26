@@ -11,6 +11,7 @@ import {Secret, SecretType} from '../../../domain/Secret';
 import {MenuComponent} from '../menu.component';
 import {MatIconButton} from '@angular/material/button';
 import {MatOption, MatSelect, MatSelectChange} from '@angular/material/select';
+import {IsAChildForm} from '../enhanced-form-mixin';
 
 @Component({
   selector: 'app-ssh-profile-form',
@@ -32,16 +33,12 @@ import {MatOption, MatSelect, MatSelectChange} from '@angular/material/select';
   templateUrl: './ssh-profile-form.component.html',
   styleUrl: './ssh-profile-form.component.css'
 })
-export class SshProfileFormComponent extends  MenuComponent implements OnInit {
+export class SshProfileFormComponent extends IsAChildForm(MenuComponent)  {
 
-  @Input() ssh!: SSHTerminalProfile;
+
+  private _ssh!: SSHTerminalProfile;
   @Output() sshChange = new EventEmitter<SSHTerminalProfile>();
 
-  @Output() dirtyStateChange = new EventEmitter<boolean>();
-  private lastDirtyState = false;
-  @Output() invalidStateChange = new EventEmitter<boolean>();
-  private lastInvalidState = false;
-  sshProfileForm!: FormGroup;
 
   constructor(
     private fb: FormBuilder,
@@ -50,32 +47,27 @@ export class SshProfileFormComponent extends  MenuComponent implements OnInit {
     super();
   }
 
-  ngOnInit(): void {
-    this.sshProfileForm = this.fb.group(
+  onInitForm(): FormGroup {
+    return  this.fb.group(
       {
-        host:                 [this.ssh.host, [Validators.required, Validators.minLength(3)]], // we shall avoid use ngModel and formControl at same time
-        login:                [this.ssh.login],
-        password:             [this.ssh.password],
-        confirmPassword:      [this.ssh.password],
-        secretId:             [this.ssh.secretId],
+        host:                 [this._ssh.host, [Validators.required, Validators.minLength(3)]], // we shall avoid use ngModel and formControl at same time
+        login:                [this._ssh.login],
+        password:             [this._ssh.password],
+        confirmPassword:      [this._ssh.password],
+        secretId:             [this._ssh.secretId],
 
       },
       {validators: [this.secretOrPasswordMatchValidator]}
     );
+  }
 
-    this.sshProfileForm.valueChanges.subscribe(() => {
-      const isDirty = this.sshProfileForm.dirty;
-      if (isDirty !== this.lastDirtyState) {
-        this.lastDirtyState = isDirty;
-        this.dirtyStateChange.emit(isDirty);
-      }
-
-      const invalid = this.sshProfileForm.invalid;
-      if (invalid !== this.lastInvalidState) {
-        this.lastInvalidState = invalid;
-        this.invalidStateChange.emit(invalid);
-      }
-    });
+  get ssh(): SSHTerminalProfile {
+    return this._ssh;
+  }
+  @Input() // input on setter, so we can combine trigger, it's easier than ngOnChange
+  set ssh(value: SSHTerminalProfile) {
+    this._ssh = value;
+    this.refreshForm();
   }
 
   secretOrPasswordMatchValidator(group: FormGroup) {
@@ -112,7 +104,28 @@ export class SshProfileFormComponent extends  MenuComponent implements OnInit {
   }
 
   onSelectSecret($event: MatSelectChange) {
-    this.sshProfileForm.get('password')?.setValue(null);
-    this.sshProfileForm.get('confirmPassword')?.setValue(null);
+    this.form.get('password')?.setValue(null);
+    this.form.get('confirmPassword')?.setValue(null);
+  }
+
+  private refreshForm() {
+    if (this.form) {
+      this.form.reset();
+
+      let ssh = this.ssh;
+      this.form.get('host')?.setValue(ssh.host);
+      this.form.get('login')?.setValue(ssh.login);
+      this.form.get('password')?.setValue(ssh.password);
+      this.form.get('confirmPassword')?.setValue(ssh.password);
+      this.form.get('secretId')?.setValue(ssh.secretId);
+    }
+  }
+
+  formToModel(): SSHTerminalProfile {
+    this.ssh.host = this.form.get('host')?.value;
+    this.ssh.login = this.form.get('login')?.value;
+    this.ssh.password = this.form.get('password')?.value;
+    this.ssh.secretId = this.form.get('secretId')?.value;
+    return this.ssh;
   }
 }

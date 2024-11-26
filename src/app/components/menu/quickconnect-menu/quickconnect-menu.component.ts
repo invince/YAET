@@ -35,7 +35,7 @@ import {ProfileService} from '../../../services/profile.service';
   templateUrl: './quickconnect-menu.component.html',
   styleUrl: './quickconnect-menu.component.css'
 })
-export class QuickconnectMenuComponentextends extends MenuComponent {
+export class QuickconnectMenuComponent extends MenuComponent {
 
   constructor(private profileService: ProfileService) {
     super();
