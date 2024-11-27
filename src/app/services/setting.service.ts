@@ -44,7 +44,6 @@ export class SettingService {
     return this._settings;
   }
 
-
   createLocalTerminalProfile() : Profile {
     let profile = new Profile();
     profile.localTerminal = this._settings.localTerminalSetting;
@@ -53,6 +52,7 @@ export class SettingService {
 
 
   save(settings: MySettings) {
+    this._settings = settings;
     this.electron.saveSetting(settings);
   }
 

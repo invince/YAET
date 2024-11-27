@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
 import {MatSidenav, MatSidenavContainer, MatSidenavContent} from '@angular/material/sidenav';
 import {MatTab, MatTabGroup, MatTabLabel} from '@angular/material/tabs';
@@ -25,6 +25,7 @@ import {QuickconnectMenuComponent} from "./components/menu/quickconnect-menu/qui
 import {MasterKeyComponent} from './components/menu/master-key/master-key.component';
 import {MatDialog} from '@angular/material/dialog';
 import {MasterKeyService} from './services/master-key.service';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -59,17 +60,18 @@ import {MasterKeyService} from './services/master-key.service';
     menuAnimation,
   ],
 })
-export class AppComponent {
+export class AppComponent implements OnInit, OnDestroy{
 
 
   title = 'yetAnotherElectronTerm';
   tabs: TabInstance[] = [];
-  profiles: Profile[] = [];
 
   isMenuModalOpen = false; // if menu modal open
   currentOpenedMenu = '';
 
   currentTabIndex = 0;
+
+  subscriptions: Subscription[] = []
 
   constructor(
     private settingService: SettingService,
@@ -79,7 +81,20 @@ export class AppComponent {
 
     private _snackBar: MatSnackBar,
     public dialog: MatDialog,
-  ) {
+  ) {}
+
+  ngOnInit() {
+    this.subscriptions.push(
+      this.profileService.connectionEvent$.subscribe(
+        connection => {
+
+        }
+      )
+    )
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach(one => one.unsubscribe());
   }
 
   initialized() {

@@ -41,7 +41,6 @@ import {MasterKeyService} from '../../../services/master-key.service';
 export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements OnInit {
 
   private _profile!: Profile;
-  @Output() onProfileConnect = new EventEmitter<Profile>();
   @Output() onProfileSave = new EventEmitter<Profile>();
   @Output() onProfileDelete = new EventEmitter<Profile>();
   @Output() onProfileCancel = new EventEmitter<Profile>();
@@ -113,8 +112,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
 
   onConnect() {
     if (this.form.valid) {
-      this.formToModel();
-      this.onProfileConnect.emit(this._profile);
+      this.profileService.onProfileConnect(this.formToModel());
       // Reset the dirty state
       this.onSubmit();
       this.closeEvent.emit();
@@ -141,7 +139,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   }
 
 
-  formToModel() {
+  formToModel(): Profile {
     this._profile.name = this.form.get('name')?.value;
     this._profile.comment = this.form.get('comment')?.value;
     this._profile.category = this.form.get('category')?.value;
@@ -150,11 +148,12 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     this._profile.sshTerminalProfile = this.sshChild?.formToModel();
 
 
+    return this._profile;
   }
 
 
   onDelete() {
-
+    this.onProfileDelete.emit(this.formToModel());
   }
 
   onClose() {

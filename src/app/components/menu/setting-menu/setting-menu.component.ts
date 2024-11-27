@@ -7,9 +7,9 @@ import {MySettings} from '../../../domain/MySettings';
 import {SettingService} from '../../../services/setting.service';
 import {MatFormField, MatLabel, MatSuffix} from '@angular/material/form-field';
 import {MatOption, MatSelect} from '@angular/material/select';
-import {LocalTerminalType} from '../../../domain/LocalTerminalProfile';
+import {LocalTerminalProfile, LocalTerminalType} from '../../../domain/LocalTerminalProfile';
 import {CommonModule, KeyValuePipe} from '@angular/common';
-import {FormsModule} from '@angular/forms';
+import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatInput} from '@angular/material/input';
 import {Subscription} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
@@ -23,6 +23,7 @@ import {MasterKeyService} from '../../../services/master-key.service';
   standalone: true,
   imports: [
     FormsModule,
+    ReactiveFormsModule,
     CommonModule,
     MatIcon,
     MatIconButton,
@@ -42,15 +43,14 @@ import {MasterKeyService} from '../../../services/master-key.service';
 })
 export class SettingMenuComponent extends MenuComponent implements OnInit, OnDestroy {
 
-
-  settings!: MySettings;
+  form!: FormGroup;
 
   LOCAL_TERM_OPTIONS = LocalTerminalType;
 
-  ui_showLocalTerminalCustom = false;
   private subscription!: Subscription;
 
   constructor(
+    private fb: FormBuilder,
     private settingService: SettingService,
     public masterKeyService: MasterKeyService,
     private cdr: ChangeDetectorRef,
@@ -58,16 +58,8 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     private _snackBar: MatSnackBar,
   ) {
     super();
-    this.init();
-
   }
-  private init() {
-    this.settings = this.clone(this.settingService.settings);
-    if (this.settings.localTerminalSetting && this.settings.localTerminalSetting.type === LocalTerminalType.CUSTOM) {
-      this.ui_showLocalTerminalCustom = true;
-    }
 
-  }
 
   openDeleteMasterKeyConfirmationDialog(): void {
     const dialogRef = this.dialog.open(ConfirmationComponent, {
@@ -86,10 +78,26 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
   ngOnInit() {
+
+    this.form = this.initForm();
+
+    this.refreshForm(this.settingService.settings);
+
     this.subscription =  this.settingService.settingLoadedEvent.subscribe(() => {
-      this.init();
+      this.refreshForm(this.settingService.settings);
       this.cdr.detectChanges(); // mat select doesn't detect well change from event subscription
     })
+  }
+
+  private initForm() {
+    return this.fb.group(
+      {
+        localTerminalType: ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
+        localTerminalExecPath: ['', Validators.required],
+
+      },
+      {validators: []}
+    );
   }
 
   ngOnDestroy() {
@@ -97,21 +105,20 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
 
-  clone(setting: MySettings): MySettings {
-    return JSON.parse(JSON.stringify(setting));
-  }
-
 
   override onSave() {
-    this.settingService.save(this.settings);
+    if (this.form.valid) {
+      this.settingService.save(this.formToModel());
+    }
   }
 
 
 
-  onSelectLocalTerminalType($event: LocalTerminalType) {
-    this.settings.localTerminalSetting.type = $event;
-    this.ui_showLocalTerminalCustom = this.settings.localTerminalSetting.type === LocalTerminalType.CUSTOM;
-    this.settingService.validateLocalTerminalSettings(this.settings.localTerminalSetting);
+  onSelectLocalTerminalType($event: any) {
+    let localTerminalSetting = new LocalTerminalProfile();
+    localTerminalSetting.type = $event.value;
+    this.settingService.validateLocalTerminalSettings(localTerminalSetting);
+    this.form.get('localTerminalExecPath')?.setValue(localTerminalSetting.execPath);
   }
 
   reload() {
@@ -129,4 +136,26 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       console.log('The dialog was closed');
     });
   }
+
+  refreshForm(value: any) {
+    if (this.form) {
+      this.form.reset();
+      this.form.get('localTerminalType')?.setValue(value?.localTerminalSetting.type);
+      this.form.get('localTerminalExecPath')?.setValue(value?.localTerminalSetting.execPath);
+    }
+  }
+
+  formToModel(): MySettings {
+    let settings = new MySettings();
+    if (!settings.localTerminalSetting) {
+      settings.localTerminalSetting = new LocalTerminalProfile();
+    }
+    settings.localTerminalSetting.type = this.form.get('localTerminalType')?.value;
+    settings.localTerminalSetting.execPath = this.form.get('localTerminalExecPath')?.value;
+
+
+    return settings;
+  }
+
+
 }

@@ -1,4 +1,4 @@
-<div class="modal-container">
+<div class="modal-container" [formGroup]="form">
   <div class="modal">
     <div class="modal-header">
       <h3>Settings</h3>
@@ -7,7 +7,7 @@
       </button>
     </div>
 
-    <div class="modal-content" *ngIf="settings">
+    <div class="modal-content" >
       <mat-tab-group>
         <mat-tab label="General">
           <div class="setting-form">
@@ -30,20 +30,23 @@
           <div class="setting-form">
             <mat-form-field class="field">
               <mat-label>Terminal Type</mat-label>
-              <mat-select [ngModel]="settings.localTerminalSetting.type"
-                          (ngModelChange)="onSelectLocalTerminalType($event)">
+              <mat-select formControlName="localTerminalType"
+                          (selectionChange)="onSelectLocalTerminalType($event)">
                 <mat-option *ngFor="let localTermType of LOCAL_TERM_OPTIONS | keyvalue : unordered"
                             [value]="localTermType.value">{{localTermType.value}}</mat-option>
               </mat-select>
             </mat-form-field>
-            <mat-form-field class="field" *ngIf="ui_showLocalTerminalCustom">
+            <mat-form-field class="field" [class.cdk-visually-hidden]= "form.get('localTerminalType')?.value != 'custom'">
               <mat-label>Exec Path</mat-label>
-              <input matInput type="text" [(ngModel)]="settings.localTerminalSetting.execPath"/>
-              @if (settings.localTerminalSetting.execPath) {
-              <button matSuffix mat-icon-button aria-label="Clear" (click)="settings.localTerminalSetting.execPath=''">
+              <input matInput type="text" formControlName="localTerminalExecPath"/>
+              <button
+                matSuffix
+                mat-icon-button
+                aria-label="Clear"
+                (click)="clear(form, 'execPath')"
+                *ngIf="form.get('execPath')?.value">
                 <mat-icon>close</mat-icon>
               </button>
-              }
             </mat-form-field>
           </div>
         </mat-tab>
@@ -53,8 +56,8 @@
     <div class="modal-footer">
       <button mat-button (click)="close()">Cancel</button>
       <button mat-stroked-button class="mat-accent" (click)="reload()">Reload</button>
-      <button mat-raised-button class="mat-primary" (click)="onSave();close()">Save And Close</button>
-      <button mat-raised-button class="mat-primary" (click)="onSave()">Save</button>
+      <button mat-raised-button class="mat-primary" [disabled]="form.invalid" (click)="onSave();close()">Save And Close</button>
+      <button mat-raised-button class="mat-primary" [disabled]="form.invalid"  (click)="onSave()">Save</button>
     </div>
   </div>
 </div>

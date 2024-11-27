@@ -123,13 +123,6 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
 
   }
 
-  clearField(fieldName: string) {
-    let field = this.form.get(fieldName);
-    if (field) {
-      field.setValue(null);
-    }
-  }
-
   onSelectType($event: MatSelectChange) {
 
   }
