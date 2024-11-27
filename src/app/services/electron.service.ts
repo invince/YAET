@@ -97,9 +97,9 @@ export class ElectronService {
     }
   }
 
-  async saveProfiles(_profiles: Profile[]) {
+  async saveProfiles(encryptedProfiles: string) {
     if(this.ipc) {
-      await this.ipc.send(PROFILES_SAVE, {data: _profiles});
+      await this.ipc.send(PROFILES_SAVE, {data: encryptedProfiles});
     }
   }
 
@@ -110,9 +110,9 @@ export class ElectronService {
   }
 
 
-  async saveSecrets(_secrets: Secret[] | string) {
+  async saveSecrets(encryptedSecrets: string) {
     if (this.ipc) {
-      await this.ipc.send(SECRETS_SAVE, {data: _secrets});
+      await this.ipc.send(SECRETS_SAVE, {data: encryptedSecrets});
     }
   }
 

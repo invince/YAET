@@ -24,6 +24,7 @@ import {ProfilesMenuComponent} from './components/menu/profiles-menu/profiles-me
 import {QuickconnectMenuComponent} from "./components/menu/quickconnect-menu/quickconnect-menu.component";
 import {MasterKeyComponent} from './components/menu/master-key/master-key.component';
 import {MatDialog} from '@angular/material/dialog';
+import {MasterKeyService} from './services/master-key.service';
 
 @Component({
   selector: 'app-root',
@@ -74,6 +75,7 @@ export class AppComponent {
     private settingService: SettingService,
     private profileService: ProfileService,
     private secretService: SecretService,
+    private masterKeyService: MasterKeyService,
 
     private _snackBar: MatSnackBar,
     public dialog: MatDialog,
@@ -84,7 +86,7 @@ export class AppComponent {
     return this.settingService.isLoaded
             && this.profileService.isLoaded
             && this.secretService.isLoaded
-            && this.secretService.isMasterKeyLoaded
+            && this.masterKeyService.isMasterKeyLoaded
       ;
   }
 
@@ -115,8 +117,12 @@ export class AppComponent {
 
 
   secureMenu() {
-    if (this.secretService.hasMasterKey) {
-      this.toggleMenu('secure');
+    this.requireMasterKey(() => this.toggleMenu('secure'))
+  }
+
+  requireMasterKey(callback: ()=>void) {
+    if (this.masterKeyService.hasMasterKey) {
+      callback();
     } else {
       const snackBarRef = this._snackBar.open('Please define Master key in Settings first', 'Set it', {
         duration: 3000
@@ -140,7 +146,7 @@ export class AppComponent {
   }
 
   favoriteMenu() {
-    this.toggleMenu('favorite');
+    this.requireMasterKey(() => this.toggleMenu('favorite'))
   }
 
   syncMenu() {

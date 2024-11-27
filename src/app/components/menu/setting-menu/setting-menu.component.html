@@ -18,7 +18,7 @@
               </button>
 
               <button mat-button class="mat-primary"
-                      *ngIf="secretService.hasMasterKey"
+                      *ngIf="masterKeyService.hasMasterKey"
                       (click)="openDeleteMasterKeyConfirmationDialog()">
                 <mat-icon>remove</mat-icon>
               </button>

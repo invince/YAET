@@ -1,64 +1,44 @@
-import {Injectable, OnDestroy} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {Secret} from '../domain/Secret';
 import {ElectronService} from './electron.service';
-import {GET_MASTERKEY, SECRETS_LOADED} from './electronConstant';
-import CryptoJS from 'crypto-js';
+import {SECRETS_LOADED} from './electronConstant';
+import {MasterKeyService} from './master-key.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class SecretService implements OnDestroy{
+export class SecretService{
 
   private _secrets!: Secret[];
 
   private _loaded: boolean = false;
-  private _masterKeyLoaded: boolean = false;
 
-  private _hasMasterKey?: boolean;
-
-  private readonly intervalId: NodeJS.Timeout;
-
-  private static readonly service:string = 'io.github.invince.YAET';
-  private static readonly account:string = 'ac13ba1ac2f841d19a9f73bd8c335086';
-
-  constructor(private electron: ElectronService) {
+  constructor(
+    private electron: ElectronService,
+    private masterKeyService: MasterKeyService
+  ) {
     electron.onLoadedEvent(SECRETS_LOADED, data => {
       this.apply(data);
     })
-
-    this.refreshHasMasterKey();
-    this.intervalId = setInterval(()=> this.refreshHasMasterKey(), 30 * 1000)
   }
 
-  // This will be called when the service is destroyed
-  ngOnDestroy(): void {
-    clearInterval(this.intervalId); // Clean up resources
-  }
+
 
   apply(data: any) {
-    const service = 'io.github.invince.YAET';
-    const account = 'ac13ba1ac2f841d19a9f73bd8c335086';
-    this.electron.getPassword(service, account).then(
-      masterKey => {
-        if (masterKey) {
-          const bytes = CryptoJS.AES.decrypt(data, masterKey);
-          const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+    this.masterKeyService.decrypt2String(data).then(
+      decrypted => {
+        if (decrypted) {
           this._secrets =  JSON.parse(decrypted);
-        } else {
-          console.error("No master key defined");
           this._loaded = true;
         }
       }
-    );
+    )
   }
 
   get isLoaded() {
     return this._loaded;
   }
 
-  get isMasterKeyLoaded() {
-    return this._masterKeyLoaded;
-  }
 
   set secrets(value: Secret[]) {
     this._secrets = value;
@@ -75,26 +55,7 @@ export class SecretService implements OnDestroy{
     return this._secrets;
   }
 
-  deleteMasterKey() {
-    this.electron.deletePassword(SecretService.service, SecretService.account).then(r => {
-      this.refreshHasMasterKey();
-    });
-  }
 
-  get hasMasterKey() {
-    return this._hasMasterKey;
-  }
-
-  async matchMasterKey(masterKey: string) : Promise<boolean> {
-    const key = await this.electron.getPassword(SecretService.service, SecretService.account);
-    return masterKey === key;
-  }
-
-  saveMasterKey(masterKey: string) {
-    this.electron.setPassword(SecretService.service, SecretService.account, masterKey).then(r => {
-      this.refreshHasMasterKey();
-    });
-  }
 
   deleteLocal(secret: Secret) {
     if (!secret) {
@@ -113,14 +74,10 @@ export class SecretService implements OnDestroy{
     for (let one of this._secrets) {
       one.isNew = false;
     }
-
-    this.electron.getPassword(SecretService.service, SecretService.account).then(
-      masterKey => {
-        if (masterKey) {
-          const json = JSON.stringify(this._secrets, null, 2);
-          this.electron.saveSecrets(CryptoJS.AES.encrypt(json, masterKey).toString());
-        } else {
-          console.error("No master key defined");
+    this.masterKeyService.encrypt(this._secrets).then(
+      encrypted => {
+        if (encrypted) {
+          this.electron.saveSecrets(encrypted);
         }
       }
     )
@@ -132,14 +89,5 @@ export class SecretService implements OnDestroy{
   }
 
 
-  private refreshHasMasterKey() {
-    this.electron.getPassword(SecretService.service, SecretService.account).then(key => {
-      if (key && key.length > 0) {
-        this._hasMasterKey = true;
-      } else {
-        this._hasMasterKey = false;
-      }
-      this._masterKeyLoaded = true;
-    });
-  }
+
 }

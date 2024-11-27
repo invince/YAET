@@ -1,9 +1,9 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, forwardRef, Input, OnInit, Output} from '@angular/core';
 import {SSHTerminalProfile} from '../../../domain/SSHTerminalProfile';
 import {MatFormField, MatLabel, MatSuffix} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatIcon} from '@angular/material/icon';
-import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {FormBuilder, FormGroup, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators} from '@angular/forms';
 import {CommonModule} from '@angular/common';
 import {ProfileService} from '../../../services/profile.service';
 import {SecretService} from '../../../services/secret.service';
@@ -11,7 +11,7 @@ import {Secret, SecretType} from '../../../domain/Secret';
 import {MenuComponent} from '../menu.component';
 import {MatIconButton} from '@angular/material/button';
 import {MatOption, MatSelect, MatSelectChange} from '@angular/material/select';
-import {IsAChildForm} from '../enhanced-form-mixin';
+import {ChildFormAsFormControl, IsAChildForm} from '../enhanced-form-mixin';
 
 @Component({
   selector: 'app-ssh-profile-form',
@@ -30,14 +30,17 @@ import {IsAChildForm} from '../enhanced-form-mixin';
     MatSelect,
     MatOption
   ],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => SshProfileFormComponent),
+      multi: true,
+    },
+  ],
   templateUrl: './ssh-profile-form.component.html',
   styleUrl: './ssh-profile-form.component.css'
 })
-export class SshProfileFormComponent extends IsAChildForm(MenuComponent)  {
-
-
-  private _ssh!: SSHTerminalProfile;
-  @Output() sshChange = new EventEmitter<SSHTerminalProfile>();
+export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponent)  {
 
 
   constructor(
@@ -50,25 +53,17 @@ export class SshProfileFormComponent extends IsAChildForm(MenuComponent)  {
   onInitForm(): FormGroup {
     return  this.fb.group(
       {
-        host:                 [this._ssh.host, [Validators.required, Validators.minLength(3)]], // we shall avoid use ngModel and formControl at same time
-        login:                [this._ssh.login],
-        password:             [this._ssh.password],
-        confirmPassword:      [this._ssh.password],
-        secretId:             [this._ssh.secretId],
+        host:                 ['', [Validators.required, Validators.minLength(3)]], // we shall avoid use ngModel and formControl at same time
+        login:                [],
+        password:             [],
+        confirmPassword:      [],
+        secretId:             [],
 
       },
       {validators: [this.secretOrPasswordMatchValidator]}
     );
   }
 
-  get ssh(): SSHTerminalProfile {
-    return this._ssh;
-  }
-  @Input() // input on setter, so we can combine trigger, it's easier than ngOnChange
-  set ssh(value: SSHTerminalProfile) {
-    this._ssh = value;
-    this.refreshForm();
-  }
 
   secretOrPasswordMatchValidator(group: FormGroup) {
     const secretId = group.get('secretId')?.value;
@@ -108,24 +103,24 @@ export class SshProfileFormComponent extends IsAChildForm(MenuComponent)  {
     this.form.get('confirmPassword')?.setValue(null);
   }
 
-  private refreshForm() {
+  override refreshForm(ssh: any) {
     if (this.form) {
       this.form.reset();
 
-      let ssh = this.ssh;
-      this.form.get('host')?.setValue(ssh.host);
-      this.form.get('login')?.setValue(ssh.login);
-      this.form.get('password')?.setValue(ssh.password);
-      this.form.get('confirmPassword')?.setValue(ssh.password);
-      this.form.get('secretId')?.setValue(ssh.secretId);
+      this.form.get('host')?.setValue(ssh?.host);
+      this.form.get('login')?.setValue(ssh?.login);
+      this.form.get('password')?.setValue(ssh?.password);
+      this.form.get('confirmPassword')?.setValue(ssh?.password);
+      this.form.get('secretId')?.setValue(ssh?.secretId);
     }
   }
 
-  formToModel(): SSHTerminalProfile {
-    this.ssh.host = this.form.get('host')?.value;
-    this.ssh.login = this.form.get('login')?.value;
-    this.ssh.password = this.form.get('password')?.value;
-    this.ssh.secretId = this.form.get('secretId')?.value;
-    return this.ssh;
+  override formToModel(): SSHTerminalProfile {
+    let ssh = new SSHTerminalProfile();
+    ssh.host = this.form.get('host')?.value;
+    ssh.login = this.form.get('login')?.value;
+    ssh.password = this.form.get('password')?.value;
+    ssh.secretId = this.form.get('secretId')?.value;
+    return ssh;
   }
 }

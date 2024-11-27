@@ -37,11 +37,9 @@ import {ProfileService} from '../../../services/profile.service';
 })
 export class QuickconnectMenuComponent extends MenuComponent {
 
+  profile: Profile = new Profile();
   constructor(private profileService: ProfileService) {
     super();
-  }
-  createNewProfile(): Profile {
-    return new Profile();
   }
 
   async onSaveOne($event: Profile) {

@@ -15,8 +15,8 @@ import {Subscription} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
 import {MasterKeyComponent} from '../master-key/master-key.component';
 import {ConfirmationComponent} from '../confirmation/confirmation.component';
-import {SecretService} from '../../../services/secret.service';
 import {MatSnackBar} from '@angular/material/snack-bar';
+import {MasterKeyService} from '../../../services/master-key.service';
 
 @Component({
   selector: 'app-setting-menu',
@@ -52,7 +52,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
   constructor(
     private settingService: SettingService,
-    public secretService: SecretService,
+    public masterKeyService: MasterKeyService,
     private cdr: ChangeDetectorRef,
     public dialog: MatDialog,
     private _snackBar: MatSnackBar,
@@ -77,7 +77,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.secretService.deleteMasterKey();
+        this.masterKeyService.deleteMasterKey();
         this._snackBar.open('Master Key Deleted', 'OK', {
           duration: 3000
         });

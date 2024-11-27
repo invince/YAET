@@ -1,6 +1,6 @@
 
 import {Component, EventEmitter, OnDestroy, OnInit, Output} from '@angular/core';
-import {FormGroup} from '@angular/forms';
+import {ControlValueAccessor, FormGroup} from '@angular/forms';
 import {Subscription} from 'rxjs';
 
 type Constructor<T = {}> = new (...args: any[]) => T;
@@ -38,7 +38,7 @@ export function IsAChildForm<TBase extends Constructor>(Base: TBase) {
     imports: [],
     template: `<p>Abstract Menu</p>`,
   })
-  abstract class IsAChildFormClazz extends Base implements OnInit, OnDestroy {
+  abstract class IsAChildFormClazz extends Base implements OnInit, OnDestroy  {
     // @ts-ignore
 
     form!: FormGroup;
@@ -51,6 +51,9 @@ export function IsAChildForm<TBase extends Constructor>(Base: TBase) {
     private subscriptions: Subscription[] = [];
 
     abstract onInitForm(): FormGroup;
+
+    abstract refreshForm(obj:any): void;
+    abstract formToModel(): void;
 
     ngOnInit(): void {
       this.form = this.onInitForm();
@@ -81,7 +84,74 @@ export function IsAChildForm<TBase extends Constructor>(Base: TBase) {
       this.invalidStateChange.emit(false);
       this.dirtyStateChange.emit(false);
     }
+
   }
 
   return IsAChildFormClazz;
+}
+
+
+export function ChildFormAsFormControl<TBase extends Constructor>(Base: TBase) {
+
+  @Component({
+    selector: 'app-child-form-as-formcontrol',
+    standalone: true,
+    imports: [],
+    template: `<p>Abstract Menu</p>`,
+  })
+  abstract class ChildFormAsFormClazz extends Base implements OnInit, OnDestroy, ControlValueAccessor  {
+
+    form!: FormGroup;
+
+    private subscriptions: Subscription[] = [];
+
+    abstract onInitForm(): FormGroup;
+
+    abstract refreshForm(obj:any): void;
+    abstract formToModel(): any;
+
+    ngOnInit(): void {
+      this.form = this.onInitForm();
+      // Propagate changes to parent form
+      this.subscriptions.push(this.form.valueChanges.subscribe(value => this.onChange(value)));
+      this.subscriptions.push(this.form.statusChanges.subscribe(() => this.onChange(this.form.value)));
+    }
+
+    ngOnDestroy(): void {
+      this.subscriptions.forEach(one => one.unsubscribe());
+    }
+
+    onSubmit() {
+      // Reset the dirty state
+      this.form.markAsPristine();
+      this.form.markAsUntouched();
+      // this.invalidStateChange.emit(false);
+      // this.dirtyStateChange.emit(false);
+    }
+
+
+    private onChange: (value: any) => void = () => {};
+    private onTouched: () => void = () => {};
+
+    writeValue(value: any): void {
+      if (value) {
+        this.refreshForm(value);
+      }
+    }
+
+    registerOnChange(fn: any): void {
+      this.onChange = fn;
+    }
+
+    registerOnTouched(fn: any): void {
+      this.onTouched = fn;
+    }
+
+    setDisabledState?(isDisabled: boolean): void {
+      isDisabled ? this.form.disable() : this.form.enable();
+    }
+
+  }
+
+  return ChildFormAsFormClazz;
 }

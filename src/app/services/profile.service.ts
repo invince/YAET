@@ -1,12 +1,9 @@
 import { Injectable } from '@angular/core';
 import {Profile} from '../domain/Profile';
-import {MySettings} from '../domain/MySettings';
 import {ElectronService} from './electron.service';
 import {PROFILES_LOADED} from './electronConstant';
 import {Subject} from 'rxjs';
-import CryptoJS from 'crypto-js';
-import {Secret} from '../domain/Secret';
-import {SecretService} from './secret.service';
+import {MasterKeyService} from './master-key.service';
 
 @Injectable({
   providedIn: 'root'
@@ -24,19 +21,21 @@ export class ProfileService {
 
   constructor(
     private electron: ElectronService,
-    private secretService: SecretService,
+    private masterKeyService: MasterKeyService,
 
   ) {
     electron.onLoadedEvent(PROFILES_LOADED, data => this.apply(data))
   }
 
   private apply(data: any) {
-    if (typeof data === "string") {
-      this._profiles = JSON.parse(data);
-    } else {
-      this._profiles = data;
-    }
-    this._loaded = true;
+    this.masterKeyService.decrypt2String(data).then(
+      decrypted => {
+        if (decrypted) {
+          this._profiles =  JSON.parse(decrypted);
+          this._loaded = true;
+        }
+      }
+    )
   }
 
   get isLoaded() {
@@ -54,12 +53,26 @@ export class ProfileService {
   }
 
   async save(profile: Profile) {
-    if (!profile) {
-      return;
-    }
     if (!this._profiles) {
       this._profiles = [];
     }
+    if (!profile) {
+      return;
+    }
+    this.updateOrAdd(profile);
+    for (let one of this._profiles) {
+      one.isNew = false;
+    }
+    this.masterKeyService.encrypt(this._profiles).then(
+      encrypted => {
+        if (encrypted) {
+          this.electron.saveProfiles(encrypted);
+        }
+      }
+    )
+  }
+
+  updateOrAdd(profile: Profile) {
     for (let i = 0; i < this._profiles.length; i++) {
       const one = this._profiles[i];
       if (one.id == profile.id) {
@@ -70,7 +83,6 @@ export class ProfileService {
 
     this._profiles.push(profile);
 
-    await this.electron.saveProfiles(this._profiles);
   }
 
 
@@ -96,7 +108,13 @@ export class ProfileService {
     for (let one of this._profiles) {
       one.isNew = false;
     }
-    await this.electron.saveProfiles(this._profiles);
+    this.masterKeyService.encrypt(this._profiles).then(
+      encrypted => {
+        if (encrypted) {
+          this.electron.saveProfiles(encrypted);
+        }
+      }
+    )
   }
 
 

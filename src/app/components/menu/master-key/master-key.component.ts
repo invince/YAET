@@ -9,10 +9,10 @@ import {
 import {MatError, MatFormField, MatLabel} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatButton} from '@angular/material/button';
-import {SecretService} from '../../../services/secret.service';
 import {CommonModule, NgIf} from '@angular/common';
 import {FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ConfirmationComponent} from '../confirmation/confirmation.component';
+import {MasterKeyService} from '../../../services/master-key.service';
 
 @Component({
   selector: 'app-master-key',
@@ -37,7 +37,7 @@ export class MasterKeyComponent implements OnInit{
   resetPasswordForm: FormGroup;
 
   constructor(
-    public secretService: SecretService,
+    public masterKeyService: MasterKeyService,
     public dialogRef: MatDialogRef<MasterKeyComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private fb: FormBuilder,
@@ -77,11 +77,11 @@ export class MasterKeyComponent implements OnInit{
 
   async update() {
     if (this.resetPasswordForm.valid) {
-      if (this.secretService.hasMasterKey) {
+      if (this.masterKeyService.hasMasterKey) {
         let willSecretsInvalid = false;
         let oldPassword = this.resetPasswordForm.get("oldPassword");
         if (oldPassword && oldPassword.value) {
-          if (!await this.secretService.matchMasterKey(oldPassword.value)) {
+          if (!await this.masterKeyService.matchMasterKey(oldPassword.value)) {
             willSecretsInvalid = true;
           }
         } else {
@@ -102,7 +102,7 @@ export class MasterKeyComponent implements OnInit{
   doSubmit() {
     let newPassword = this.resetPasswordForm.get("newPassword");
     if (newPassword) {
-      this.secretService.saveMasterKey(newPassword.value);
+      this.masterKeyService.saveMasterKey(newPassword.value);
     }
   }
 

@@ -49,7 +49,7 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
   @Input() // input on setter, so we can combine trigger, it's easier than ngOnChange
   set secret(value: Secret) {
     this._secret = value;
-    this.refreshForm();
+    this.refreshForm(value);
   }
 
   constructor(private fb: FormBuilder) {
@@ -165,7 +165,7 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
     this.onSecretCancel.emit(this._secret);
   }
 
-  private refreshForm() {
+  override refreshForm(value: any) {
     if (this.form) {
       this.form.reset();
 
@@ -180,7 +180,7 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
     }
   }
 
-  formToModel(): Secret {
+  override formToModel(): Secret {
     let secret = new Secret();
     secret.name        = this.form.get('name')?.value;
     secret.secretType  = this.form.get('secretType')?.value;
