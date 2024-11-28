@@ -14,6 +14,7 @@ import {MatButton, MatIconButton, MatMiniFabButton} from '@angular/material/butt
 import {MatSelect} from '@angular/material/select';
 import {ProfileFormComponent} from '../profile-form/profile-form.component';
 import {HasChildForm} from '../enhanced-form-mixin';
+import {SettingStorageService} from '../../../services/setting-storage.service';
 
 @Component({
   selector: 'app-profiles-menu',
@@ -49,6 +50,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
 
   constructor(
     public profileService: ProfileService,
+    public settingStorage: SettingStorageService,
     private _snackBar: MatSnackBar,
   ) {
     super();
@@ -107,11 +109,13 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   }
 
   profileTabLabel(profile: Profile, index: number) {
+    let LIMIT = this.settingStorage.settings?.ui?.profileLabelLength || 10;
+
     let label = 'New';
     if (profile && profile.name) {
       label = profile.name;
-      if (profile.name.length > 6) {
-        label = label.slice(0, 6) + '...';
+      if (profile.name.length > LIMIT) {
+        label = label.slice(0, LIMIT) + '...';
       }
     }
     if (index == this.selectedIndex && this.lastChildFormDirtyState) {

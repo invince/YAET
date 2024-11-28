@@ -7,6 +7,11 @@ export enum SecretType {
   SSH_KEY = 'SSH_KEY',
 }
 
+
+export enum AuthType {
+  LOGIN = 'login',
+  SECRET = 'secret',
+}
 export class Secret {
 
   id: string = uuidv4();

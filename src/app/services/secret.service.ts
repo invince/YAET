@@ -3,18 +3,19 @@ import {Secret} from '../domain/Secret';
 import {ElectronService} from './electron.service';
 import {SECRETS_LOADED} from './electronConstant';
 import {MasterKeyService} from './master-key.service';
+import {SecretStorageService} from './secret-storage.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SecretService{
 
-  private _secrets!: Secret[];
-
   private _loaded: boolean = false;
 
   constructor(
     private electron: ElectronService,
+
+    private secretStorage: SecretStorageService,
     private masterKeyService: MasterKeyService
   ) {
     electron.onLoadedEvent(SECRETS_LOADED, data => {
@@ -22,13 +23,11 @@ export class SecretService{
     })
   }
 
-
-
   apply(data: any) {
     this.masterKeyService.decrypt2String(data).then(
       decrypted => {
         if (decrypted) {
-          this._secrets =  JSON.parse(decrypted);
+          this.secretStorage.secrets =  JSON.parse(decrypted);
           this._loaded = true;
         }
       }
@@ -38,43 +37,24 @@ export class SecretService{
   get isLoaded() {
     return this._loaded;
   }
-
-
-  set secrets(value: Secret[]) {
-    this._secrets = value;
-  }
-  get secrets(): Secret[] {
-    if (!this._secrets) {
-      // [TEST CODE]
-      // let one = new Secret();
-      // one.name = 'test';
-      // one.isNew = false;
-      // this._secrets = [new Secret(), one];
-      this._secrets = [];
-    }
-    return this._secrets;
-  }
-
-
-
   deleteLocal(secret: Secret) {
     if (!secret) {
       return;
     }
-    if (!this.secrets) {
-      this.secrets = [];
+    if (!this.secretStorage.secrets) {
+      this.secretStorage.secrets= [];
     }
-    this.secrets = this.secrets.filter(one => one.id != secret.id);
+    this.secretStorage.secrets = this.secretStorage.secrets.filter(one => one.id != secret.id);
   }
 
   async saveAll() {
-    if (!this._secrets) {
+    if (!this.secretStorage.secrets) {
       return;
     }
-    for (let one of this._secrets) {
+    for (let one of this.secretStorage.secrets) {
       one.isNew = false;
     }
-    this.masterKeyService.encrypt(this._secrets).then(
+    this.masterKeyService.encrypt(this.secretStorage.secrets).then(
       encrypted => {
         if (encrypted) {
           this.electron.saveSecrets(encrypted);

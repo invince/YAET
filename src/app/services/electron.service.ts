@@ -3,6 +3,7 @@ import {IpcRenderer} from 'electron';
 import {TabInstance} from '../domain/TabInstance';
 import {
   CREATION_LOCAL_TERMINAL,
+  CREATION_SSH_TERMINAL,
   DELETE_MASTERKEY,
   GET_MASTERKEY,
   PROFILES_RELOAD,
@@ -18,7 +19,8 @@ import {
 import {LocalTerminalProfile} from '../domain/LocalTerminalProfile';
 import {Profile, ProfileType} from '../domain/Profile';
 import {MySettings} from '../domain/MySettings';
-import {Secret} from '../domain/Secret';
+import {AuthType, SecretType} from '../domain/Secret';
+import {SecretStorageService} from './secret-storage.service';
 
 @Injectable({
   providedIn: 'root',
@@ -26,7 +28,7 @@ import {Secret} from '../domain/Secret';
 export class ElectronService {
   private ipc!: IpcRenderer;
 
-  constructor() {
+  constructor(private secretStorage: SecretStorageService) {
     if (window.require) {
       this.ipc = window.require('electron').ipcRenderer;
     }
@@ -34,18 +36,68 @@ export class ElectronService {
 
   createTerminal(tab: TabInstance) {
     if (this.ipc) {
-      if (tab.tabType == ProfileType.LOCAL_TERMINAL) {
-        if (!tab.profile) {
-          tab.profile = new Profile();
-        }
-        if (!tab.profile.localTerminal) {
-          tab.profile.localTerminal = new LocalTerminalProfile();
-        }
-        let localProfile: LocalTerminalProfile = tab.profile.localTerminal;
-        this.ipc.send(CREATION_LOCAL_TERMINAL, {terminalId: tab.id, terminalExec: localProfile.execPath});
+      switch (tab.tabType) {
+        case ProfileType.LOCAL_TERMINAL: this.createLocalTerminal(tab); break;
+        case ProfileType.SSH_TERMINAL: this.createSSHTerminal(tab); break;
+
+
       }
     }
   }
+
+  private createLocalTerminal(tab: TabInstance) {
+    if (!tab.profile) {
+      tab.profile = new Profile();
+    }
+    if (!tab.profile.localTerminal) {
+      tab.profile.localTerminal = new LocalTerminalProfile();
+    }
+    let localProfile: LocalTerminalProfile = tab.profile.localTerminal;
+    this.ipc.send(CREATION_LOCAL_TERMINAL, {terminalId: tab.id, terminalExec: localProfile.execPath});
+  }
+
+  private createSSHTerminal(tab: TabInstance) {
+    if (!tab.profile || !tab.profile.sshTerminalProfile) {
+      console.error("Invalid configuration");
+      return;
+    }
+
+    let sshConfig: any = {
+      readyTimeout: 30000,           // Wait up to 30 seconds for the connection.
+      keepaliveInterval: 15000,      // Send keepalive packets every 15 seconds.
+      keepaliveCountMax: 5,          // Disconnect after 5 failed keepalive packets.
+    };
+    let sshProfile = tab.profile.sshTerminalProfile;
+    sshConfig.host = sshProfile.host;
+    sshConfig.port = sshProfile.port;
+    if (sshProfile.authType == AuthType.LOGIN) {
+      sshConfig.username = sshProfile.login;
+      sshConfig.password = sshProfile.password;
+    } else if (sshProfile.authType == AuthType.SECRET) {
+      let secret = this.secretStorage.findById(sshProfile.secretId);
+      if (!secret) {
+        console.error("Invalid secret " + sshProfile.secretId);
+        return;
+      }
+      switch (secret.secretType) {
+        case SecretType.LOGIN_PASSWORD: {
+          sshConfig.username = secret.login;
+          sshConfig.password = secret.password;
+          break;
+        }
+        case SecretType.SSH_KEY: {
+          // todo
+          break;
+        }
+        case SecretType.PASSWORD_ONLY: {
+          // todo
+          break;
+        }
+      }
+    }
+    this.ipc.send(CREATION_SSH_TERMINAL, {terminalId: tab.id, config: sshConfig});
+  }
+
 
   sendTerminalInput(tab: TabInstance, input: string) {
     if(this.ipc) {
@@ -121,4 +173,6 @@ export class ElectronService {
       this.ipc.send(SECRETS_RELOAD, {});
     }
   }
+
+
 }

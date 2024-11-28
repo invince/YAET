@@ -61,7 +61,7 @@
             *ngIf="masterKeyService.hasMasterKey"
             [disabled]="form.invalid || !form.dirty" cdkFocusInitial>Save</button>
     <button mat-raised-button class="mat-primary" (click)="onConnect()"
-            [disabled]="form.invalid || !form.dirty" >Connect</button>
+            [disabled]="form.invalid" >Connect</button>
   </div>
 </div>
 

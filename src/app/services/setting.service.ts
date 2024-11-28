@@ -5,6 +5,7 @@ import {ElectronService} from './electron.service';
 import {SETTINGS_LOADED} from './electronConstant';
 import {LocalTerminalProfile, LocalTerminalType} from '../domain/LocalTerminalProfile';
 import {Subject} from 'rxjs';
+import {SettingStorageService} from './setting-storage.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,21 +14,24 @@ export class SettingService {
 
   private settingLoadedSubject = new Subject<any>();
   settingLoadedEvent = this.settingLoadedSubject.asObservable(); // Expose as Observable
-  private _settings!: MySettings;
+
 
   private _loaded: boolean = false;
 
-  constructor(private electron: ElectronService) {
+  constructor(
+    private electron: ElectronService,
+    private settingStorage: SettingStorageService,
+    ) {
     electron.onLoadedEvent(SETTINGS_LOADED, data => this.apply(data))
   }
 
   private apply(data: any) {
     if (typeof data === "string") {
-      this._settings = JSON.parse(data);
+      this.settingStorage.settings = JSON.parse(data);
     } else {
-      this._settings = data;
+      this.settingStorage.settings = data;
     }
-    this.validate(this._settings);
+    this.validate(this.settingStorage.settings);
     this._loaded = true;
     this.settingLoadedSubject.next({})
   }
@@ -36,29 +40,21 @@ export class SettingService {
     return this._loaded;
   }
 
-
-  get settings(): MySettings {
-    if (!this._settings) {
-      this._settings = new MySettings();
-    }
-    return this._settings;
-  }
-
   createLocalTerminalProfile() : Profile {
     let profile = new Profile();
-    profile.localTerminal = this._settings.localTerminalSetting;
+    profile.localTerminal = this.settingStorage.settings.localTerminal;
     return profile;
   }
 
 
   save(settings: MySettings) {
-    this._settings = settings;
+    this.settingStorage.settings = settings;
     this.electron.saveSetting(settings);
   }
 
   validate(_settings: MySettings) {
     if (_settings) {
-      this.validateLocalTerminalSettings(_settings.localTerminalSetting);
+      this.validateLocalTerminalSettings(_settings.localTerminal);
     }
   }
 

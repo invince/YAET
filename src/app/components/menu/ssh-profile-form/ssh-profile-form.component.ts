@@ -5,13 +5,14 @@ import {MatInput} from '@angular/material/input';
 import {MatIcon} from '@angular/material/icon';
 import {FormBuilder, FormGroup, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators} from '@angular/forms';
 import {CommonModule} from '@angular/common';
-import {ProfileService} from '../../../services/profile.service';
 import {SecretService} from '../../../services/secret.service';
-import {Secret, SecretType} from '../../../domain/Secret';
+import {AuthType, Secret, SecretType} from '../../../domain/Secret';
 import {MenuComponent} from '../menu.component';
 import {MatIconButton} from '@angular/material/button';
 import {MatOption, MatSelect, MatSelectChange} from '@angular/material/select';
 import {ChildFormAsFormControl, IsAChildForm} from '../enhanced-form-mixin';
+import {MatRadioButton, MatRadioGroup} from '@angular/material/radio';
+import {SecretStorageService} from '../../../services/secret-storage.service';
 
 @Component({
   selector: 'app-ssh-profile-form',
@@ -28,7 +29,9 @@ import {ChildFormAsFormControl, IsAChildForm} from '../enhanced-form-mixin';
     MatSuffix,
     MatIconButton,
     MatSelect,
-    MatOption
+    MatOption,
+    MatRadioButton,
+    MatRadioGroup
   ],
   providers: [
     {
@@ -42,10 +45,11 @@ import {ChildFormAsFormControl, IsAChildForm} from '../enhanced-form-mixin';
 })
 export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponent)  {
 
+  AUTH_OPTIONS = AuthType;
 
   constructor(
     private fb: FormBuilder,
-    public secretService: SecretService,
+    public secretStorageService: SecretStorageService,
   ) {
     super();
   }
@@ -54,6 +58,8 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
     return  this.fb.group(
       {
         host:                 ['', [Validators.required, Validators.minLength(3)]], // we shall avoid use ngModel and formControl at same time
+        port:                 ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
+        authType:             ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
         login:                [],
         password:             [],
         confirmPassword:      [],
@@ -66,17 +72,23 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
 
 
   secretOrPasswordMatchValidator(group: FormGroup) {
-    const secretId = group.get('secretId')?.value;
-    if (!secretId) {
-      group.get('password')?.addValidators(Validators.required);
-      group.get('confirmPassword')?.addValidators(Validators.required);
-      const password = group.get('password')?.value;
-      const confirmPassword = group.get('confirmPassword')?.value;
-      return password === confirmPassword ? null : { passwordMismatch: true };
-    } else {
-      group.get('password')?.removeValidators(Validators.required);
-      group.get('confirmPassword')?.removeValidators(Validators.required);
-    }
+    // let authType = group.get('authType')?.value;
+    // if (authType == 'login') {
+    //   group.get('password')?.addValidators(Validators.required);
+    //   group.get('confirmPassword')?.addValidators(Validators.required);
+    //   group.get('secretId')?.removeValidators(Validators.required);
+    //   const password = group.get('password')?.value;
+    //   const confirmPassword = group.get('confirmPassword')?.value;
+    //   return password === confirmPassword ? null : { passwordMismatch: true };
+    // } else if (authType == 'secret') {
+    //   group.get('password')?.removeValidators(Validators.required);
+    //   group.get('confirmPassword')?.removeValidators(Validators.required);
+    //   group.get('secretId')?.addValidators(Validators.required);
+    //   return group.get('secretId')?.value ? null : {secretRequired: true};
+    // } else {
+    //
+    //   return {authTypeRequired: true};
+    // }
     return null;
   }
 
@@ -89,11 +101,11 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
       }
     }
     if (secret && secret.login) {
-      let loginPart = secret.login;
+      let loginPart = '-' + secret.login;
       if (loginPart.length > 6) {
         loginPart = loginPart.slice(0, 6) + '...';
       }
-      label += loginPart;
+      label += loginPart + '/***';
     }
     return label;
   }
@@ -108,6 +120,8 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
       this.form.reset();
 
       this.form.get('host')?.setValue(ssh?.host);
+      this.form.get('port')?.setValue(ssh?.port);
+      this.form.get('authType')?.setValue(ssh?.authType);
       this.form.get('login')?.setValue(ssh?.login);
       this.form.get('password')?.setValue(ssh?.password);
       this.form.get('confirmPassword')?.setValue(ssh?.password);
@@ -118,9 +132,14 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
   override formToModel(): SSHTerminalProfile {
     let ssh = new SSHTerminalProfile();
     ssh.host = this.form.get('host')?.value;
-    ssh.login = this.form.get('login')?.value;
-    ssh.password = this.form.get('password')?.value;
-    ssh.secretId = this.form.get('secretId')?.value;
+    ssh.port = this.form.get('port')?.value;
+    ssh.authType = this.form.get('authType')?.value;
+    if (ssh.authType  == 'login') {
+      ssh.login = this.form.get('login')?.value;
+      ssh.password = this.form.get('password')?.value;
+    } else if (ssh.authType  == 'secret') {
+      ssh.secretId = this.form.get('secretId')?.value;
+    }
     return ssh;
   }
 }

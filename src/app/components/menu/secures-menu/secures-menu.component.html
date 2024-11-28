@@ -17,8 +17,10 @@
             </button>
           </div>
 
-          <div *ngFor="let secret of secretService.secrets; let i = index" class="sidenav-item">
-            <button mat-button (click)="onTabChange(i)">
+          <div *ngFor="let secret of secretStorageService.secrets; let i = index" class="sidenav-item">
+            <button mat-button
+                    [class.selected]="i === selectedIndex"
+                    (click)="onTabChange(i)">
               {{
               secretTabLabel(secret, i)
               }}
@@ -28,7 +30,7 @@
 
         <!-- Main Content -->
         <mat-sidenav-content class="one-form">
-          <ng-container *ngIf="secretService.secrets[selectedIndex] as secret">
+          <ng-container *ngIf="secretStorageService.secrets[selectedIndex] as secret">
             <app-secret-form
               [secret]="secret"
               (onSecretCancel)="onCancel($event)"

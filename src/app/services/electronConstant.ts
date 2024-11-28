@@ -1,4 +1,5 @@
 export const CREATION_LOCAL_TERMINAL = 'create-local-terminal';
+export const CREATION_SSH_TERMINAL = 'create-ssh-terminal';
 export const TERMINAL_INPUT = 'terminal-input';
 export const TERMINAL_OUTPUT = 'terminal-output';
 export const SETTINGS_RELOAD = 'settings-reload';

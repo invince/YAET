@@ -11,3 +11,9 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 
+/* In your component's CSS/SCSS file */
+.selected {
+  background-color: #e0f7fa !important; /* Example highlight color */
+  color: #00796b !important;; /* Example text color */
+  font-weight: bold !important;;
+}

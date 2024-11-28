@@ -26,6 +26,23 @@
 
           </div>
         </mat-tab>
+        <mat-tab label="UI">
+          <div class="setting-form">
+            <mat-form-field class="field" >
+              <mat-label>Profile Label Length</mat-label>
+              <input matInput type="number" formControlName="uiProfileLabelLength"/>
+              <button
+                matSuffix
+                mat-icon-button
+                aria-label="Clear"
+                (click)="clear(form, 'uiProfileLabelLength')"
+                *ngIf="form.get('uiProfileLabelLength')?.value">
+                <mat-icon>close</mat-icon>
+              </button>
+            </mat-form-field>
+
+          </div>
+        </mat-tab>
         <mat-tab label="Local Terminal">
           <div class="setting-form">
             <mat-form-field class="field">

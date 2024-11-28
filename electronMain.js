@@ -132,31 +132,41 @@ ipcMain.on('create-local-terminal', (event, data) => {
     event.sender.send('terminal-output', data);
   });
 
-  terminalMap.set(id, ptyProcess);
+  terminalMap.set(id, (data) => ptyProcess.write(data));
 
 });
 
 ipcMain.on('terminal-input', (event, data) => {
   const id = data.terminalId; // cf terminal.component.ts
   const input = data.input;
-  const ptyProcess = terminalMap.get(id);
-  if (ptyProcess) {
-    ptyProcess.write(input);
+  const terminalCallback = terminalMap.get(id);
+  console.log ('id to find' + id);
+  if (terminalCallback) {
+    console.log('Terminal found. Sending input.');
+    terminalCallback(input); // Send input to the correct terminal
+  } else {
+    console.log('Terminal not found for id:', id);
   }
 });
 
-ipcMain.on('create-ssh-terminal', (event, sshConfig) => {
+ipcMain.on('create-ssh-terminal', (event, data) => {
   const conn = new Client();
+  const sshConfig = data.config;
+  const id = data.terminalId;
   conn.on('ready', () => {
+    console.log('SSH connection ready for id:', id);
     conn.shell((err, stream) => {
-      if (err) throw err;
+      if (err) {
+        console.error('Error starting shell:', err);
+        return;
+      }
+      console.log('Shell started for id:', id);
+
       stream.on('data', (data) => {
         event.sender.send('terminal-output', data.toString());
       });
 
-      event.sender.on('terminal-input', (input) => {
-        stream.write(input);
-      });
+      terminalMap.set(id, (data) => stream.write(data));
     });
   }).connect(sshConfig);
 });

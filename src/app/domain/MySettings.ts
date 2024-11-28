@@ -1,11 +1,15 @@
 import {LocalTerminalProfile} from './LocalTerminalProfile';
+import {UISettings} from './UISettings';
 
 export class MySettings {
 
-  public localTerminalSetting!: LocalTerminalProfile;
+  public localTerminal!: LocalTerminalProfile;
+
+  public ui!: UISettings;
 
   constructor() {
-    this.localTerminalSetting = new LocalTerminalProfile();
+    this.localTerminal = new LocalTerminalProfile();
+    this.ui = new UISettings();
   }
 
 }

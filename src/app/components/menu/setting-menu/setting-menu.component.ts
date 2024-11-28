@@ -17,6 +17,8 @@ import {MasterKeyComponent} from '../master-key/master-key.component';
 import {ConfirmationComponent} from '../confirmation/confirmation.component';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {MasterKeyService} from '../../../services/master-key.service';
+import {SettingStorageService} from '../../../services/setting-storage.service';
+import {UISettings} from '../../../domain/UISettings';
 
 @Component({
   selector: 'app-setting-menu',
@@ -52,6 +54,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   constructor(
     private fb: FormBuilder,
     private settingService: SettingService,
+    private settingStorageService: SettingStorageService,
     public masterKeyService: MasterKeyService,
     private cdr: ChangeDetectorRef,
     public dialog: MatDialog,
@@ -81,10 +84,10 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
     this.form = this.initForm();
 
-    this.refreshForm(this.settingService.settings);
+    this.refreshForm(this.settingStorageService.settings);
 
     this.subscription =  this.settingService.settingLoadedEvent.subscribe(() => {
-      this.refreshForm(this.settingService.settings);
+      this.refreshForm(this.settingStorageService.settings);
       this.cdr.detectChanges(); // mat select doesn't detect well change from event subscription
     })
   }
@@ -94,7 +97,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       {
         localTerminalType: ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
         localTerminalExecPath: ['', Validators.required],
-
+        uiProfileLabelLength: ['', Validators.required],
       },
       {validators: []}
     );
@@ -140,19 +143,34 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   refreshForm(value: any) {
     if (this.form) {
       this.form.reset();
-      this.form.get('localTerminalType')?.setValue(value?.localTerminalSetting.type);
-      this.form.get('localTerminalExecPath')?.setValue(value?.localTerminalSetting.execPath);
+      if (!value) {
+        value = new MySettings();
+      }
+      if (!value.localTerminal) {
+        value.localTerminal = new LocalTerminalProfile();
+      }
+      this.form.get('localTerminalType')?.setValue(value.localTerminal.type);
+      this.form.get('localTerminalExecPath')?.setValue(value.localTerminal.execPath);
+
+      if (!value.ui) {
+        value.ui = new LocalTerminalProfile();
+      }
+      this.form.get('uiProfileLabelLength')?.setValue(value.ui.profileLabelLength);
     }
   }
 
   formToModel(): MySettings {
     let settings = new MySettings();
-    if (!settings.localTerminalSetting) {
-      settings.localTerminalSetting = new LocalTerminalProfile();
+    if (!settings.localTerminal) {
+      settings.localTerminal = new LocalTerminalProfile();
     }
-    settings.localTerminalSetting.type = this.form.get('localTerminalType')?.value;
-    settings.localTerminalSetting.execPath = this.form.get('localTerminalExecPath')?.value;
+    settings.localTerminal.type = this.form.get('localTerminalType')?.value;
+    settings.localTerminal.execPath = this.form.get('localTerminalExecPath')?.value;
 
+    if (!settings.ui) {
+      settings.ui = new UISettings();
+    }
+    settings.ui.profileLabelLength = this.form.get('uiProfileLabelLength')?.value;
 
     return settings;
   }

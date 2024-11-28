@@ -14,6 +14,7 @@ import {MatSelect} from '@angular/material/select';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {SecretFormComponent} from '../secret-form/secret-form.component';
 import {HasChildForm} from '../enhanced-form-mixin';
+import {SecretStorageService} from '../../../services/secret-storage.service';
 
 @Component({
   selector: 'app-secures-menu',
@@ -48,6 +49,7 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
   selectedIndex!: number;
   constructor(
     public secretService: SecretService,
+    public secretStorageService: SecretStorageService,
     private _snackBar: MatSnackBar,
     ) {
     super();
@@ -60,8 +62,8 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
 
 
   addTab() {
-    this.secretService.secrets.push(new Secret());
-    this.selectedIndex = this.secretService.secrets.length - 1; // Focus on the newly added tab
+    this.secretStorageService.secrets.push(new Secret());
+    this.selectedIndex = this.secretStorageService.secrets.length - 1; // Focus on the newly added tab
     // this.refreshSecretForm();
   }
 
@@ -86,12 +88,12 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
     if (!$event.isNew) {
       await this.secretService.saveAll();
     }
-    this.selectedIndex = Math.min(this.selectedIndex, this.secretService.secrets.length - 1);
+    this.selectedIndex = Math.min(this.selectedIndex, this.secretStorageService.secrets.length - 1);
     // this.refreshSecretForm();
   }
 
   async onSaveOne($event: Secret) {
-    this.secretService.secrets[this.selectedIndex] = $event;
+    this.secretStorageService.secrets[this.selectedIndex] = $event;
     await this.secretService.saveAll();
     // this.refreshSecretForm();
   }
@@ -120,7 +122,7 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
   }
 
   hasNewSecret() {
-    let currentSecret = this.secretService.secrets[this.selectedIndex];
+    let currentSecret = this.secretStorageService.secrets[this.selectedIndex];
     return currentSecret?.isNew;
   }
 }

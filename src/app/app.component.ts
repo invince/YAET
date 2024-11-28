@@ -87,7 +87,15 @@ export class AppComponent implements OnInit, OnDestroy{
     this.subscriptions.push(
       this.profileService.connectionEvent$.subscribe(
         connection => {
-
+          if (!connection) {
+            this._snackBar.open('Empty Connection found', 'OK', {
+              duration: 3000
+            });
+            return;
+          }
+          this.isMenuModalOpen = false;
+          this.tabs.push(new TabInstance(uuidv4(), connection.category, connection.profileType, connection)); // Adds a new terminal identifier
+          this.currentTabIndex = this.tabs.length - 1;
         }
       )
     )
@@ -109,11 +117,6 @@ export class AppComponent implements OnInit, OnDestroy{
     this.tabs.splice(index, 1);
   }
 
-  addLocalTerminal() {
-    this.isMenuModalOpen = false;
-    this.tabs.push(new TabInstance(uuidv4(), ProfileCategory.TERMINAL, ProfileType.LOCAL_TERMINAL, this.settingService.createLocalTerminalProfile())); // Adds a new terminal identifier
-    this.currentTabIndex = this.tabs.length - 1;
-  }
 
   toggleMenu(menu: string) {
     if (this.currentOpenedMenu == menu) {
@@ -125,6 +128,11 @@ export class AppComponent implements OnInit, OnDestroy{
 
   }
 
+  addLocalTerminal() {
+    this.isMenuModalOpen = false;
+    this.tabs.push(new TabInstance(uuidv4(), ProfileCategory.TERMINAL, ProfileType.LOCAL_TERMINAL, this.settingService.createLocalTerminalProfile())); // Adds a new terminal identifier
+    this.currentTabIndex = this.tabs.length - 1;
+  }
 
   addMenu() {
     this.toggleMenu('add');
@@ -185,4 +193,7 @@ export class AppComponent implements OnInit, OnDestroy{
       this.currentTabIndex = this.tabs.length - 1;
     }
   }
+
+
+
 }
