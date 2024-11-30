@@ -16,17 +16,47 @@
               <button mat-button class="mat-primary" (click)="openMasterKeyModal()">
                 <mat-icon>password</mat-icon>
               </button>
-
-              <button mat-button class="mat-primary"
-                      *ngIf="masterKeyService.hasMasterKey"
-                      (click)="openDeleteMasterKeyConfirmationDialog()">
-                <mat-icon>remove</mat-icon>
-              </button>
+              @if (masterKeyService.hasMasterKey) {
+                <button mat-button class="mat-primary"
+                        (click)="openDeleteMasterKeyConfirmationDialog()">
+                  <mat-icon>remove</mat-icon>
+                </button>
+              }
             </div>
 
           </div>
         </mat-tab>
         <mat-tab label="UI">
+          <div class="setting-form">
+            <mat-form-field class="field" >
+              <mat-label>Profile Label Length</mat-label>
+              <input matInput type="number" formControlName="uiProfileLabelLength"/>
+              @if (form.get('uiProfileLabelLength')?.value) {
+              <button
+                matSuffix
+                mat-icon-button
+                aria-label="Clear"
+                (click)="clear(form, 'uiProfileLabelLength')">
+                <mat-icon>close</mat-icon>
+              </button>
+              }
+            </mat-form-field>
+            <mat-form-field class="field" >
+              <mat-label>Secret Label Length</mat-label>
+              <input matInput type="number" formControlName="uiSecretLabelLength"/>
+              @if (form.get('uiSecretLabelLength')?.value) {
+              <button
+                matSuffix
+                mat-icon-button
+                aria-label="Clear"
+                (click)="clear(form, 'uiSecretLabelLength')">
+                <mat-icon>close</mat-icon>
+              </button>
+              }
+            </mat-form-field>
+          </div>
+        </mat-tab>
+        <mat-tab label="Group/Tag">
           <div class="setting-form">
             <mat-form-field class="field" >
               <mat-label>Profile Label Length</mat-label>
@@ -49,21 +79,25 @@
               <mat-label>Terminal Type</mat-label>
               <mat-select formControlName="localTerminalType"
                           (selectionChange)="onSelectLocalTerminalType($event)">
-                <mat-option *ngFor="let localTermType of LOCAL_TERM_OPTIONS | keyvalue : unordered"
-                            [value]="localTermType.value">{{localTermType.value}}</mat-option>
+                @for (localTermType of LOCAL_TERM_OPTIONS | keyvalue : unordered; track localTermType.value) {
+                <mat-option [value]="localTermType.value">
+                {{ localTermType.value }}
+                </mat-option>
+                }
               </mat-select>
             </mat-form-field>
             <mat-form-field class="field" [class.cdk-visually-hidden]= "form.get('localTerminalType')?.value != 'custom'">
               <mat-label>Exec Path</mat-label>
               <input matInput type="text" formControlName="localTerminalExecPath"/>
+              @if (form.get('localTerminalExecPath')?.value) {
               <button
                 matSuffix
                 mat-icon-button
                 aria-label="Clear"
-                (click)="clear(form, 'execPath')"
-                *ngIf="form.get('execPath')?.value">
+                (click)="clear(form, 'localTerminalExecPath')">
                 <mat-icon>close</mat-icon>
               </button>
+              }
             </mat-form-field>
           </div>
         </mat-tab>

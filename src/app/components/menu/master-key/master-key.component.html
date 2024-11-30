@@ -2,7 +2,8 @@
 
   <h1 mat-dialog-title>Set Master Key</h1>
   <div mat-dialog-content>
-    <mat-form-field *ngIf="this.masterKeyService.hasMasterKey">
+    @if (this.masterKeyService.hasMasterKey) {
+    <mat-form-field>
       <mat-label>Old Master Key</mat-label>
       <input matInput
              type="password"
@@ -10,6 +11,7 @@
              placeholder="Old Master Key, if you don't fill this correctly, all your secrets won't work anymore"
              >
     </mat-form-field>
+    }
 
     <!-- New Password -->
     <mat-form-field appearance="fill">
@@ -21,12 +23,16 @@
         placeholder="Enter new password"
         required
       />
-      <mat-error *ngIf="resetPasswordForm.get('newPassword')?.hasError('required')">
+      @if (resetPasswordForm.get('newPassword')?.hasError('required')) {
+      <mat-error>
         Password is required
       </mat-error>
-      <mat-error *ngIf="resetPasswordForm.get('newPassword')?.hasError('minlength')">
+      }
+      @if (resetPasswordForm.get('newPassword')?.hasError('minlength')) {
+      <mat-error>
         Password must be at least 6 characters long
       </mat-error>
+      }
     </mat-form-field>
 
     <!-- Confirm Password -->
@@ -39,15 +45,21 @@
         placeholder="Confirm new password"
         required
       />
-      <mat-error *ngIf="resetPasswordForm.get('confirmPassword')?.hasError('required')">
+      @if (resetPasswordForm.get('confirmPassword')?.hasError('required')) {
+      <mat-error>
         Confirming your password is required
       </mat-error>
-      <mat-error *ngIf="resetPasswordForm.hasError('passwordMismatch')">
+      }
+      @if (resetPasswordForm.get('passwordMismatch')) {
+      <mat-error>
         Passwords do not match
       </mat-error>
-      <mat-error *ngIf="resetPasswordForm.hasError('passwordSimilar')">
+      }
+      @if (resetPasswordForm.get('passwordSimilar')) {
+      <mat-error>
         Password is similar to old one
       </mat-error>
+      }
     </mat-form-field>
   </div>
   <div mat-dialog-actions>

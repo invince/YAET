@@ -53,6 +53,9 @@ export class Profile {
   public localTerminal!: LocalTerminalProfile;
   public sshTerminalProfile!: SSHTerminalProfile;
 
+  public group!: string
+  public tags: string[] = [];
+
   isNew: boolean = true;
 
 

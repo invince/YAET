@@ -98,6 +98,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
         localTerminalType: ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
         localTerminalExecPath: ['', Validators.required],
         uiProfileLabelLength: ['', Validators.required],
+        uiSecretLabelLength: ['', Validators.required],
       },
       {validators: []}
     );
@@ -156,6 +157,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
         value.ui = new LocalTerminalProfile();
       }
       this.form.get('uiProfileLabelLength')?.setValue(value.ui.profileLabelLength);
+      this.form.get('uiSecretLabelLength')?.setValue(value.ui.secretLabelLength);
     }
   }
 
@@ -171,6 +173,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       settings.ui = new UISettings();
     }
     settings.ui.profileLabelLength = this.form.get('uiProfileLabelLength')?.value;
+    settings.ui.secretLabelLength = this.form.get('uiSecretLabelLength')?.value;
 
     return settings;
   }

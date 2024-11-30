@@ -66,7 +66,6 @@ export class SettingService {
       switch (localTerminalSetting.type) {
         case LocalTerminalType.CMD: localTerminalSetting.execPath = 'cmd.exe'; break;
         case LocalTerminalType.POWERSHELL: localTerminalSetting.execPath = 'powershell.exe'; break;
-        case LocalTerminalType.WIN_TERMINAL: localTerminalSetting.execPath = 'wt.exe'; break;
         case LocalTerminalType.BASH: localTerminalSetting.execPath = 'bash'; break;
         case LocalTerminalType.CUSTOM: localTerminalSetting.execPath = ''; break;
       }

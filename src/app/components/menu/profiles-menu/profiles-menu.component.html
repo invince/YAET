@@ -17,29 +17,30 @@
             </button>
           </div>
 
-          <div *ngFor="let secret of profileService.profiles; let i = index" class="sidenav-item">
-            <button mat-button
-                    [class.selected]="i === selectedIndex"
-                    (click)="onTabChange(i)" >
-              {{
-              profileTabLabel(secret, i)
-              }}
-            </button>
-          </div>
+          @for (profile of profileService.profiles; let i = $index; track i) {
+              <div class="sidenav-item">
+                <button mat-button
+                        [class.selected]="i === selectedIndex"
+                        (click)="onTabChange(i)">
+              {{ profileTabLabel(profile, i) }}
+                </button>
+              </div>
+          }
+
         </mat-sidenav>
 
         <!-- Main Content -->
         <mat-sidenav-content class="one-form">
-          <ng-container *ngIf="profileService.profiles[selectedIndex] as profile">
-            <app-profile-form
-              [profile]="profile"
-              (onProfileCancel)="onCancel($event)"
-              (onProfileDelete)="onDelete($event)"
-              (onProfileSave)="onSaveOne($event)"
-              (invalidStateChange)="onChildFormInvalidStateChange($event)"
-              (dirtyStateChange)="onChildFormDirtyStateChange($event)"
-            ></app-profile-form>
-          </ng-container>
+          @if (profileService.profiles[selectedIndex]) {
+          <app-profile-form
+            [profile]="profileService.profiles[selectedIndex]"
+            (onProfileCancel)="onCancel($event)"
+            (onProfileDelete)="onDelete($event)"
+            (onProfileSave)="onSaveOne($event)"
+            (invalidStateChange)="onChildFormInvalidStateChange($event)"
+            (dirtyStateChange)="onChildFormDirtyStateChange($event)"
+          ></app-profile-form>
+          }
         </mat-sidenav-content>
       </mat-sidenav-container>
     </div>

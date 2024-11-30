@@ -15,6 +15,8 @@ import {MatSnackBar} from '@angular/material/snack-bar';
 import {SecretFormComponent} from '../secret-form/secret-form.component';
 import {HasChildForm} from '../enhanced-form-mixin';
 import {SecretStorageService} from '../../../services/secret-storage.service';
+import {SettingService} from '../../../services/setting.service';
+import {SettingStorageService} from '../../../services/setting-storage.service';
 
 @Component({
   selector: 'app-secures-menu',
@@ -50,6 +52,8 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
   constructor(
     public secretService: SecretService,
     public secretStorageService: SecretStorageService,
+
+    private settingStorage: SettingStorageService,
     private _snackBar: MatSnackBar,
     ) {
     super();
@@ -108,11 +112,12 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
   }
 
   secretTabLabel(secret: Secret, index: number) {
+    let LIMIT = this.settingStorage.settings?.ui?.secretLabelLength || 10;
     let label = 'New';
     if (secret && secret.name) {
       label = secret.name;
-      if (secret.name.length > 6) {
-        label = label.slice(0, 6) + '...';
+      if (secret.name.length > LIMIT) {
+        label = label.slice(0, LIMIT) + '...';
       }
     }
     if (index == this.selectedIndex && this.lastChildFormDirtyState) {
