@@ -1,0 +1,40 @@
+<div class="tags-management-container">
+  <mat-form-field class="tag-chip-list">
+    <mat-label>Tags Management</mat-label>
+    <mat-chip-grid #chipGrid aria-label="Enter Tags">
+      @for (tag of settingStorage.settings.tags; let i = $index; track tag.id) {
+      <mat-chip-row
+          class="tag-chip"
+          [removable]="true"
+          (removed)="remove(tag)"
+          [editable]="true"
+          (edited)="update(tag, $event)"
+          [style.background]="tag.color"
+          [attr.aria-description]="'press enter to edit ' + tag.name"
+        >
+        {{tag.name}}
+        <!-- Color Picker -->
+        <mat-icon matChipTrailingIcon class="fake-color-picker-btn"  (click)="openColorPicker(i)">color_lens</mat-icon>
+        <button matChipRemove [attr.aria-label]="'remove ' + tag.name"  [style.cursor]="'grab'">
+          <mat-icon>cancel</mat-icon>
+        </button>
+      </mat-chip-row>
+      <input
+        type="color"
+        class="hidden-color-picker"
+        [value]="tag.color"
+        (change)="updateColor(tag, $event)"
+        [id]="'tag-color-picker-' + i"
+      />
+      }
+      <input
+        placeholder="New Tag..."
+        [matChipInputFor]="chipGrid"
+        [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+        [matChipInputAddOnBlur]="addOnBlur"
+        (matChipInputTokenEnd)="add($event)"
+      />
+    </mat-chip-grid>
+  </mat-form-field>
+
+</div>

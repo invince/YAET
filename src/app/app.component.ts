@@ -1,13 +1,13 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
-import {MatSidenav, MatSidenavContainer, MatSidenavContent} from '@angular/material/sidenav';
-import {MatTab, MatTabGroup, MatTabLabel} from '@angular/material/tabs';
+import {MatSidenavModule} from '@angular/material/sidenav';
+import {MatTabsModule} from '@angular/material/tabs';
 import {TerminalComponent} from './components/terminal/terminal.component';
 import {Profile, ProfileCategory, ProfileType} from './domain/Profile';
 import {TabInstance} from './domain/TabInstance';
 import {CommonModule} from '@angular/common';
 import {MatIcon} from '@angular/material/icon';
-import {MatIconButton, MatMiniFabButton} from '@angular/material/button';
+import {MatButtonModule} from '@angular/material/button';
 import {menuAnimation} from './animations/menuAnimation';
 import {MenuComponent} from './components/menu/menu.component';
 import {ProfileFormComponent} from './components/menu/profile-form/profile-form.component';
@@ -31,28 +31,25 @@ import {Subscription} from 'rxjs';
   selector: 'app-root',
   standalone: true,
     imports: [
-        RouterOutlet,
-        TerminalComponent,
-        MenuComponent,
+      RouterOutlet,
+      TerminalComponent,
+      MenuComponent,
 
-        MatSidenavContent,
-        MatSidenav,
-        MatSidenavContainer,
-        MatTabGroup,
-        MatTab,
-        MatIcon,
-        MatMiniFabButton,
-        MatTabLabel,
-        MatIconButton,
-        CommonModule,
+      MatSidenavModule,
+      MatTabsModule,
+      MatButtonModule,
 
-        ProfileFormComponent,
-        SettingMenuComponent,
-        RemoteDesktopComponent,
-        FileExplorerComponent,
-        SecuresMenuComponent,
-        ProfilesMenuComponent,
-        QuickconnectMenuComponent,
+      MatIcon,
+
+      CommonModule,
+
+      ProfileFormComponent,
+      SettingMenuComponent,
+      RemoteDesktopComponent,
+      FileExplorerComponent,
+      SecuresMenuComponent,
+      ProfilesMenuComponent,
+      QuickconnectMenuComponent,
     ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',

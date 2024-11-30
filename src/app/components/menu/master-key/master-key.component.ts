@@ -1,16 +1,14 @@
 import {Component, Inject, OnInit} from '@angular/core';
 import {
   MAT_DIALOG_DATA, MatDialog,
-  MatDialogActions,
-  MatDialogContent,
-  MatDialogRef,
-  MatDialogTitle
+  MatDialogModule,
+  MatDialogRef
 } from '@angular/material/dialog';
-import {MatError, MatFormField, MatLabel} from '@angular/material/form-field';
+import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatButton} from '@angular/material/button';
-import {CommonModule, NgIf} from '@angular/common';
-import {FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {CommonModule} from '@angular/common';
+import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ConfirmationComponent} from '../confirmation/confirmation.component';
 import {MasterKeyService} from '../../../services/master-key.service';
 
@@ -18,14 +16,10 @@ import {MasterKeyService} from '../../../services/master-key.service';
   selector: 'app-master-key',
   standalone: true,
   imports: [
-    MatFormField,
-    MatDialogTitle,
-    MatDialogContent,
-    MatDialogActions,
+    MatDialogModule,
+    MatFormFieldModule,
     MatInput,
     MatButton,
-    MatLabel,
-    MatError,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,

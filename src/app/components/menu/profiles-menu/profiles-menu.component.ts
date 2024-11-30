@@ -1,16 +1,16 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {MatIcon} from "@angular/material/icon";
-import {MatSidenav, MatSidenavContainer, MatSidenavContent} from '@angular/material/sidenav';
+import {MatSidenavModule} from '@angular/material/sidenav';
 import {MenuComponent} from '../menu.component';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {ProfileService} from '../../../services/profile.service';
 import {Profile} from '../../../domain/Profile';
 import {CommonModule} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {MatError, MatFormField, MatLabel, MatSuffix} from '@angular/material/form-field';
+import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatOption} from '@angular/material/autocomplete';
 import {MatInput} from '@angular/material/input';
-import {MatButton, MatIconButton, MatMiniFabButton} from '@angular/material/button';
+import {MatButtonModule} from '@angular/material/button';
 import {MatSelect} from '@angular/material/select';
 import {ProfileFormComponent} from '../profile-form/profile-form.component';
 import {HasChildForm} from '../enhanced-form-mixin';
@@ -24,20 +24,14 @@ import {SettingStorageService} from '../../../services/setting-storage.service';
     FormsModule,
     ReactiveFormsModule,
 
-    MatFormField,
+    MatFormFieldModule,
+    MatSidenavModule,
+    MatButtonModule,
+
     MatOption,
     MatInput,
-    MatSuffix,
     MatIcon,
-    MatIconButton,
-    MatLabel,
 
-    MatSidenavContainer,
-    MatSidenav,
-    MatSidenavContent,
-    MatButton,
-    MatMiniFabButton,
-    MatError,
     MatSelect,
     ProfileFormComponent,
   ],

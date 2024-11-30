@@ -140,7 +140,7 @@ ipcMain.on('terminal-input', (event, data) => {
   const id = data.terminalId; // cf terminal.component.ts
   const input = data.input;
   const terminalCallback = terminalMap.get(id);
-  console.log ('id to find' + id);
+  console.log ('Terminal id to find ' + id);
   if (terminalCallback) {
     console.log('Terminal found. Sending input.');
     terminalCallback(input); // Send input to the correct terminal

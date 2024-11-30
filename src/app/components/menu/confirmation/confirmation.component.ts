@@ -2,7 +2,7 @@ import {Component, Inject} from '@angular/core';
 import {
   MAT_DIALOG_DATA,
   MatDialogActions,
-  MatDialogContent,
+  MatDialogContent, MatDialogModule,
   MatDialogRef,
   MatDialogTitle
 } from '@angular/material/dialog';
@@ -12,9 +12,7 @@ import {MatButton} from '@angular/material/button';
   selector: 'app-confirmation',
   standalone: true,
   imports: [
-    MatDialogTitle,
-    MatDialogContent,
-    MatDialogActions,
+    MatDialogModule,
     MatButton
   ],
   templateUrl: './confirmation.component.html',

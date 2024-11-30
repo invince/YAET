@@ -1,10 +1,10 @@
 import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {MenuComponent} from '../menu.component';
 import {MatIcon} from '@angular/material/icon';
-import {MatButton, MatIconButton} from '@angular/material/button';
+import {MatButtonModule} from '@angular/material/button';
 import {ProfileCategoryTypeMap, Profile, ProfileCategory, ProfileType} from '../../../domain/Profile';
-import {MatFormField, MatLabel, MatSuffix} from '@angular/material/form-field';
-import {MatOption, MatSelect, MatSelectChange} from '@angular/material/select';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatSelectChange, MatSelectModule} from '@angular/material/select';
 import {CommonModule, KeyValuePipe} from '@angular/common';
 import {MatInput} from '@angular/material/input';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
@@ -21,17 +21,13 @@ import {MasterKeyService} from '../../../services/master-key.service';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatButtonModule,
 
     MatIcon,
-    MatIconButton,
-    MatButton,
-    MatFormField,
-    MatSelect,
     KeyValuePipe,
     MatInput,
-    MatOption,
-    MatLabel,
-    MatSuffix,
 
     SshProfileFormComponent,
   ],

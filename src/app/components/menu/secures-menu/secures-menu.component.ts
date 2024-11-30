@@ -1,21 +1,19 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {MenuComponent} from '../menu.component';
 import {SecretService} from '../../../services/secret.service';
-import {MatError, MatFormField, MatLabel, MatSuffix} from '@angular/material/form-field';
-import {MatOption} from '@angular/material/autocomplete';
+import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatIcon} from '@angular/material/icon';
-import {MatButton, MatIconButton, MatMiniFabButton} from '@angular/material/button';
+import {MatButtonModule} from '@angular/material/button';
 import {CommonModule} from '@angular/common';
 import {Secret} from '../../../domain/Secret';
-import {FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {MatSidenav, MatSidenavContainer, MatSidenavContent} from '@angular/material/sidenav';
-import {MatSelect} from '@angular/material/select';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {MatSidenavModule} from '@angular/material/sidenav';
+import {MatSelectModule} from '@angular/material/select';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {SecretFormComponent} from '../secret-form/secret-form.component';
 import {HasChildForm} from '../enhanced-form-mixin';
 import {SecretStorageService} from '../../../services/secret-storage.service';
-import {SettingService} from '../../../services/setting.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';
 
 @Component({
@@ -26,21 +24,13 @@ import {SettingStorageService} from '../../../services/setting-storage.service';
     FormsModule,
     ReactiveFormsModule,
 
-    MatFormField,
-    MatOption,
-    MatInput,
-    MatSuffix,
-    MatIcon,
-    MatIconButton,
-    MatLabel,
+    MatFormFieldModule,
+    MatButtonModule,
+    MatSidenavModule,
+    MatSelectModule,
 
-    MatSidenavContainer,
-    MatSidenav,
-    MatSidenavContent,
-    MatButton,
-    MatMiniFabButton,
-    MatError,
-    MatSelect,
+    MatInput,
+    MatIcon,
     SecretFormComponent,
   ],
   templateUrl: './secures-menu.component.html',

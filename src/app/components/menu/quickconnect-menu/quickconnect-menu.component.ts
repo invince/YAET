@@ -1,10 +1,10 @@
-import {Component, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
 import {CommonModule, KeyValuePipe} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatIcon} from '@angular/material/icon';
-import {MatButton, MatIconButton} from '@angular/material/button';
-import {MatFormField, MatLabel, MatSuffix} from '@angular/material/form-field';
-import {MatOption, MatSelect} from '@angular/material/select';
+import {MatButtonModule} from '@angular/material/button';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatSelectModule} from '@angular/material/select';
 import {MatInput} from '@angular/material/input';
 import {MenuComponent} from '../menu.component';
 import {ProfileFormComponent} from "../profile-form/profile-form.component";
@@ -15,21 +15,18 @@ import {ProfileService} from '../../../services/profile.service';
   selector: 'app-quickconnect-menu',
   standalone: true,
     imports: [
-        CommonModule,
-        FormsModule,
-        ReactiveFormsModule,
+      CommonModule,
+      FormsModule,
+      ReactiveFormsModule,
 
-        MatIcon,
-        MatIconButton,
-        MatButton,
-        MatFormField,
-        MatSelect,
-        KeyValuePipe,
-        MatInput,
-        MatOption,
-        MatLabel,
-        MatSuffix,
-        ProfileFormComponent,
+      MatFormFieldModule,
+      MatButtonModule,
+      MatSelectModule,
+
+      MatIcon,
+      KeyValuePipe,
+      MatInput,
+      ProfileFormComponent,
 
     ],
   templateUrl: './quickconnect-menu.component.html',

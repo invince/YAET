@@ -19,27 +19,35 @@ import {MatSnackBar} from '@angular/material/snack-bar';
 import {MasterKeyService} from '../../../services/master-key.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';
 import {UISettings} from '../../../domain/UISettings';
+import {MatChip} from '@angular/material/chips';
+import {TagsFormComponent} from '../tags-form/tags-form.component';
+import {GroupsFormComponent} from '../groups-form/groups-form.component';
+import {MatDivider} from "@angular/material/divider";
 
 @Component({
   selector: 'app-setting-menu',
   standalone: true,
-  imports: [
-    FormsModule,
-    ReactiveFormsModule,
-    CommonModule,
-    MatIcon,
-    MatIconButton,
-    MatTabGroup,
-    MatTab,
-    MatFormField,
-    MatLabel,
-    MatSelect,
-    MatOption,
-    KeyValuePipe,
-    MatInput,
-    MatButton,
-    MatSuffix,
-  ],
+    imports: [
+        FormsModule,
+        ReactiveFormsModule,
+        CommonModule,
+        MatIcon,
+        MatIconButton,
+        MatTabGroup,
+        MatTab,
+        MatFormField,
+        MatLabel,
+        MatSelect,
+        MatOption,
+        KeyValuePipe,
+        MatInput,
+        MatButton,
+        MatSuffix,
+        MatChip,
+        TagsFormComponent,
+        GroupsFormComponent,
+        MatDivider,
+    ],
   templateUrl: './setting-menu.component.html',
   styleUrl: './setting-menu.component.css'
 })
@@ -54,7 +62,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   constructor(
     private fb: FormBuilder,
     private settingService: SettingService,
-    private settingStorageService: SettingStorageService,
+    private settingStorage: SettingStorageService,
     public masterKeyService: MasterKeyService,
     private cdr: ChangeDetectorRef,
     public dialog: MatDialog,
@@ -84,10 +92,10 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
     this.form = this.initForm();
 
-    this.refreshForm(this.settingStorageService.settings);
+    this.refreshForm(this.settingStorage.settings);
 
     this.subscription =  this.settingService.settingLoadedEvent.subscribe(() => {
-      this.refreshForm(this.settingStorageService.settings);
+      this.refreshForm(this.settingStorage.settings);
       this.cdr.detectChanges(); // mat select doesn't detect well change from event subscription
     })
   }
@@ -140,6 +148,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       console.log('The dialog was closed');
     });
   }
+
 
   refreshForm(value: any) {
     if (this.form) {

@@ -6,6 +6,9 @@ import {SETTINGS_LOADED} from './electronConstant';
 import {LocalTerminalProfile, LocalTerminalType} from '../domain/LocalTerminalProfile';
 import {Subject} from 'rxjs';
 import {SettingStorageService} from './setting-storage.service';
+import {Tag} from '../domain/Tag';
+import {ProfileService} from './profile.service';
+import {Group} from '../domain/Group';
 
 @Injectable({
   providedIn: 'root'
@@ -21,6 +24,7 @@ export class SettingService {
   constructor(
     private electron: ElectronService,
     private settingStorage: SettingStorageService,
+    private profileService: ProfileService,
     ) {
     electron.onLoadedEvent(SETTINGS_LOADED, data => this.apply(data))
   }
@@ -46,10 +50,11 @@ export class SettingService {
     return profile;
   }
 
-
-  save(settings: MySettings) {
-    this.settingStorage.settings = settings;
-    this.electron.saveSetting(settings);
+  save(settings: MySettings | undefined = undefined) {
+    if (settings) {
+      this.settingStorage.settings = settings;
+    }
+    this.electron.saveSetting(this.settingStorage.settings);
   }
 
   validate(_settings: MySettings) {
@@ -75,5 +80,101 @@ export class SettingService {
   reload() {
     this._loaded = false;
     this.electron.reloadSettings();
+  }
+
+  existGroup(value: string, excludeId: string = '') {
+    if (!value) {
+      return true; // exclude invalid case
+    }
+    return this.settingStorage.settings.groups
+      .find(one => one.id != excludeId && one.name == value);
+  }
+
+  addGroup(value: string) {
+    this.settingStorage.settings.groups.push(new Group(value));
+    this.save();
+  }
+
+
+  updateGroup(group: Group, value: string) {
+    if (!value || !group) {
+      return;
+    }
+    this.settingStorage.settings.groups
+      .forEach(one => {
+        if (one.id == group.id) {
+          one.name = value;
+        }
+      });
+    this.save();
+  }
+
+  updateGroupColor(group: Group, value: string) {
+    if (!value || !group) {
+      return;
+    }
+    this.settingStorage.settings.groups
+      .forEach(one => {
+        if (one.id == group.id) {
+          one.color = value;
+        }
+      });
+    this.save();
+  }
+
+  async removeGroup(group: Group) {
+    if (group) {
+      await this.profileService.removeGroup(group);
+      this.settingStorage.settings.tags = this.settingStorage.settings.groups.filter(one => one.id != group.id);
+    }
+    this.save();
+  }
+
+  existTag(value: string, excludeId: string = '') {
+    if (!value) {
+      return true; // exclude invalid case
+    }
+    return this.settingStorage.settings.tags
+      .find(one => one.id != excludeId && one.name == value);
+  }
+
+  addTag(value: string) {
+    this.settingStorage.settings.tags.push(new Tag(value));
+    this.save();
+  }
+
+
+  updateTag(tag: Tag, value: string) {
+    if (!value || !tag) {
+      return;
+    }
+    this.settingStorage.settings.tags
+      .forEach(one => {
+        if (one.id == tag.id) {
+          one.name = value;
+        }
+      });
+    this.save();
+  }
+
+  updateTagColor(tag: Tag, value: string) {
+    if (!value || !tag) {
+      return;
+    }
+    this.settingStorage.settings.tags
+      .forEach(one => {
+        if (one.id == tag.id) {
+          one.color = value;
+        }
+      });
+    this.save();
+  }
+
+  async removeTag(tag: Tag) {
+    if (tag) {
+      await this.profileService.removeTag(tag);
+      this.settingStorage.settings.tags = this.settingStorage.settings.tags.filter(one => one.id != tag.id);
+    }
+    this.save();
   }
 }

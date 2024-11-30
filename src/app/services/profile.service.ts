@@ -4,6 +4,8 @@ import {ElectronService} from './electron.service';
 import {PROFILES_LOADED} from './electronConstant';
 import {Subject} from 'rxjs';
 import {MasterKeyService} from './master-key.service';
+import {Tag} from '../domain/Tag';
+import {Group} from '../domain/Group';
 
 @Injectable({
   providedIn: 'root'
@@ -120,5 +122,21 @@ export class ProfileService {
 
   onProfileConnect(data: Profile) {
     this.connectionEventSubject.next(data);
+  }
+
+  async removeTag(tag: Tag) {
+    for(let profile of this._profiles) {
+      profile.tags = profile.tags?.filter(one => one != tag.id)
+    }
+    await this.saveAll();
+  }
+
+  async removeGroup(group: Group) {
+    for(let profile of this._profiles) {
+      if (profile.group == group.id) {
+        profile.group = '';
+      }
+    }
+    await this.saveAll();
   }
 }
