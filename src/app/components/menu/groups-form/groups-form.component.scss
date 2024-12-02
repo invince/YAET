@@ -1,22 +1,21 @@
-.group-chip-list{
-  width: 100%;
-}
-
 .groups-management-container {
-  .group-chip {
-    display: flex;
-    align-items: center;
-    transition: background-color 0.3s ease-in-out;
 
-    .fake-color-picker-btn {
-      padding-right: 1px !important;
-      cursor: grab;
-    }
+  //.transparent-chip {
+  //  background-color: transparent !important; /* Makes the chip transparent */
+  //  color: inherit; /* Ensures text color remains legible */
+  //}
+
+
+  .fake-color-picker-btn {
+    padding-right: 1px !important;
+    cursor: grab;
   }
+
   .hidden-color-picker {
     visibility: hidden;
     position: absolute;
     width: 0;
     height: 0;
   }
+
 }

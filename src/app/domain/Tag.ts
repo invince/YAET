@@ -4,7 +4,6 @@ export class Tag {
   readonly id: string = uuidv4(); // uuid
 
   public name: string = '';
-  // color: '#0000ff'
   public color: string = '';
 
   constructor(name: string) {

@@ -30,6 +30,54 @@
         </button>
         }
       </mat-form-field>
+
+      <mat-form-field class="field" >
+        <mat-label>Group</mat-label>
+        <mat-select formControlName="group" (selectionChange)="onSelectGroup($event)"  [style.background]="groupColor">
+          <mat-option></mat-option>
+          @for ( oneGroup of settingStorage.settings.groups ; track oneGroup.id) {
+            <mat-option [value]="oneGroup" [style.background]="oneGroup.color" >{{ oneGroup.name}}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field class="field">
+        <mat-chip-grid #chipGrid aria-label="Enter Tags" formControlName="tags">
+          @if (form.get("tags")?.value) {
+            @for (tag of form.get("tags")?.value; track tag.id) {
+              <mat-chip-row
+                  class="tag-chip"
+                  [removable]="true"
+                  (removed)="remove(tag)"
+                  [style.background]="tag.color"
+                  [attr.aria-description]="'press enter to edit ' + tag.name"
+                  [value]="tag"
+                >
+                {{tag.name}}
+                <button matChipRemove [attr.aria-label]="'remove ' + tag.name"  [style.cursor]="'grab'">
+                  <mat-icon>cancel</mat-icon>
+                </button>
+              </mat-chip-row>
+            }
+          }
+        </mat-chip-grid>
+        <input
+          #tagsAutoCompleteInput
+          placeholder="Add Tag..."
+          (input)="updateFilteredTag($event)"
+          [matChipInputFor]="chipGrid"
+          [matAutocomplete]="auto"
+          [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+          (matChipInputTokenEnd)="addTag($event)"
+        />
+        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectTag($event)">
+          @for (tag of filteredTags ; track tag.id) {
+          <mat-option [value]="tag">{{tag.name}}</mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+
+
       <mat-form-field class="field">
         <mat-label>Terminal Category</mat-label>
         <mat-select  (selectionChange)="onSelectCategory($event)" required formControlName="category">
@@ -74,4 +122,3 @@
             [disabled]="form.invalid" >Connect</button>
   </div>
 </div>
-

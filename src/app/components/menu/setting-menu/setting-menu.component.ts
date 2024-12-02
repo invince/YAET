@@ -58,6 +58,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   LOCAL_TERM_OPTIONS = LocalTerminalType;
 
   private subscription!: Subscription;
+  currentTabIndex: number = 0;
 
   constructor(
     private fb: FormBuilder,
@@ -188,4 +189,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
 
+  shouldDisableSave() {
+    return [2,3].includes(this.currentTabIndex);
+  }
 }

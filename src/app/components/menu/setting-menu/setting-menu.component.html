@@ -8,7 +8,7 @@
     </div>
 
     <div class="modal-content" >
-      <mat-tab-group>
+      <mat-tab-group [(selectedIndex)]="currentTabIndex">
         <mat-tab label="General">
           <div class="setting-form">
             <div>
@@ -56,11 +56,14 @@
             </mat-form-field>
           </div>
         </mat-tab>
-        <mat-tab label="Group/Tag">
+        <mat-tab label="Group">
+          <div class="setting-form">
+            <app-groups-form></app-groups-form>
+          </div>
+        </mat-tab>
+        <mat-tab label="Tag">
           <div class="setting-form">
             <app-tags-form></app-tags-form>
-            <mat-divider ></mat-divider>
-            <app-groups-form></app-groups-form>
           </div>
         </mat-tab>
         <mat-tab label="Local Terminal">
@@ -96,9 +99,9 @@
 
     <div class="modal-footer">
       <button mat-button (click)="close()">Cancel</button>
-      <button mat-stroked-button class="mat-accent" (click)="reload()">Reload</button>
-      <button mat-raised-button class="mat-primary" [disabled]="form.invalid" (click)="onSave();close()">Save And Close</button>
-      <button mat-raised-button class="mat-primary" [disabled]="form.invalid"  (click)="onSave()">Save</button>
+      <button mat-stroked-button class="mat-accent" [disabled]="shouldDisableSave()" (click)="reload()">Reload</button>
+      <button mat-raised-button class="mat-primary" [disabled]="form.invalid || shouldDisableSave()" (click)="onSave();close()">Save And Close</button>
+      <button mat-raised-button class="mat-primary" [disabled]="form.invalid || shouldDisableSave()"  (click)="onSave()">Save</button>
     </div>
   </div>
 </div>

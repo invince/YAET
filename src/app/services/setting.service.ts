@@ -82,6 +82,16 @@ export class SettingService {
     this.electron.reloadSettings();
   }
 
+  findGroupById(id: string) {
+    return this.settingStorage.settings.groups
+      .find(one => one.id == id)
+  }
+
+  findTagById(id: string) {
+    return this.settingStorage.settings.tags
+      .find(one => one.id == id)
+  }
+
   existGroup(value: string, excludeId: string = '') {
     if (!value) {
       return true; // exclude invalid case
@@ -109,23 +119,10 @@ export class SettingService {
     this.save();
   }
 
-  updateGroupColor(group: Group, value: string) {
-    if (!value || !group) {
-      return;
-    }
-    this.settingStorage.settings.groups
-      .forEach(one => {
-        if (one.id == group.id) {
-          one.color = value;
-        }
-      });
-    this.save();
-  }
-
   async removeGroup(group: Group) {
     if (group) {
       await this.profileService.removeGroup(group);
-      this.settingStorage.settings.tags = this.settingStorage.settings.groups.filter(one => one.id != group.id);
+      this.settingStorage.settings.groups = this.settingStorage.settings.groups.filter(one => one.id != group.id);
     }
     this.save();
   }
@@ -175,6 +172,19 @@ export class SettingService {
       await this.profileService.removeTag(tag);
       this.settingStorage.settings.tags = this.settingStorage.settings.tags.filter(one => one.id != tag.id);
     }
+    this.save();
+  }
+
+  updateGroupColor(group: Group, color: string) {
+    if (!color || !group) {
+      return;
+    }
+    this.settingStorage.settings.groups
+      .forEach(one => {
+        if (one.id == group.id) {
+          one.color = color;
+        }
+      });
     this.save();
   }
 }

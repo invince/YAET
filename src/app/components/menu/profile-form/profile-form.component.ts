@@ -1,4 +1,14 @@
-import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  computed, ElementRef,
+  EventEmitter,
+  Input,
+  model,
+  OnInit,
+  Output,
+  ViewChild
+} from '@angular/core';
 import {MenuComponent} from '../menu.component';
 import {MatIcon} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
@@ -13,6 +23,13 @@ import {ProfileService} from '../../../services/profile.service';
 import {IsAChildForm} from '../enhanced-form-mixin';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {MasterKeyService} from '../../../services/master-key.service';
+import {SettingStorageService} from '../../../services/setting-storage.service';
+import {SettingService} from '../../../services/setting.service';
+import {MatChipInputEvent, MatChipsModule} from '@angular/material/chips';
+import {COMMA, ENTER} from '@angular/cdk/keycodes';
+import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
+import {map, Observable, startWith} from 'rxjs';
+import {Tag} from '../../../domain/Tag';
 
 @Component({
   selector: 'app-profile-form',
@@ -24,6 +41,8 @@ import {MasterKeyService} from '../../../services/master-key.service';
     MatFormFieldModule,
     MatSelectModule,
     MatButtonModule,
+    MatChipsModule,
+    MatAutocompleteModule,
 
     MatIcon,
     KeyValuePipe,
@@ -44,14 +63,24 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   CATEGORY_OPTIONS = ProfileCategory;
   CATEGORY_TYPE_MAP = ProfileCategoryTypeMap;
 
+  groupColor: string | undefined = '';
+
+  readonly addOnBlur = true;
+  readonly separatorKeysCodes = [ENTER, COMMA] as const;
   @ViewChild(SshProfileFormComponent) sshChild!: SshProfileFormComponent;
+  @ViewChild('tagsAutoCompleteInput') tagsAutoCompleteInput!: ElementRef;
+
+  filteredTags!: Tag[];
 
   constructor(
     private fb: FormBuilder,
     private profileService: ProfileService,
-    public masterKeyService: MasterKeyService,
+    public masterKeyService: MasterKeyService, // in html
+    public settingStorage: SettingStorageService, // in html
+    private settingService: SettingService,
 
     private _snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef,
   ) {
     super();
   }
@@ -66,18 +95,27 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   }
 
   onInitForm(): FormGroup {
-    return  this.fb.group(
+    let form =  this.fb.group(
       {
-        name:         [this._profile.name, [Validators.required, Validators.minLength(3)]], // we shall avoid use ngModel and formControl at same time
-        comment:      [this._profile.comment],
-        category:     [this._profile.category, Validators.required],
-        profileType:  [this._profile.profileType, Validators.required],
-        sshProfileForm:  [this._profile.sshTerminalProfile],
+        name:                   [this._profile.name, [Validators.required, Validators.minLength(3)]], // we shall avoid use ngModel and formControl at same time
+        comment:                [this._profile.comment],
+        category:               [this._profile.category, Validators.required],
+        group:                  [],
+        tags:                   [[]],
+        profileType:            [this._profile.profileType, Validators.required],
+        sshProfileForm:         [this._profile.sshTerminalProfile],
 
       },
       {validators: []}
     );
+
+    return form;
   }
+
+  override afterFormInitialization() {
+    this.refreshForm(this.profile);
+  }
+
 
   onSelectType($event: MatSelectChange) {
     // this.profile.profileType = $event;
@@ -121,6 +159,22 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
 
       this.form.get('name')?.setValue(profile?.name);
       this.form.get('comment')?.setValue(profile?.comment);
+      if (profile?.group) {
+        let group = this.settingService.findGroupById(profile.group);
+        this.form.get('group')?.setValue(group);
+        this.groupColor = group?.color;
+      }
+
+      this.form.get('tags')?.setValue([]);
+      if (profile?.tags) {
+        for (let tagId of profile.tags) {
+          let tag = this.settingService.findTagById(tagId);
+          if (tag) {
+            this.form.get('tags')?.value.push(tag);
+          }
+        }
+        this.form.get('tags')?.updateValueAndValidity();
+      }
       this.form.get('category')?.setValue(profile?.category);
       this.form.get('profileType')?.setValue(profile?.profileType);
 
@@ -131,6 +185,8 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
             break;
         }
       }
+
+      // this.filteredTags = this.settingStorage.settings.tags;
     }
   }
 
@@ -138,6 +194,13 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   formToModel(): Profile {
     this._profile.name = this.form.get('name')?.value;
     this._profile.comment = this.form.get('comment')?.value;
+    this._profile.group = this.form.get('group')?.value?.id;
+    let tags = this.form.get('tags')?.value;
+    if (tags && Array.isArray(tags)) {
+      this._profile.tags = tags.map(one => one.id);
+    }
+
+
     this._profile.category = this.form.get('category')?.value;
     this._profile.profileType = this.form.get('profileType')?.value;
 
@@ -155,4 +218,66 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   onClose() {
     this.onProfileCancel.emit();
   }
+
+
+  addTag($event: MatChipInputEvent) {
+    // const value = ($event.value || '').trim();
+    //
+    // // Add our fruit
+    // if (value) {
+    //   this.fruits.update(fruits => [...fruits, value]);
+    // }
+    //
+    // // Clear the input value
+    // this.currentFruit.set('');
+  }
+
+  onSelectGroup($event: MatSelectChange) {
+    this.groupColor = $event.value.color;
+  }
+
+  remove(tag: Tag) {
+    if (!tag) {
+      return;
+    }
+    const currentTags = this.form.get('tags')?.value || [];
+    this.form.get('tags')?.setValue(currentTags.filter((one: Tag) => one.id != tag.id));
+    this.form.get('tags')?.updateValueAndValidity();
+  }
+
+  selectTag($event: MatAutocompleteSelectedEvent) {
+    const selectedTag = $event.option.value;
+    console.log('Selected Tag:', selectedTag); // Debug log
+
+    const currentTags = this.form.get('tags')?.value || [];
+    this.form.get('tags')?.setValue([...currentTags, selectedTag]);
+    this.tagsAutoCompleteInput.nativeElement.value = '';
+    $event.option.deselect();
+  }
+
+
+  updateFilteredTag($event: Event) {
+    const inputElement = $event.target as HTMLInputElement;
+    const inputValue = inputElement.value;
+    if (!inputValue) {
+      return;
+    }
+    const currentFilter = inputValue.toLowerCase();
+    const selected = this.form.get('tags')?.value;
+
+    let excludeAlreadySelected = this.settingStorage.settings.tags;
+    if (selected) {
+      const selectedId = selected.map((one: Tag) => one.id);
+      excludeAlreadySelected = excludeAlreadySelected.filter(one => !selectedId.includes(one.id));
+    }
+
+    this.filteredTags = currentFilter
+      ? excludeAlreadySelected.filter(one => one.name.toLowerCase().includes(currentFilter))
+      : excludeAlreadySelected.slice();
+
+    // Force change detection
+    this.cdr.detectChanges();
+  }
+
+
 }

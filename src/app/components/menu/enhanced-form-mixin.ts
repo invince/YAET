@@ -57,6 +57,7 @@ export function IsAChildForm<TBase extends Constructor>(Base: TBase) {
 
     ngOnInit(): void {
       this.form = this.onInitForm();
+      this.afterFormInitialization();
       const subscription = this.form.valueChanges.subscribe(() => {
         const isDirty = this.form.dirty;
         if (isDirty !== this.lastDirtyState) {
@@ -85,6 +86,9 @@ export function IsAChildForm<TBase extends Constructor>(Base: TBase) {
       this.dirtyStateChange.emit(false);
     }
 
+    afterFormInitialization() {
+
+    }
   }
 
   return IsAChildFormClazz;

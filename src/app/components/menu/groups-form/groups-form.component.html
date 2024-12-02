@@ -1,11 +1,52 @@
 <div class="groups-management-container">
+  <mat-form-field class="field">
+    <mat-label>Add new Group</mat-label>
+    <input matInput type="text" [(ngModel)]="newGroupName" (keydown.enter)="onAddGroup($event)" />
+    @if (newGroupName) {
+    <button
+      matSuffix
+      mat-icon-button
+      aria-label="Clear"
+      (click)="newGroupName = ''">
+      <mat-icon>close</mat-icon>
+    </button>
+    }
+  </mat-form-field>
+
   <mat-tree #tree [dataSource]="dataSource"
             [childrenAccessor]="childrenAccessor" class="group-tree">
 
     <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
       <!-- use a disabled button to provide padding for tree leaf -->
       <button mat-icon-button disabled></button>
-      {{node.name}}
+      @if (node.editable) {
+          <mat-chip-row
+            class="transparent-chip"
+            [style.background]="node.color"
+            [removable]="true"
+            (removed)="remove(node)"
+            [editable]="true"
+            (edited)="update(node, $event)"
+          >
+          {{node.name}}
+          <!-- Color Picker -->
+          <mat-icon matChipTrailingIcon class="fake-color-picker-btn"  (click)="openColorPicker(node.id)">color_lens</mat-icon>
+          <button matChipRemove [attr.aria-label]="'remove ' + node.name"  [style.cursor]="'grab'">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip-row>
+
+        <input
+          type="color"
+          class="hidden-color-picker"
+          [value]="node.color"
+          (change)="updateColor(node, $event)"
+          [id]="'group-color-picker-' + node.id"
+        />
+      }
+      @else {
+        <div class="group-name">{{node.name}}</div>
+      }
     </mat-tree-node>
     <!-- This is the tree node template for expandable nodes -->
     <mat-tree-node *matTreeNodeDef="let node;when: hasChild" matTreeNodePadding matTreeNodeToggle
@@ -16,9 +57,34 @@
           {{tree.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
         </mat-icon>
       </button>
-      {{node.name}}
+      @if (node.editable) {
+      <mat-chip-row
+        class="transparent-chip"
+        [style.background]="node.color"
+        [removable]="true"
+        (removed)="remove(node)"
+        [editable]="true"
+        (edited)="update(node, $event)"
+      >
+        {{node.name}}
+        <!-- Color Picker -->
+        <mat-icon matChipTrailingIcon class="fake-color-picker-btn"  (click)="openColorPicker(node.id)">color_lens</mat-icon>
+        <button matChipRemove [attr.aria-label]="'remove ' + node.name"  [style.cursor]="'grab'">
+          <mat-icon>cancel</mat-icon>
+        </button>
+      </mat-chip-row>
+      <input
+        type="color"
+        class="hidden-color-picker"
+        [value]="node.color"
+        (change)="updateColor(node, $event)"
+        [id]="'group-color-picker-' + node.id"
+      />
+      }
+      @else {
+      <div class="group-name">{{node.name}}</div>
+      }
     </mat-tree-node>
   </mat-tree>
 
-  <button mat-raised-button (click)="addGroup()" color="primary">Add Group</button>
 </div>
