@@ -139,4 +139,8 @@ export class ProfileService {
     }
     await this.saveAll();
   }
+
+  deleteNotSavedNewProfileInLocal() {
+    this._profiles = this._profiles.filter(one => !one.isNew);
+  }
 }

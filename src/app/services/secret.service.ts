@@ -69,5 +69,7 @@ export class SecretService{
   }
 
 
-
+  deleteNotSavedNewSecretInLocal() {
+    this.secretStorage.secrets = this.secretStorage.secrets.filter(one => !one.isNew);
+  }
 }

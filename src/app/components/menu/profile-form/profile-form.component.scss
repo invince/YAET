@@ -14,6 +14,8 @@
 .profile-form {
   display: flex;
   flex-direction: row;
+  flex: 1 1 auto; /* Allow form to take available space, but be scrollable */
+  overflow-y: auto; /* Enable vertical scrolling */
 }
 
 
@@ -28,9 +30,14 @@
   padding-left: 30px
 }
 
+//.profile-form-footer {
+//  margin-top: auto; /* Pushes it to the bottom */
+//  margin-bottom: 0; /* Adds the offset from the bottom */
+//}
+
 .profile-form-footer {
-  margin-top: auto; /* Pushes it to the bottom */
-  margin-bottom: 0; /* Adds the offset from the bottom */
+  flex-shrink: 0;  /* Prevent the footer from shrinking */
+  margin-top: auto; /* Push footer to the bottom */
 }
 
 .field {

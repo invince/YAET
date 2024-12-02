@@ -26,6 +26,7 @@ import {MasterKeyComponent} from './components/menu/master-key/master-key.compon
 import {MatDialog} from '@angular/material/dialog';
 import {MasterKeyService} from './services/master-key.service';
 import {Subscription} from 'rxjs';
+import {ModalControllerService} from './services/modal-controller.service';
 
 @Component({
   selector: 'app-root',
@@ -63,8 +64,7 @@ export class AppComponent implements OnInit, OnDestroy{
   title = 'yetAnotherElectronTerm';
   tabs: TabInstance[] = [];
 
-  isMenuModalOpen = false; // if menu modal open
-  currentOpenedMenu = '';
+
 
   currentTabIndex = 0;
 
@@ -75,6 +75,8 @@ export class AppComponent implements OnInit, OnDestroy{
     private profileService: ProfileService,
     private secretService: SecretService,
     private masterKeyService: MasterKeyService,
+
+    public modalControl: ModalControllerService,
 
     private _snackBar: MatSnackBar,
     public dialog: MatDialog,
@@ -90,7 +92,7 @@ export class AppComponent implements OnInit, OnDestroy{
             });
             return;
           }
-          this.isMenuModalOpen = false;
+          this.modalControl.closeModal(['favorite', 'add']);
           this.tabs.push(new TabInstance(uuidv4(), connection.category, connection.profileType, connection)); // Adds a new terminal identifier
           this.currentTabIndex = this.tabs.length - 1;
         }
@@ -116,17 +118,11 @@ export class AppComponent implements OnInit, OnDestroy{
 
 
   toggleMenu(menu: string) {
-    if (this.currentOpenedMenu == menu) {
-      this.isMenuModalOpen = !this.isMenuModalOpen;
-    } else {
-      this.currentOpenedMenu = menu;
-      this.isMenuModalOpen = true;
-    }
-
+    this.modalControl.toggleMenu(menu);
   }
 
   addLocalTerminal() {
-    this.isMenuModalOpen = false;
+    this.modalControl.closeModal();
     this.tabs.push(new TabInstance(uuidv4(), ProfileCategory.TERMINAL, ProfileType.LOCAL_TERMINAL, this.settingService.createLocalTerminalProfile())); // Adds a new terminal identifier
     this.currentTabIndex = this.tabs.length - 1;
   }
@@ -177,20 +173,6 @@ export class AppComponent implements OnInit, OnDestroy{
   settingMenu() {
     this.toggleMenu('setting');
   }
-
-  closeModal() {
-    this.isMenuModalOpen = false;
-    this.currentOpenedMenu = '';
-  }
-
-  onProfileConnect($event: Profile) {
-    if ($event) {
-      this.isMenuModalOpen = false;
-      this.tabs.push(new TabInstance(uuidv4(), $event.category, $event.profileType, $event)); // Adds a new terminal identifier
-      this.currentTabIndex = this.tabs.length - 1;
-    }
-  }
-
 
 
 }

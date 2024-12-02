@@ -15,6 +15,8 @@ import {SecretFormComponent} from '../secret-form/secret-form.component';
 import {HasChildForm} from '../enhanced-form-mixin';
 import {SecretStorageService} from '../../../services/secret-storage.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';
+import {ModalControllerService} from '../../../services/modal-controller.service';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-secures-menu',
@@ -39,19 +41,33 @@ import {SettingStorageService} from '../../../services/setting-storage.service';
 export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
 
   selectedIndex!: number;
+
+  subscription!: Subscription;
   constructor(
     public secretService: SecretService,
     public secretStorageService: SecretStorageService,
 
     private settingStorage: SettingStorageService,
+
     private _snackBar: MatSnackBar,
+    private modalControl: ModalControllerService,
+
     ) {
     super();
   }
   ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 
   ngOnInit(): void {
+    this.subscription =  this.modalControl.modalCloseEvent.subscribe(one => {
+      if (one && one.includes('secure')) {
+        this.secretService.deleteNotSavedNewSecretInLocal();
+        this.modalControl.closeModal();
+      }
+    });
   }
 
 

@@ -15,6 +15,8 @@ import {MatSelect} from '@angular/material/select';
 import {ProfileFormComponent} from '../profile-form/profile-form.component';
 import {HasChildForm} from '../enhanced-form-mixin';
 import {SettingStorageService} from '../../../services/setting-storage.service';
+import {ModalControllerService} from '../../../services/modal-controller.service';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-profiles-menu',
@@ -42,18 +44,31 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
 
   selectedIndex!: number;
 
+  subscription!: Subscription;
+
   constructor(
     public profileService: ProfileService,
     public settingStorage: SettingStorageService,
     private _snackBar: MatSnackBar,
+
+    private modalControl: ModalControllerService,
   ) {
     super();
   }
 
   ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 
   ngOnInit(): void {
+    this.subscription = this.modalControl.modalCloseEvent.subscribe(one => {
+      if (one && one.includes('favorite')) {
+        this.profileService.deleteNotSavedNewProfileInLocal();
+        this.modalControl.closeModal();
+      }
+    });
   }
 
   addTab() {
