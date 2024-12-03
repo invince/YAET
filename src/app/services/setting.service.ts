@@ -82,12 +82,12 @@ export class SettingService {
     this.electron.reloadSettings();
   }
 
-  findGroupById(id: string) {
+  findGroupById(id: string): Group | undefined {
     return this.settingStorage.settings.groups
       .find(one => one.id == id)
   }
 
-  findTagById(id: string) {
+  findTagById(id: string): Tag | undefined {
     return this.settingStorage.settings.tags
       .find(one => one.id == id)
   }

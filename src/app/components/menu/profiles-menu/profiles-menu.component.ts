@@ -17,6 +17,10 @@ import {HasChildForm} from '../enhanced-form-mixin';
 import {SettingStorageService} from '../../../services/setting-storage.service';
 import {ModalControllerService} from '../../../services/modal-controller.service';
 import {Subscription} from 'rxjs';
+import {Secret} from '../../../domain/Secret';
+import {group} from '@angular/animations';
+import {SettingService} from '../../../services/setting.service';
+import {FilterKeywordPipe} from '../../../pipes/filter-keyword.pipe';
 
 @Component({
   selector: 'app-profiles-menu',
@@ -36,6 +40,7 @@ import {Subscription} from 'rxjs';
 
     MatSelect,
     ProfileFormComponent,
+    FilterKeywordPipe,
   ],
   templateUrl: './profiles-menu.component.html',
   styleUrl: './profiles-menu.component.css'
@@ -43,12 +48,15 @@ import {Subscription} from 'rxjs';
 export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
 
   selectedIndex!: number;
+  selectedProfile!: Profile;
 
   subscription!: Subscription;
+  filter!: string;
 
   constructor(
     public profileService: ProfileService,
     public settingStorage: SettingStorageService,
+    private settingService: SettingService,
     private _snackBar: MatSnackBar,
 
     private modalControl: ModalControllerService,
@@ -77,8 +85,9 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     // this.refreshSecretForm();
   }
 
-  onTabChange(i: number) {
+  onTabChange(i: number, profile: Profile) {
     if (this.selectedIndex == i) {
+      this.selectedProfile = profile;
       return;
     }
     if (this.selectedIndex &&
@@ -88,6 +97,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
       });
       return;
     }
+    this.selectedProfile = profile;
     this.selectedIndex = i;
     // this.refreshSecretForm();
   }
@@ -138,5 +148,29 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     return currentProfile?.isNew;
   }
 
+
+  keywordsProviders: ((profile: Profile) => string | string[])[] = [
+    (profile: Profile) => profile.name,
+    (profile: Profile) => profile.comment,
+    (profile: Profile) => profile.category,
+    (profile: Profile) => profile.profileType,
+    (profile: Profile) => {
+        if (profile.group) {
+          let group = this.settingService.findGroupById(profile.id);
+          if (group) {
+            return [group.name];
+          }
+        }
+        return [];
+    },
+    (profile: Profile) => {
+      if (profile.tags) {
+        return profile.tags.map(one => this.settingService.findTagById(one))
+          .filter(one => one !== undefined)
+          .map(one => one.name);
+      }
+      return [];
+    },
+  ];
 
 }

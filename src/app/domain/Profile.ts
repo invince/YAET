@@ -46,7 +46,7 @@ export class Profile {
   readonly id: string = uuidv4(); // uuid
   public name: string = '';
 
-  public comment:String = '';
+  public comment:string = '';
 
   public category!: ProfileCategory;
   public profileType!: ProfileType;

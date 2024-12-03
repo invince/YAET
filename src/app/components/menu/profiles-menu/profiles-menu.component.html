@@ -11,17 +11,33 @@
       <mat-sidenav-container class="sidenav-container">
         <!-- Sidebar -->
         <mat-sidenav mode="side" opened class="sidenav">
+          <div class="sidenav-filter">
+            <mat-form-field class="field">
+              <mat-label>Filter</mat-label>
+              <input matInput type="text" [(ngModel)]="filter"/>
+              @if (filter) {
+              <button
+                matSuffix
+                mat-icon-button
+                aria-label="Clear"
+                (click)="filter = ''">
+                <mat-icon>close</mat-icon>
+              </button>
+              }
+            </mat-form-field>
+          </div>
+
           <div class="sidenav-item">
             <button mat-button (click)="addTab()" [disabled]="lastChildFormDirtyState || hasNewProfile()" aria-label="Add Profile" >
               <mat-icon>add</mat-icon>
             </button>
           </div>
 
-          @for (profile of profileService.profiles; let i = $index; track i) {
+          @for (profile of profileService.profiles | filterKeyword:keywordsProviders:filter; let i = $index; track i) {
               <div class="sidenav-item">
                 <button mat-button
                         [class.selected]="i === selectedIndex"
-                        (click)="onTabChange(i)">
+                        (click)="onTabChange(i, profile)">
               {{ profileTabLabel(profile, i) }}
                 </button>
               </div>
@@ -31,9 +47,9 @@
 
         <!-- Main Content -->
         <mat-sidenav-content class="one-form">
-          @if (profileService.profiles[selectedIndex]) {
+          @if (selectedProfile) {
           <app-profile-form
-            [profile]="profileService.profiles[selectedIndex]"
+            [profile]="selectedProfile"
             (onProfileCancel)="onCancel($event)"
             (onProfileDelete)="onDelete($event)"
             (onProfileSave)="onSaveOne($event)"

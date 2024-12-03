@@ -8,20 +8,37 @@
     </div>
 
     <div class="modal-content">
+
       <mat-sidenav-container class="sidenav-container">
         <!-- Sidebar -->
         <mat-sidenav mode="side" opened class="sidenav">
+          <div class="sidenav-filter">
+            <mat-form-field class="field">
+              <mat-label>Filter</mat-label>
+              <input matInput type="text" [(ngModel)]="filter"/>
+              @if (filter) {
+              <button
+                matSuffix
+                mat-icon-button
+                aria-label="Clear"
+                (click)="filter = ''">
+                <mat-icon>close</mat-icon>
+              </button>
+              }
+            </mat-form-field>
+          </div>
+
           <div class="sidenav-item">
             <button mat-button (click)="addTab()" [disabled]="lastChildFormDirtyState || hasNewSecret()" aria-label="Add Secret" >
               <mat-icon>add</mat-icon>
             </button>
           </div>
 
-          @for (secret of secretStorageService.secrets; let i = $index; track i) {
+          @for (secret of secretStorageService.secrets | filterKeyword:keywordsProviders:filter; let i = $index; track i) {
           <div class="sidenav-item">
             <button mat-button
                     [class.selected]="i === selectedIndex"
-                    (click)="onTabChange(i)">
+                    (click)="onTabChange(i, secret)">
               {{
               secretTabLabel(secret, i)
               }}
@@ -32,10 +49,10 @@
 
         <!-- Main Content -->
         <mat-sidenav-content class="one-form">
-          @if (secretStorageService.secrets[selectedIndex]) {
+          @if (selectedSecret) {
           <ng-container>
             <app-secret-form
-              [secret]="secretStorageService.secrets[selectedIndex]"
+              [secret]="selectedSecret"
               (onSecretCancel)="onCancel($event)"
               (onSecretDelete)="onDelete($event)"
               (onSecretSave)="onSaveOne($event)"

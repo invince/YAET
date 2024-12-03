@@ -17,6 +17,7 @@ import {SecretStorageService} from '../../../services/secret-storage.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';
 import {ModalControllerService} from '../../../services/modal-controller.service';
 import {Subscription} from 'rxjs';
+import {FilterKeywordPipe} from '../../../pipes/filter-keyword.pipe';
 
 @Component({
   selector: 'app-secures-menu',
@@ -34,6 +35,8 @@ import {Subscription} from 'rxjs';
     MatInput,
     MatIcon,
     SecretFormComponent,
+
+    FilterKeywordPipe,
   ],
   templateUrl: './secures-menu.component.html',
   styleUrl: './secures-menu.component.css'
@@ -41,8 +44,16 @@ import {Subscription} from 'rxjs';
 export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
 
   selectedIndex!: number;
-
+  selectedSecret!: Secret;
   subscription!: Subscription;
+  filter!: string;
+
+  keywordsProviders: ((secret: Secret) => string | string[])[] = [
+    (secret: Secret) => secret.name,
+    (secret: Secret) => secret.secretType,
+    (secret: Secret) => secret.login,
+  ];
+
   constructor(
     public secretService: SecretService,
     public secretStorageService: SecretStorageService,
@@ -78,8 +89,9 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
   }
 
 
-  onTabChange(i: number) {
+  onTabChange(i: number, secret: Secret) {
     if (this.selectedIndex == i) {
+      this.selectedSecret = secret;
       return;
     }
     if (this.selectedIndex &&
@@ -90,6 +102,7 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
       return;
     }
     this.selectedIndex = i;
+    this.selectedSecret = secret;
     // this.refreshSecretForm();
   }
 
