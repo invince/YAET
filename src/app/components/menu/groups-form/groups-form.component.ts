@@ -14,6 +14,8 @@ import {Group} from '../../../domain/Group';
 import {MatButtonModule} from '@angular/material/button';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
+import {GroupNode} from '../../../domain/GroupNode';
+import {NestedTreeControl} from '@angular/cdk/tree';
 
 @Component({
   selector: 'app-groups-form',
@@ -39,6 +41,7 @@ export class GroupsFormComponent implements OnInit{
   // dataSource: GroupNode[] = [];
   dataSource = new MatTreeNestedDataSource<GroupNode>();
   newGroupName: string = '';
+  treeControl = new NestedTreeControl<GroupNode>(node => node.children);
   constructor(
     private settingService: SettingService,
     public settingStorage: SettingStorageService,
@@ -65,35 +68,16 @@ export class GroupsFormComponent implements OnInit{
   }
 
   createGroupDataSource(): GroupNode[] {
-    let result: GroupNode[] = [];
-    let groups = this.settingStorage.settings.groups;
-    let profiles = this.profileService.profiles;
-
-    if (groups) {
-      for (let oneGroup of groups) {
-        let node = new GroupNode();
-        node.name = oneGroup.name;
-        node.oldName = node.name;
-        node.id = oneGroup.id;
-        node.group = oneGroup;
-        node.color = oneGroup.color;
+    return GroupNode.map2DataSource(
+      this.settingStorage.settings.groups,
+      this.profileService.profiles,
+      true,
+      false,
+      (group, node) => {
         node.editable = true;
-        let filteredProfiles =  profiles.filter(one => one.group == oneGroup.id);
-        if (filteredProfiles) {
-          node.children = [];
-          for (let oneProfile of filteredProfiles) {
-            let childNode = new GroupNode();
-            childNode.name = oneProfile.name;
-            childNode.oldName = oneProfile.name;
-            childNode.id = oneProfile.id;
-            node.children.push(childNode);
-          }
-        }
-
-        result.push(node);
+        return node;
       }
-    }
-    return result;
+    );
   }
 
   onAddGroup($event: any) {
@@ -166,20 +150,4 @@ export class GroupsFormComponent implements OnInit{
   }
 }
 
-export class GroupNode {
-  name? : string;
-
-  oldName? : string;
-
-  id? : string;
-
-  editable: boolean = false;
-
-  color: string = '';
-
-  group?: Group;
-
-  children?: GroupNode[];
-
-}
 

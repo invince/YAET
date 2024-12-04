@@ -9,39 +9,83 @@
 
     <div class="modal-content">
       <mat-sidenav-container class="sidenav-container">
+
         <!-- Sidebar -->
-        <mat-sidenav mode="side" opened class="sidenav">
-          <div class="sidenav-filter">
-            <mat-form-field class="field">
-              <mat-label>Filter</mat-label>
-              <input matInput type="text" [(ngModel)]="filter"/>
-              @if (filter) {
-              <button
-                matSuffix
-                mat-icon-button
-                aria-label="Clear"
-                (click)="filter = ''">
-                <mat-icon>close</mat-icon>
+        <mat-sidenav mode="side" opened >
+          <div class="sidenav">
+            <div class="sidenav-filter">
+              <mat-form-field class="field">
+                <mat-label>Filter</mat-label>
+                <input matInput type="text" [(ngModel)]="filter"/>
+                @if (filter) {
+                <button
+                  matSuffix
+                  mat-icon-button
+                  aria-label="Clear"
+                  (click)="filter = ''">
+                  <mat-icon>close</mat-icon>
+                </button>
+                }
+              </mat-form-field>
+            </div>
+
+            <div class="sidenav-item">
+              <button mat-button (click)="addTab()" [disabled]="lastChildFormDirtyState || hasNewProfile()" aria-label="Add Profile" >
+                <mat-icon>add</mat-icon>
               </button>
-              }
-            </mat-form-field>
-          </div>
+            </div>
 
-          <div class="sidenav-item">
-            <button mat-button (click)="addTab()" [disabled]="lastChildFormDirtyState || hasNewProfile()" aria-label="Add Profile" >
-              <mat-icon>add</mat-icon>
-            </button>
-          </div>
+            @if (sideNavType=='tree') {
+              <mat-tree #tree [dataSource]="treeDataSource" [treeControl]="treeControl" class="group-tree">
+                <!-- Leaf Node -->
+                <mat-nested-tree-node *matTreeNodeDef="let node" >
+                  <div class="group-name"
+                       [class.selected]="node.profile && node.profile.id === selectedProfileId"
+                       (click)="onTabChange(node.profile)">
+                            {{ profileTabLabel(node) }}
+                  </div>
+                </mat-nested-tree-node>
 
-          @for (profile of profileService.profiles | filterKeyword:keywordsProviders:filter; let i = $index; track i) {
+                <!-- Expandable Node -->
+                <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild" >
+                  <div class="tree-parent-node">
+                    <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'Toggle ' + node.name">
+                      <mat-icon class="mat-icon-rtl-mirror">
+                      {{ treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}
+                      </mat-icon>
+                    </button>
+                    <div class="group-name" matTreeNodeToggle >{{ profileTabLabel(node) }}</div>
+                  </div>
+                    <!-- There is inline padding applied to this div using styles.
+                      This padding value depends on the mat-icon-button width.  -->
+                  <div [class.child-tree-invisible]="!treeControl.isExpanded(node)"
+                      role="group">
+                    <ng-container matTreeNodeOutlet></ng-container>
+                  </div>
+                </mat-nested-tree-node>
+              </mat-tree>
+            }
+            @else {
+              @for (profile of profileService.profiles | filterKeyword:keywordsProviders:filter; track profile.id) {
               <div class="sidenav-item">
                 <button mat-button
-                        [class.selected]="i === selectedIndex"
-                        (click)="onTabChange(i, profile)">
-              {{ profileTabLabel(profile, i) }}
+                        [class.selected]="profile.id === selectedProfileId"
+                        (click)="onTabChange(profile)">
+                  {{ profileTabLabel(profile) }}
                 </button>
               </div>
-          }
+              }
+            }
+
+            <div class="sidenav-type-bar">
+              <button mat-icon-button (click)="changeSideNavType('flat')" aria-label="Flat Style">
+                <mat-icon>menu</mat-icon>
+              </button>
+              <button mat-icon-button (click)="changeSideNavType('tree')" aria-label="Tree Style">
+                <mat-icon>read_more</mat-icon>
+              </button>
+            </div>
+          </div>
 
         </mat-sidenav>
 

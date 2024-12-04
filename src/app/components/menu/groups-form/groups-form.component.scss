@@ -18,4 +18,33 @@
     height: 0;
   }
 
+  .group-tree {
+    padding-bottom: 20px;
+
+    .child-tree-invisible {
+      display: none;
+    }
+
+    .mat-nested-tree-node div[role=group] {
+      padding-left: 48px;
+      padding-bottom: 10px;
+    }
+
+
+    div[role=group] > .mat-nested-tree-node {
+      display: flex;
+      align-items: center; /* Aligns items vertically */
+      padding-left: 30px;
+    }
+
+    .tree-parent-node {
+      display: flex;
+      align-items: center; /* Aligns items vertically */
+
+      .group-name {
+        font-weight: bold;
+      }
+    }
+  }
+
 }

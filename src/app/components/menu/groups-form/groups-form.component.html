@@ -13,13 +13,13 @@
     }
   </mat-form-field>
 
-  <mat-tree #tree [dataSource]="dataSource"
-            [childrenAccessor]="childrenAccessor" class="group-tree">
+  <mat-tree #tree [dataSource]="dataSource" [treeControl]="treeControl" class="group-tree">
 
-    <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
-      <!-- use a disabled button to provide padding for tree leaf -->
-      <button mat-icon-button disabled></button>
-      @if (node.editable) {
+    <mat-nested-tree-node *matTreeNodeDef="let node" >
+      <div>
+        @if (node.editable) {
+          <!-- add a disabled button to align the group node-->
+          <button mat-icon-button disabled></button>
           <mat-chip-row
             class="transparent-chip"
             [style.background]="node.color"
@@ -28,6 +28,46 @@
             [editable]="true"
             (edited)="update(node, $event)"
           >
+            {{node.name}}
+            <!-- Color Picker -->
+            <mat-icon matChipTrailingIcon class="fake-color-picker-btn"  (click)="openColorPicker(node.id)">color_lens</mat-icon>
+            <button matChipRemove [attr.aria-label]="'remove ' + node.name"  [style.cursor]="'grab'">
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip-row>
+
+          <input
+            type="color"
+            class="hidden-color-picker"
+            [value]="node.color"
+            (change)="updateColor(node, $event)"
+            [id]="'group-color-picker-' + node.id"
+          />
+        }
+        @else {
+          <div class="group-name">{{node.name}}</div>
+        }
+      </div>
+    </mat-nested-tree-node>
+    <!-- This is the tree node template for expandable nodes -->
+    <mat-nested-tree-node *matTreeNodeDef="let node;when: hasChild"
+                          [cdkTreeNodeTypeaheadLabel]="node.name">
+      <div class="tree-parent-node">
+        <button mat-icon-button matTreeNodeToggle
+                [attr.aria-label]="'Toggle ' + node.name">
+          <mat-icon class="mat-icon-rtl-mirror">
+            {{tree.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+          </mat-icon>
+        </button>
+        @if (node.editable) {
+        <mat-chip-row
+          class="transparent-chip"
+          [style.background]="node.color"
+          [removable]="true"
+          (removed)="remove(node)"
+          [editable]="true"
+          (edited)="update(node, $event)"
+        >
           {{node.name}}
           <!-- Color Picker -->
           <mat-icon matChipTrailingIcon class="fake-color-picker-btn"  (click)="openColorPicker(node.id)">color_lens</mat-icon>
@@ -35,7 +75,6 @@
             <mat-icon>cancel</mat-icon>
           </button>
         </mat-chip-row>
-
         <input
           type="color"
           class="hidden-color-picker"
@@ -43,48 +82,18 @@
           (change)="updateColor(node, $event)"
           [id]="'group-color-picker-' + node.id"
         />
-      }
-      @else {
+        }
+        @else {
         <div class="group-name">{{node.name}}</div>
-      }
-    </mat-tree-node>
-    <!-- This is the tree node template for expandable nodes -->
-    <mat-tree-node *matTreeNodeDef="let node;when: hasChild" matTreeNodePadding matTreeNodeToggle
-                   [cdkTreeNodeTypeaheadLabel]="node.name">
-      <button mat-icon-button matTreeNodeToggle
-              [attr.aria-label]="'Toggle ' + node.name">
-        <mat-icon class="mat-icon-rtl-mirror">
-          {{tree.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
-        </mat-icon>
-      </button>
-      @if (node.editable) {
-      <mat-chip-row
-        class="transparent-chip"
-        [style.background]="node.color"
-        [removable]="true"
-        (removed)="remove(node)"
-        [editable]="true"
-        (edited)="update(node, $event)"
-      >
-        {{node.name}}
-        <!-- Color Picker -->
-        <mat-icon matChipTrailingIcon class="fake-color-picker-btn"  (click)="openColorPicker(node.id)">color_lens</mat-icon>
-        <button matChipRemove [attr.aria-label]="'remove ' + node.name"  [style.cursor]="'grab'">
-          <mat-icon>cancel</mat-icon>
-        </button>
-      </mat-chip-row>
-      <input
-        type="color"
-        class="hidden-color-picker"
-        [value]="node.color"
-        (change)="updateColor(node, $event)"
-        [id]="'group-color-picker-' + node.id"
-      />
-      }
-      @else {
-      <div class="group-name">{{node.name}}</div>
-      }
-    </mat-tree-node>
+        }
+      </div>
+      <!-- There is inline padding applied to this div using styles.
+  This padding value depends on the mat-icon-button width.  -->
+      <div [class.child-tree-invisible]="!treeControl.isExpanded(node)"
+           role="group">
+        <ng-container matTreeNodeOutlet></ng-container>
+      </div>
+    </mat-nested-tree-node>
   </mat-tree>
 
 </div>

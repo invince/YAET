@@ -18,7 +18,7 @@ import {ConfirmationComponent} from '../confirmation/confirmation.component';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {MasterKeyService} from '../../../services/master-key.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';
-import {UISettings} from '../../../domain/UISettings';
+import {SideNavType, UISettings} from '../../../domain/UISettings';
 import {MatChip} from '@angular/material/chips';
 import {TagsFormComponent} from '../tags-form/tags-form.component';
 import {GroupsFormComponent} from '../groups-form/groups-form.component';
@@ -56,6 +56,8 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   form!: FormGroup;
 
   LOCAL_TERM_OPTIONS = LocalTerminalType;
+
+  SIDE_NAV_TYPE_OPTIONS = SideNavType;
 
   private subscription!: Subscription;
   currentTabIndex: number = 0;
@@ -104,10 +106,11 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   private initForm() {
     return this.fb.group(
       {
-        localTerminalType: ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
-        localTerminalExecPath: ['', Validators.required],
-        uiProfileLabelLength: ['', Validators.required],
-        uiSecretLabelLength: ['', Validators.required],
+        localTerminalType:        ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
+        localTerminalExecPath:    ['', Validators.required],
+        uiProfileLabelLength:     ['', Validators.required],
+        profileSideNavType:       ['', Validators.required],
+        uiSecretLabelLength:      ['', Validators.required],
       },
       {validators: []}
     );
@@ -183,6 +186,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       settings.ui = new UISettings();
     }
     settings.ui.profileLabelLength = this.form.get('uiProfileLabelLength')?.value;
+    settings.ui.profileSideNavType = this.form.get('profileSideNavType')?.value;
     settings.ui.secretLabelLength = this.form.get('uiSecretLabelLength')?.value;
 
     return settings;

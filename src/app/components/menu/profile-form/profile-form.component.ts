@@ -163,6 +163,8 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
         let group = this.settingService.findGroupById(profile.group);
         this.form.get('group')?.setValue(group);
         this.groupColor = group?.color;
+      } else {
+        this.groupColor = '';
       }
 
       this.form.get('tags')?.setValue([]);

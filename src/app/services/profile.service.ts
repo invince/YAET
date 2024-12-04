@@ -143,4 +143,16 @@ export class ProfileService {
   deleteNotSavedNewProfileInLocal() {
     this._profiles = this._profiles.filter(one => !one.isNew);
   }
+
+  updateProfile($event: Profile) {
+    if ($event) {
+      let index = this._profiles.findIndex(one => one.id == $event.id);
+      if (index > 0) {
+        this._profiles[index] = $event;
+      } else {
+        console.warn("Profile not found, we'll add new profile");
+        this._profiles.push($event);
+      }
+    }
+  }
 }

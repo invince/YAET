@@ -1,0 +1,92 @@
+.modal-content {
+  width: 850px;
+  display: flex;
+}
+
+
+.field {
+  width: 100%;
+}
+
+.sidenav-container {
+  height: 100%;
+}
+
+.sidenav {
+  width: 150px; /* Adjust the width as needed */
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Ensure it fills the parent container */
+}
+
+.sidenav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+}
+
+.sidenav-item button {
+  width: 100%;
+  text-align: left;
+}
+
+.mat-sidenav-content {
+  width: 700px;
+}
+
+.one-form {
+  background-color: #696969;
+  flex: 1; /* Allow the child to grow */
+  display: flex;
+  flex-direction: column; /* Adjust for your layout */
+}
+
+app-secret-form {
+  margin: 0;
+}
+
+.modal-content {
+  padding: 0;
+}
+
+.sidenav-type-bar {
+  margin-top: auto; /* Push this element to the bottom */
+  display: flex;
+  justify-content: space-around; /* Distribute buttons evenly */
+  padding: 8px 0;
+  border-top: 1px solid #ccc; /* Optional: Add a top border for separation */
+}
+
+.group-name {
+  cursor: pointer;
+}
+
+
+.group-tree {
+  .child-tree-invisible {
+    display: none;
+  }
+
+  .mat-nested-tree-node div[role=group] {
+    padding-left: 48px;
+    padding-bottom: 10px;
+  }
+
+
+  div[role=group] > .mat-nested-tree-node {
+    display: flex;
+    align-items: center; /* Aligns items vertically */
+    padding-left: 10px;
+  }
+
+  .tree-parent-node {
+    display: flex;
+    align-items: center; /* Aligns items vertically */
+
+    .group-name {
+      font-weight: bold;
+    }
+  }
+}
+
