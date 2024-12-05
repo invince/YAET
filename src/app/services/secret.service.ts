@@ -20,14 +20,14 @@ export class SecretService{
   ) {
     electron.onLoadedEvent(SECRETS_LOADED, data => {
       this.apply(data);
-    })
+    });
   }
 
   apply(data: any) {
     this.masterKeyService.decrypt2String(data).then(
       decrypted => {
         if (decrypted) {
-          this.secretStorage.secrets =  JSON.parse(decrypted);
+          this.secretStorage.data =  JSON.parse(decrypted);
           this._loaded = true;
         }
       }
@@ -41,20 +41,23 @@ export class SecretService{
     if (!secret) {
       return;
     }
-    if (!this.secretStorage.secrets) {
-      this.secretStorage.secrets= [];
+    if (!this.secretStorage.data.secrets) {
+      this.secretStorage.data.secrets= [];
     }
-    this.secretStorage.secrets = this.secretStorage.secrets.filter(one => one.id != secret.id);
+    this.secretStorage.data.secrets = this.secretStorage.data.secrets.filter(one => one.id != secret.id);
   }
 
   async saveAll() {
-    if (!this.secretStorage.secrets) {
+    if (!this.secretStorage.data.secrets) {
       return;
     }
-    for (let one of this.secretStorage.secrets) {
+    for (let one of this.secretStorage.data.secrets) {
       one.isNew = false;
     }
-    this.masterKeyService.encrypt(this.secretStorage.secrets).then(
+
+    this.secretStorage.data.revision = Date.now();
+
+    this.masterKeyService.encrypt(this.secretStorage.data).then(
       encrypted => {
         if (encrypted) {
           this.electron.saveSecrets(encrypted);
@@ -70,6 +73,6 @@ export class SecretService{
 
 
   deleteNotSavedNewSecretInLocal() {
-    this.secretStorage.secrets = this.secretStorage.secrets.filter(one => !one.isNew);
+    this.secretStorage.data.secrets = this.secretStorage.data.secrets.filter(one => !one.isNew);
   }
 }

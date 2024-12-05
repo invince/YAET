@@ -25,9 +25,10 @@ function createWindow() {
   mainWindow.loadURL(`http://localhost:4200`);
 
   mainWindow.webContents.once('dom-ready', () => {
-    load('settings.json', "settings-loaded", false);
-    load('profiles.json', "profiles-loaded", false);
-    load('secrets.json', "secrets-loaded", true);
+    load('config/settings.json', "settings-loaded", false);
+    load('config/profiles.json', "profiles-loaded", false);
+    load('config/secrets.json', "secrets-loaded", true);
+    load('config/cloud.json', "cloud-loaded", true);
   })
 }
 
@@ -75,11 +76,11 @@ function save(jsonFileName, data, isRaw) {
 
 ipcMain.on('settings-reload', (event, obj) => {
   console.log("reloading...")
-  load('settings.json', "settings-loaded", false);
+  load('config/settings.json', "settings-loaded", false);
 });
 
 ipcMain.on('settings-save', (event, obj) => {
-  save('settings.json', obj.data, false)
+  save('config/settings.json', obj.data, false)
     .then(() => console.log('Setting saved successfully!'))
     .catch((error) => console.error('Error saving file:', error));
 });
@@ -87,24 +88,35 @@ ipcMain.on('settings-save', (event, obj) => {
 
 ipcMain.on('profiles-reload', (event, obj) => {
   console.log("reloading...")
-  load('profiles.json', "profiles-loaded", true);
+  load('config/profiles.json', "profiles-loaded", true);
 });
 
 
 
 ipcMain.on('profiles-save', (event, obj) => {
-  save('profiles.json', obj.data, false)
+  save('config/profiles.json', obj.data, false)
     .then(() => console.log('Profiles saved successfully!'))
     .catch((error) => console.error('Error saving file:', error));
 });
 
 ipcMain.on('secrets-reload', (event, obj) => {
   console.log("reloading...")
-  load('secrets.json', "secrets-loaded", true);
+  load('config/secrets.json', "secrets-loaded", true);
 });
 
 ipcMain.on('secrets-save', (event, obj) => {
-  save('secrets.json', obj.data, true)
+  save('config/secrets.json', obj.data, true)
+    .then(() => console.log('Secrets saved successfully!'))
+    .catch((error) => console.error('Error saving file:', error));
+});
+
+ipcMain.on('cloud-reload', (event, obj) => {
+  console.log("reloading...")
+  load('config/cloud.json', "cloud-loaded", true);
+});
+
+ipcMain.on('cloud-save', (event, obj) => {
+  save('config/cloud.json', obj.data, true)
     .then(() => console.log('Secrets saved successfully!'))
     .catch((error) => console.error('Error saving file:', error));
 });

@@ -20,7 +20,7 @@ import {MatInput} from '@angular/material/input';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {SshProfileFormComponent} from '../ssh-profile-form/ssh-profile-form.component';
 import {ProfileService} from '../../../services/profile.service';
-import {IsAChildForm} from '../enhanced-form-mixin';
+import {IsAChildForm} from '../../enhanced-form-mixin';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {MasterKeyService} from '../../../services/master-key.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';

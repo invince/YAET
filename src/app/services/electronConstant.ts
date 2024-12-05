@@ -14,3 +14,7 @@ export const SECRETS_RELOAD = 'secrets-reload';
 export const SAVE_MASTERKEY = 'keytar-save-password';
 export const GET_MASTERKEY = 'keytar-get-password';
 export const DELETE_MASTERKEY = 'keytar-delete-password';
+
+export const CLOUD_LOADED = 'cloud-loaded';
+export const CLOUD_SAVE = 'cloud-save';
+export const CLOUD_RELOAD = 'cloud-reload';

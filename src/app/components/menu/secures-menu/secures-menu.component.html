@@ -34,13 +34,13 @@
             </button>
           </div>
 
-          @for (secret of secretStorageService.secrets | filterKeyword:keywordsProviders:filter; let i = $index; track i) {
+          @for (secret of secretStorageService.data.secrets | filterKeyword:keywordsProviders:filter; track secret.id) {
           <div class="sidenav-item">
             <button mat-button
-                    [class.selected]="i === selectedIndex"
-                    (click)="onTabChange(i, secret)">
+                    [class.selected]="secret.id === selectedId"
+                    (click)="onTabChange(secret)">
               {{
-              secretTabLabel(secret, i)
+              secretTabLabel(secret)
               }}
             </button>
           </div>

@@ -3,7 +3,7 @@ import {RouterOutlet} from '@angular/router';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatTabsModule} from '@angular/material/tabs';
 import {TerminalComponent} from './components/terminal/terminal.component';
-import {Profile, ProfileCategory, ProfileType} from './domain/Profile';
+import { ProfileCategory, ProfileType} from './domain/Profile';
 import {TabInstance} from './domain/TabInstance';
 import {CommonModule} from '@angular/common';
 import {MatIcon} from '@angular/material/icon';
@@ -27,6 +27,8 @@ import {MatDialog} from '@angular/material/dialog';
 import {MasterKeyService} from './services/master-key.service';
 import {Subscription} from 'rxjs';
 import {ModalControllerService} from './services/modal-controller.service';
+import {CloudComponent} from './components/menu/cloud/cloud.component';
+import {CloudService} from './services/cloud.service';
 
 @Component({
   selector: 'app-root',
@@ -51,6 +53,7 @@ import {ModalControllerService} from './services/modal-controller.service';
       SecuresMenuComponent,
       ProfilesMenuComponent,
       QuickconnectMenuComponent,
+      CloudComponent,
     ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
@@ -75,6 +78,7 @@ export class AppComponent implements OnInit, OnDestroy{
     private profileService: ProfileService,
     private secretService: SecretService,
     private masterKeyService: MasterKeyService,
+    private cloudService: CloudService,
 
     public modalControl: ModalControllerService,
 
@@ -109,6 +113,7 @@ export class AppComponent implements OnInit, OnDestroy{
             && this.profileService.isLoaded
             && this.secretService.isLoaded
             && this.masterKeyService.isMasterKeyLoaded
+            && this.cloudService.isLoaded
       ;
   }
 
@@ -133,7 +138,7 @@ export class AppComponent implements OnInit, OnDestroy{
 
 
   secureMenu() {
-    this.requireMasterKey(() => this.toggleMenu('secure'))
+    this.requireMasterKey(() => this.toggleMenu('secure'));
   }
 
   requireMasterKey(callback: ()=>void) {
@@ -162,11 +167,12 @@ export class AppComponent implements OnInit, OnDestroy{
   }
 
   favoriteMenu() {
-    this.requireMasterKey(() => this.toggleMenu('favorite'))
+    this.requireMasterKey(() => this.toggleMenu('favorite'));
   }
 
-  syncMenu() {
+  cloudMenu() {
     this.toggleMenu('cloud');
+    // this.requireMasterKey(() => this.toggleMenu('cloud'));
   }
 
 

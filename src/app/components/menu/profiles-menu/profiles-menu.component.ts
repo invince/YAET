@@ -13,7 +13,7 @@ import {MatInput} from '@angular/material/input';
 import {MatButtonModule} from '@angular/material/button';
 import {MatSelect} from '@angular/material/select';
 import {ProfileFormComponent} from '../profile-form/profile-form.component';
-import {HasChildForm} from '../enhanced-form-mixin';
+import {HasChildForm} from '../../enhanced-form-mixin';
 import {SettingStorageService} from '../../../services/setting-storage.service';
 import {ModalControllerService} from '../../../services/modal-controller.service';
 import {Subscription} from 'rxjs';

@@ -12,7 +12,7 @@ import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatSelectModule} from '@angular/material/select';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {SecretFormComponent} from '../secret-form/secret-form.component';
-import {HasChildForm} from '../enhanced-form-mixin';
+import {HasChildForm} from '../../enhanced-form-mixin';
 import {SecretStorageService} from '../../../services/secret-storage.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';
 import {ModalControllerService} from '../../../services/modal-controller.service';
@@ -39,12 +39,13 @@ import {FilterKeywordPipe} from '../../../pipes/filter-keyword.pipe';
     FilterKeywordPipe,
   ],
   templateUrl: './secures-menu.component.html',
-  styleUrl: './secures-menu.component.css'
+  styleUrl: './secures-menu.component.css',
+  providers: [FilterKeywordPipe]
 })
 export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
 
-  selectedIndex!: number;
-  selectedSecret!: Secret;
+  selectedId!: string | undefined;
+  selectedSecret!: Secret | undefined;
   subscription!: Subscription;
   filter!: string;
 
@@ -62,6 +63,7 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
 
     private _snackBar: MatSnackBar,
     private modalControl: ModalControllerService,
+    private keywordPipe: FilterKeywordPipe,
 
     ) {
     super();
@@ -83,25 +85,31 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
 
 
   addTab() {
-    this.secretStorageService.secrets.push(new Secret());
-    this.selectedIndex = this.secretStorageService.secrets.length - 1; // Focus on the newly added tab
+    let secret = new Secret();
+    this.secretStorageService.data.secrets.push(secret);
+    this.selectedId = secret.id;
+    this.selectedSecret = secret;
     // this.refreshSecretForm();
   }
 
 
-  onTabChange(i: number, secret: Secret) {
-    if (this.selectedIndex == i) {
+  onTabChange(secret: Secret) {
+    if (!secret) {
+      return;
+    }
+
+    if (this.selectedId == secret.id) {
       this.selectedSecret = secret;
       return;
     }
-    if (this.selectedIndex &&
+    if (this.selectedId &&
         (this.lastChildFormInvalidState || this.lastChildFormDirtyState)) {
       this._snackBar.open('Please finish current form', 'Ok', {
         duration: 3000
       });
       return;
     }
-    this.selectedIndex = i;
+    this.selectedId = secret.id;
     this.selectedSecret = secret;
     // this.refreshSecretForm();
   }
@@ -111,12 +119,14 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
     if (!$event.isNew) {
       await this.secretService.saveAll();
     }
-    this.selectedIndex = Math.min(this.selectedIndex, this.secretStorageService.secrets.length - 1);
+    this.selectedId = undefined;
+    this.selectedSecret = undefined;
     // this.refreshSecretForm();
   }
 
   async onSaveOne($event: Secret) {
-    this.secretStorageService.secrets[this.selectedIndex] = $event;
+
+    this.secretStorageService.updateSecret($event);
     await this.secretService.saveAll();
     // this.refreshSecretForm();
   }
@@ -130,7 +140,7 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
     this.close();
   }
 
-  secretTabLabel(secret: Secret, index: number) {
+  secretTabLabel(secret: Secret) {
     let LIMIT = this.settingStorage.settings?.ui?.secretLabelLength || 10;
     let label = 'New';
     if (secret && secret.name) {
@@ -139,14 +149,13 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
         label = label.slice(0, LIMIT) + '...';
       }
     }
-    if (index == this.selectedIndex && this.lastChildFormDirtyState) {
+    if (secret.id == this.selectedId && this.lastChildFormDirtyState) {
       label += '*'
     }
     return label;
   }
 
   hasNewSecret() {
-    let currentSecret = this.secretStorageService.secrets[this.selectedIndex];
-    return currentSecret?.isNew;
+    return this.selectedSecret?.isNew;
   }
 }

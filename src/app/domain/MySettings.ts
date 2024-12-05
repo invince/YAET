@@ -6,6 +6,7 @@ import {GeneralSettings} from './GeneralSettings';
 
 export class MySettings {
 
+  revision: number;
   public general!: GeneralSettings;
   public ui!: UISettings;
   public groups: Group[];
@@ -14,10 +15,12 @@ export class MySettings {
 
 
   constructor() {
+    this.general = new GeneralSettings();
     this.localTerminal = new LocalTerminalProfile();
     this.ui = new UISettings();
     this.groups = [];
     this.tags = [];
+    this.revision = Date.now();
   }
 
 }

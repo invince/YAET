@@ -11,6 +11,7 @@ import {ProfileService} from './profile.service';
 import {Group} from '../domain/Group';
 import {UISettings} from '../domain/UISettings';
 import {GeneralSettings} from '../domain/GeneralSettings';
+import {CloudSettings} from '../domain/CloudSettings';
 
 @Injectable({
   providedIn: 'root'
@@ -28,7 +29,7 @@ export class SettingService {
     private settingStorage: SettingStorageService,
     private profileService: ProfileService,
     ) {
-    electron.onLoadedEvent(SETTINGS_LOADED, data => this.apply(data))
+    electron.onLoadedEvent(SETTINGS_LOADED, data => this.apply(data));
   }
 
   private apply(data: any) {
@@ -56,6 +57,7 @@ export class SettingService {
     if (settings) {
       this.settingStorage.settings = settings;
     }
+    this.settingStorage.settings.revision = Date.now();
     this.electron.saveSetting(this.settingStorage.settings);
   }
 
@@ -204,4 +206,6 @@ export class SettingService {
     this.settingStorage.settings.ui = ui;
     this.save();
   }
+
+
 }

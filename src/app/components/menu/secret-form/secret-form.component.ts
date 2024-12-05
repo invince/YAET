@@ -8,7 +8,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
 import {MatSelectChange, MatSelectModule} from '@angular/material/select';
 import {MenuComponent} from '../menu.component';
-import {IsAChildForm} from '../enhanced-form-mixin';
+import {IsAChildForm} from '../../enhanced-form-mixin';
 
 @Component({
   selector: 'app-secret-form',
@@ -168,14 +168,16 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
   }
 
   override formToModel(): Secret {
-    let secret = new Secret();
-    secret.name        = this.form.get('name')?.value;
-    secret.secretType  = this.form.get('secretType')?.value;
-    secret.login       = this.form.get('login')?.value;
-    secret.password    = this.form.get('password')?.value;
-    secret.key         = this.form.get('key')?.value;
-    secret.keyphrase   = this.form.get('keyphrase')?.value;
-    return secret;
+    if (!this._secret) {
+      this._secret = new Secret();
+    }
+    this._secret.name        = this.form.get('name')?.value;
+    this._secret.secretType  = this.form.get('secretType')?.value;
+    this._secret.login       = this.form.get('login')?.value;
+    this._secret.password    = this.form.get('password')?.value;
+    this._secret.key         = this.form.get('key')?.value;
+    this._secret.keyphrase   = this.form.get('keyphrase')?.value;
+    return this._secret;
   }
 
 }

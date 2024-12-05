@@ -15,7 +15,7 @@
       <button mat-mini-fab color="primary" (click)="secureMenu()" aria-label="Save">
         <mat-icon>password</mat-icon>
       </button>
-      <button mat-mini-fab color="primary" (click)="syncMenu()" aria-label="Sync">
+      <button mat-mini-fab color="primary" (click)="cloudMenu()" aria-label="Cloud">
         <mat-icon>cloud</mat-icon>
       </button>
 
@@ -66,6 +66,9 @@
         }
         @case('secure') {
           <app-secures-menu [@slideInOut]="'in'" (closeEvent)="modalControl.closeModal('secure', true)"></app-secures-menu>
+        }
+        @case('cloud') {
+        <app-cloud-menu [@slideInOut]="'in'" (closeEvent)="modalControl.closeModal('cloud', true)"></app-cloud-menu>
         }
         @case('setting') {
           <app-setting-menu [@slideInOut]="'in'" (closeEvent)="modalControl.closeModal('setting')"></app-setting-menu>

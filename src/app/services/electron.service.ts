@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core';
 import {IpcRenderer} from 'electron';
 import {TabInstance} from '../domain/TabInstance';
 import {
+  CLOUD_RELOAD, CLOUD_SAVE,
   CREATION_LOCAL_TERMINAL,
   CREATION_SSH_TERMINAL,
   DELETE_MASTERKEY,
@@ -174,5 +175,17 @@ export class ElectronService {
     }
   }
 
+
+  async saveCloud(encrypted: string) {
+    if(this.ipc) {
+      await this.ipc.send(CLOUD_SAVE, {data: encrypted});
+    }
+  }
+
+  reloadCloud() {
+    if (this.ipc) {
+      this.ipc.send(CLOUD_RELOAD, {});
+    }
+  }
 
 }

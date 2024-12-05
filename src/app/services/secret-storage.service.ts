@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {Secret} from '../domain/Secret';
+import {Secret, Secrets} from '../domain/Secret';
 
 @Injectable({
   providedIn: 'root'
@@ -7,25 +7,36 @@ import {Secret} from '../domain/Secret';
 // to avoid circular dependency between SecretService and ElectronService
 export class SecretStorageService {
 
-  private _secrets!: Secret[];
+  private _data!: Secrets;
   constructor() { }
 
-  set secrets(value: Secret[]) {
-    this._secrets = value;
+  set data(data: Secrets) {
+    this._data = data;
   }
-  get secrets(): Secret[] {
-    if (!this._secrets) {
-      // [TEST CODE]
-      // let one = new Secret();
-      // one.name = 'test';
-      // one.isNew = false;
-      // this._secrets = [new Secret(), one];
-      this._secrets = [];
+
+  get data(): Secrets {
+    if (!this._data) {
+      this._data = new Secrets();
     }
-    return this._secrets;
+    if (!this._data.secrets) {
+      this._data.secrets = [];
+    }
+    return this._data;
   }
 
   findById(id: string): Secret | undefined {
-    return this._secrets.find(one => one.id == id);
+    return this._data.secrets.find(one => one.id == id);
+  }
+
+  updateSecret($event: Secret) {
+    if ($event) {
+      let index = this._data.secrets.findIndex(one => one.id == $event.id);
+      if (index >= 0) {
+        this._data.secrets[index] = $event;
+      } else {
+        console.warn("Secret not found, we'll add new secret");
+        this._data.secrets.push($event);
+      }
+    }
   }
 }

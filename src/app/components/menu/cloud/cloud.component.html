@@ -1,0 +1,103 @@
+<div class="modal-container">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Sync</h3>
+      <button mat-icon-button (click)="close()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="modal-content">
+      <div class="cloud-form" [formGroup]="form">
+        <mat-form-field class="field-long">
+          <mat-label>Git URl</mat-label>
+          <input matInput type="text"
+                 formControlName="url"
+                 required/>
+          @if (form.get('url')?.value) {
+            <button
+              matSuffix
+              mat-icon-button
+              aria-label="Clear"
+              (click)="clear(form,'url')">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+        </mat-form-field>
+
+
+        <mat-radio-group class="field" aria-label="Auth Type" formControlName="authType" required>
+          @for (oneType of AUTH_OPTIONS | keyvalue : unordered; track oneType.value) {
+            <mat-radio-button [value]="oneType.value">{{ oneType.value }}</mat-radio-button>
+          }
+        </mat-radio-group>
+
+        @switch (form.get('authType')?.value) {
+          @case (AUTH_OPTIONS.LOGIN) {
+            <mat-form-field class="field" required>
+              <mat-label>Login</mat-label>
+              <input matInput type="text" formControlName="login" />
+              @if (form.get('login')?.value) {
+              <button
+                matSuffix
+                mat-icon-button
+                aria-label="Clear"
+                (click)="clear(form,'host')">
+                <mat-icon>close</mat-icon>
+              </button>
+              }
+            </mat-form-field>
+
+            <mat-form-field class="field" required>
+              <mat-label>Password</mat-label>
+              <input matInput type="password" formControlName="password" />
+            </mat-form-field>
+
+            <mat-form-field class="field" required>
+              <mat-label>Confirm Password</mat-label>
+              <input matInput type="password" formControlName="confirmPassword" />
+            </mat-form-field>
+          }
+
+          @case (AUTH_OPTIONS.SECRET) {
+            <mat-form-field class="field" required>
+              <mat-label>Secret</mat-label>
+              <mat-select (selectionChange)="onSelectSecret($event)" formControlName="secretId">
+                @for (oneSecret of secretStorageService.data.secrets; track oneSecret.id) {
+                <mat-option [value]="oneSecret.id">
+                {{ displaySecretOptionName(oneSecret) }}
+                </mat-option>
+                }
+              </mat-select>
+              @if (form.get('secretId')?.value) {
+                <button
+                  matSuffix
+                  mat-icon-button
+                  aria-label="Clear"
+                  (click)="clear(form,'secretId')">
+                  <mat-icon>close</mat-icon>
+                </button>
+              }
+            </mat-form-field>
+          }
+        }
+        @if (form.hasError('passwordMismatch')) {
+          <mat-error>
+            Password and Confirm Password don't match
+          </mat-error>
+        }
+        @if (form.hasError('secretRequired')) {
+          <mat-error>
+            Secret is required
+          </mat-error>
+        }
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button mat-button (click)="close()">Cancel</button>
+      <button mat-button (click)="upload()">Upload</button>
+      <button mat-button (click)="download()">Download</button>
+    </div>
+  </div>
+</div>

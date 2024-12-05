@@ -1,6 +1,7 @@
 import {LocalTerminalProfile} from './LocalTerminalProfile';
 import {v4 as uuidv4} from 'uuid';
 import {SSHTerminalProfile} from './SSHTerminalProfile';
+import {Secret} from './Secret';
 
 export enum ProfileCategory {
   TERMINAL = 'TERMINAL',
@@ -39,6 +40,19 @@ export const ProfileCategoryTypeMap = new Map<ProfileCategory, any>([
     ProfileType.SFTP_FILE_EXPLORER,
   ]],
 ]);
+
+export class Profiles {
+
+  revision: number;
+
+  profiles: Profile[];
+
+  constructor() {
+    this.revision = Date.now();
+    this.profiles = [];
+  }
+
+}
 
 
 export class Profile {

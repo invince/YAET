@@ -1,0 +1,25 @@
+.modal-content {
+  width: 550px;
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  padding: 0;
+}
+
+.cloud-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.field-long {
+  margin-left: 16px;
+  margin-top: 16px;
+  width: 480px;
+}
+
+
+.field {
+  margin-left: 16px;
+  margin-top: 16px;
+  width: 280px;
+}

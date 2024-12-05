@@ -14,7 +14,7 @@ import {MatInput} from '@angular/material/input';
 import {Subscription} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
 import {MasterKeyComponent} from '../master-key/master-key.component';
-import {ConfirmationComponent} from '../confirmation/confirmation.component';
+import {ConfirmationComponent} from '../../confirmation/confirmation.component';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {MasterKeyService} from '../../../services/master-key.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';

@@ -5,12 +5,11 @@ import {MatInput} from '@angular/material/input';
 import {MatIcon} from '@angular/material/icon';
 import {FormBuilder, FormGroup, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators} from '@angular/forms';
 import {CommonModule} from '@angular/common';
-import {SecretService} from '../../../services/secret.service';
-import {AuthType, Secret, SecretType} from '../../../domain/Secret';
+import {AuthType, Secret} from '../../../domain/Secret';
 import {MenuComponent} from '../menu.component';
 import {MatIconButton} from '@angular/material/button';
 import {MatOption, MatSelect, MatSelectChange} from '@angular/material/select';
-import {ChildFormAsFormControl, IsAChildForm} from '../enhanced-form-mixin';
+import {ChildFormAsFormControl} from '../../enhanced-form-mixin';
 import {MatRadioButton, MatRadioGroup} from '@angular/material/radio';
 import {SecretStorageService} from '../../../services/secret-storage.service';
 

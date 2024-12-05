@@ -12,6 +12,19 @@ export enum AuthType {
   LOGIN = 'login',
   SECRET = 'secret',
 }
+
+export class Secrets {
+
+  revision: number;
+
+  secrets: Secret[];
+
+  constructor() {
+    this.revision = Date.now();
+    this.secrets = [];
+  }
+}
+
 export class Secret {
 
   id: string = uuidv4();
