@@ -9,6 +9,8 @@ import {SettingStorageService} from './setting-storage.service';
 import {Tag} from '../domain/Tag';
 import {ProfileService} from './profile.service';
 import {Group} from '../domain/Group';
+import {UISettings} from '../domain/UISettings';
+import {GeneralSettings} from '../domain/GeneralSettings';
 
 @Injectable({
   providedIn: 'root'
@@ -185,6 +187,21 @@ export class SettingService {
           one.color = color;
         }
       });
+    this.save();
+  }
+
+  saveLocalTermConfig(localTerm: LocalTerminalProfile) {
+    this.settingStorage.settings.localTerminal = localTerm;
+    this.save();
+  }
+
+  saveGeneralConfig(general: GeneralSettings) {
+    this.settingStorage.settings.general = general;
+    this.save();
+  }
+
+  saveUiConfig(ui: UISettings) {
+    this.settingStorage.settings.ui = ui;
     this.save();
   }
 }

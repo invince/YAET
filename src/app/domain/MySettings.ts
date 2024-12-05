@@ -2,15 +2,16 @@ import {LocalTerminalProfile} from './LocalTerminalProfile';
 import {UISettings} from './UISettings';
 import {Tag} from './Tag';
 import {Group} from './Group';
+import {GeneralSettings} from './GeneralSettings';
 
 export class MySettings {
 
-  public localTerminal!: LocalTerminalProfile;
-
+  public general!: GeneralSettings;
+  public ui!: UISettings;
   public groups: Group[];
   public tags: Tag[];
+  public localTerminal!: LocalTerminalProfile;
 
-  public ui!: UISettings;
 
   constructor() {
     this.localTerminal = new LocalTerminalProfile();

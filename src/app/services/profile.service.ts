@@ -147,7 +147,7 @@ export class ProfileService {
   updateProfile($event: Profile) {
     if ($event) {
       let index = this._profiles.findIndex(one => one.id == $event.id);
-      if (index > 0) {
+      if (index >= 0) {
         this._profiles[index] = $event;
       } else {
         console.warn("Profile not found, we'll add new profile");

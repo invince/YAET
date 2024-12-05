@@ -1,6 +1,8 @@
 import {Group} from './Group';
 import {Profile} from './Profile';
 
+export const NODE_DEFAULT_NAME: string = 'default';
+
 export class GroupNode {
   name? : string;
 
@@ -100,7 +102,7 @@ export class GroupNode {
 
     if (showDefault && profilesWithoutGrp && profilesWithoutGrp.length > 0) {
       let defaultNode = new GroupNode();
-      defaultNode.name = 'default';
+      defaultNode.name = NODE_DEFAULT_NAME;
       defaultNode.children = [];
       for (let oneProfile of profilesWithoutGrp) {
         let childNode = this.mapProfile2Node(oneProfile)

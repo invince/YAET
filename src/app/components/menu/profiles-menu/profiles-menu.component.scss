@@ -73,11 +73,11 @@ app-secret-form {
     padding-bottom: 10px;
   }
 
-
   div[role=group] > .mat-nested-tree-node {
     display: flex;
     align-items: center; /* Aligns items vertically */
     padding-left: 10px;
+    padding-bottom: 12px;
   }
 
   .tree-parent-node {

@@ -134,13 +134,9 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
 
   override onSave() {
     if (this.form.valid) {
-      this.formToModel();
-      this.profileService.save(this._profile)
-        .then(r => {
-          // Reset the dirty state
-          this.onSubmit();
-          this.closeEvent.emit()
-        });
+      // Reset the dirty state
+      this.onSubmit();
+      this.onProfileSave.emit(this.formToModel());
     }
   }
 

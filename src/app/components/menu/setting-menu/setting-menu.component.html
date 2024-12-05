@@ -1,4 +1,4 @@
-<div class="modal-container" [formGroup]="form">
+<div class="modal-container">
   <div class="modal">
     <div class="modal-header">
       <h3>Settings</h3>
@@ -27,16 +27,16 @@
           </div>
         </mat-tab>
         <mat-tab label="UI">
-          <div class="setting-form">
+          <div class="setting-form" [formGroup]="uiForm">
             <mat-form-field class="field" >
               <mat-label>Profile Label Length</mat-label>
               <input matInput type="number" formControlName="uiProfileLabelLength"/>
-              @if (form.get('uiProfileLabelLength')?.value) {
+              @if (uiForm.get('uiProfileLabelLength')?.value) {
               <button
                 matSuffix
                 mat-icon-button
                 aria-label="Clear"
-                (click)="clear(form, 'uiProfileLabelLength')">
+                (click)="clear(uiForm, 'uiProfileLabelLength')">
                 <mat-icon>close</mat-icon>
               </button>
               }
@@ -56,12 +56,12 @@
             <mat-form-field class="field" >
               <mat-label>Secret Label Length</mat-label>
               <input matInput type="number" formControlName="uiSecretLabelLength"/>
-              @if (form.get('uiSecretLabelLength')?.value) {
+              @if (uiForm.get('uiSecretLabelLength')?.value) {
               <button
                 matSuffix
                 mat-icon-button
                 aria-label="Clear"
-                (click)="clear(form, 'uiSecretLabelLength')">
+                (click)="clear(uiForm, 'uiSecretLabelLength')">
                 <mat-icon>close</mat-icon>
               </button>
               }
@@ -79,7 +79,7 @@
           </div>
         </mat-tab>
         <mat-tab label="Local Terminal">
-          <div class="setting-form">
+          <div class="setting-form"  [formGroup]="localTermForm">
             <mat-form-field class="field">
               <mat-label>Terminal Type</mat-label>
               <mat-select formControlName="localTerminalType"
@@ -91,15 +91,15 @@
                 }
               </mat-select>
             </mat-form-field>
-            <mat-form-field class="field" [class.cdk-visually-hidden]= "form.get('localTerminalType')?.value != 'custom'">
+            <mat-form-field class="field" [class.cdk-visually-hidden]= "localTermForm.get('localTerminalType')?.value != 'custom'">
               <mat-label>Exec Path</mat-label>
               <input matInput type="text" formControlName="localTerminalExecPath"/>
-              @if (form.get('localTerminalExecPath')?.value) {
+              @if (localTermForm.get('localTerminalExecPath')?.value) {
               <button
                 matSuffix
                 mat-icon-button
                 aria-label="Clear"
-                (click)="clear(form, 'localTerminalExecPath')">
+                (click)="clear(localTermForm, 'localTerminalExecPath')">
                 <mat-icon>close</mat-icon>
               </button>
               }
@@ -112,8 +112,8 @@
     <div class="modal-footer">
       <button mat-button (click)="close()">Cancel</button>
       <button mat-stroked-button class="mat-accent" [disabled]="shouldDisableSave()" (click)="reload()">Reload</button>
-      <button mat-raised-button class="mat-primary" [disabled]="form.invalid || shouldDisableSave()" (click)="onSave();close()">Save And Close</button>
-      <button mat-raised-button class="mat-primary" [disabled]="form.invalid || shouldDisableSave()"  (click)="onSave()">Save</button>
+      <button mat-raised-button class="mat-primary" [disabled]="!currentFormValid() || shouldDisableSave()" (click)="onSave();close()">Save And Close</button>
+      <button mat-raised-button class="mat-primary" [disabled]="!currentFormValid() || shouldDisableSave()"  (click)="onSave()">Save</button>
     </div>
   </div>
 </div>

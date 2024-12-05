@@ -102,7 +102,7 @@ export class GroupsFormComponent implements OnInit{
   }
 
   async update(node: GroupNode, event: MatChipEditedEvent) {
-    const value = event.value.trim();
+    const updateName = event.value.trim();
     if (!node.group) {
       this._snackBar.open('Invalid group, your change will be abort', 'Ok', {
         duration: 3000
@@ -112,13 +112,13 @@ export class GroupsFormComponent implements OnInit{
     }
 
     // Remove tag if it no longer has a name
-    if (!value) {
+    if (!updateName) {
       await this.remove(node);
       this.dataSource.data = this.createGroupDataSource();
       return;
     }
-    if (!this.settingService.existGroup(this.newGroupName, node.id)){
-      this.settingService.updateGroup(node.group, this.newGroupName);
+    if (!this.settingService.existGroup(updateName, node.id)){
+      this.settingService.updateGroup(node.group, updateName);
       this.dataSource.data = this.createGroupDataSource();
     } else {
       this._snackBar.open('Already have this value, your change weill be aborted', 'Ok', {

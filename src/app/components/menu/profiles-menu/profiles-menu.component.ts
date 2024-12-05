@@ -17,14 +17,11 @@ import {HasChildForm} from '../enhanced-form-mixin';
 import {SettingStorageService} from '../../../services/setting-storage.service';
 import {ModalControllerService} from '../../../services/modal-controller.service';
 import {Subscription} from 'rxjs';
-import {Secret} from '../../../domain/Secret';
-import {group} from '@angular/animations';
 import {SettingService} from '../../../services/setting.service';
 import {FilterKeywordPipe} from '../../../pipes/filter-keyword.pipe';
 import {MatTree, MatTreeModule, MatTreeNestedDataSource} from '@angular/material/tree'
-import {Group} from '../../../domain/Group';
-import {GroupNode} from '../../../domain/GroupNode';
-import {FlatTreeControl, NestedTreeControl} from '@angular/cdk/tree';
+import {NODE_DEFAULT_NAME, GroupNode} from '../../../domain/GroupNode';
+import {NestedTreeControl} from '@angular/cdk/tree';
 import {SideNavType} from '../../../domain/UISettings';
 
 @Component({
@@ -49,7 +46,8 @@ import {SideNavType} from '../../../domain/UISettings';
     FilterKeywordPipe,
   ],
   templateUrl: './profiles-menu.component.html',
-  styleUrl: './profiles-menu.component.scss'
+  styleUrl: './profiles-menu.component.scss',
+  providers: [FilterKeywordPipe]
 })
 export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
 
@@ -75,6 +73,8 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     private _snackBar: MatSnackBar,
 
     private modalControl: ModalControllerService,
+
+    private keywordPipe: FilterKeywordPipe,
   ) {
     super();
   }
@@ -94,7 +94,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     });
 
     this.sideNavType = this.settingStorage.settings.ui.profileSideNavType;
-    this.refreshSecretForm();
+    this.refreshForm();
   }
 
   addTab() {
@@ -102,7 +102,14 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     this.profileService.profiles.push(newProfile);
     this.selectedProfileId = newProfile.id;// Focus on the newly added tab
     this.selectedProfile = newProfile;
-    this.refreshSecretForm();
+    this.refreshForm();
+    if (this.sideNavType == SideNavType.TREE) {
+      this.treeControl.dataNodes?.forEach((node) => {
+        if (node.name == NODE_DEFAULT_NAME) {
+          this.treeControl.expand(node);
+        }
+      });
+    }
   }
 
   onTabChange(profile: Profile) {
@@ -133,13 +140,13 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     }
     this.selectedProfileId = undefined;
     this.selectedProfile = undefined;
-    this.refreshSecretForm();
+    this.refreshForm();
   }
 
   async onSaveOne($event: Profile) {
     this.profileService.updateProfile($event);
     await this.profileService.saveAll();
-    this.refreshSecretForm();
+    this.refreshForm();
   }
 
   onCancel($event: Profile) {
@@ -202,7 +209,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
       this.expandedNodes.clear();
       this.treeControl.dataNodes?.forEach((node) => {
         if (this.treeControl.isExpanded(node)) {
-          this.expandedNodes.add(node);
+          this.expandedNodes.add(node.id); // NOTE: each time we recreate the tree, so node is not the same, we keep only id to identify
         }
       });
     }
@@ -212,7 +219,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   restoreExpandedNodes() {
     if (this.sideNavType == SideNavType.TREE) {
       this.treeControl.dataNodes?.forEach((node) => {
-        if (this.expandedNodes.has(node)) {
+        if (this.expandedNodes.has(node.id)) {
           this.treeControl.expand(node);
         }
       });
@@ -221,16 +228,22 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
 
 
   createGroupDataSource(): GroupNode[] {
-    return GroupNode.map2DataSource(this.settingStorage.settings.groups, this.profileService.profiles, false, true);
+    return GroupNode.map2DataSource(
+      this.settingStorage.settings.groups,
+      this.keywordPipe.transform(this.profileService.profiles, this.keywordsProviders, this.filter),
+      false,
+      true);
   }
 
   hasChild(_: number, node: GroupNode): boolean {
     return !!node.children && node.children.length > 0;
   }
 
-  private refreshSecretForm() {
+  private refreshForm() {
     this.recordExpandedNodes();
-    this.treeDataSource.data = this.createGroupDataSource();
+    let data = this.createGroupDataSource();
+    this.treeDataSource.data = data;
+    this.treeControl.dataNodes = data;
     this.restoreExpandedNodes();
   }
 
@@ -240,5 +253,14 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     }
     this.sideNavType = type;
 
+  }
+
+  applyFilterToTree() {
+    this.refreshForm();
+  }
+
+  clearFilter() {
+    this.filter = '';
+    this.applyFilterToTree();
   }
 }

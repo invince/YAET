@@ -23,6 +23,7 @@ import {MatChip} from '@angular/material/chips';
 import {TagsFormComponent} from '../tags-form/tags-form.component';
 import {GroupsFormComponent} from '../groups-form/groups-form.component';
 import {MatDivider} from "@angular/material/divider";
+import {GeneralSettings} from '../../../domain/GeneralSettings';
 
 @Component({
   selector: 'app-setting-menu',
@@ -53,7 +54,8 @@ import {MatDivider} from "@angular/material/divider";
 })
 export class SettingMenuComponent extends MenuComponent implements OnInit, OnDestroy {
 
-  form!: FormGroup;
+  localTermForm!: FormGroup;
+  uiForm!: FormGroup;
 
   LOCAL_TERM_OPTIONS = LocalTerminalType;
 
@@ -61,6 +63,12 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
   private subscription!: Subscription;
   currentTabIndex: number = 0;
+
+  GENERAL_FORM_TAB_INDEX = 0;
+  UI_FORM_TAB_INDEX = 1;
+  GROUP_FORM_TAB_INDEX = 2;
+  TAG_FORM_TAB_INDEX = 3;
+  LOCAL_TERM_FORM_TAB_INDEX = 4;
 
   constructor(
     private fb: FormBuilder,
@@ -93,7 +101,8 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
   ngOnInit() {
 
-    this.form = this.initForm();
+    this.uiForm = this.initUiForm();
+    this.localTermForm = this.initLocalTermForm();
 
     this.refreshForm(this.settingStorage.settings);
 
@@ -102,15 +111,21 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       this.cdr.detectChanges(); // mat select doesn't detect well change from event subscription
     })
   }
-
-  private initForm() {
+  private initUiForm() {
+    return this.fb.group(
+      {
+        uiProfileLabelLength:     ['', Validators.required],
+        profileSideNavType:       ['', Validators.required],
+        uiSecretLabelLength:      ['', Validators.required],
+      },
+      {validators: []}
+    );
+  }
+  private initLocalTermForm() {
     return this.fb.group(
       {
         localTerminalType:        ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
         localTerminalExecPath:    ['', Validators.required],
-        uiProfileLabelLength:     ['', Validators.required],
-        profileSideNavType:       ['', Validators.required],
-        uiSecretLabelLength:      ['', Validators.required],
       },
       {validators: []}
     );
@@ -123,18 +138,36 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
 
   override onSave() {
-    if (this.form.valid) {
-      this.settingService.save(this.formToModel());
+    if (this.currentTabIndex == this.GENERAL_FORM_TAB_INDEX) {
+      this.settingService.saveGeneralConfig(this.generalFormToModel());
+    }
+    if (this.currentTabIndex == this.UI_FORM_TAB_INDEX && this.uiForm.valid) {
+      this.settingService.saveUiConfig(this.uiFormToModel());
+    }
+    if (this.currentTabIndex == this.LOCAL_TERM_FORM_TAB_INDEX && this.localTermForm.valid) {
+      this.settingService.saveLocalTermConfig(this.localTermFormToModel());
     }
   }
 
+  currentFormValid(): boolean {
+    if (this.currentTabIndex == this.GENERAL_FORM_TAB_INDEX) {
+      return true;
+    }
+    if (this.currentTabIndex == this.UI_FORM_TAB_INDEX) {
+      return this.uiForm.valid;
+    }
+    if (this.currentTabIndex == this.LOCAL_TERM_FORM_TAB_INDEX) {
+      return this.localTermForm.valid;
+    }
+    return false;
+  }
 
 
   onSelectLocalTerminalType($event: any) {
     let localTerminalSetting = new LocalTerminalProfile();
     localTerminalSetting.type = $event.value;
     this.settingService.validateLocalTerminalSettings(localTerminalSetting);
-    this.form.get('localTerminalExecPath')?.setValue(localTerminalSetting.execPath);
+    this.localTermForm.get('localTerminalExecPath')?.setValue(localTerminalSetting.execPath);
   }
 
   reload() {
@@ -155,45 +188,57 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
 
   refreshForm(value: any) {
-    if (this.form) {
-      this.form.reset();
-      if (!value) {
-        value = new MySettings();
+    if (!value) {
+      value = new MySettings();
+    }
+
+    if (this.uiForm) {
+      this.uiForm.reset();
+      if (!value.ui) {
+        value.ui = new UISettings();
       }
+      this.uiForm.get('uiProfileLabelLength')?.setValue(value.ui.profileLabelLength);
+      this.uiForm.get('uiSecretLabelLength')?.setValue(value.ui.secretLabelLength);
+      this.uiForm.get('profileSideNavType')?.setValue(value.ui.profileSideNavType);
+    }
+
+    if (this.localTermForm) {
+      this.localTermForm.reset();
       if (!value.localTerminal) {
         value.localTerminal = new LocalTerminalProfile();
       }
-      this.form.get('localTerminalType')?.setValue(value.localTerminal.type);
-      this.form.get('localTerminalExecPath')?.setValue(value.localTerminal.execPath);
-
-      if (!value.ui) {
-        value.ui = new LocalTerminalProfile();
-      }
-      this.form.get('uiProfileLabelLength')?.setValue(value.ui.profileLabelLength);
-      this.form.get('uiSecretLabelLength')?.setValue(value.ui.secretLabelLength);
+      this.localTermForm.get('localTerminalType')?.setValue(value.localTerminal.type);
+      this.localTermForm.get('localTerminalExecPath')?.setValue(value.localTerminal.execPath);
     }
   }
-
-  formToModel(): MySettings {
-    let settings = new MySettings();
-    if (!settings.localTerminal) {
-      settings.localTerminal = new LocalTerminalProfile();
-    }
-    settings.localTerminal.type = this.form.get('localTerminalType')?.value;
-    settings.localTerminal.execPath = this.form.get('localTerminalExecPath')?.value;
-
-    if (!settings.ui) {
-      settings.ui = new UISettings();
-    }
-    settings.ui.profileLabelLength = this.form.get('uiProfileLabelLength')?.value;
-    settings.ui.profileSideNavType = this.form.get('profileSideNavType')?.value;
-    settings.ui.secretLabelLength = this.form.get('uiSecretLabelLength')?.value;
-
-    return settings;
-  }
-
 
   shouldDisableSave() {
-    return [2,3].includes(this.currentTabIndex);
+    return [this.GROUP_FORM_TAB_INDEX, this.TAG_FORM_TAB_INDEX].includes(this.currentTabIndex);
   }
+
+
+  private uiFormToModel() {
+    let ui = new UISettings();
+    if (!ui) {
+      ui = new UISettings();
+    }
+    ui.profileLabelLength = this.uiForm.get('uiProfileLabelLength')?.value;
+    ui.profileSideNavType = this.uiForm.get('profileSideNavType')?.value;
+    ui.secretLabelLength = this.uiForm.get('uiSecretLabelLength')?.value;
+
+    return ui;
+  }
+
+  private generalFormToModel() {
+    return new GeneralSettings();
+  }
+
+  private localTermFormToModel() {
+    let localTerminal = new LocalTerminalProfile();
+    localTerminal.type = this.localTermForm.get('localTerminalType')?.value;
+    localTerminal.execPath = this.localTermForm.get('localTerminalExecPath')?.value;
+    return localTerminal;
+  }
+
+
 }

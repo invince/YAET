@@ -16,13 +16,13 @@
             <div class="sidenav-filter">
               <mat-form-field class="field">
                 <mat-label>Filter</mat-label>
-                <input matInput type="text" [(ngModel)]="filter"/>
+                <input matInput type="text" [(ngModel)]="filter" (ngModelChange)="applyFilterToTree()"/>
                 @if (filter) {
                 <button
                   matSuffix
                   mat-icon-button
                   aria-label="Clear"
-                  (click)="filter = ''">
+                  (click)="clearFilter() ">
                   <mat-icon>close</mat-icon>
                 </button>
                 }
