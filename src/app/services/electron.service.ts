@@ -2,7 +2,8 @@ import {Injectable} from '@angular/core';
 import {IpcRenderer} from 'electron';
 import {TabInstance} from '../domain/TabInstance';
 import {
-  CLOUD_RELOAD, CLOUD_SAVE,
+  CLOUD_DOWNLOAD,
+  CLOUD_RELOAD, CLOUD_SAVE, CLOUD_UPLOAD,
   CREATION_LOCAL_TERMINAL,
   CREATION_SSH_TERMINAL,
   DELETE_MASTERKEY,
@@ -22,6 +23,8 @@ import {Profile, ProfileType} from '../domain/Profile';
 import {MySettings} from '../domain/MySettings';
 import {AuthType, SecretType} from '../domain/Secret';
 import {SecretStorageService} from './secret-storage.service';
+import {CloudSettings} from '../domain/CloudSettings';
+import {CloudResponse} from '../domain/CloudResponse';
 
 @Injectable({
   providedIn: 'root',
@@ -188,4 +191,49 @@ export class ElectronService {
     }
   }
 
+  async downloadCloud(cloudSettings: CloudSettings):  Promise<CloudResponse | undefined>  {
+    if (this.ipc) {
+
+      let cloud = this.prepareCloudSettings(cloudSettings);
+      if (!cloud) {
+        console.error("Invalid Cloud Settings");
+        return undefined;
+      }
+
+      return this.ipc.invoke(CLOUD_DOWNLOAD, {data: cloud});
+    }
+    return undefined;
+  }
+
+  async uploadCloud(cloudSettings: CloudSettings): Promise<CloudResponse | undefined> {
+    if (this.ipc) {
+
+      let cloud = this.prepareCloudSettings(cloudSettings);
+      if (!cloud) {
+        console.error("Invalid Cloud Settings");
+        return undefined;
+      }
+      return  await this.ipc.invoke(CLOUD_UPLOAD, {data: cloud});
+    }
+    return undefined;
+  }
+
+  private prepareCloudSettings (cloudSettings: CloudSettings): CloudSettings | undefined {
+    if (cloudSettings.authType == AuthType.SECRET) {
+      let secret = this.secretStorage.findById(cloudSettings.secretId);
+      if (!secret) {
+        console.error("Invalid secret " + cloudSettings.secretId);
+        return undefined;
+      }
+      switch (secret.secretType) {
+        case SecretType.LOGIN_PASSWORD: {
+          cloudSettings.login = secret.login;
+          cloudSettings.password = secret.password;
+          break;
+        }
+      }
+    }
+    return cloudSettings;
+
+  }
 }

@@ -25,6 +25,21 @@
           }
         </mat-form-field>
 
+        <!-- Check All -->
+        <mat-checkbox
+          (change)="toggleAll($event)"
+          [checked]="allSelected"
+          [indeterminate]="indeterminateState">
+          Check All
+        </mat-checkbox>
+
+        <mat-selection-list formControlName="items">
+          @for (item of SYNC_ITEMS; track item) {
+            <mat-list-option [value]="item" togglePosition='before'>
+              {{ item }}
+            </mat-list-option>
+          }
+        </mat-selection-list>
 
         <mat-radio-group class="field" aria-label="Auth Type" formControlName="authType" required>
           @for (oneType of AUTH_OPTIONS | keyvalue : unordered; track oneType.value) {
@@ -63,7 +78,7 @@
             <mat-form-field class="field" required>
               <mat-label>Secret</mat-label>
               <mat-select (selectionChange)="onSelectSecret($event)" formControlName="secretId">
-                @for (oneSecret of secretStorageService.data.secrets; track oneSecret.id) {
+                @for (oneSecret of filterSecret(); track oneSecret.id) {
                 <mat-option [value]="oneSecret.id">
                 {{ displaySecretOptionName(oneSecret) }}
                 </mat-option>
@@ -96,11 +111,11 @@
 
     <div class="modal-footer">
       <button mat-button (click)="close()">Cancel</button>
-      <button mat-fab extended (click)="upload()" class="small-icon">
+      <button mat-fab extended (click)="upload()" class="small-icon" [disabled]="processing" >
         <mat-icon>cloud_upload</mat-icon>
         Upload
       </button>
-      <button mat-fab extended (click)="download()" class="small-icon">
+      <button mat-fab extended (click)="download()" class="small-icon" [disabled]="processing" >
         <mat-icon>cloud_download</mat-icon>
         Download
       </button>

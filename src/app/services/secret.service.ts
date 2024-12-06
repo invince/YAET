@@ -8,8 +8,9 @@ import {SecretStorageService} from './secret-storage.service';
 @Injectable({
   providedIn: 'root'
 })
-export class SecretService{
+export class SecretService {
 
+  static CLOUD_OPTION = 'Secret';
   private _loaded: boolean = false;
 
   constructor(

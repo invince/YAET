@@ -18,6 +18,7 @@ import {CloudSettings} from '../domain/CloudSettings';
 })
 export class SettingService {
 
+  static CLOUD_OPTION = 'Setting';
   private settingLoadedSubject = new Subject<any>();
   settingLoadedEvent = this.settingLoadedSubject.asObservable(); // Expose as Observable
 

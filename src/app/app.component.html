@@ -68,7 +68,7 @@
           <app-secures-menu [@slideInOut]="'in'" (closeEvent)="modalControl.closeModal('secure', true)"></app-secures-menu>
         }
         @case('cloud') {
-        <app-cloud-menu [@slideInOut]="'in'" (closeEvent)="modalControl.closeModal('cloud', true)"></app-cloud-menu>
+        <app-cloud-menu [@slideInOut]="'in'" (closeEvent)="modalControl.closeModal('cloud')"></app-cloud-menu>
         }
         @case('setting') {
           <app-setting-menu [@slideInOut]="'in'" (closeEvent)="modalControl.closeModal('setting')"></app-setting-menu>
@@ -78,3 +78,4 @@
     }
   </mat-sidenav-content>
 </mat-sidenav-container>
+<ngx-spinner bdColor = "rgba(0, 0, 0, 0.8)" size = "medium" color = "#fff" type = "ball-scale-multiple" [fullScreen] = "true"><p style="color: white" > Loading... </p></ngx-spinner>

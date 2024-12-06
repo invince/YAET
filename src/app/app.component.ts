@@ -29,6 +29,7 @@ import {Subscription} from 'rxjs';
 import {ModalControllerService} from './services/modal-controller.service';
 import {CloudComponent} from './components/menu/cloud/cloud.component';
 import {CloudService} from './services/cloud.service';
+import {NgxSpinnerModule} from 'ngx-spinner';
 
 @Component({
   selector: 'app-root',
@@ -41,6 +42,7 @@ import {CloudService} from './services/cloud.service';
       MatSidenavModule,
       MatTabsModule,
       MatButtonModule,
+      NgxSpinnerModule,
 
       MatIcon,
 
@@ -171,8 +173,7 @@ export class AppComponent implements OnInit, OnDestroy{
   }
 
   cloudMenu() {
-    this.toggleMenu('cloud');
-    // this.requireMasterKey(() => this.toggleMenu('cloud'));
+    this.requireMasterKey(() => this.toggleMenu('cloud'));
   }
 
 

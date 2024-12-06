@@ -12,6 +12,7 @@ import {Group} from '../domain/Group';
 })
 export class ProfileService {
 
+  static CLOUD_OPTION = 'Profile';
   private _profiles!: Profiles;
 
   private _loaded: boolean = false;
