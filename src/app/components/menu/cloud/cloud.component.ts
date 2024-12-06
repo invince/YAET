@@ -1,14 +1,14 @@
 import {Component,OnDestroy, OnInit} from '@angular/core';
 import {MenuComponent} from '../menu.component';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {MatFormFieldModule, MatLabel, MatSuffix} from '@angular/material/form-field';
+import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIcon} from '@angular/material/icon';
 import {MatInput} from '@angular/material/input';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatSelectChange, MatSelectModule} from '@angular/material/select';
 import {AuthType, Secret} from '../../../domain/Secret';
 import {CloudSettings} from '../../../domain/CloudSettings';
-import {MatButton, MatIconButton} from '@angular/material/button';
+import {MatButtonModule} from '@angular/material/button';
 import {SecretStorageService} from '../../../services/secret-storage.service';
 import {CloudService} from '../../../services/cloud.service';
 import {MasterKeyService} from '../../../services/master-key.service';
@@ -26,11 +26,8 @@ import {CommonModule} from '@angular/common';
     MatRadioModule,
     MatSelectModule,
 
-    MatLabel,
-    MatSuffix,
+    MatButtonModule,
     MatIcon,
-    MatIconButton,
-    MatButton,
     MatInput,
 
   ],

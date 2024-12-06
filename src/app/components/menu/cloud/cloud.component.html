@@ -96,8 +96,14 @@
 
     <div class="modal-footer">
       <button mat-button (click)="close()">Cancel</button>
-      <button mat-button (click)="upload()">Upload</button>
-      <button mat-button (click)="download()">Download</button>
+      <button mat-fab extended (click)="upload()" class="small-icon">
+        <mat-icon>cloud_upload</mat-icon>
+        Upload
+      </button>
+      <button mat-fab extended (click)="download()" class="small-icon">
+        <mat-icon>cloud_download</mat-icon>
+        Download
+      </button>
     </div>
   </div>
 </div>
