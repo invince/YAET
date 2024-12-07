@@ -176,7 +176,6 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
                   duration: 3000
                 });
 
-                this.close();
               } else {
                 this._snackBar.open('Error Occurred: ' + response.ko, 'Ok', {
                   duration: 3000
@@ -215,7 +214,7 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
                     this.secretService.reload();
                   }
                 }
-                this.close();
+                this.processing = false;
               } else {
                 this._snackBar.open('Error Occurred: ' + response.ko, 'Ok', {
                   duration: 3000

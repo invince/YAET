@@ -1,7 +1,7 @@
 {
   "name": "yet-another-electron-term",
   "version": "0.0.0",
-  "main": "electronMain.js",
+  "main": "electron/electronMain.js",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

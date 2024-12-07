@@ -24,19 +24,20 @@
 
 /* Header section */
 .modal-header {
-  padding: 16px;
+  padding: 10px;
   background-color: #A9A9A9;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  height: 36px;
 }
 
 
 .modal-header h3 {
   margin: 0;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 /* Close button in the header */
@@ -63,7 +64,7 @@
 
 /* Footer section */
 .modal-footer {
-  padding: 16px;
+  padding: 10px;
   background-color: #A9A9A9;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;

@@ -17,20 +17,6 @@
         }
       </mat-form-field>
 
-      <mat-form-field class="field">
-        <mat-label>Description</mat-label>
-        <textarea matInput type="text" formControlName="comment"></textarea>
-        @if (form.get('comment')?.value) {
-        <button
-          matSuffix
-          mat-icon-button
-          aria-label="Clear"
-          (click)="clear(form,'comment')">
-          <mat-icon>close</mat-icon>
-        </button>
-        }
-      </mat-form-field>
-
       <mat-form-field class="field" >
         <mat-label>Group</mat-label>
         <mat-select formControlName="group" (selectionChange)="onSelectGroup($event)"  [style.background]="groupColor">
@@ -98,6 +84,20 @@
     </div>
 
     <div class="profile-form-right-part">
+      <mat-form-field class="field">
+        <mat-label>Description</mat-label>
+        <textarea matInput type="text" formControlName="comment" cdkTextareaAutosize></textarea>
+        @if (form.get('comment')?.value) {
+        <button
+          matSuffix
+          mat-icon-button
+          aria-label="Clear"
+          (click)="clear(form,'comment')">
+          <mat-icon>close</mat-icon>
+        </button>
+        }
+      </mat-form-field>
+
       @switch (form.get('profileType')?.value) {
         @case('SSH_TERMINAL') {
           <app-ssh-profile-form formControlName="sshProfileForm"></app-ssh-profile-form>

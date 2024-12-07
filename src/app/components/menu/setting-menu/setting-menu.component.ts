@@ -24,6 +24,7 @@ import {TagsFormComponent} from '../tags-form/tags-form.component';
 import {GroupsFormComponent} from '../groups-form/groups-form.component';
 import {MatDivider} from "@angular/material/divider";
 import {GeneralSettings} from '../../../domain/GeneralSettings';
+import {NgxSpinnerService} from 'ngx-spinner';
 
 @Component({
   selector: 'app-setting-menu',
@@ -78,6 +79,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     private cdr: ChangeDetectorRef,
     public dialog: MatDialog,
     private _snackBar: MatSnackBar,
+    private spinner: NgxSpinnerService
   ) {
     super();
   }
@@ -171,7 +173,9 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
   reload() {
+    this.spinner.show();
     this.settingService.reload();
+    this.spinner.hide();
   }
 
 

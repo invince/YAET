@@ -36,7 +36,7 @@ export class Secret {
 
   key!: string;
 
-  keyphrase!: string;
+  passphrase!: string;
 
   isNew: boolean = true;
 }

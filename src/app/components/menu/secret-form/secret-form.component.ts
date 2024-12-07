@@ -59,7 +59,7 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
         password: [this._secret.password],
         confirmPassword: [this._secret.password],
         key: [this._secret.key],
-        keyPhrase: [this._secret.keyphrase],
+        passphrase: [this._secret.passphrase],
 
       },
       {validators: [this.checkCurrentSecret, this.passwordMatchValidator]}
@@ -69,16 +69,10 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
 
   passwordMatchValidator(group: FormGroup) {
     const type = group.get('secretType')?.value;
-    if ([SecretType.LOGIN_PASSWORD, SecretType.LOGIN_PASSWORD].includes(type)) {
-      group.get('password')?.addValidators(Validators.required);
-      group.get('confirmPassword')?.addValidators(Validators.required);
-
+    if ([SecretType.LOGIN_PASSWORD, SecretType.PASSWORD_ONLY].includes(type)) {
       const password = group.get('password')?.value;
       const confirmPassword = group.get('confirmPassword')?.value;
       return password === confirmPassword ? null : { passwordMismatch: true };
-    } else {
-      group.get('password')?.removeValidators(Validators.required);
-      group.get('confirmPassword')?.removeValidators(Validators.required);
     }
     return null;
   }
@@ -107,6 +101,9 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
         break;
       }
       case SecretType.SSH_KEY: {
+        if (!group.get('login')?.value) {
+          return {emptyLogin: true};
+        }
         if (!group.get('key')?.value) {
           return {emptyKey: true};
         }
@@ -118,7 +115,15 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
   }
 
   onSelectType($event: MatSelectChange) {
+    const selectedType = $event.value;
+    // Reset the form, preserving the selected type
+    this.form.reset({
+      name: this.form.get('name')?.value, // Preserve name if needed
+      secretType: selectedType, // Set the selected type
+    });
 
+    // Optionally clear custom errors
+    this.form.setErrors(null);
   }
 
   shouldShowField(fieldName: string) {
@@ -129,7 +134,7 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
       case SecretType.PASSWORD_ONLY:
         return ['password'].includes(fieldName);
       case SecretType.SSH_KEY:
-        return ['key', 'keyPhrase'].includes(fieldName);
+        return ['login', 'key', 'passphrase'].includes(fieldName);
 
     }
     return false;
@@ -163,7 +168,7 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
       this.form.get('password')?.setValue(currentSecret.password);
       this.form.get('confirmPassword')?.setValue(currentSecret.password);
       this.form.get('key')?.setValue(currentSecret.key);
-      this.form.get('keyphrase')?.setValue(currentSecret.keyphrase);
+      this.form.get('passphrase')?.setValue(currentSecret.passphrase);
     }
   }
 
@@ -176,7 +181,7 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
     this._secret.login       = this.form.get('login')?.value;
     this._secret.password    = this.form.get('password')?.value;
     this._secret.key         = this.form.get('key')?.value;
-    this._secret.keyphrase   = this.form.get('keyphrase')?.value;
+    this._secret.passphrase   = this.form.get('passphrase')?.value;
     return this._secret;
   }
 

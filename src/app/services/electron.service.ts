@@ -90,7 +90,11 @@ export class ElectronService {
           break;
         }
         case SecretType.SSH_KEY: {
-          // todo
+          sshConfig.username = secret.login;
+          sshConfig.privateKey = secret.key;
+          if (secret.passphrase) {
+            sshConfig.passphrase = secret.passphrase;
+          }
           break;
         }
         case SecretType.PASSWORD_ONLY: {

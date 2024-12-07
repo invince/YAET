@@ -3,3 +3,15 @@
   margin-top: 16px;
   width: 280px;
 }
+
+.host-field {
+  margin-left: 16px;
+  margin-top: 16px;
+  width: 190px;
+}
+
+.port-field {
+  margin-left: 16px;
+  margin-top: 16px;
+  width: 70px;
+}

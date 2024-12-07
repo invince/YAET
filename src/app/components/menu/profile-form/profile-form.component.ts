@@ -30,6 +30,8 @@ import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
 import {map, Observable, startWith} from 'rxjs';
 import {Tag} from '../../../domain/Tag';
+import {SSHTerminalProfile} from '../../../domain/SSHTerminalProfile';
+import {CdkTextareaAutosize} from '@angular/cdk/text-field';
 
 @Component({
   selector: 'app-profile-form',
@@ -49,6 +51,7 @@ import {Tag} from '../../../domain/Tag';
     MatInput,
 
     SshProfileFormComponent,
+    CdkTextareaAutosize,
   ],
   templateUrl: './profile-form.component.html',
   styleUrl: './profile-form.component.scss'
@@ -119,6 +122,10 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
 
   onSelectType($event: MatSelectChange) {
     // this.profile.profileType = $event;
+    switch($event.value) {
+      case ProfileType.SSH_TERMINAL:
+        this.form.get('sshProfileForm')?.setValue(new SSHTerminalProfile());
+    }
   }
 
   onSelectCategory($event: MatSelectChange) {
