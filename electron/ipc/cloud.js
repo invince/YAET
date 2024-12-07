@@ -1,6 +1,6 @@
 const { ipcMain } = require('electron');
 const path = require("path");
-const {CONFIG_FOLDER, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON }= require("../common");
+const {CONFIG_FOLDER, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, GIT_FOLDER  }= require("../common");
 const {promises: fsPromise} = require("fs");
 const simpleGit = require("simple-git");
 function initCloudIpcHandler() {

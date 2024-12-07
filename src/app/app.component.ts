@@ -30,6 +30,7 @@ import {ModalControllerService} from './services/modal-controller.service';
 import {CloudComponent} from './components/menu/cloud/cloud.component';
 import {CloudService} from './services/cloud.service';
 import {NgxSpinnerModule} from 'ngx-spinner';
+import {TabService} from './services/tab.service';
 
 @Component({
   selector: 'app-root',
@@ -67,11 +68,6 @@ export class AppComponent implements OnInit, OnDestroy{
 
 
   title = 'yetAnotherElectronTerm';
-  tabs: TabInstance[] = [];
-
-
-
-  currentTabIndex = 0;
 
   subscriptions: Subscription[] = []
 
@@ -81,6 +77,8 @@ export class AppComponent implements OnInit, OnDestroy{
     private secretService: SecretService,
     private masterKeyService: MasterKeyService,
     private cloudService: CloudService,
+
+    public tabService: TabService,
 
     public modalControl: ModalControllerService,
 
@@ -99,8 +97,8 @@ export class AppComponent implements OnInit, OnDestroy{
             return;
           }
           this.modalControl.closeModal(['favorite', 'add']);
-          this.tabs.push(new TabInstance(uuidv4(), connection.category, connection.profileType, connection)); // Adds a new terminal identifier
-          this.currentTabIndex = this.tabs.length - 1;
+          this.tabService.tabs.push(new TabInstance(uuidv4(), connection.category, connection.profileType, connection)); // Adds a new terminal identifier
+          this.tabService.currentTabIndex = this.tabService.tabs.length - 1;
         }
       )
     )
@@ -120,7 +118,7 @@ export class AppComponent implements OnInit, OnDestroy{
   }
 
   removeTab(index: number) {
-    this.tabs.splice(index, 1);
+    this.tabService.tabs.splice(index, 1);
   }
 
 
@@ -130,8 +128,8 @@ export class AppComponent implements OnInit, OnDestroy{
 
   addLocalTerminal() {
     this.modalControl.closeModal();
-    this.tabs.push(new TabInstance(uuidv4(), ProfileCategory.TERMINAL, ProfileType.LOCAL_TERMINAL, this.settingService.createLocalTerminalProfile())); // Adds a new terminal identifier
-    this.currentTabIndex = this.tabs.length - 1;
+    this.tabService.tabs.push(new TabInstance(uuidv4(), ProfileCategory.TERMINAL, ProfileType.LOCAL_TERMINAL, this.settingService.createLocalTerminalProfile())); // Adds a new terminal identifier
+    this.tabService.currentTabIndex = this.tabService.tabs.length - 1;
   }
 
   addMenu() {
@@ -181,5 +179,19 @@ export class AppComponent implements OnInit, OnDestroy{
     this.toggleMenu('setting');
   }
 
+  getTabName(tab: TabInstance):string {
+    if (!tab) {
+      return 'invalid';
+    }
+    let allNames = this.tabService.tabs.filter(one => one.id != tab.id).map(one => one.name);
+    if (allNames.includes(tab.name)) {
+      let index = 1;
+      while(allNames.includes(tab.name + '_' + index)) {
+        index ++;
+      }
+      tab.name = tab.name + '_' + index;
+    }
+    return tab.name;
+  }
 
 }

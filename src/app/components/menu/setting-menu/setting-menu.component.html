@@ -29,17 +29,8 @@
         <mat-tab label="UI">
           <div class="setting-form" [formGroup]="uiForm">
             <mat-form-field class="field" >
-              <mat-label>Profile Label Length</mat-label>
+              <mat-label>Profile Label Length in Side Nav</mat-label>
               <input matInput type="number" formControlName="uiProfileLabelLength"/>
-              @if (uiForm.get('uiProfileLabelLength')?.value) {
-              <button
-                matSuffix
-                mat-icon-button
-                aria-label="Clear"
-                (click)="clear(uiForm, 'uiProfileLabelLength')">
-                <mat-icon>close</mat-icon>
-              </button>
-              }
             </mat-form-field>
 
             <mat-form-field class="field" >
@@ -54,17 +45,13 @@
             </mat-form-field>
 
             <mat-form-field class="field" >
-              <mat-label>Secret Label Length</mat-label>
+              <mat-label>Secret Label Length in Side Nav</mat-label>
               <input matInput type="number" formControlName="uiSecretLabelLength"/>
-              @if (uiForm.get('uiSecretLabelLength')?.value) {
-              <button
-                matSuffix
-                mat-icon-button
-                aria-label="Clear"
-                (click)="clear(uiForm, 'uiSecretLabelLength')">
-                <mat-icon>close</mat-icon>
-              </button>
-              }
+            </mat-form-field>
+
+            <mat-form-field class="field" >
+              <mat-label>Secret Label Length in DropDown</mat-label>
+              <input matInput type="number" formControlName="uiSecretLabelLengthInDropDown"/>
             </mat-form-field>
           </div>
         </mat-tab>

@@ -91,7 +91,7 @@ export class ElectronService {
         }
         case SecretType.SSH_KEY: {
           sshConfig.username = secret.login;
-          sshConfig.privateKey = secret.key;
+          sshConfig.privateKey = secret.key.replace(/\\n/g, '\n');
           if (secret.passphrase) {
             sshConfig.passphrase = secret.passphrase;
           }
@@ -113,7 +113,7 @@ export class ElectronService {
     }
   }
 
-  onTerminalOutput(callback: (data: string) => void) {
+  onTerminalOutput(callback: (data: TermOutput) => void) {
     if(this.ipc) {
       this.ipc.on(TERMINAL_OUTPUT, (event, data) => callback(data));
     }
@@ -240,4 +240,9 @@ export class ElectronService {
     return cloudSettings;
 
   }
+}
+
+export class TermOutput {
+  id!: string;
+  data!: string
 }

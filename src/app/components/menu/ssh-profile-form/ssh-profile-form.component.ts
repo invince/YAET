@@ -12,6 +12,7 @@ import {MatOption, MatSelect, MatSelectChange} from '@angular/material/select';
 import {ChildFormAsFormControl} from '../../enhanced-form-mixin';
 import {MatRadioButton, MatRadioGroup} from '@angular/material/radio';
 import {SecretStorageService} from '../../../services/secret-storage.service';
+import {SettingStorageService} from '../../../services/setting-storage.service';
 
 @Component({
   selector: 'app-ssh-profile-form',
@@ -49,6 +50,7 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
   constructor(
     private fb: FormBuilder,
     public secretStorageService: SecretStorageService,
+    public settingStorage: SettingStorageService,
   ) {
     super();
   }
@@ -93,16 +95,17 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
 
   displaySecretOptionName(secret: Secret) {
     let label = '';
+    let LIMIT = this.settingStorage.settings?.ui?.secretLabelLengthInDropDown || 8;
     if (secret && secret.name) {
       label = secret.name;
-      if (secret.name.length > 6) {
-        label = label.slice(0, 6) + '...';
+      if (secret.name.length > LIMIT) {
+        label = label.slice(0, LIMIT) + '...';
       }
     }
     if (secret && secret.login) {
       let loginPart = '-' + secret.login;
-      if (loginPart.length > 6) {
-        loginPart = loginPart.slice(0, 6) + '...';
+      if (loginPart.length > LIMIT) {
+        loginPart = loginPart.slice(0, LIMIT) + '...';
       }
       label += loginPart + '/***';
     }

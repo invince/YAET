@@ -4,7 +4,7 @@ const path = require("path");
 
 const angularDistDir = "dist/angular-app";
 const electronDistDir = "dist/electron-app";
-const electronMainFile = "electronMain.js";
+const electronMainFile = "electron/electronMain.js";
 
 // Helper to execute commands
 function runCommand(command, options = {}) {

@@ -1,9 +1,8 @@
 const { ipcMain } = require('electron');
 const pty = require("node-pty");
 const {Client} = require("ssh2");
-function initTerminalIpcHandler() {
-
-  let terminalMap = new Map();
+const fs = require("fs");
+function initTerminalIpcHandler(terminalMap) {
 
   function validate(terminalExec) {
     if (!terminalExec) {
@@ -13,9 +12,9 @@ function initTerminalIpcHandler() {
   }
 
   ipcMain.on('create-local-terminal', (event, data) => {
+
     const id = data.terminalId; // cf ElectronService
     let shell = validate(data.terminalExec);
-
     const ptyProcess = pty.spawn(shell, [], {
       name: 'xterm-color',
       cols: 80,
@@ -23,9 +22,10 @@ function initTerminalIpcHandler() {
       cwd: process.env.HOME,
       env: process.env,
     });
-
     ptyProcess.on('data', (data) => {
-      event.sender.send('terminal-output', data);
+      event.sender.send('terminal-output',
+        {id: id, data: data.toString()}
+      );
     });
 
     terminalMap.set(id, (data) => ptyProcess.write(data));
@@ -49,6 +49,12 @@ function initTerminalIpcHandler() {
     const conn = new Client();
     const sshConfig = data.config;
     const id = data.terminalId;
+
+    sshConfig.debug = (info) => {
+      console.log('DEBUG:', info);
+    },
+
+    console.log(sshConfig);
     conn.on('ready', () => {
       console.log('SSH connection ready for id:', id);
       conn.shell((err, stream) => {
@@ -59,7 +65,9 @@ function initTerminalIpcHandler() {
         console.log('Shell started for id:', id);
 
         stream.on('data', (data) => {
-          event.sender.send('terminal-output', data.toString());
+          event.sender.send('terminal-output',
+            {id: id, data: data.toString()}
+          );
         });
 
         terminalMap.set(id, (data) => stream.write(data));

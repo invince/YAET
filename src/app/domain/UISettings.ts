@@ -4,6 +4,7 @@ export class UISettings {
 
   public profileSideNavType: SideNavType = SideNavType.FLAT;
   public secretLabelLength: number = 10;
+  public secretLabelLengthInDropDown: number = 8;
 
 }
 

@@ -119,6 +119,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
         uiProfileLabelLength:     ['', Validators.required],
         profileSideNavType:       ['', Validators.required],
         uiSecretLabelLength:      ['', Validators.required],
+        uiSecretLabelLengthInDropDown:      ['', Validators.required],
       },
       {validators: []}
     );
@@ -203,6 +204,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       }
       this.uiForm.get('uiProfileLabelLength')?.setValue(value.ui.profileLabelLength);
       this.uiForm.get('uiSecretLabelLength')?.setValue(value.ui.secretLabelLength);
+      this.uiForm.get('uiSecretLabelLengthInDropDown')?.setValue(value.ui.uiSecretLabelLengthInDropDown);
       this.uiForm.get('profileSideNavType')?.setValue(value.ui.profileSideNavType);
     }
 
@@ -229,6 +231,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     ui.profileLabelLength = this.uiForm.get('uiProfileLabelLength')?.value;
     ui.profileSideNavType = this.uiForm.get('profileSideNavType')?.value;
     ui.secretLabelLength = this.uiForm.get('uiSecretLabelLength')?.value;
+    ui.secretLabelLengthInDropDown = this.uiForm.get('uiSecretLabelLengthInDropDown')?.value;
 
     return ui;
   }

@@ -26,12 +26,12 @@
   </mat-sidenav>
 
   <mat-sidenav-content>
-    <mat-tab-group id="tab-group" [selectedIndex]="currentTabIndex">
-      @for (tab of tabs; let i = $index; track tab.id) {
+    <mat-tab-group id="tab-group" [selectedIndex]="tabService.currentTabIndex">
+      @for (tab of tabService.tabs; let i = $index; track tab.id) {
       <mat-tab>
         <ng-template mat-tab-label>
           <div class="tab-label">
-            <span>{{ tab.tabType + (i + 1) }} </span>
+            <span>{{ getTabName(tab) }} </span>
               <button mat-icon-button (click)="removeTab(i)" aria-label="Remove tab">
                 <mat-icon>close</mat-icon>
               </button>
@@ -40,7 +40,7 @@
           <div>
           @switch(tab.category) {
             @case('TERMINAL') {
-              <app-terminal [tab]="tab"></app-terminal>
+              <app-terminal [tabId]="tab.id"></app-terminal>
             }
             @case('REMOTE_DESKTOP') {
               <app-remote-desktop [tab]="tab"></app-remote-desktop>
