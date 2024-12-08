@@ -141,8 +141,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
 
   override onSave() {
     if (this.form.valid) {
-      // Reset the dirty state
-      this.onSubmit();
+      this.onSubmit(); // Reset the dirty state
       this.onProfileSave.emit(this.formToModel());
     }
   }
@@ -150,8 +149,8 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   onConnect() {
     if (this.form.valid) {
       this.profileService.onProfileConnect(this.formToModel());
-      // Reset the dirty state
-      this.onSubmit();
+
+      this.onSubmit(); // Reset the dirty state
       this.closeEvent.emit();
     }
   }
@@ -159,6 +158,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   override refreshForm(profile: any) {
     if (this.form) {
       this.form.reset();
+
 
       this.form.get('name')?.setValue(profile?.name);
       this.form.get('comment')?.setValue(profile?.comment);
@@ -186,11 +186,14 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       if (profile?.profileType) {
         switch (profile.profileType) {
           case ProfileType.SSH_TERMINAL:
-            this.form.get('sshProfileForm')?.setValue(profile?.sshTerminalProfile)
+            this.form.get('sshProfileForm')?.setValue(profile?.sshTerminalProfile);
+            this.form.get('sshProfileForm')?.markAsUntouched();
+            this.form.get('sshProfileForm')?.markAsPristine();
             break;
         }
       }
 
+      this.onSubmit(); // Reset the dirty state
       // this.filteredTags = this.settingStorage.settings.tags;
     }
   }
