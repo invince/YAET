@@ -15,4 +15,4 @@ export const menuAnimation = trigger('slideInOut', [
   ),
   transition('out => in', animate('300ms ease-in')),
   transition('in => out', animate('300ms ease-out')),
-])
+]);

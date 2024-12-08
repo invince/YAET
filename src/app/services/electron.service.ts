@@ -117,15 +117,19 @@ export class ElectronService {
   }
 
 
-  sendTerminalInput(tab: TabInstance, input: string) {
+  sendTerminalInput(terminalId: string, input: string) {
     if(this.ipc) {
-      this.ipc.send(TERMINAL_INPUT, {terminalId: tab.id, input: input});
+      this.ipc.send(TERMINAL_INPUT, {terminalId: terminalId, input: input});
     }
   }
 
-  onTerminalOutput(callback: (data: TermOutput) => void) {
+  onTerminalOutput(terminalId: string , callback: (data: TermOutput) => void) {
     if(this.ipc) {
-      this.ipc.on(TERMINAL_OUTPUT, (event, data) => callback(data));
+      this.ipc.on(TERMINAL_OUTPUT, (event, data) => {
+        if (data && data.id == terminalId) {
+          callback(data);
+        }
+      });
     }
   }
 

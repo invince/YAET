@@ -14,21 +14,19 @@ import {TabService} from '../../services/tab.service';
   encapsulation: ViewEncapsulation.None
 })
 export class TerminalComponent implements AfterViewInit {
-  @Input() tabId!: string;
+  @Input() tab!: TabInstance;
   @ViewChild('term', {static: false}) terminal!: NgTerminal;
 
   private xtermUnderlying : Terminal | undefined;
 
   constructor(
     private electronService: ElectronService,
-    private tabService: TabService
   ) {
   }
 
   ngAfterViewInit(): void {
 
-    let tab = this.tabService.tabs.find(one => one.id == this.tabId);
-    if (!tab) {
+    if (!this.tab) {
       throw new Error("Invalid tab");
     }
     // Open terminal in the container
@@ -45,16 +43,16 @@ export class TerminalComponent implements AfterViewInit {
     }
 
     // Set up data listeners and communication with the Electron main process
-    this.electronService.createTerminal(tab);
+    this.electronService.createTerminal(this.tab);
 
     // Listen to output from Electron and display in xterm
-    this.electronService.onTerminalOutput((data) => {
+    this.electronService.onTerminalOutput(this.tab.id, (data) => {
       this.terminal.write(data.data);
     });
 
     // Send user input back to Electron main process
     this.terminal.onData().subscribe(data => {
-      this.electronService.sendTerminalInput(tab, data);
+      this.electronService.sendTerminalInput(this.tab.id, data);
     });
   }
 }
