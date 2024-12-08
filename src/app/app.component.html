@@ -26,12 +26,12 @@
   </mat-sidenav>
 
   <mat-sidenav-content>
-    <mat-tab-group id="tab-group" [selectedIndex]="tabService.currentTabIndex">
-      @for (tab of tabService.tabs; let i = $index; track tab.id) {
+    <mat-tab-group id="tab-group" [selectedIndex]="currentTabIndex">
+      @for (tab of tabService.tabs ; let i = $index; track tab.id) {
       <mat-tab>
         <ng-template mat-tab-label>
           <div class="tab-label">
-            <span>{{ getTabName(tab) }} </span>
+            <span>{{ tab.name }} </span>
               <button mat-icon-button (click)="removeTab(i)" aria-label="Remove tab">
                 <mat-icon>close</mat-icon>
               </button>

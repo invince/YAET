@@ -6,7 +6,7 @@ import {
   CLOUD_RELOAD, CLOUD_SAVE, CLOUD_UPLOAD,
   CREATION_LOCAL_TERMINAL,
   CREATION_SSH_TERMINAL,
-  DELETE_MASTERKEY,
+  DELETE_MASTERKEY, ERROR,
   GET_MASTERKEY,
   PROFILES_RELOAD,
   PROFILES_SAVE,
@@ -14,7 +14,7 @@ import {
   SECRETS_RELOAD,
   SECRETS_SAVE,
   SETTINGS_RELOAD,
-  SETTINGS_SAVE,
+  SETTINGS_SAVE, SSH_DISCONNECT,
   TERMINAL_INPUT,
   TERMINAL_OUTPUT
 } from './electronConstant';
@@ -25,6 +25,8 @@ import {AuthType, SecretType} from '../domain/Secret';
 import {SecretStorageService} from './secret-storage.service';
 import {CloudSettings} from '../domain/CloudSettings';
 import {CloudResponse} from '../domain/CloudResponse';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {TabService} from './tab.service';
 
 @Injectable({
   providedIn: 'root',
@@ -32,9 +34,17 @@ import {CloudResponse} from '../domain/CloudResponse';
 export class ElectronService {
   private ipc!: IpcRenderer;
 
-  constructor(private secretStorage: SecretStorageService) {
+  constructor(
+    private secretStorage: SecretStorageService,
+    private _snackBar: MatSnackBar,
+
+    private tabService: TabService,
+  ) {
     if (window.require) {
       this.ipc = window.require('electron').ipcRenderer;
+
+
+      this.initListener();
     }
   }
 
@@ -239,6 +249,29 @@ export class ElectronService {
     }
     return cloudSettings;
 
+  }
+
+  private initListener() {
+    this.ipc.on(ERROR, (event, data) => {
+      console.error('Error:', data);
+      this._snackBar.open('ERROR: ' + data.error,'ok', {
+        duration: 3000,
+        panelClass: [ 'error-snackbar']
+      });
+
+      if (data.category == 'ssh') {
+        this.tabService.removeById(data.id);
+      }
+
+
+      return;
+      // Show error message to the user
+    });
+
+    this.ipc.on(SSH_DISCONNECT, (event, data) => {
+      console.log('SSH Disconnected:', data);
+      // Handle disconnection logic
+    });
   }
 }
 

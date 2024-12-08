@@ -20,3 +20,5 @@ export const CLOUD_SAVE = 'cloud-save';
 export const CLOUD_RELOAD = 'cloud-reload';
 export const CLOUD_UPLOAD = 'cloud-upload';
 export const CLOUD_DOWNLOAD = 'cloud-download';
+export const ERROR = 'error';
+export const SSH_DISCONNECT = 'ssh-disconnect';
