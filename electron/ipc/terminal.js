@@ -52,7 +52,7 @@ function initTerminalIpcHandler(terminalMap) {
 
     sshConfig.debug = (info) => {
       console.log('DEBUG:', info);
-    },
+    };
 
     console.log(sshConfig);
     conn.on('ready', () => {
@@ -73,7 +73,31 @@ function initTerminalIpcHandler(terminalMap) {
         terminalMap.set(id, (data) => stream.write(data));
       });
     }).connect(sshConfig);
+
+    // Handle connection errors
+    conn.on('error', (err) => {
+      console.error('SSH connection error for id:', id, err);
+      event.sender.send('error', {
+        category: 'ssh',
+        id: id,
+        error: `SSH connection error: ${err.message}`
+      });
+    });
+
+    // Handle end event
+    conn.on('end', () => {
+      console.log('SSH connection ended for id:', id);
+      event.sender.send('ssh-disconnect', { id });
+    });
+
+    // Handle close event
+    conn.on('close', (hadError) => {
+      console.log(`SSH connection closed for id: ${id}, hadError: ${hadError}`);
+      event.sender.send('ssh-disconnect', { id });
+    });
   });
+
+
 
 }
 
