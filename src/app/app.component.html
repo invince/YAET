@@ -26,7 +26,7 @@
   </mat-sidenav>
 
   <mat-sidenav-content>
-    <mat-tab-group id="tab-group" [selectedIndex]="currentTabIndex">
+    <mat-tab-group id="tab-group" [@.disabled]="true" [selectedIndex]="currentTabIndex">
       @for (tab of tabService.tabs ; let i = $index; track tab.id) {
       <mat-tab>
         <ng-template mat-tab-label>
@@ -38,17 +38,19 @@
             </div>
           </ng-template>
           <div>
-          @switch(tab.category) {
-            @case('TERMINAL') {
-              <app-terminal [tabId]="tab.id"></app-terminal>
-            }
-            @case('REMOTE_DESKTOP') {
-              <app-remote-desktop [tab]="tab"></app-remote-desktop>
-            }
-            @case('FILE_EXPLORER') {
-              <app-file-explorer [tab]="tab"></app-file-explorer>
-            }
-          }
+            <ng-container>
+              @switch(tab.category) {
+                @case('TERMINAL') {
+                  <app-terminal [tab]="tab"></app-terminal>
+                }
+                @case('REMOTE_DESKTOP') {
+                  <app-remote-desktop [tab]="tab"></app-remote-desktop>
+                }
+                @case('FILE_EXPLORER') {
+                  <app-file-explorer [tab]="tab"></app-file-explorer>
+                }
+              }
+            </ng-container>
           </div>
         </mat-tab>
       }
