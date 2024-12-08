@@ -128,6 +128,9 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
       this.form.get('password')?.setValue(ssh?.password);
       this.form.get('confirmPassword')?.setValue(ssh?.password);
       this.form.get('secretId')?.setValue(ssh?.secretId);
+
+
+      this.onSubmit(); // reset dirty and invalid status
     }
   }
 
