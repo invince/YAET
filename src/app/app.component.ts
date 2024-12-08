@@ -70,6 +70,7 @@ export class AppComponent implements OnInit, OnDestroy{
   title = 'yetAnotherElectronTerm';
 
   subscriptions: Subscription[] = []
+  currentTabIndex = 0;
 
   constructor(
     private settingService: SettingService,
@@ -97,8 +98,8 @@ export class AppComponent implements OnInit, OnDestroy{
             return;
           }
           this.modalControl.closeModal(['favorite', 'add']);
-          this.tabService.tabs.push(new TabInstance(uuidv4(), connection.category, connection.profileType, connection)); // Adds a new terminal identifier
-          this.tabService.currentTabIndex = this.tabService.tabs.length - 1;
+          this.tabService.addTab(new TabInstance(uuidv4(), connection.category, connection.profileType, connection)); // Adds a new terminal identifier
+          this.currentTabIndex = this.tabService.tabs.length - 1;
         }
       )
     )
@@ -128,8 +129,8 @@ export class AppComponent implements OnInit, OnDestroy{
 
   addLocalTerminal() {
     this.modalControl.closeModal();
-    this.tabService.tabs.push(new TabInstance(uuidv4(), ProfileCategory.TERMINAL, ProfileType.LOCAL_TERMINAL, this.settingService.createLocalTerminalProfile())); // Adds a new terminal identifier
-    this.tabService.currentTabIndex = this.tabService.tabs.length - 1;
+    this.tabService.addTab(new TabInstance(uuidv4(), ProfileCategory.TERMINAL, ProfileType.LOCAL_TERMINAL, this.settingService.createLocalTerminalProfile())); // Adds a new terminal identifier
+    this.currentTabIndex = this.tabService.tabs.length - 1;
   }
 
   addMenu() {
@@ -177,21 +178,6 @@ export class AppComponent implements OnInit, OnDestroy{
 
   settingMenu() {
     this.toggleMenu('setting');
-  }
-
-  getTabName(tab: TabInstance):string {
-    if (!tab) {
-      return 'invalid';
-    }
-    let allNames = this.tabService.tabs.filter(one => one.id != tab.id).map(one => one.name);
-    if (allNames.includes(tab.name)) {
-      let index = 1;
-      while(allNames.includes(tab.name + '_' + index)) {
-        index ++;
-      }
-      tab.name = tab.name + '_' + index;
-    }
-    return tab.name;
   }
 
 }
