@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {MatIcon} from "@angular/material/icon";
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {MenuComponent} from '../menu.component';
@@ -75,6 +75,8 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     private modalControl: ModalControllerService,
 
     private keywordPipe: FilterKeywordPipe,
+
+    private cdr: ChangeDetectorRef,
   ) {
     super();
   }
@@ -129,6 +131,8 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     }
     this.selectedProfile = profile;
     this.selectedProfileId = profile.id;
+
+    this.cdr.detectChanges();
     // this.refreshSecretForm();
   }
 
