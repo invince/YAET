@@ -1,6 +1,4 @@
 import {Profile, ProfileCategory, ProfileType} from './Profile';
-import {NgTerminalComponent} from 'ng-terminal';
-
 
 export class TabInstance {
 
@@ -11,9 +9,6 @@ export class TabInstance {
   readonly category: ProfileCategory;
 
   profile: Profile;
-
-  public terminal!: NgTerminalComponent;
-  public content: string[] = [];
 
 
   constructor(id: string, category: ProfileCategory, type: ProfileType, profile: Profile) {
