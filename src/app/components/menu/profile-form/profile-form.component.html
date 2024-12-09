@@ -103,6 +103,9 @@
           <app-ssh-profile-form formControlName="sshProfileForm"></app-ssh-profile-form>
         }
 
+        @case('RDP_REMOTE_DESKTOP') {
+          <app-rdp-profile-form formControlName="rdpProfileForm"></app-rdp-profile-form>
+        }
       }
 
     </div>

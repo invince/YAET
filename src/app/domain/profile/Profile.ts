@@ -2,6 +2,7 @@ import {LocalTerminalProfile} from './LocalTerminalProfile';
 import {v4 as uuidv4} from 'uuid';
 import {SSHTerminalProfile} from './SSHTerminalProfile';
 import {Secret} from '../Secret';
+import {RdpProfile} from './RdpProfile';
 
 export enum ProfileCategory {
   TERMINAL = 'TERMINAL',
@@ -66,6 +67,7 @@ export class Profile {
   public profileType!: ProfileType;
   public localTerminal!: LocalTerminalProfile;
   public sshTerminalProfile!: SSHTerminalProfile;
+  public rdpProfile!: RdpProfile;
 
   public group!: string
   public tags: string[] = [];
@@ -76,6 +78,7 @@ export class Profile {
   constructor() {
     this.localTerminal = new LocalTerminalProfile();
     this.sshTerminalProfile = new SSHTerminalProfile();
+    this.rdpProfile = new RdpProfile();
   }
 
   static clone(base: Profile): Profile {
@@ -91,4 +94,10 @@ export class Profile {
 
     return cloned;
   }
+
+  static requireOpenNewTab(profile: Profile) {
+    return ![ProfileType.RDP_REMOTE_DESKTOP].includes(profile.profileType);
+  }
+
+
 }

@@ -1,6 +1,6 @@
-import {Component, EventEmitter, forwardRef, Input, OnInit, Output} from '@angular/core';
+import {Component, forwardRef} from '@angular/core';
 import {SSHTerminalProfile} from '../../../domain/profile/SSHTerminalProfile';
-import {MatFormField, MatLabel, MatSuffix} from '@angular/material/form-field';
+import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatIcon} from '@angular/material/icon';
 import {FormBuilder, FormGroup, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators} from '@angular/forms';
@@ -8,9 +8,9 @@ import {CommonModule} from '@angular/common';
 import {AuthType, Secret} from '../../../domain/Secret';
 import {MenuComponent} from '../menu.component';
 import {MatIconButton} from '@angular/material/button';
-import {MatOption, MatSelect, MatSelectChange} from '@angular/material/select';
+import {MatSelectChange, MatSelectModule} from '@angular/material/select';
 import {ChildFormAsFormControl} from '../../enhanced-form-mixin';
-import {MatRadioButton, MatRadioGroup} from '@angular/material/radio';
+import {MatRadioModule} from '@angular/material/radio';
 import {SecretStorageService} from '../../../services/secret-storage.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';
 
@@ -21,17 +21,13 @@ import {SettingStorageService} from '../../../services/setting-storage.service';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    MatSelectModule,
+    MatRadioModule,
+    MatFormFieldModule,
 
-    MatLabel,
     MatInput,
-    MatFormField,
     MatIcon,
-    MatSuffix,
     MatIconButton,
-    MatSelect,
-    MatOption,
-    MatRadioButton,
-    MatRadioGroup
   ],
   providers: [
     {
@@ -58,7 +54,7 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
   onInitForm(): FormGroup {
     return  this.fb.group(
       {
-        host:                 ['', [Validators.required, Validators.minLength(3)]], // we shall avoid use ngModel and formControl at same time
+        host:                 ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
         port:                 ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
         authType:             ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
         login:                [],

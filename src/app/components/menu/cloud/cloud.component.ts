@@ -178,7 +178,8 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
 
               } else {
                 this._snackBar.open('Error Occurred: ' + response.ko, 'Ok', {
-                  duration: 3000
+                  duration: 3000,
+                  panelClass: [ 'error-snackbar']
                 });
                 this.processing = false;
               }
@@ -217,7 +218,8 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
                 this.processing = false;
               } else {
                 this._snackBar.open('Error Occurred: ' + response.ko, 'Ok', {
-                  duration: 3000
+                  duration: 3000,
+                  panelClass: [ 'error-snackbar']
                 });
                 this.processing = false;
               }

@@ -28,10 +28,11 @@ import {SettingService} from '../../../services/setting.service';
 import {MatChipInputEvent, MatChipsModule} from '@angular/material/chips';
 import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
-import {map, Observable, startWith} from 'rxjs';
 import {Tag} from '../../../domain/Tag';
 import {SSHTerminalProfile} from '../../../domain/profile/SSHTerminalProfile';
 import {CdkTextareaAutosize} from '@angular/cdk/text-field';
+import {RdpProfileFormComponent} from '../rdp-profile-form/rdp-profile-form.component';
+import {RdpProfile} from '../../../domain/profile/RdpProfile';
 
 @Component({
   selector: 'app-profile-form',
@@ -52,6 +53,7 @@ import {CdkTextareaAutosize} from '@angular/cdk/text-field';
 
     SshProfileFormComponent,
     CdkTextareaAutosize,
+    RdpProfileFormComponent,
   ],
   templateUrl: './profile-form.component.html',
   styleUrl: './profile-form.component.scss'
@@ -73,10 +75,11 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
 
   readonly addOnBlur = true;
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
-  @ViewChild(SshProfileFormComponent) sshChild!: SshProfileFormComponent;
   @ViewChild('tagsAutoCompleteInput') tagsAutoCompleteInput!: ElementRef;
-
   filteredTags!: Tag[];
+
+  @ViewChild(SshProfileFormComponent) sshChild!: SshProfileFormComponent;
+  @ViewChild(RdpProfileFormComponent) rdpChild!: RdpProfileFormComponent;
 
   constructor(
     private fb: FormBuilder,
@@ -110,6 +113,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
         tags:                   [[]],
         profileType:            [this._profile.profileType, Validators.required],
         sshProfileForm:         [this._profile.sshTerminalProfile],
+        rdpProfileForm:         [this._profile.rdpProfile],
 
       },
       {validators: []}
@@ -128,6 +132,11 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     switch($event.value) {
       case ProfileType.SSH_TERMINAL:
         this.form.get('sshProfileForm')?.setValue(new SSHTerminalProfile());
+        break;
+
+      case ProfileType.RDP_REMOTE_DESKTOP:
+        this.form.get('rdpProfileForm')?.setValue(new RdpProfile());
+        break;
     }
   }
 
@@ -196,9 +205,10 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       if (profile?.profileType) {
         switch (profile.profileType) {
           case ProfileType.SSH_TERMINAL:
-            this.form.get('sshProfileForm')?.setValue(profile?.sshTerminalProfile);
-            this.form.get('sshProfileForm')?.markAsUntouched();
-            this.form.get('sshProfileForm')?.markAsPristine();
+            this.updateFormValue('sshProfileForm', profile?.sshTerminalProfile);
+            break;
+          case ProfileType.RDP_REMOTE_DESKTOP:
+            this.updateFormValue('rdpProfileForm', profile?.rdpProfile);
             break;
         }
       }
@@ -208,6 +218,11 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     }
   }
 
+  updateFormValue(formName:string, value: any) {
+    this.form.get(formName)?.setValue(value);
+    this.form.get(formName)?.markAsUntouched();
+    this.form.get(formName)?.markAsPristine();
+  }
 
   formToModel(): Profile {
     this._profile.name = this.form.get('name')?.value;
@@ -223,6 +238,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     this._profile.profileType = this.form.get('profileType')?.value;
 
     this._profile.sshTerminalProfile = this.sshChild?.formToModel();
+    this._profile.rdpProfile = this.rdpChild?.formToModel();
 
 
     return this._profile;
