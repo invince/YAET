@@ -11,7 +11,7 @@ function initTerminalIpcHandler(terminalMap) {
     return terminalExec;
   }
 
-  ipcMain.on('create-local-terminal', (event, data) => {
+  ipcMain.on('session.open.terminal.local', (event, data) => {
 
     const id = data.terminalId; // cf ElectronService
     let shell = validate(data.terminalExec);
@@ -23,7 +23,7 @@ function initTerminalIpcHandler(terminalMap) {
       env: process.env,
     });
     ptyProcess.on('data', (data) => {
-      event.sender.send('terminal-output',
+      event.sender.send('terminal.output',
         {id: id, data: data.toString()}
       );
     });
@@ -32,7 +32,7 @@ function initTerminalIpcHandler(terminalMap) {
 
   });
 
-  ipcMain.on('terminal-input', (event, data) => {
+  ipcMain.on('terminal.input', (event, data) => {
     const id = data.terminalId; // cf terminal.component.ts
     const input = data.input;
     const terminalCallback = terminalMap.get(id);
@@ -45,7 +45,7 @@ function initTerminalIpcHandler(terminalMap) {
     }
   });
 
-  ipcMain.on('create-ssh-terminal', (event, data) => {
+  ipcMain.on('session.open.terminal.ssh', (event, data) => {
     const conn = new Client();
     const sshConfig = data.config;
     const id = data.terminalId;
@@ -65,7 +65,7 @@ function initTerminalIpcHandler(terminalMap) {
         console.log('Shell started for id:', id);
 
         stream.on('data', (data) => {
-          event.sender.send('terminal-output',
+          event.sender.send('terminal.output',
             {id: id, data: data.toString()}
           );
         });
@@ -87,13 +87,13 @@ function initTerminalIpcHandler(terminalMap) {
     // Handle end event
     conn.on('end', () => {
       console.log('SSH connection ended for id:', id);
-      event.sender.send('ssh-disconnect', { id });
+      event.sender.send('session.disconnect.terminal.ssh', { id });
     });
 
     // Handle close event
     conn.on('close', (hadError) => {
       console.log(`SSH connection closed for id: ${id}, hadError: ${hadError}`);
-      event.sender.send('ssh-disconnect', { id });
+      event.sender.send('session.disconnect.terminal.ssh', { id });
     });
   });
 

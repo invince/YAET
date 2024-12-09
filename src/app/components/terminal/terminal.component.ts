@@ -43,7 +43,7 @@ export class TerminalComponent implements AfterViewInit {
     }
 
     // Set up data listeners and communication with the Electron main process
-    this.electronService.createTerminal(this.tab);
+    this.electronService.openTerminalSession(this.tab);
 
     // Listen to output from Electron and display in xterm
     this.electronService.onTerminalOutput(this.tab.id, (data) => {

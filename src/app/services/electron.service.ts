@@ -4,8 +4,8 @@ import {TabInstance} from '../domain/TabInstance';
 import {
   CLOUD_DOWNLOAD,
   CLOUD_RELOAD, CLOUD_SAVE, CLOUD_UPLOAD,
-  CREATION_LOCAL_TERMINAL,
-  CREATION_SSH_TERMINAL,
+  SESSION_OPEN_LOCAL_TERMINAL,
+  SESSION_OPEN_SSH_TERMINAL,
   DELETE_MASTERKEY, ERROR,
   GET_MASTERKEY,
   PROFILES_RELOAD,
@@ -14,17 +14,17 @@ import {
   SECRETS_RELOAD,
   SECRETS_SAVE,
   SETTINGS_RELOAD,
-  SETTINGS_SAVE, SSH_DISCONNECT,
+  SETTINGS_SAVE, SESSION_DISCONNECT_SSH,
   TERMINAL_INPUT,
-  TERMINAL_OUTPUT
+  TERMINAL_OUTPUT, SESSION_OPEN_RDP
 } from './electronConstant';
-import {LocalTerminalProfile} from '../domain/LocalTerminalProfile';
-import {Profile, ProfileType} from '../domain/Profile';
-import {MySettings} from '../domain/MySettings';
+import {LocalTerminalProfile} from '../domain/profile/LocalTerminalProfile';
+import {Profile, ProfileType} from '../domain/profile/Profile';
+import {MySettings} from '../domain/setting/MySettings';
 import {AuthType, SecretType} from '../domain/Secret';
 import {SecretStorageService} from './secret-storage.service';
-import {CloudSettings} from '../domain/CloudSettings';
-import {CloudResponse} from '../domain/CloudResponse';
+import {CloudSettings} from '../domain/setting/CloudSettings';
+import {CloudResponse} from '../domain/setting/CloudResponse';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {TabService} from './tab.service';
 
@@ -32,7 +32,7 @@ import {TabService} from './tab.service';
   providedIn: 'root',
 })
 export class ElectronService {
-  private ipc!: IpcRenderer;
+  private readonly ipc!: IpcRenderer;
 
   constructor(
     private secretStorage: SecretStorageService,
@@ -44,22 +44,53 @@ export class ElectronService {
       this.ipc = window.require('electron').ipcRenderer;
 
 
-      this.initListener();
+      this.initCommonListener();
     }
   }
 
-  createTerminal(tab: TabInstance) {
+//#region "Common"
+  onLoadedEvent(eventName: string, callback: (data: string) => void) {
+    if (this.ipc) {
+      this.ipc.on(eventName, (event, data) => callback(data));
+    }
+  }
+  private initCommonListener() {
+    this.ipc.on(ERROR, (event, data) => {
+      console.error('Error:', data);
+      this._snackBar.open('ERROR: ' + data.error,'ok', {
+        duration: 3000,
+        panelClass: [ 'error-snackbar']
+      });
+
+      if (data.category == 'ssh') {
+        this.tabService.removeById(data.id);
+      }
+
+
+      return;
+      // Show error message to the user
+    });
+
+    this.ipc.on(SESSION_DISCONNECT_SSH, (event, data) => {
+      console.log('SSH Disconnected:', data);
+      // Handle disconnection logic
+    });
+  }
+//#endregion "Common"
+
+//#region "Sessions"
+  openTerminalSession(tab: TabInstance) {
     if (this.ipc) {
       switch (tab.tabType) {
-        case ProfileType.LOCAL_TERMINAL: this.createLocalTerminal(tab); break;
-        case ProfileType.SSH_TERMINAL: this.createSSHTerminal(tab); break;
+        case ProfileType.LOCAL_TERMINAL: this.openLocalTerminalSession(tab); break;
+        case ProfileType.SSH_TERMINAL: this.openSSHTerminalSession(tab); break;
 
 
       }
     }
   }
 
-  private createLocalTerminal(tab: TabInstance) {
+  private openLocalTerminalSession(tab: TabInstance) {
     if (!tab.profile) {
       tab.profile = new Profile();
     }
@@ -67,10 +98,10 @@ export class ElectronService {
       tab.profile.localTerminal = new LocalTerminalProfile();
     }
     let localProfile: LocalTerminalProfile = tab.profile.localTerminal;
-    this.ipc.send(CREATION_LOCAL_TERMINAL, {terminalId: tab.id, terminalExec: localProfile.execPath});
+    this.ipc.send(SESSION_OPEN_LOCAL_TERMINAL, {terminalId: tab.id, terminalExec: localProfile.execPath});
   }
 
-  private createSSHTerminal(tab: TabInstance) {
+  private openSSHTerminalSession(tab: TabInstance) {
     if (!tab.profile || !tab.profile.sshTerminalProfile) {
       console.error("Invalid configuration");
       return;
@@ -113,7 +144,7 @@ export class ElectronService {
         }
       }
     }
-    this.ipc.send(CREATION_SSH_TERMINAL, {terminalId: tab.id, config: sshConfig});
+    this.ipc.send(SESSION_OPEN_SSH_TERMINAL, {terminalId: tab.id, config: sshConfig});
   }
 
 
@@ -133,25 +164,48 @@ export class ElectronService {
     }
   }
 
+  openRdpSession(hostname: string, options: { fullscreen?: boolean; admin?: boolean } = {}) {
+    if (this.ipc) {
+      this.ipc.send(SESSION_OPEN_RDP, { hostname, options });
+    }
+  }
+
+//#endregion "Sessions"
+
+
+//#region "Settings"
   saveSetting(settings: MySettings) {
     if(this.ipc) {
       this.ipc.send(SETTINGS_SAVE, {data: settings});
     }
   }
 
-  onLoadedEvent(eventName: string, callback: (data: string) => void) {
-    if (this.ipc) {
-      this.ipc.on(eventName, (event, data) => callback(data));
-    }
-  }
-
-
   reloadSettings() {
     if (this.ipc) {
       this.ipc.send(SETTINGS_RELOAD, {});
     }
   }
+//#endregion "Settings"
 
+
+
+//#region "Profiles"
+  async saveProfiles(encryptedProfiles: string) {
+    if(this.ipc) {
+      await this.ipc.send(PROFILES_SAVE, {data: encryptedProfiles});
+    }
+  }
+
+  reloadProfiles() {
+    if (this.ipc) {
+      this.ipc.send(PROFILES_RELOAD, {});
+    }
+  }
+
+//#endregion "Profiles"
+
+
+//#region "Secrets"
   async getPassword(service: string, account: string): Promise<string|undefined>  {
     if(this.ipc) {
       return await this.ipc.invoke(GET_MASTERKEY,  service, account);
@@ -171,19 +225,6 @@ export class ElectronService {
     }
   }
 
-  async saveProfiles(encryptedProfiles: string) {
-    if(this.ipc) {
-      await this.ipc.send(PROFILES_SAVE, {data: encryptedProfiles});
-    }
-  }
-
-  reloadProfiles() {
-    if (this.ipc) {
-      this.ipc.send(PROFILES_RELOAD, {});
-    }
-  }
-
-
   async saveSecrets(encryptedSecrets: string) {
     if (this.ipc) {
       await this.ipc.send(SECRETS_SAVE, {data: encryptedSecrets});
@@ -195,8 +236,12 @@ export class ElectronService {
       this.ipc.send(SECRETS_RELOAD, {});
     }
   }
+//#endregion "Secrets"
 
 
+
+
+//#region "Cloud"
   async saveCloud(encrypted: string) {
     if(this.ipc) {
       await this.ipc.send(CLOUD_SAVE, {data: encrypted});
@@ -255,28 +300,9 @@ export class ElectronService {
 
   }
 
-  private initListener() {
-    this.ipc.on(ERROR, (event, data) => {
-      console.error('Error:', data);
-      this._snackBar.open('ERROR: ' + data.error,'ok', {
-        duration: 3000,
-        panelClass: [ 'error-snackbar']
-      });
-
-      if (data.category == 'ssh') {
-        this.tabService.removeById(data.id);
-      }
+//#endregion "Cloud"
 
 
-      return;
-      // Show error message to the user
-    });
-
-    this.ipc.on(SSH_DISCONNECT, (event, data) => {
-      console.log('SSH Disconnected:', data);
-      // Handle disconnection logic
-    });
-  }
 }
 
 export class TermOutput {

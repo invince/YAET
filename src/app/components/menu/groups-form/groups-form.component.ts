@@ -3,7 +3,7 @@ import {SettingService} from '../../../services/setting.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';
 import {ProfileService} from '../../../services/profile.service';
 import {MatSnackBar} from '@angular/material/snack-bar';
-import {MySettings} from '../../../domain/MySettings';
+import {MySettings} from '../../../domain/setting/MySettings';
 import {MatChipEditedEvent, MatChipsModule} from '@angular/material/chips';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';

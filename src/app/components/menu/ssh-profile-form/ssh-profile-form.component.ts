@@ -1,5 +1,5 @@
 import {Component, EventEmitter, forwardRef, Input, OnInit, Output} from '@angular/core';
-import {SSHTerminalProfile} from '../../../domain/SSHTerminalProfile';
+import {SSHTerminalProfile} from '../../../domain/profile/SSHTerminalProfile';
 import {MatFormField, MatLabel, MatSuffix} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatIcon} from '@angular/material/icon';

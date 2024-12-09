@@ -1,17 +1,17 @@
 import {Injectable} from '@angular/core';
-import {MySettings} from '../domain/MySettings';
-import {Profile} from '../domain/Profile';
+import {MySettings} from '../domain/setting/MySettings';
+import {Profile} from '../domain/profile/Profile';
 import {ElectronService} from './electron.service';
 import {SETTINGS_LOADED} from './electronConstant';
-import {LocalTerminalProfile, LocalTerminalType} from '../domain/LocalTerminalProfile';
+import {LocalTerminalProfile, LocalTerminalType} from '../domain/profile/LocalTerminalProfile';
 import {Subject} from 'rxjs';
 import {SettingStorageService} from './setting-storage.service';
 import {Tag} from '../domain/Tag';
 import {ProfileService} from './profile.service';
 import {Group} from '../domain/Group';
-import {UISettings} from '../domain/UISettings';
-import {GeneralSettings} from '../domain/GeneralSettings';
-import {CloudSettings} from '../domain/CloudSettings';
+import {UISettings} from '../domain/setting/UISettings';
+import {GeneralSettings} from '../domain/setting/GeneralSettings';
+import {CloudSettings} from '../domain/setting/CloudSettings';
 
 @Injectable({
   providedIn: 'root'

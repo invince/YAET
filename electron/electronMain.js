@@ -25,10 +25,10 @@ app.on('ready', () => {
   mainWindow.loadURL(`http://localhost:4200`);
 
   mainWindow.webContents.once('dom-ready', () => {
-    load(path.join(CONFIG_FOLDER, SETTINGS_JSON), "settings-loaded", false, mainWindow);
-    load(path.join(CONFIG_FOLDER, PROFILES_JSON), "profiles-loaded", false, mainWindow);
-    load(path.join(CONFIG_FOLDER, SECRETS_JSON), "secrets-loaded", true, mainWindow);
-    load(path.join(CONFIG_FOLDER, CLOUD_JSON), "cloud-loaded", true, mainWindow);
+    load(path.join(CONFIG_FOLDER, SETTINGS_JSON), "settings.loaded", false, mainWindow);
+    load(path.join(CONFIG_FOLDER, PROFILES_JSON), "profiles.loaded", false, mainWindow);
+    load(path.join(CONFIG_FOLDER, SECRETS_JSON), "secrets.loaded", true, mainWindow);
+    load(path.join(CONFIG_FOLDER, CLOUD_JSON), "cloud.loaded", true, mainWindow);
   });
   // createMenu();
   initConfigFilesIpcHandler(mainWindow);
