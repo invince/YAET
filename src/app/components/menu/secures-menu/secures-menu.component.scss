@@ -18,14 +18,21 @@
 
 .sidenav-item {
   display: flex;
-  align-items: center;
+  align-items: start;
   justify-content: space-between;
   height: 40px;
+}
+
+.sidenav-add button {
+  width: 100%;
+  text-align: left;
 }
 
 .sidenav-item button {
   width: 100%;
   text-align: left;
+  justify-content: start;
+  padding-left: 20px;
 }
 
 .mat-sidenav-content {

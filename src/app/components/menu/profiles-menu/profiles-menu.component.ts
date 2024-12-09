@@ -23,6 +23,8 @@ import {MatTree, MatTreeModule, MatTreeNestedDataSource} from '@angular/material
 import {NODE_DEFAULT_NAME, GroupNode} from '../../../domain/GroupNode';
 import {NestedTreeControl} from '@angular/cdk/tree';
 import {SideNavType} from '../../../domain/UISettings';
+import {MatDialog} from '@angular/material/dialog';
+import {ConfirmationComponent} from '../../confirmation/confirmation.component';
 
 @Component({
   selector: 'app-profiles-menu',
@@ -77,6 +79,8 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     private keywordPipe: FilterKeywordPipe,
 
     private cdr: ChangeDetectorRef,
+
+    private dialog: MatDialog,
   ) {
     super();
   }
@@ -138,13 +142,24 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
 
 
   async onDelete($event: Profile) {
-    this.profileService.deleteLocal($event);
-    if (!$event.isNew) {
-      await this.profileService.saveAll();
-    }
-    this.selectedProfileId = undefined;
-    this.selectedProfile = undefined;
-    this.refreshForm();
+    const dialogRef = this.dialog.open(ConfirmationComponent, {
+      width: '300px',
+      data: { message: 'Do you want to delete this profile: ' + $event.name + '?' },
+    });
+
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (result) {
+        this.profileService.deleteLocal($event);
+        if (!$event.isNew) {
+          await this.profileService.saveAll();
+        }
+        this.selectedProfileId = undefined;
+        this.selectedProfile = undefined;
+        this.refreshForm();
+      }
+    });
+
+
   }
 
   async onSaveOne($event: Profile) {

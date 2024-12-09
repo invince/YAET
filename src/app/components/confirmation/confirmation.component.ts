@@ -22,7 +22,11 @@ export class ConfirmationComponent {
 
   constructor(
     public dialogRef: MatDialogRef<ConfirmationComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { message: string }
+    @Inject(MAT_DIALOG_DATA) public data: {
+      message: string,
+      okBtnLabel: string,
+      abortBtnLabel: string,
+    }
   ) {}
 
   onAbort(): void {

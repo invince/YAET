@@ -18,6 +18,8 @@ import {SettingStorageService} from '../../../services/setting-storage.service';
 import {ModalControllerService} from '../../../services/modal-controller.service';
 import {Subscription} from 'rxjs';
 import {FilterKeywordPipe} from '../../../pipes/filter-keyword.pipe';
+import {ConfirmationComponent} from '../../confirmation/confirmation.component';
+import {MatDialog} from '@angular/material/dialog';
 
 @Component({
   selector: 'app-secures-menu',
@@ -39,7 +41,7 @@ import {FilterKeywordPipe} from '../../../pipes/filter-keyword.pipe';
     FilterKeywordPipe,
   ],
   templateUrl: './secures-menu.component.html',
-  styleUrl: './secures-menu.component.css',
+  styleUrl: './secures-menu.component.scss',
   providers: [FilterKeywordPipe]
 })
 export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
@@ -64,7 +66,7 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
     private _snackBar: MatSnackBar,
     private modalControl: ModalControllerService,
     private keywordPipe: FilterKeywordPipe,
-
+    private dialog: MatDialog,
     ) {
     super();
   }
@@ -115,13 +117,22 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
   }
 
   async onDelete($event: Secret) {
-    this.secretService.deleteLocal($event);
-    if (!$event.isNew) {
-      await this.secretService.saveAll();
-    }
-    this.selectedId = undefined;
-    this.selectedSecret = undefined;
-    // this.refreshSecretForm();
+    const dialogRef = this.dialog.open(ConfirmationComponent, {
+      width: '300px',
+      data: { message: 'Do you want to delete this profile: ' + $event.name + '?' },
+    });
+
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (result) {
+        this.secretService.deleteLocal($event);
+        if (!$event.isNew) {
+          await this.secretService.saveAll();
+        }
+        this.selectedId = undefined;
+        this.selectedSecret = undefined;
+        // this.refreshSecretForm();
+      }
+    });
   }
 
   async onSaveOne($event: Secret) {
