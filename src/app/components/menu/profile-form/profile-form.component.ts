@@ -59,7 +59,10 @@ import {CdkTextareaAutosize} from '@angular/cdk/text-field';
 export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements OnInit {
 
   private _profile!: Profile;
+
+  @Input() buttons = ['close', 'delete', 'save', 'connect']; // 'clone', 'reload'
   @Output() onProfileSave = new EventEmitter<Profile>();
+  @Output() onProfileClone = new EventEmitter<Profile>();
   @Output() onProfileDelete = new EventEmitter<Profile>();
   @Output() onProfileCancel = new EventEmitter<Profile>();
 
@@ -143,6 +146,13 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     if (this.form.valid) {
       this.onSubmit(); // Reset the dirty state
       this.onProfileSave.emit(this.formToModel());
+    }
+  }
+
+  onClone() {
+    if (this.form.valid) {
+      this.onSubmit(); // Reset the dirty state
+      this.onProfileClone.emit(this.formToModel());
     }
   }
 
@@ -287,5 +297,9 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     this.cdr.detectChanges();
   }
 
+
+  onReload() {
+    this.profileService.reload();
+  }
 
 }

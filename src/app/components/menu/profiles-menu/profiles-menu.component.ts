@@ -104,7 +104,10 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   }
 
   addTab() {
-    let newProfile = new Profile();
+    this.doAddTab(new Profile());
+  }
+
+  doAddTab(newProfile: Profile) {
     this.profileService.profiles.push(newProfile);
     this.selectedProfileId = newProfile.id;// Focus on the newly added tab
     this.selectedProfile = newProfile;
@@ -116,6 +119,11 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
         }
       });
     }
+  }
+
+  onCloneOne($event: Profile) {
+    // we'll add a new tab, and copy all the fields of $event
+    this.doAddTab(Profile.clone($event));
   }
 
   onTabChange(profile: Profile) {

@@ -77,4 +77,18 @@ export class Profile {
     this.localTerminal = new LocalTerminalProfile();
     this.sshTerminalProfile = new SSHTerminalProfile();
   }
+
+  static clone(base: Profile): Profile {
+    let cloned = new Profile();
+
+    cloned.name = base.name;
+    cloned.category = base.category;
+    cloned.profileType = base.profileType;
+    cloned.localTerminal = base.localTerminal;
+    cloned.sshTerminalProfile = base.sshTerminalProfile;
+    cloned.group = base.group;
+    cloned.tags = base.tags;
+
+    return cloned;
+  }
 }
