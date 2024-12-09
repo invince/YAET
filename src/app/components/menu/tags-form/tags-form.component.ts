@@ -8,7 +8,7 @@ import {
 import {MatIconModule} from '@angular/material/icon';
 import {SettingStorageService} from '../../../services/setting-storage.service';
 import {SettingService} from '../../../services/setting.service';
-import {MySettings} from '../../../domain/MySettings';
+import {MySettings} from '../../../domain/setting/MySettings';
 import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import {ProfileService} from '../../../services/profile.service';
 import {MatSnackBar} from '@angular/material/snack-bar';

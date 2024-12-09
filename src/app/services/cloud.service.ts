@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import {CloudSettings} from '../domain/CloudSettings';
+import {CloudSettings} from '../domain/setting/CloudSettings';
 import {ElectronService} from './electron.service';
 import {MasterKeyService} from './master-key.service';
 import {CLOUD_LOADED} from './electronConstant';
-import {CloudResponse} from '../domain/CloudResponse';
+import {CloudResponse} from '../domain/setting/CloudResponse';
 import {SettingService} from './setting.service';
 import {ProfileService} from './profile.service';
 import {SecretService} from './secret.service';

@@ -12,7 +12,7 @@ import {
 import {MenuComponent} from '../menu.component';
 import {MatIcon} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
-import {ProfileCategoryTypeMap, Profile, ProfileCategory, ProfileType} from '../../../domain/Profile';
+import {ProfileCategoryTypeMap, Profile, ProfileCategory, ProfileType} from '../../../domain/profile/Profile';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatSelectChange, MatSelectModule} from '@angular/material/select';
 import {CommonModule, KeyValuePipe} from '@angular/common';
@@ -30,7 +30,7 @@ import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
 import {map, Observable, startWith} from 'rxjs';
 import {Tag} from '../../../domain/Tag';
-import {SSHTerminalProfile} from '../../../domain/SSHTerminalProfile';
+import {SSHTerminalProfile} from '../../../domain/profile/SSHTerminalProfile';
 import {CdkTextareaAutosize} from '@angular/cdk/text-field';
 
 @Component({

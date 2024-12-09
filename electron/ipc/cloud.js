@@ -5,7 +5,7 @@ const {promises: fsPromise} = require("fs");
 const simpleGit = require("simple-git");
 function initCloudIpcHandler() {
 
-  ipcMain.handle('cloud-upload', async (event, data) => {
+  ipcMain.handle('cloud.upload', async (event, data) => {
 
     const response = {
       succeed: false,
@@ -84,7 +84,7 @@ function initCloudIpcHandler() {
   });
 
 
-  ipcMain.handle('cloud-download', async (event, data) => {
+  ipcMain.handle('cloud.download', async (event, data) => {
 
     const response = {
       succeed: false,

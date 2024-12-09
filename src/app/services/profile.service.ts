@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {Profile, Profiles} from '../domain/Profile';
+import {Profile, Profiles} from '../domain/profile/Profile';
 import {ElectronService} from './electron.service';
 import {PROFILES_LOADED} from './electronConstant';
 import {Subject} from 'rxjs';

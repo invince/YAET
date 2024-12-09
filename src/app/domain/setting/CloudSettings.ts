@@ -1,4 +1,4 @@
-import {AuthType} from './Secret';
+import {AuthType} from '../Secret';
 
 export class CloudSettings {
   public url!: string;

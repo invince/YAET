@@ -1,7 +1,7 @@
-import {LocalTerminalProfile} from './LocalTerminalProfile';
+import {LocalTerminalProfile} from '../profile/LocalTerminalProfile';
 import {UISettings} from './UISettings';
-import {Tag} from './Tag';
-import {Group} from './Group';
+import {Tag} from '../Tag';
+import {Group} from '../Group';
 import {GeneralSettings} from './GeneralSettings';
 
 export class MySettings {

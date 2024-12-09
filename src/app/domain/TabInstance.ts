@@ -1,4 +1,4 @@
-import {Profile, ProfileCategory, ProfileType} from './Profile';
+import {Profile, ProfileCategory, ProfileType} from './profile/Profile';
 
 export class TabInstance {
 

@@ -3,7 +3,7 @@ import {RouterOutlet} from '@angular/router';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatTabsModule} from '@angular/material/tabs';
 import {TerminalComponent} from './components/terminal/terminal.component';
-import { ProfileCategory, ProfileType} from './domain/Profile';
+import { ProfileCategory, ProfileType} from './domain/profile/Profile';
 import {TabInstance} from './domain/TabInstance';
 import {CommonModule} from '@angular/common';
 import {MatIcon} from '@angular/material/icon';

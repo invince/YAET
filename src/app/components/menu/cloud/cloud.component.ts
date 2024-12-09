@@ -7,7 +7,7 @@ import {MatInput} from '@angular/material/input';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatSelectChange, MatSelectModule} from '@angular/material/select';
 import {AuthType, Secret, SecretType} from '../../../domain/Secret';
-import {CloudSettings} from '../../../domain/CloudSettings';
+import {CloudSettings} from '../../../domain/setting/CloudSettings';
 import {MatButtonModule} from '@angular/material/button';
 import {SecretStorageService} from '../../../services/secret-storage.service';
 import {CloudService} from '../../../services/cloud.service';

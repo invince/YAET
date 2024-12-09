@@ -1,7 +1,7 @@
 import {LocalTerminalProfile} from './LocalTerminalProfile';
 import {v4 as uuidv4} from 'uuid';
 import {SSHTerminalProfile} from './SSHTerminalProfile';
-import {Secret} from './Secret';
+import {Secret} from '../Secret';
 
 export enum ProfileCategory {
   TERMINAL = 'TERMINAL',

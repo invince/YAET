@@ -8,7 +8,7 @@ import {MatSelectModule} from '@angular/material/select';
 import {MatInput} from '@angular/material/input';
 import {MenuComponent} from '../menu.component';
 import {ProfileFormComponent} from "../profile-form/profile-form.component";
-import {Profile} from '../../../domain/Profile';
+import {Profile} from '../../../domain/profile/Profile';
 import {ProfileService} from '../../../services/profile.service';
 
 @Component({

@@ -4,7 +4,7 @@ import {MatSidenavModule} from '@angular/material/sidenav';
 import {MenuComponent} from '../menu.component';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {ProfileService} from '../../../services/profile.service';
-import {Profile} from '../../../domain/Profile';
+import {Profile} from '../../../domain/profile/Profile';
 import {CommonModule} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -22,7 +22,7 @@ import {FilterKeywordPipe} from '../../../pipes/filter-keyword.pipe';
 import {MatTree, MatTreeModule, MatTreeNestedDataSource} from '@angular/material/tree'
 import {NODE_DEFAULT_NAME, GroupNode} from '../../../domain/GroupNode';
 import {NestedTreeControl} from '@angular/cdk/tree';
-import {SideNavType} from '../../../domain/UISettings';
+import {SideNavType} from '../../../domain/setting/UISettings';
 import {MatDialog} from '@angular/material/dialog';
 import {ConfirmationComponent} from '../../confirmation/confirmation.component';
 

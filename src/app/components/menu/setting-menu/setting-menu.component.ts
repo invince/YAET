@@ -3,11 +3,11 @@ import {MenuComponent} from '../menu.component';
 import {MatIcon} from '@angular/material/icon';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatTab, MatTabGroup} from '@angular/material/tabs';
-import {MySettings} from '../../../domain/MySettings';
+import {MySettings} from '../../../domain/setting/MySettings';
 import {SettingService} from '../../../services/setting.service';
 import {MatFormField, MatLabel, MatSuffix} from '@angular/material/form-field';
 import {MatOption, MatSelect} from '@angular/material/select';
-import {LocalTerminalProfile, LocalTerminalType} from '../../../domain/LocalTerminalProfile';
+import {LocalTerminalProfile, LocalTerminalType} from '../../../domain/profile/LocalTerminalProfile';
 import {CommonModule, KeyValuePipe} from '@angular/common';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatInput} from '@angular/material/input';
@@ -18,12 +18,12 @@ import {ConfirmationComponent} from '../../confirmation/confirmation.component';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {MasterKeyService} from '../../../services/master-key.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';
-import {SideNavType, UISettings} from '../../../domain/UISettings';
+import {SideNavType, UISettings} from '../../../domain/setting/UISettings';
 import {MatChip} from '@angular/material/chips';
 import {TagsFormComponent} from '../tags-form/tags-form.component';
 import {GroupsFormComponent} from '../groups-form/groups-form.component';
 import {MatDivider} from "@angular/material/divider";
-import {GeneralSettings} from '../../../domain/GeneralSettings';
+import {GeneralSettings} from '../../../domain/setting/GeneralSettings';
 import {NgxSpinnerService} from 'ngx-spinner';
 
 @Component({
