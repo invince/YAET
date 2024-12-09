@@ -21,14 +21,21 @@
 
 .sidenav-item {
   display: flex;
-  align-items: center;
+  align-items: start;
   justify-content: space-between;
   height: 40px;
+}
+
+.sidenav-add button {
+  width: 100%;
+  text-align: left;
 }
 
 .sidenav-item button {
   width: 100%;
   text-align: left;
+  justify-content: start;
+  padding-left: 20px;
 }
 
 .mat-sidenav-content {
@@ -76,7 +83,7 @@ app-secret-form {
   div[role=group] > .mat-nested-tree-node {
     display: flex;
     align-items: center; /* Aligns items vertically */
-    padding-left: 10px;
+    padding-left: 0px;
     padding-bottom: 12px;
   }
 

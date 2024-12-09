@@ -50,19 +50,19 @@
         Confirming your password is required
       </mat-error>
       }
-      @if (resetPasswordForm.get('passwordMismatch')) {
-      <mat-error>
-        Passwords do not match
-      </mat-error>
-      }
-      @if (resetPasswordForm.get('passwordSimilar')) {
-      <mat-error>
-        Password is similar to old one
-      </mat-error>
-      }
     </mat-form-field>
+    @if (resetPasswordForm.get('passwordSimilar')) {
+    <mat-error>
+      Password is similar to old one
+    </mat-error>
+    }
+    @if (resetPasswordForm.get('passwordMismatch')) {
+    <mat-error>
+      Passwords do not match
+    </mat-error>
+    }
   </div>
-  <div mat-dialog-actions>
+  <div mat-dialog-actions align="end">
     <button mat-button (click)="close()">Abort</button>
     <button mat-button color="primary" type="submit" cdkFocusInitial>Ok</button>
   </div>

@@ -4,7 +4,7 @@ import {
   MatDialogModule,
   MatDialogRef
 } from '@angular/material/dialog';
-import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatError, MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatButton} from '@angular/material/button';
 import {CommonModule} from '@angular/common';
@@ -23,6 +23,7 @@ import {MasterKeyService} from '../../../services/master-key.service';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    MatError,
   ],
   templateUrl: './master-key.component.html',
   styleUrl: './master-key.component.css'
@@ -108,7 +109,10 @@ export class MasterKeyComponent implements OnInit{
   openConfirmationDialog(): void {
     const dialogRef = this.dialog.open(ConfirmationComponent, {
       width: '300px',
-      data: { message: 'Old password doesn\'t match, if you continue, all existing secrets will be invalid. Do you want continue ?' },
+      data: {
+        message: 'Old password doesn\'t match, if you continue, all existing secrets will be invalid. Do you want continue ?',
+        okBtnLabel: 'Force Continue'
+      },
     });
 
     dialogRef.afterClosed().subscribe((result) => {
