@@ -3,7 +3,7 @@ import {RouterOutlet} from '@angular/router';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatTabsModule} from '@angular/material/tabs';
 import {TerminalComponent} from './components/terminal/terminal.component';
-import { ProfileCategory, ProfileType} from './domain/profile/Profile';
+import {Profile, ProfileCategory, ProfileType} from './domain/profile/Profile';
 import {TabInstance} from './domain/TabInstance';
 import {CommonModule} from '@angular/common';
 import {MatIcon} from '@angular/material/icon';
@@ -31,6 +31,7 @@ import {CloudComponent} from './components/menu/cloud/cloud.component';
 import {CloudService} from './services/cloud.service';
 import {NgxSpinnerModule} from 'ngx-spinner';
 import {TabService} from './services/tab.service';
+import {ElectronService} from './services/electron.service';
 
 @Component({
   selector: 'app-root',
@@ -80,6 +81,7 @@ export class AppComponent implements OnInit, OnDestroy{
     private cloudService: CloudService,
 
     public tabService: TabService,
+    public electronService: ElectronService,
 
     public modalControl: ModalControllerService,
 
@@ -98,8 +100,12 @@ export class AppComponent implements OnInit, OnDestroy{
             return;
           }
           this.modalControl.closeModal(['favorite', 'add']);
-          this.tabService.addTab(new TabInstance(uuidv4(), connection.category, connection.profileType, connection)); // Adds a new terminal identifier
-          this.currentTabIndex = this.tabService.tabs.length - 1;
+          if (Profile.requireOpenNewTab(connection)) {
+            this.tabService.addTab(new TabInstance(uuidv4(), connection.category, connection.profileType, connection)); // Adds a new terminal identifier
+            this.currentTabIndex = this.tabService.tabs.length - 1;
+          } else {
+            this.openSessionWithoutTab(connection);
+          }
         }
       )
     )
@@ -131,6 +137,23 @@ export class AppComponent implements OnInit, OnDestroy{
     this.modalControl.closeModal();
     this.tabService.addTab(new TabInstance(uuidv4(), ProfileCategory.TERMINAL, ProfileType.LOCAL_TERMINAL, this.settingService.createLocalTerminalProfile())); // Adds a new terminal identifier
     this.currentTabIndex = this.tabService.tabs.length - 1;
+  }
+
+  openSessionWithoutTab(profile: Profile) {
+    if (profile) {
+      switch (profile.profileType) {
+        case ProfileType.RDP_REMOTE_DESKTOP:
+          if (!profile.rdpProfile || !profile.rdpProfile.host) {
+            this._snackBar.open('Invalid Rdp Config', 'Ok', {
+              duration: 3000,
+              panelClass: [ 'error-snackbar']
+            });
+            return;
+          }
+          this.electronService.openRdpSession(profile.rdpProfile);
+          break;
+      }
+    }
   }
 
   addMenu() {

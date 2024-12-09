@@ -1,6 +1,6 @@
 const { ipcMain } = require('electron');
 const { exec } = require('child_process');
-function initRdp() {
+function initRdpHandler() {
 
   ipcMain.on('session.open.rd.rdp', (event, { hostname, options }) => {
     launchMSTSC(hostname, options);
@@ -29,4 +29,4 @@ function initRdp() {
 
 }
 
-module.exports = {initRdp};
+module.exports = {initRdpHandler};

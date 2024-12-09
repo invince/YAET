@@ -27,6 +27,7 @@ import {CloudSettings} from '../domain/setting/CloudSettings';
 import {CloudResponse} from '../domain/setting/CloudResponse';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {TabService} from './tab.service';
+import {RdpProfile} from '../domain/profile/RdpProfile';
 
 @Injectable({
   providedIn: 'root',
@@ -164,7 +165,10 @@ export class ElectronService {
     }
   }
 
-  openRdpSession(hostname: string, options: { fullscreen?: boolean; admin?: boolean } = {}) {
+  openRdpSession(rdpProfile: RdpProfile) {
+    // hostname: string, options: { fullscreen?: boolean; admin?: boolean } = {}
+    const hostname = rdpProfile.host;
+    let options = {fullscreen: rdpProfile.fullScreen, admin: rdpProfile.asAdmin};
     if (this.ipc) {
       this.ipc.send(SESSION_OPEN_RDP, { hostname, options });
     }

@@ -5,6 +5,7 @@ const {initConfigFilesIpcHandler} = require('./ipc/configFiles');
 const {initTerminalIpcHandler} = require('./ipc/terminal');
 const {initCloudIpcHandler} = require('./ipc/cloud');
 const {initSecurityIpcHandler} = require('./ipc/security');
+const {initRdpHandler} = require('./ipc/rdp');
 const path = require("path");
 const {CONFIG_FOLDER, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON} = require("./common");
 
@@ -35,6 +36,7 @@ app.on('ready', () => {
   initTerminalIpcHandler(terminalMap);
   initCloudIpcHandler();
   initSecurityIpcHandler();
+  initRdpHandler();
 });
 
 
