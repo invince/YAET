@@ -94,9 +94,11 @@
           @if (selectedProfile) {
           <app-profile-form
             [profile]="selectedProfile"
+            [buttons]="['close', 'delete', 'clone', 'save', 'connect' ]"
             (onProfileCancel)="onCancel($event)"
             (onProfileDelete)="onDelete($event)"
             (onProfileSave)="onSaveOne($event)"
+            (onProfileClone)="onCloneOne($event)"
             (invalidStateChange)="onChildFormInvalidStateChange($event)"
             (dirtyStateChange)="onChildFormDirtyStateChange($event)"
           ></app-profile-form>
