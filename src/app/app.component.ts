@@ -32,6 +32,7 @@ import {CloudService} from './services/cloud.service';
 import {NgxSpinnerModule} from 'ngx-spinner';
 import {TabService} from './services/tab.service';
 import {ElectronService} from './services/electron.service';
+import {MenuConsts} from './domain/MenuConsts';
 
 @Component({
   selector: 'app-root',
@@ -67,6 +68,11 @@ import {ElectronService} from './services/electron.service';
 })
 export class AppComponent implements OnInit, OnDestroy{
 
+  MENU_ADD: string = MenuConsts.MENU_ADD;
+  MENU_PROFILE: string = MenuConsts.MENU_PROFILE;
+  MENU_SECURE: string = MenuConsts.MENU_SECURE;
+  MENU_CLOUD: string = MenuConsts.MENU_CLOUD;
+  MENU_SETTING: string = MenuConsts.MENU_SETTING;
 
   title = 'yetAnotherElectronTerm';
 
@@ -99,7 +105,7 @@ export class AppComponent implements OnInit, OnDestroy{
             });
             return;
           }
-          this.modalControl.closeModal(['favorite', 'add']);
+          this.modalControl.closeModal([this.MENU_PROFILE, this.MENU_ADD ]);
           if (Profile.requireOpenNewTab(connection)) {
             this.tabService.addTab(new TabInstance(uuidv4(), connection.category, connection.profileType, connection)); // Adds a new terminal identifier
             this.currentTabIndex = this.tabService.tabs.length - 1;
@@ -144,7 +150,7 @@ export class AppComponent implements OnInit, OnDestroy{
       switch (profile.profileType) {
         case ProfileType.RDP_REMOTE_DESKTOP:
           if (!profile.rdpProfile || !profile.rdpProfile.host) {
-            this._snackBar.open('Invalid Rdp Config', 'Ok', {
+            this._snackBar.open('Invalid Rdp Config', 'OK', {
               duration: 3000,
               panelClass: [ 'error-snackbar']
             });
@@ -157,12 +163,12 @@ export class AppComponent implements OnInit, OnDestroy{
   }
 
   addMenu() {
-    this.toggleMenu('add');
+    this.toggleMenu(this.MENU_ADD);
   }
 
 
   secureMenu() {
-    this.requireMasterKey(() => this.toggleMenu('secure'));
+    this.requireMasterKey(() => this.toggleMenu( this.MENU_SECURE));
   }
 
   requireMasterKey(callback: ()=>void) {
@@ -190,17 +196,17 @@ export class AppComponent implements OnInit, OnDestroy{
     });
   }
 
-  favoriteMenu() {
-    this.requireMasterKey(() => this.toggleMenu('favorite'));
+  profileMenu() {
+    this.requireMasterKey(() => this.toggleMenu(this.MENU_PROFILE));
   }
 
   cloudMenu() {
-    this.requireMasterKey(() => this.toggleMenu('cloud'));
+    this.requireMasterKey(() => this.toggleMenu(this.MENU_CLOUD));
   }
 
 
   settingMenu() {
-    this.toggleMenu('setting');
+    this.toggleMenu(this.MENU_SETTING);
   }
 
 }

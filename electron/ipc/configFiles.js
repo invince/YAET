@@ -1,6 +1,6 @@
 const { ipcMain } = require('electron');
 const path = require("path");
-const {load, save, CONFIG_FOLDER, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON }= require("../common");
+const {load, save, CONFIG_FOLDER, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, updateManifest }= require("../common");
 function initConfigFilesIpcHandler(mainWindow) {
 
   ipcMain.on('settings.reload', (event, obj) => {
@@ -10,20 +10,26 @@ function initConfigFilesIpcHandler(mainWindow) {
 
   ipcMain.on('settings.save', (event, obj) => {
     save(path.join(CONFIG_FOLDER, SETTINGS_JSON), obj.data, false)
-      .then(() => console.log('Setting saved successfully!'))
+      .then(() => {
+        console.log('Setting saved successfully!');
+        updateManifest('setting.json');
+      })
       .catch((error) => console.error('Error saving file:', error));
   });
 
 
   ipcMain.on('profiles.reload', (event, obj) => {
     console.log("reloading...");
-    load(path.join(CONFIG_FOLDER, PROFILES_JSON), "profiles.loaded", true, mainWindow);
+    load(path.join(CONFIG_FOLDER, PROFILES_JSON), "profiles.loaded", false, mainWindow);
   });
 
 
   ipcMain.on('profiles.save', (event, obj) => {
     save(path.join(CONFIG_FOLDER, PROFILES_JSON), obj.data, false)
-      .then(() => console.log('Profiles saved successfully!'))
+      .then(() => {
+        console.log('Profiles saved successfully!');
+        updateManifest('profile.json');
+      })
       .catch((error) => console.error('Error saving file:', error));
   });
 
@@ -34,7 +40,10 @@ function initConfigFilesIpcHandler(mainWindow) {
 
   ipcMain.on('secrets.save', (event, obj) => {
     save(path.join(CONFIG_FOLDER, SECRETS_JSON), obj.data, true)
-      .then(() => console.log('Secrets saved successfully!'))
+      .then(() => {
+        console.log('Secrets saved successfully!');
+        updateManifest('secrets.json');
+      })
       .catch((error) => console.error('Error saving file:', error));
   });
 
@@ -45,9 +54,14 @@ function initConfigFilesIpcHandler(mainWindow) {
 
   ipcMain.on('cloud.save', (event, obj) => {
     save(path.join(CONFIG_FOLDER, CLOUD_JSON), obj.data, true)
-      .then(() => console.log('Secrets saved successfully!'))
+      .then(() => {
+        console.log('Cloud saved successfully!');
+        updateManifest('cloud.json');
+      })
       .catch((error) => console.error('Error saving file:', error));
   });
+
+
 }
 
 module.exports = { initConfigFilesIpcHandler };

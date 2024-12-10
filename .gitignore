@@ -45,5 +45,6 @@ settings.json
 profiles.json
 secrets.json
 cloud.json
+manifest.json
 
 config/git

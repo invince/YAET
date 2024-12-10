@@ -25,6 +25,7 @@ import {NestedTreeControl} from '@angular/cdk/tree';
 import {SideNavType} from '../../../domain/setting/UISettings';
 import {MatDialog} from '@angular/material/dialog';
 import {ConfirmationComponent} from '../../confirmation/confirmation.component';
+import {MenuConsts} from '../../../domain/MenuConsts';
 
 @Component({
   selector: 'app-profiles-menu',
@@ -93,11 +94,24 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
 
   ngOnInit(): void {
     this.subscription = this.modalControl.modalCloseEvent.subscribe(one => {
-      if (one && one.includes('favorite')) {
+      if (one && one.includes(MenuConsts.MENU_PROFILE)) {
         this.profileService.deleteNotSavedNewProfileInLocal();
         this.modalControl.closeModal();
       }
     });
+
+
+    if (!this.profileService.isLoaded) {
+      let message = 'Profiles not loaded, we\'ll reload it, please close Profile menu and reopen';
+      if (!this.settingService.isLoaded) {
+        message = 'Settings And ' + message
+        this.settingService.reload();
+      }
+      this.profileService.reload();
+      this._snackBar.open(message, 'OK', {
+        duration: 3000
+      });
+    }
 
     this.sideNavType = this.settingStorage.settings.ui.profileSideNavType;
     this.refreshForm();

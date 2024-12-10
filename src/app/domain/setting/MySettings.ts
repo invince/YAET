@@ -13,6 +13,7 @@ export class MySettings {
   public tags: Tag[];
   public localTerminal!: LocalTerminalProfile;
 
+  public isNew: boolean = true;
 
   constructor() {
     this.general = new GeneralSettings();
