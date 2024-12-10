@@ -31,6 +31,10 @@ export class ProfileService {
   }
 
   private apply(data: any) {
+    if (!data) {
+      this._loaded = true; // this means you don't have profile yet
+      return;
+    }
     this.masterKeyService.decrypt2String(data).then(
       decrypted => {
         if (decrypted) {

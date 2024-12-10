@@ -83,8 +83,14 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
         this.modalControl.closeModal();
       }
     });
-  }
 
+    if (!this.secretService.isLoaded) {
+      this._snackBar.open('Secure not loaded, we\'ll reload it, please close secure menu and reopen', 'OK', {
+        duration: 3000
+      });
+      this.secretService.reload();
+    }
+  }
 
   addTab() {
     let secret = new Secret();

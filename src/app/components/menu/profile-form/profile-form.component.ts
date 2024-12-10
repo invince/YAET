@@ -92,6 +92,13 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     private cdr: ChangeDetectorRef,
   ) {
     super();
+
+    if (!this.profileService.isLoaded ) {
+      this._snackBar.open('Profiles not loaded, we\'ll reload it, please close setting menu and reopen', 'OK', {
+        duration: 3000
+      });
+      this.profileService.reload();
+    }
   }
 
   get profile(): Profile {

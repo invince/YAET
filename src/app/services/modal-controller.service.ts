@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import {Subject} from 'rxjs';
+import {AppComponent} from '../app.component';
+import {MenuConsts} from '../domain/MenuConsts';
 
 @Injectable({
   providedIn: 'root'
@@ -38,7 +40,7 @@ export class ModalControllerService {
     if (this._currentOpenedMenu == menu) {
 
       if (this._isMenuModalOpen &&
-        ['favorite', 'secure'].includes(menu)) {
+        [MenuConsts.MENU_PROFILE, MenuConsts.MENU_SECURE].includes(menu)) {
           this.closeModal(menu, true);
           return;
       }

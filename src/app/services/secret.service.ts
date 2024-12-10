@@ -25,6 +25,10 @@ export class SecretService {
   }
 
   apply(data: any) {
+    if (!data) {
+      this._loaded = true; // this means you don't have secret yet
+      return;
+    }
     this.masterKeyService.decrypt2String(data).then(
       decrypted => {
         if (decrypted) {

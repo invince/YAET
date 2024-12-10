@@ -34,12 +34,14 @@ export class SettingService {
   }
 
   private apply(data: any) {
-    if (typeof data === "string") {
-      this.settingStorage.settings = JSON.parse(data);
-    } else {
-      this.settingStorage.settings = data;
+    if (data) {
+      if (typeof data === "string") {
+        this.settingStorage.settings = JSON.parse(data);
+      } else {
+        this.settingStorage.settings = data;
+      }
+      this.validate(this.settingStorage.settings);
     }
-    this.validate(this.settingStorage.settings);
     this._loaded = true;
     this.settingLoadedSubject.next({})
   }
@@ -58,6 +60,7 @@ export class SettingService {
     if (settings) {
       this.settingStorage.settings = settings;
     }
+    this.settingStorage.settings.isNew = false;
     this.settingStorage.settings.revision = Date.now();
     this.electron.saveSetting(this.settingStorage.settings);
   }

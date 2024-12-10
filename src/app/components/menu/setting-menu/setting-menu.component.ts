@@ -102,6 +102,12 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
   ngOnInit() {
+    if (!this.settingService.isLoaded ) {
+      this._snackBar.open('Settings not loaded, we\'ll reload it, please close setting menu and reopen', 'OK', {
+        duration: 3000
+      });
+      this.settingService.reload();
+    }
 
     this.uiForm = this.initUiForm();
     this.localTermForm = this.initLocalTermForm();
@@ -112,6 +118,9 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       this.refreshForm(this.settingStorage.settings);
       this.cdr.detectChanges(); // mat select doesn't detect well change from event subscription
     })
+
+
+
   }
   private initUiForm() {
     return this.fb.group(

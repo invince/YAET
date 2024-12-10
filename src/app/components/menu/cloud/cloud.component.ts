@@ -76,6 +76,13 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    if (!this.cloudService.isLoaded ) {
+      this._snackBar.open('Cloud Setting not loaded, we\'ll reload it, please close Cloud menu and reopen', 'OK', {
+        duration: 3000
+      });
+      this.cloudService.reload();
+    }
+
     let cloudSettings = this.cloudService.cloud;
 
     this.form = this.fb.group(
