@@ -196,20 +196,5 @@ export class SettingService {
     this.save();
   }
 
-  saveLocalTermConfig(localTerm: LocalTerminalProfile) {
-    this.settingStorage.settings.localTerminal = localTerm;
-    this.save();
-  }
-
-  saveGeneralConfig(general: GeneralSettings) {
-    this.settingStorage.settings.general = general;
-    this.save();
-  }
-
-  saveUiConfig(ui: UISettings) {
-    this.settingStorage.settings.ui = ui;
-    this.save();
-  }
-
 
 }
