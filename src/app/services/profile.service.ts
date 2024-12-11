@@ -51,7 +51,9 @@ export class ProfileService {
 
   get profiles(): Profiles {
     let result = new Profiles(); // to avoid if this._profiles is deserialized we don't have fn on it
-    result.profiles = [...this._profiles.profiles]; // copy the elements
+    if (this._profiles) {
+      result.profiles = [...this._profiles.profiles]; // copy the elements
+    }
     return result;
   }
 

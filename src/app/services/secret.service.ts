@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {Secret} from '../domain/Secret';
+import {Secret, Secrets} from '../domain/Secret';
 import {ElectronService} from './electron.service';
 import {SECRETS_LOADED} from './electronConstant';
 import {MasterKeyService} from './master-key.service';
@@ -42,20 +42,13 @@ export class SecretService {
   get isLoaded() {
     return this._loaded;
   }
-  deleteLocal(secret: Secret) {
-    if (!secret) {
-      return;
-    }
-    if (!this.secretStorage.data.secrets) {
-      this.secretStorage.data.secrets= [];
-    }
-    this.secretStorage.data.secrets = this.secretStorage.data.secrets.filter(one => one.id != secret.id);
-  }
 
-  async saveAll() {
-    if (!this.secretStorage.data.secrets) {
-      return;
+
+  async save(secrets: Secrets = this.secretStorage.data) {
+    if (!secrets) {
+      secrets = new Secrets();
     }
+    this.secretStorage.data = secrets;
     for (let one of this.secretStorage.data.secrets) {
       one.isNew = false;
     }
@@ -76,8 +69,4 @@ export class SecretService {
     this.electron.reloadSecrets();
   }
 
-
-  deleteNotSavedNewSecretInLocal() {
-    this.secretStorage.data.secrets = this.secretStorage.data.secrets.filter(one => !one.isNew);
-  }
 }

@@ -6,7 +6,7 @@ import {MatInput} from '@angular/material/input';
 import {MatIcon} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
 import {CommonModule} from '@angular/common';
-import {Secret} from '../../../domain/Secret';
+import {Secret, Secrets} from '../../../domain/Secret';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatSelectModule} from '@angular/material/select';
@@ -15,7 +15,6 @@ import {SecretFormComponent} from '../secret-form/secret-form.component';
 import {HasChildForm} from '../../enhanced-form-mixin';
 import {SecretStorageService} from '../../../services/secret-storage.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';
-import {ModalControllerService} from '../../../services/modal-controller.service';
 import {Subscription} from 'rxjs';
 import {FilterKeywordPipe} from '../../../pipes/filter-keyword.pipe';
 import {ConfirmationComponent} from '../../confirmation/confirmation.component';
@@ -51,6 +50,8 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
   subscription!: Subscription;
   filter!: string;
 
+  secretsCopy!: Secrets;
+
   keywordsProviders: ((secret: Secret) => string | string[])[] = [
     (secret: Secret) => secret.name,
     (secret: Secret) => secret.secretType,
@@ -64,7 +65,6 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
     private settingStorage: SettingStorageService,
 
     private _snackBar: MatSnackBar,
-    private modalControl: ModalControllerService,
     private keywordPipe: FilterKeywordPipe,
     private dialog: MatDialog,
     ) {
@@ -77,24 +77,19 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
   }
 
   ngOnInit(): void {
-    this.subscription =  this.modalControl.modalCloseEvent.subscribe(one => {
-      if (one && one.includes('secure')) {
-        this.secretService.deleteNotSavedNewSecretInLocal();
-        this.modalControl.closeModal();
-      }
-    });
-
     if (!this.secretService.isLoaded) {
       this._snackBar.open('Secure not loaded, we\'ll reload it, please close secure menu and reopen', 'OK', {
         duration: 3000
       });
       this.secretService.reload();
     }
+
+    this.secretsCopy = this.secretStorageService.data;
   }
 
   addTab() {
     let secret = new Secret();
-    this.secretStorageService.data.secrets.push(secret);
+    this.secretsCopy.secrets.push(secret);
     this.selectedId = secret.id;
     this.selectedSecret = secret;
     // this.refreshSecretForm();
@@ -130,10 +125,8 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (result) {
-        this.secretService.deleteLocal($event);
-        if (!$event.isNew) {
-          await this.secretService.saveAll();
-        }
+        this.secretsCopy.delete($event);
+        await this.commitChange();
         this.selectedId = undefined;
         this.selectedSecret = undefined;
         // this.refreshSecretForm();
@@ -142,18 +135,12 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
   }
 
   async onSaveOne($event: Secret) {
-
-    this.secretStorageService.updateSecret($event);
-    await this.secretService.saveAll();
+    this.secretsCopy.update($event);
+    await this.commitChange();
     // this.refreshSecretForm();
   }
 
   onCancel($event: Secret) {
-    if ($event) {
-      if ($event.isNew) {
-        this.secretService.deleteLocal($event);
-      }
-    }
     this.close();
   }
 
@@ -174,5 +161,9 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
 
   hasNewSecret() {
     return this.selectedSecret?.isNew;
+  }
+
+  async commitChange() {
+    await this.secretService.save(this.secretsCopy);
   }
 }
