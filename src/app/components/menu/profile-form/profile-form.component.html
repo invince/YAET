@@ -118,7 +118,7 @@
     @if (buttons.includes('reload')) {
       <button mat-stroked-button class="mat-accent" (click)="onReload()">Reload</button>
     }
-    @if (!profile.isNew && buttons.includes('delete')) {
+    @if (buttons.includes('delete')) {
       <button mat-raised-button color="warn" (click)="onDelete()">Delete</button>
     }
     @if (!profile.isNew && buttons.includes('clone')) {

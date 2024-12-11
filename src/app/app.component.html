@@ -60,20 +60,24 @@
     <div>
       @switch(modalControl.currentOpenedMenu) {
         @case(MENU_ADD) {
-      <!-- Menu components based on the switch case -->
-          <app-quickconnect-menu [@slideInOut]="'in'" (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-quickconnect-menu>
+          <app-quickconnect-menu [@slideInOut]="'in'"
+            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-quickconnect-menu>
         }
         @case(MENU_PROFILE) {
-          <app-profiles-menu [@slideInOut]="'in'"  (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu, true)"></app-profiles-menu>
+          <app-profiles-menu [@slideInOut]="'in'"
+            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu, true)"></app-profiles-menu>
         }
         @case(MENU_SECURE) {
-          <app-secures-menu [@slideInOut]="'in'" (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu, true)"></app-secures-menu>
+          <app-secures-menu [@slideInOut]="'in'"
+            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu, true)"></app-secures-menu>
         }
         @case(MENU_CLOUD) {
-        <app-cloud-menu [@slideInOut]="'in'" (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-cloud-menu>
+          <app-cloud-menu [@slideInOut]="'in'"
+            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-cloud-menu>
         }
         @case(MENU_SETTING) {
-          <app-setting-menu [@slideInOut]="'in'" (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-setting-menu>
+          <app-setting-menu [@slideInOut]="'in'"
+            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-setting-menu>
         }
       }
     </div>

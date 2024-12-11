@@ -49,27 +49,17 @@ export class ProfileService {
     return this._loaded;
   }
 
-  set profiles(value: Profile[]) {
-    if (!this._profiles) {
-      this._profiles = new Profiles();
-    }
-    this._profiles.profiles = value;
-  }
-  get profiles(): Profile[] {
-    if (!this._profiles) {
-      this._profiles = new Profiles();
-    }
-    return this._profiles.profiles;
+  get profiles(): Profiles {
+    let result = new Profiles(); // to avoid if this._profiles is deserialized we don't have fn on it
+    result.profiles = [...this._profiles.profiles]; // copy the elements
+    return result;
   }
 
-  async save(profile: Profile) {
-    if (!this._profiles) {
-      this._profiles = new Profiles();
+  async save(profiles: Profiles = this.profiles) {
+    if (!profiles) {
+      profiles = new Profiles();
     }
-    if (!profile) {
-      return;
-    }
-    this.updateOrAdd(profile);
+    this._profiles = profiles;
     for (let one of this._profiles.profiles) {
       one.isNew = false;
     }
@@ -82,53 +72,11 @@ export class ProfileService {
       }
     )
   }
-
-  updateOrAdd(profile: Profile) {
-    for (let i = 0; i < this._profiles.profiles.length; i++) {
-      const one = this._profiles.profiles[i];
-      if (one.id == profile.id) {
-        this._profiles.profiles[i] = profile;
-        return;
-      }
-    }
-
-    this._profiles.profiles.push(profile);
-
-  }
-
 
   reload() {
     this._loaded = false;
     this.electron.reloadProfiles();
   }
-
-  deleteLocal($event: Profile) {
-    if (!$event) {
-      return;
-    }
-    if (!this._profiles) {
-      this._profiles = new Profiles();
-    }
-    this._profiles.profiles = this._profiles.profiles.filter(one => one.id != $event.id);
-  }
-
-  async saveAll() {
-    if (!this._profiles) {
-      return;
-    }
-    for (let one of this._profiles.profiles) {
-      one.isNew = false;
-    }
-    this._profiles.revision = Date.now();
-    this.masterKeyService.encrypt(this._profiles).then(
-      encrypted => {
-        if (encrypted) {
-          this.electron.saveProfiles(encrypted);
-        }
-      }
-    )
-  }
-
 
   onProfileConnect(data: Profile) {
     this.connectionEventSubject.next(data);
@@ -138,7 +86,7 @@ export class ProfileService {
     for(let profile of this._profiles.profiles) {
       profile.tags = profile.tags?.filter(one => one != tag.id)
     }
-    await this.saveAll();
+    await this.save();
   }
 
   async removeGroup(group: Group) {
@@ -147,22 +95,8 @@ export class ProfileService {
         profile.group = '';
       }
     }
-    await this.saveAll();
+    await this.save();
   }
 
-  deleteNotSavedNewProfileInLocal() {
-    this._profiles.profiles = this._profiles.profiles.filter(one => !one.isNew);
-  }
 
-  updateProfile($event: Profile) {
-    if ($event) {
-      let index = this._profiles.profiles.findIndex(one => one.id == $event.id);
-      if (index >= 0) {
-        this._profiles.profiles[index] = $event;
-      } else {
-        console.warn("Profile not found, we'll add new profile");
-        this._profiles.profiles.push($event);
-      }
-    }
-  }
 }

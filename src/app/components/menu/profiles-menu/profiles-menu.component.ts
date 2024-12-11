@@ -4,7 +4,7 @@ import {MatSidenavModule} from '@angular/material/sidenav';
 import {MenuComponent} from '../menu.component';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {ProfileService} from '../../../services/profile.service';
-import {Profile} from '../../../domain/profile/Profile';
+import {Profile, Profiles} from '../../../domain/profile/Profile';
 import {CommonModule} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -57,6 +57,8 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   selectedProfileId: string | undefined;
   selectedProfile: Profile | undefined;
 
+  profilesCopy!: Profiles;
+
   subscription!: Subscription;
   filter!: string;
 
@@ -95,11 +97,9 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   ngOnInit(): void {
     this.subscription = this.modalControl.modalCloseEvent.subscribe(one => {
       if (one && one.includes(MenuConsts.MENU_PROFILE)) {
-        this.profileService.deleteNotSavedNewProfileInLocal();
         this.modalControl.closeModal();
       }
     });
-
 
     if (!this.profileService.isLoaded) {
       let message = 'Profiles not loaded, we\'ll reload it, please close Profile menu and reopen';
@@ -113,6 +113,8 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
       });
     }
 
+    this.profilesCopy = this.profileService.profiles;
+
     this.sideNavType = this.settingStorage.settings.ui.profileSideNavType;
     this.refreshForm();
   }
@@ -122,7 +124,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   }
 
   doAddTab(newProfile: Profile) {
-    this.profileService.profiles.push(newProfile);
+    this.profilesCopy.profiles.push(newProfile);
     this.selectedProfileId = newProfile.id;// Focus on the newly added tab
     this.selectedProfile = newProfile;
     this.refreshForm();
@@ -171,31 +173,22 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (result) {
-        this.profileService.deleteLocal($event);
-        if (!$event.isNew) {
-          await this.profileService.saveAll();
-        }
+        this.profilesCopy.delete($event);
+        await this.commitChange();
         this.selectedProfileId = undefined;
         this.selectedProfile = undefined;
         this.refreshForm();
       }
     });
-
-
   }
 
   async onSaveOne($event: Profile) {
-    this.profileService.updateProfile($event);
-    await this.profileService.saveAll();
+    this.profilesCopy.update($event);
+    await this.commitChange();
     this.refreshForm();
   }
 
   onCancel($event: Profile) {
-    if ($event) {
-      if ($event.isNew) {
-        this.profileService.deleteLocal($event);
-      }
-    }
     this.close();
   }
 
@@ -271,7 +264,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   createGroupDataSource(): GroupNode[] {
     return GroupNode.map2DataSource(
       this.settingStorage.settings.groups,
-      this.keywordPipe.transform(this.profileService.profiles, this.keywordsProviders, this.filter),
+      this.keywordPipe.transform(this.profilesCopy.profiles, this.keywordsProviders, this.filter),
       false,
       true);
   }
@@ -303,5 +296,9 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   clearFilter() {
     this.filter = '';
     this.applyFilterToTree();
+  }
+
+  commitChange() {
+    this.profileService.save(this.profilesCopy);
   }
 }
