@@ -65,11 +65,11 @@
         }
         @case(MENU_PROFILE) {
           <app-profiles-menu [@slideInOut]="'in'"
-            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu, true)"></app-profiles-menu>
+            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-profiles-menu>
         }
         @case(MENU_SECURE) {
           <app-secures-menu [@slideInOut]="'in'"
-            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu, true)"></app-secures-menu>
+            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-secures-menu>
         }
         @case(MENU_CLOUD) {
           <app-cloud-menu [@slideInOut]="'in'"

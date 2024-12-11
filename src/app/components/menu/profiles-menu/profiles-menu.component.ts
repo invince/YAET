@@ -15,7 +15,6 @@ import {MatSelect} from '@angular/material/select';
 import {ProfileFormComponent} from '../profile-form/profile-form.component';
 import {HasChildForm} from '../../enhanced-form-mixin';
 import {SettingStorageService} from '../../../services/setting-storage.service';
-import {ModalControllerService} from '../../../services/modal-controller.service';
 import {Subscription} from 'rxjs';
 import {SettingService} from '../../../services/setting.service';
 import {FilterKeywordPipe} from '../../../pipes/filter-keyword.pipe';
@@ -25,7 +24,6 @@ import {NestedTreeControl} from '@angular/cdk/tree';
 import {SideNavType} from '../../../domain/setting/UISettings';
 import {MatDialog} from '@angular/material/dialog';
 import {ConfirmationComponent} from '../../confirmation/confirmation.component';
-import {MenuConsts} from '../../../domain/MenuConsts';
 
 @Component({
   selector: 'app-profiles-menu',
@@ -77,8 +75,6 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     private settingService: SettingService,
     private _snackBar: MatSnackBar,
 
-    private modalControl: ModalControllerService,
-
     private keywordPipe: FilterKeywordPipe,
 
     private cdr: ChangeDetectorRef,
@@ -95,12 +91,6 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   }
 
   ngOnInit(): void {
-    this.subscription = this.modalControl.modalCloseEvent.subscribe(one => {
-      if (one && one.includes(MenuConsts.MENU_PROFILE)) {
-        this.modalControl.closeModal();
-      }
-    });
-
     if (!this.profileService.isLoaded) {
       let message = 'Profiles not loaded, we\'ll reload it, please close Profile menu and reopen';
       if (!this.settingService.isLoaded) {
@@ -298,7 +288,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     this.applyFilterToTree();
   }
 
-  commitChange() {
-    this.profileService.save(this.profilesCopy);
+  async commitChange() {
+    await this.profileService.save(this.profilesCopy);
   }
 }

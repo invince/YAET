@@ -15,28 +15,15 @@ export class SecretStorageService {
   }
 
   get data(): Secrets {
-    if (!this._data) {
-      this._data = new Secrets();
+    let result = new Secrets(); // to avoid if this._profiles is deserialized we don't have fn on it
+    if (this._data) {
+      result.secrets = [...this._data.secrets]; // copy elements
     }
-    if (!this._data.secrets) {
-      this._data.secrets = [];
-    }
-    return this._data;
+    return result;
   }
 
   findById(id: string): Secret | undefined {
     return this._data.secrets.find(one => one.id == id);
   }
 
-  updateSecret($event: Secret) {
-    if ($event) {
-      let index = this._data.secrets.findIndex(one => one.id == $event.id);
-      if (index >= 0) {
-        this._data.secrets[index] = $event;
-      } else {
-        console.warn("Secret not found, we'll add new secret");
-        this._data.secrets.push($event);
-      }
-    }
-  }
 }
