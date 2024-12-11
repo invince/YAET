@@ -53,6 +53,27 @@ export class Profiles {
     this.profiles = [];
   }
 
+  delete($event: Profile) {
+    if (!$event) {
+      return;
+    }
+    if (!this.profiles) {
+      this.profiles = [];
+    }
+    this.profiles = this.profiles.filter(one => one.id != $event.id);
+  }
+
+  update($event: Profile) {
+    if ($event) {
+      let index = this.profiles.findIndex(one => one.id == $event.id);
+      if (index >= 0) {
+        this.profiles[index] = $event;
+      } else {
+        console.warn("Profile not found, we'll add new profile");
+        this.profiles.push($event);
+      }
+    }
+  }
 }
 
 

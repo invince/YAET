@@ -8,7 +8,7 @@ const SETTINGS_JSON = 'settings.json';
 const PROFILES_JSON = 'profiles.json';
 const SECRETS_JSON = 'secrets.json';
 const CLOUD_JSON = 'cloud.json';
-const MANIFEST_JSON = 'manitfest.json';
+const MANIFEST_JSON = 'manifest.json';
 
 function load(jsonFileName, loadedEvent, isRaw, mainWindow) {
   try {
