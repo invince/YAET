@@ -62,6 +62,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
   SIDE_NAV_TYPE_OPTIONS = SideNavType;
 
+  settingsCopy!: MySettings;
   private subscription!: Subscription;
   currentTabIndex: number = 0;
 
@@ -111,11 +112,13 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
     this.uiForm = this.initUiForm();
     this.localTermForm = this.initLocalTermForm();
+    this.settingsCopy = this.settingStorage.settings;
 
-    this.refreshForm(this.settingStorage.settings);
+    this.refreshForm(this.settingsCopy);
 
     this.subscription =  this.settingService.settingLoadedEvent.subscribe(() => {
-      this.refreshForm(this.settingStorage.settings);
+      this.settingsCopy = this.settingStorage.settings;
+      this.refreshForm(this.settingsCopy);
       this.cdr.detectChanges(); // mat select doesn't detect well change from event subscription
     })
 
@@ -149,15 +152,18 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
 
 
-  override onSave() {
+  override async onSave() {
     if (this.currentTabIndex == this.GENERAL_FORM_TAB_INDEX) {
-      this.settingService.saveGeneralConfig(this.generalFormToModel());
+      this.settingsCopy.general = this.generalFormToModel();
+      await this.commitChange();
     }
     if (this.currentTabIndex == this.UI_FORM_TAB_INDEX && this.uiForm.valid) {
-      this.settingService.saveUiConfig(this.uiFormToModel());
+      this.settingsCopy.ui = this.uiFormToModel();
+      await this.commitChange();
     }
     if (this.currentTabIndex == this.LOCAL_TERM_FORM_TAB_INDEX && this.localTermForm.valid) {
-      this.settingService.saveLocalTermConfig(this.localTermFormToModel());
+      this.settingsCopy.localTerminal = this.localTermFormToModel();
+      await this.commitChange();
     }
   }
 
@@ -256,5 +262,8 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     return localTerminal;
   }
 
+  async commitChange() {
+    await this.settingService.save(this.settingsCopy);
+  }
 
 }
