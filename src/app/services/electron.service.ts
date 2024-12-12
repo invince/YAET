@@ -46,6 +46,7 @@ export class ElectronService {
 
 
       this.initCommonListener();
+      this.initTerminalListener();
     }
   }
 
@@ -62,24 +63,32 @@ export class ElectronService {
         duration: 3000,
         panelClass: [ 'error-snackbar']
       });
-
-      if (data.category == 'ssh') {
-        this.tabService.removeById(data.id);
-      }
-
-
       return;
-      // Show error message to the user
     });
 
-    this.ipc.on(SESSION_DISCONNECT_SSH, (event, data) => {
-      console.log('SSH Disconnected:', data);
-      // Handle disconnection logic
-    });
   }
 //#endregion "Common"
 
 //#region "Sessions"
+  private initTerminalListener() {
+    this.ipc.on(ERROR, (event, data) => {
+      if (data.category == 'ssh') {
+        this.tabService.removeById(data.id);
+      }
+      return;
+    });
+
+    this.ipc.on(SESSION_DISCONNECT_SSH, (event, data) => {
+      console.log('SSH Disconnected:', data.id);
+      this._snackBar.open('SSH Disconnected, you can try reconnect later','ok', {
+        duration: 3000,
+        panelClass: [ 'error-snackbar']
+      });
+      this.tabService.disconnected(data.id);
+      // Handle disconnection logic
+    });
+  }
+
   openTerminalSession(tab: TabInstance) {
     if (this.ipc) {
       switch (tab.tabType) {
@@ -100,6 +109,7 @@ export class ElectronService {
     }
     let localProfile: LocalTerminalProfile = tab.profile.localTerminal;
     this.ipc.send(SESSION_OPEN_LOCAL_TERMINAL, {terminalId: tab.id, terminalExec: localProfile.execPath});
+    this.tabService.connected(tab.id);
   }
 
   private openSSHTerminalSession(tab: TabInstance) {
@@ -146,6 +156,7 @@ export class ElectronService {
       }
     }
     this.ipc.send(SESSION_OPEN_SSH_TERMINAL, {terminalId: tab.id, config: sshConfig});
+    this.tabService.connected(tab.id);
   }
 
 

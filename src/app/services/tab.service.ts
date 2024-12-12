@@ -16,6 +16,13 @@ export class TabService {
     return this._tabs;
   }
 
+  connected(id: string) {
+    this._tabs.filter(one => one.id == id).forEach(one => one.connected = true);
+  }
+
+  disconnected(id: string) {
+    this._tabs.filter(one => one.id == id).forEach(one => one.connected = false);
+  }
 
   removeById(id: string) {
     this._tabs = this._tabs.filter(one => one.id != id);
@@ -31,5 +38,11 @@ export class TabService {
       tabInstance.name = tabInstance.name + '_' + index;
     }
     this._tabs.push(tabInstance);
+  }
+
+  reconnect(i: number) {
+    if(this._tabs) {
+      this._tabs[i] = this._tabs[i].clone();
+    }
   }
 }

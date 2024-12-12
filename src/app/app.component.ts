@@ -139,6 +139,10 @@ export class AppComponent implements OnInit, OnDestroy{
     this.modalControl.toggleMenu(menu);
   }
 
+  reconnect(i: number) {
+    this.tabService.reconnect(i);
+  }
+
   addLocalTerminal() {
     this.modalControl.closeModal();
     this.tabService.addTab(new TabInstance(uuidv4(), ProfileCategory.TERMINAL, ProfileType.LOCAL_TERMINAL, this.settingService.createLocalTerminalProfile())); // Adds a new terminal identifier
@@ -208,5 +212,6 @@ export class AppComponent implements OnInit, OnDestroy{
   settingMenu() {
     this.toggleMenu(this.MENU_SETTING);
   }
+
 
 }

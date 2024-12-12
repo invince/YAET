@@ -87,13 +87,13 @@ function initTerminalIpcHandler(terminalMap) {
     // Handle end event
     conn.on('end', () => {
       console.log('SSH connection ended for id:', id);
-      event.sender.send('session.disconnect.terminal.ssh', { id });
+      event.sender.send('session.disconnect.terminal.ssh', { id: id });
     });
 
     // Handle close event
     conn.on('close', (hadError) => {
       console.log(`SSH connection closed for id: ${id}, hadError: ${hadError}`);
-      event.sender.send('session.disconnect.terminal.ssh', { id });
+      event.sender.send('session.disconnect.terminal.ssh', { id: id });
     });
   });
 

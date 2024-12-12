@@ -1,4 +1,4 @@
-import {Component, Input, ViewChild, AfterViewInit, ViewEncapsulation} from '@angular/core';
+import {Component, Input, ViewChild, AfterViewInit, ViewEncapsulation, OnChanges, SimpleChanges} from '@angular/core';
 import {ElectronService} from '../../services/electron.service';
 import {NgTerminal, NgTerminalModule} from 'ng-terminal';
 import {Terminal} from '@xterm/xterm';
@@ -13,9 +13,10 @@ import {TabService} from '../../services/tab.service';
   standalone: true,
   encapsulation: ViewEncapsulation.None
 })
-export class TerminalComponent implements AfterViewInit {
+export class TerminalComponent implements AfterViewInit, OnChanges {
   @Input() tab!: TabInstance;
   @ViewChild('term', {static: false}) terminal!: NgTerminal;
+  private isViewInitialized = false;
 
   private xtermUnderlying : Terminal | undefined;
 
@@ -26,9 +27,6 @@ export class TerminalComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
 
-    if (!this.tab) {
-      throw new Error("Invalid tab");
-    }
     // Open terminal in the container
     this.xtermUnderlying = this.terminal.underlying;
     if (this.xtermUnderlying) {
@@ -42,9 +40,7 @@ export class TerminalComponent implements AfterViewInit {
       });
     }
 
-    // Set up data listeners and communication with the Electron main process
-    this.electronService.openTerminalSession(this.tab);
-
+    this.initTab();
     // Listen to output from Electron and display in xterm
     this.electronService.onTerminalOutput(this.tab.id, (data) => {
       this.terminal.write(data.data);
@@ -54,5 +50,24 @@ export class TerminalComponent implements AfterViewInit {
     this.terminal.onData().subscribe(data => {
       this.electronService.sendTerminalInput(this.tab.id, data);
     });
+    this.isViewInitialized = true;
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['tab'] && this.isViewInitialized) {
+      this.initTab();
+    }
+  }
+
+  initTab() {
+    if (!this.tab) {
+      throw new Error("Invalid tab");
+    }
+
+    this.xtermUnderlying?.clear();
+
+    // Set up data listeners and communication with the Electron main process
+    this.electronService.openTerminalSession(this.tab);
+
   }
 }

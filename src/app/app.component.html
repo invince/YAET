@@ -28,10 +28,15 @@
   <mat-sidenav-content>
     <mat-tab-group id="tab-group" [@.disabled]="true" [selectedIndex]="currentTabIndex">
       @for (tab of tabService.tabs ; let i = $index; track tab.id) {
-      <mat-tab>
-        <ng-template mat-tab-label>
-          <div class="tab-label">
-            <span>{{ tab.name }} </span>
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <div class="tab-label">
+              @if (!tab.connected) {
+              <button mat-icon-button (click)="reconnect(i)" aria-label="Reconnect tab">
+                <mat-icon>refresh</mat-icon>
+              </button>
+              }
+              <span>{{ tab.name }} </span>
               <button mat-icon-button (click)="removeTab(i)" aria-label="Remove tab">
                 <mat-icon>close</mat-icon>
               </button>
