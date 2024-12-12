@@ -8,6 +8,8 @@ export class TabInstance {
   readonly tabType: ProfileType;
   readonly category: ProfileCategory;
 
+  public connected: boolean = false;
+
   profile: Profile;
 
 
@@ -23,4 +25,9 @@ export class TabInstance {
   }
 
 
+  clone() {
+    let tab = new TabInstance(this.id, this.category, this.tabType, this.profile);
+    tab.name = this.name;
+    return tab;
+  }
 }
