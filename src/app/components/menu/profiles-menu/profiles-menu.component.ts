@@ -182,7 +182,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     this.close();
   }
 
-  profileTabLabel(profile: Profile | GroupNode) {
+  displayProfileTabLabel(profile: Profile | GroupNode) {
     let LIMIT = this.settingStorage.settings?.ui?.profileLabelLength || 10;
 
     let label = 'New';

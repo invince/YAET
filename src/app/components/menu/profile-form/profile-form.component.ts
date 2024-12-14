@@ -1,24 +1,14 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  computed, ElementRef,
-  EventEmitter,
-  Input,
-  model,
-  OnInit,
-  Output,
-  ViewChild
-} from '@angular/core';
+import {ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {MenuComponent} from '../menu.component';
 import {MatIcon} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
-import {ProfileCategoryTypeMap, Profile, ProfileCategory, ProfileType} from '../../../domain/profile/Profile';
+import {Profile, ProfileCategory, ProfileCategoryTypeMap, ProfileType} from '../../../domain/profile/Profile';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatSelectChange, MatSelectModule} from '@angular/material/select';
 import {CommonModule, KeyValuePipe} from '@angular/common';
 import {MatInput} from '@angular/material/input';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {SshProfileFormComponent} from '../ssh-profile-form/ssh-profile-form.component';
+import {SshProfileFormComponent} from './ssh-profile-form/ssh-profile-form.component';
 import {ProfileService} from '../../../services/profile.service';
 import {IsAChildForm} from '../../enhanced-form-mixin';
 import {MatSnackBar} from '@angular/material/snack-bar';
@@ -31,8 +21,12 @@ import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from '@angular/mate
 import {Tag} from '../../../domain/Tag';
 import {SSHTerminalProfile} from '../../../domain/profile/SSHTerminalProfile';
 import {CdkTextareaAutosize} from '@angular/cdk/text-field';
-import {RdpProfileFormComponent} from '../rdp-profile-form/rdp-profile-form.component';
+import {RdpProfileFormComponent} from './rdp-profile-form/rdp-profile-form.component';
 import {RdpProfile} from '../../../domain/profile/RdpProfile';
+import {VncProfileFormComponent} from './vnc-profile-form/vnc-profile-form.component';
+import {VncProfile} from '../../../domain/profile/VncProfile';
+import {CustomProfileFormComponent} from './custom-profile-form/custom-profile-form.component';
+import {CustomProfile} from '../../../domain/profile/CustomProfile';
 
 @Component({
   selector: 'app-profile-form',
@@ -51,9 +45,12 @@ import {RdpProfile} from '../../../domain/profile/RdpProfile';
     KeyValuePipe,
     MatInput,
 
-    SshProfileFormComponent,
     CdkTextareaAutosize,
+
+    SshProfileFormComponent,
     RdpProfileFormComponent,
+    VncProfileFormComponent,
+    CustomProfileFormComponent,
   ],
   templateUrl: './profile-form.component.html',
   styleUrl: './profile-form.component.scss'
@@ -80,6 +77,8 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
 
   @ViewChild(SshProfileFormComponent) sshChild!: SshProfileFormComponent;
   @ViewChild(RdpProfileFormComponent) rdpChild!: RdpProfileFormComponent;
+  @ViewChild(VncProfileFormComponent) vncChild!: VncProfileFormComponent;
+  @ViewChild(CustomProfileFormComponent) customChild!: CustomProfileFormComponent;
 
   constructor(
     private fb: FormBuilder,
@@ -121,6 +120,8 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
         profileType:            [this._profile.profileType, Validators.required],
         sshProfileForm:         [this._profile.sshTerminalProfile],
         rdpProfileForm:         [this._profile.rdpProfile],
+        vncProfileForm:         [this._profile.vncProfile],
+        customProfileForm:      [this._profile.customProfile],
 
       },
       {validators: []}
@@ -129,10 +130,16 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     return form;
   }
 
-  override afterFormInitialization() {
-    this.refreshForm(this.profile);
+  onSelectCategory($event: MatSelectChange) {
+    let cat = $event.value;
+    if (cat == ProfileCategory.CUSTOM) {
+      this.form.get('customProfileForm')?.setValue(new CustomProfile());
+    } else {
+      this.form.patchValue({
+        profileType: null, // Reset dependent fields if needed
+      });
+    }
   }
-
 
   onSelectType($event: MatSelectChange) {
     // this.profile.profileType = $event;
@@ -144,40 +151,10 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       case ProfileType.RDP_REMOTE_DESKTOP:
         this.form.get('rdpProfileForm')?.setValue(new RdpProfile());
         break;
-    }
-  }
 
-  onSelectCategory($event: MatSelectChange) {
-    this.form.patchValue({
-      profileType: null, // Reset dependent fields if needed
-    });
-  }
-
-  getTypeOptions() {
-    const selectedCategory = this.form.get('category')?.value; // we work with formGroup, so ngModel to bind profile doesn't work
-    return this.CATEGORY_TYPE_MAP.get(selectedCategory);
-  }
-
-  override onSave() {
-    if (this.form.valid) {
-      this.onSubmit(); // Reset the dirty state
-      this.onProfileSave.emit(this.formToModel());
-    }
-  }
-
-  onClone() {
-    if (this.form.valid) {
-      this.onSubmit(); // Reset the dirty state
-      this.onProfileClone.emit(this.formToModel());
-    }
-  }
-
-  onConnect() {
-    if (this.form.valid) {
-      this.profileService.onProfileConnect(this.formToModel());
-
-      this.onSubmit(); // Reset the dirty state
-      this.closeEvent.emit();
+      case ProfileType.VNC_REMOTE_DESKTOP:
+        this.form.get('vncProfileForm')?.setValue(new VncProfile());
+        break;
     }
   }
 
@@ -209,7 +186,9 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       this.form.get('category')?.setValue(profile?.category);
       this.form.get('profileType')?.setValue(profile?.profileType);
 
-      if (profile?.profileType) {
+      if (profile?.category == ProfileCategory.CUSTOM) {
+        this.updateFormValue('customProfileForm', profile?.customProfile);
+      } else if (profile?.profileType) {
         switch (profile.profileType) {
           case ProfileType.SSH_TERMINAL:
             this.updateFormValue('sshProfileForm', profile?.sshTerminalProfile);
@@ -217,18 +196,15 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
           case ProfileType.RDP_REMOTE_DESKTOP:
             this.updateFormValue('rdpProfileForm', profile?.rdpProfile);
             break;
+          case ProfileType.VNC_REMOTE_DESKTOP:
+            this.updateFormValue('vncProfileForm', profile?.vncProfile);
+            break;
         }
       }
 
       this.onSubmit(); // Reset the dirty state
       // this.filteredTags = this.settingStorage.settings.tags;
     }
-  }
-
-  updateFormValue(formName:string, value: any) {
-    this.form.get(formName)?.setValue(value);
-    this.form.get(formName)?.markAsUntouched();
-    this.form.get(formName)?.markAsPristine();
   }
 
   formToModel(): Profile {
@@ -240,16 +216,66 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       this._profile.tags = tags.map(one => one.id);
     }
 
-
     this._profile.category = this.form.get('category')?.value;
-    this._profile.profileType = this.form.get('profileType')?.value;
+    if (this._profile.category == ProfileCategory.CUSTOM) {
+      this._profile.profileType = ProfileType.CUSTOM;
+    } else {
+      this._profile.profileType = this.form.get('profileType')?.value;
+    }
 
     this._profile.sshTerminalProfile = this.sshChild?.formToModel();
     this._profile.rdpProfile = this.rdpChild?.formToModel();
+    this._profile.vncProfile = this.vncChild?.formToModel();
+    this._profile.customProfile = this.customChild?.formToModel();
 
 
     return this._profile;
   }
+
+  override afterFormInitialization() {
+    this.refreshForm(this.profile);
+  }
+
+
+
+
+  getTypeOptions() {
+    const selectedCategory = this.form.get('category')?.value; // we work with formGroup, so ngModel to bind profile doesn't work
+    return this.CATEGORY_TYPE_MAP.get(selectedCategory);
+  }
+
+  override onSave() {
+    if (this.form.valid) {
+      this.onSubmit(); // Reset the dirty state
+      this.onProfileSave.emit(this.formToModel());
+    }
+  }
+
+  onClone() {
+    if (this.form.valid) {
+      this.onSubmit(); // Reset the dirty state
+      this.onProfileClone.emit(this.formToModel());
+    }
+  }
+
+  onConnect() {
+    if (this.form.valid) {
+      this.profileService.onProfileConnect(this.formToModel());
+
+      this.onSubmit(); // Reset the dirty state
+      this.closeEvent.emit();
+    }
+  }
+
+
+
+  updateFormValue(formName:string, value: any) {
+    this.form.get(formName)?.setValue(value);
+    this.form.get(formName)?.markAsUntouched();
+    this.form.get(formName)?.markAsPristine();
+  }
+
+
 
 
   onDelete() {

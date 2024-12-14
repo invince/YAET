@@ -9,6 +9,10 @@ export const SESSION_OPEN_RDP = 'session.open.rd.rdp';
 export const SESSION_DISCONNECT_SSH = 'session.disconnect.terminal.ssh';
 export const TERMINAL_INPUT = 'terminal.input';
 export const TERMINAL_OUTPUT = 'terminal.output';
+export const SESSION_OPEN_VNC = 'session.open.rd.vnc';
+export const SESSION_DISCONNECT_VNC = 'session.disconnect.rd.vnc';
+export const VNC_FRAME = 'vnc.frame';
+export const VNC_STATUS = 'vnc.status';
 //#endregion "Sessions"
 
 

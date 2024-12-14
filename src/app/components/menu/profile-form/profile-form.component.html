@@ -72,7 +72,7 @@
           }
         </mat-select>
       </mat-form-field>
-      @if (form.get('category')?.value) {
+      @if (form.get('category')?.value && form.get('category')?.value != 'CUSTOM') {
       <mat-form-field class="field">
         <mat-label>Terminal Type</mat-label>
         <mat-select (selectionChange)="onSelectType($event)" required formControlName="profileType">
@@ -98,13 +98,26 @@
         }
       </mat-form-field>
 
-      @switch (form.get('profileType')?.value) {
-        @case('SSH_TERMINAL') {
-          <app-ssh-profile-form formControlName="sshProfileForm"></app-ssh-profile-form>
-        }
+      @if (form.get('category')?.value == 'CUSTOM') {
+        <app-custom-profile-form formControlName="customProfileForm"></app-custom-profile-form>
+      }
+      @else {
+        @switch (form.get('profileType')?.value) {
+          @case('SSH_TERMINAL') {
+            <app-ssh-profile-form formControlName="sshProfileForm"></app-ssh-profile-form>
+          }
 
-        @case('RDP_REMOTE_DESKTOP') {
-          <app-rdp-profile-form formControlName="rdpProfileForm"></app-rdp-profile-form>
+          @case('RDP_REMOTE_DESKTOP') {
+            <app-rdp-profile-form formControlName="rdpProfileForm"></app-rdp-profile-form>
+          }
+
+          @case('VNC_REMOTE_DESKTOP') {
+            <app-vnc-profile-form formControlName="vncProfileForm"></app-vnc-profile-form>
+          }
+
+          @case('CUSTOM') {
+            <app-vnc-profile-form formControlName="vncProfileForm"></app-vnc-profile-form>
+          }
         }
       }
 

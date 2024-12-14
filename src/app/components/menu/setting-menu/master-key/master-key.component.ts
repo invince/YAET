@@ -9,8 +9,8 @@ import {MatInput} from '@angular/material/input';
 import {MatButton} from '@angular/material/button';
 import {CommonModule} from '@angular/common';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {ConfirmationComponent} from '../../confirmation/confirmation.component';
-import {MasterKeyService} from '../../../services/master-key.service';
+import {ConfirmationComponent} from '../../../confirmation/confirmation.component';
+import {MasterKeyService} from '../../../../services/master-key.service';
 
 @Component({
   selector: 'app-master-key',

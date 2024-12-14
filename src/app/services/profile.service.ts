@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {Profile, Profiles} from '../domain/profile/Profile';
 import {ElectronService} from './electron.service';
-import {PROFILES_LOADED} from './electronConstant';
+import {PROFILES_LOADED} from '../domain/electronConstant';
 import {Subject} from 'rxjs';
 import {MasterKeyService} from './master-key.service';
 import {Tag} from '../domain/Tag';

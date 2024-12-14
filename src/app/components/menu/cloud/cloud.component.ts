@@ -60,7 +60,7 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
     public masterKeyService: MasterKeyService, // in html
     public secretStorageService: SecretStorageService, // in html
 
-    private secretService: SecretService,
+    public secretService: SecretService,
     private settingService: SettingService,
     private profileService: ProfileService,
     private cloudService: CloudService,
@@ -129,24 +129,6 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
 
       return {authTypeRequired: true};
     }
-  }
-
-  displaySecretOptionName(secret: Secret) {
-    let label = '';
-    if (secret && secret.name) {
-      label = secret.name;
-      if (secret.name.length > 6) {
-        label = label.slice(0, 6) + '...';
-      }
-    }
-    if (secret && secret.login) {
-      let loginPart = '-' + secret.login;
-      if (loginPart.length > 6) {
-        loginPart = loginPart.slice(0, 6) + '...';
-      }
-      label += loginPart + '/***';
-    }
-    return label;
   }
 
   onSelectSecret($event: MatSelectChange) {

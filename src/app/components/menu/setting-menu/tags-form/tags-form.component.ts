@@ -6,13 +6,13 @@ import {
   MatChipsModule
 } from '@angular/material/chips';
 import {MatIconModule} from '@angular/material/icon';
-import {SettingStorageService} from '../../../services/setting-storage.service';
-import {SettingService} from '../../../services/setting.service';
-import {MySettings} from '../../../domain/setting/MySettings';
+import {SettingStorageService} from '../../../../services/setting-storage.service';
+import {SettingService} from '../../../../services/setting.service';
+import {MySettings} from '../../../../domain/setting/MySettings';
 import {COMMA, ENTER} from '@angular/cdk/keycodes';
-import {ProfileService} from '../../../services/profile.service';
+import {ProfileService} from '../../../../services/profile.service';
 import {MatSnackBar} from '@angular/material/snack-bar';
-import {Tag} from '../../../domain/Tag';
+import {Tag} from '../../../../domain/Tag';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';
 

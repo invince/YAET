@@ -11,7 +11,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatSelectModule} from '@angular/material/select';
 import {MatSnackBar} from '@angular/material/snack-bar';
-import {SecretFormComponent} from '../secret-form/secret-form.component';
+import {SecretFormComponent} from './secret-form/secret-form.component';
 import {HasChildForm} from '../../enhanced-form-mixin';
 import {SecretStorageService} from '../../../services/secret-storage.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';

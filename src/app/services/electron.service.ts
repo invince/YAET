@@ -16,8 +16,8 @@ import {
   SETTINGS_RELOAD,
   SETTINGS_SAVE, SESSION_DISCONNECT_SSH,
   TERMINAL_INPUT,
-  TERMINAL_OUTPUT, SESSION_OPEN_RDP
-} from './electronConstant';
+  TERMINAL_OUTPUT, SESSION_OPEN_RDP, SESSION_OPEN_VNC, SESSION_DISCONNECT_VNC, VNC_FRAME, VNC_STATUS
+} from '../domain/electronConstant';
 import {LocalTerminalProfile} from '../domain/profile/LocalTerminalProfile';
 import {Profile, ProfileType} from '../domain/profile/Profile';
 import {MySettings} from '../domain/setting/MySettings';
@@ -28,6 +28,8 @@ import {CloudResponse} from '../domain/setting/CloudResponse';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {TabService} from './tab.service';
 import {RdpProfile} from '../domain/profile/RdpProfile';
+import {BehaviorSubject} from 'rxjs';
+
 
 @Injectable({
   providedIn: 'root',
@@ -185,6 +187,41 @@ export class ElectronService {
     }
   }
 
+  initVncListener(frameSubject: BehaviorSubject<any>, statusSubject: BehaviorSubject<any>) {
+    this.ipc.on(ERROR, (event, data) => {
+      if (data.category == 'vnc') {
+        this.tabService.removeById(data.id);
+      }
+      return;
+    });
+
+    this.ipc.on(VNC_FRAME, (event, data) => {
+      if (data) {
+        frameSubject.next({id: data.id, frame: data.frame});
+      }
+    });
+
+    this.ipc.on(VNC_STATUS, (event, data) => {
+      if (data) {
+        statusSubject.next({id: data.id, status: data.status});
+      }
+    });
+  }
+
+  openVncSession(id: string, host: string, port: number, password: string) {
+    if (this.ipc) {
+      this.ipc.send(SESSION_OPEN_VNC, { id: id, host: host, port: port, password: password });
+    }
+  }
+
+
+  closeVncSession(id: string) {
+    if (this.ipc) {
+      this.ipc.send(SESSION_DISCONNECT_VNC, { id: id});
+    }
+  }
+
+
 //#endregion "Sessions"
 
 
@@ -316,6 +353,7 @@ export class ElectronService {
   }
 
 //#endregion "Cloud"
+
 
 
 }
