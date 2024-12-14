@@ -80,7 +80,7 @@
               <mat-select (selectionChange)="onSelectSecret($event)" formControlName="secretId">
                 @for (oneSecret of filterSecret(); track oneSecret.id) {
                 <mat-option [value]="oneSecret.id">
-                {{ displaySecretOptionName(oneSecret) }}
+                {{ secretService.displaySecretOptionName(oneSecret) }}
                 </mat-option>
                 }
               </mat-select>

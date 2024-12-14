@@ -1,4 +1,6 @@
-const {app, ipcMain, BrowserWindow} = require('electron');
+const path = require("path");
+
+const {app, BrowserWindow} = require('electron');
 
 const {createMenu} = require('./ui/menu');
 const {initConfigFilesIpcHandler} = require('./ipc/configFiles');
@@ -6,11 +8,13 @@ const {initTerminalIpcHandler} = require('./ipc/terminal');
 const {initCloudIpcHandler} = require('./ipc/cloud');
 const {initSecurityIpcHandler} = require('./ipc/security');
 const {initRdpHandler} = require('./ipc/rdp');
-const path = require("path");
+
 const {CONFIG_FOLDER, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON} = require("./common");
+const {initVncHandler} = require("./ipc/vnc");
 
 let mainWindow;
 let terminalMap = new Map();
+let vncMap = new Map();
 app.on('ready', () => {
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -37,8 +41,13 @@ app.on('ready', () => {
   initCloudIpcHandler();
   initSecurityIpcHandler();
   initRdpHandler();
+  initVncHandler(vncMap, mainWindow);
+
 });
 
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});
 
 
 

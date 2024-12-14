@@ -1,9 +1,9 @@
 import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
-import {SettingService} from '../../../services/setting.service';
-import {SettingStorageService} from '../../../services/setting-storage.service';
-import {ProfileService} from '../../../services/profile.service';
+import {SettingService} from '../../../../services/setting.service';
+import {SettingStorageService} from '../../../../services/setting-storage.service';
+import {ProfileService} from '../../../../services/profile.service';
 import {MatSnackBar} from '@angular/material/snack-bar';
-import {MySettings} from '../../../domain/setting/MySettings';
+import {MySettings} from '../../../../domain/setting/MySettings';
 import {MatChipEditedEvent, MatChipsModule} from '@angular/material/chips';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';
@@ -12,7 +12,7 @@ import {MatTreeModule, MatTreeNestedDataSource} from '@angular/material/tree';
 import {MatButtonModule} from '@angular/material/button';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
-import {GroupNode} from '../../../domain/GroupNode';
+import {GroupNode} from '../../../../domain/GroupNode';
 import {NestedTreeControl} from '@angular/cdk/tree';
 
 @Component({

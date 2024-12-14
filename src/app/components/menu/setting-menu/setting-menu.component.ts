@@ -13,15 +13,15 @@ import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} fr
 import {MatInput} from '@angular/material/input';
 import {Subscription} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
-import {MasterKeyComponent} from '../master-key/master-key.component';
+import {MasterKeyComponent} from './master-key/master-key.component';
 import {ConfirmationComponent} from '../../confirmation/confirmation.component';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {MasterKeyService} from '../../../services/master-key.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';
 import {SideNavType, UISettings} from '../../../domain/setting/UISettings';
 import {MatChip} from '@angular/material/chips';
-import {TagsFormComponent} from '../tags-form/tags-form.component';
-import {GroupsFormComponent} from '../groups-form/groups-form.component';
+import {TagsFormComponent} from './tags-form/tags-form.component';
+import {GroupsFormComponent} from './groups-form/groups-form.component';
 import {MatDivider} from "@angular/material/divider";
 import {GeneralSettings} from '../../../domain/setting/GeneralSettings';
 import {NgxSpinnerService} from 'ngx-spinner';

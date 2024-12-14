@@ -1,18 +1,19 @@
 import {Component, forwardRef} from '@angular/core';
-import {SSHTerminalProfile} from '../../../domain/profile/SSHTerminalProfile';
+import {SSHTerminalProfile} from '../../../../domain/profile/SSHTerminalProfile';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatIcon} from '@angular/material/icon';
 import {FormBuilder, FormGroup, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators} from '@angular/forms';
 import {CommonModule} from '@angular/common';
-import {AuthType, Secret} from '../../../domain/Secret';
-import {MenuComponent} from '../menu.component';
+import {AuthType, Secret} from '../../../../domain/Secret';
+import {MenuComponent} from '../../menu.component';
 import {MatIconButton} from '@angular/material/button';
 import {MatSelectChange, MatSelectModule} from '@angular/material/select';
-import {ChildFormAsFormControl} from '../../enhanced-form-mixin';
+import {ChildFormAsFormControl} from '../../../enhanced-form-mixin';
 import {MatRadioModule} from '@angular/material/radio';
-import {SecretStorageService} from '../../../services/secret-storage.service';
-import {SettingStorageService} from '../../../services/setting-storage.service';
+import {SecretStorageService} from '../../../../services/secret-storage.service';
+import {SettingStorageService} from '../../../../services/setting-storage.service';
+import {SecretService} from '../../../../services/secret.service';
 
 @Component({
   selector: 'app-ssh-profile-form',
@@ -45,7 +46,9 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
 
   constructor(
     private fb: FormBuilder,
-    public secretStorageService: SecretStorageService,
+    public secretStorageService: SecretStorageService, // in html
+
+    public secretService: SecretService, // in html
     public settingStorage: SettingStorageService,
   ) {
     super();
@@ -87,25 +90,6 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
     //   return {authTypeRequired: true};
     // }
     return null;
-  }
-
-  displaySecretOptionName(secret: Secret) {
-    let label = '';
-    let LIMIT = this.settingStorage.settings?.ui?.secretLabelLengthInDropDown || 8;
-    if (secret && secret.name) {
-      label = secret.name;
-      if (secret.name.length > LIMIT) {
-        label = label.slice(0, LIMIT) + '...';
-      }
-    }
-    if (secret && secret.login) {
-      let loginPart = '-' + secret.login;
-      if (loginPart.length > LIMIT) {
-        loginPart = loginPart.slice(0, LIMIT) + '...';
-      }
-      label += loginPart + '/***';
-    }
-    return label;
   }
 
   onSelectSecret($event: MatSelectChange) {

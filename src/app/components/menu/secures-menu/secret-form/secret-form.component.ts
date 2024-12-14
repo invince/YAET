@@ -1,14 +1,14 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {Secret, SecretType} from '../../../domain/Secret';
+import {Secret, SecretType} from '../../../../domain/Secret';
 import {CommonModule, KeyValuePipe} from '@angular/common';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
 import {MatSelectChange, MatSelectModule} from '@angular/material/select';
-import {MenuComponent} from '../menu.component';
-import {IsAChildForm} from '../../enhanced-form-mixin';
+import {MenuComponent} from '../../menu.component';
+import {IsAChildForm} from '../../../enhanced-form-mixin';
 
 @Component({
   selector: 'app-secret-form',

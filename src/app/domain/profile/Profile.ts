@@ -3,11 +3,14 @@ import {v4 as uuidv4} from 'uuid';
 import {SSHTerminalProfile} from './SSHTerminalProfile';
 import {Secret} from '../Secret';
 import {RdpProfile} from './RdpProfile';
+import {VncProfile} from './VncProfile';
+import {CustomProfile} from './CustomProfile';
 
 export enum ProfileCategory {
   TERMINAL = 'TERMINAL',
   REMOTE_DESKTOP = 'REMOTE_DESKTOP',
-  FILE_EXPLORER = 'FILE_EXPLORER'
+  FILE_EXPLORER = 'FILE_EXPLORER',
+  CUSTOM = 'CUSTOM',
 }
 
 export enum ProfileType {
@@ -15,11 +18,14 @@ export enum ProfileType {
   SSH_TERMINAL = 'SSH_TERMINAL',
   TELNET_TERMINAL = 'TELNET_TERMINAL',
 
-  REAL_VNC_REMOTE_DESKTOP = 'REAL_VNC_REMOTE_DESKTOP',
-  TIGHT_VNC_REMOTE_DESKTOP = 'TIGHT_VNC_REMOTE_DESKTOP',
+  // REAL_VNC_REMOTE_DESKTOP = 'REAL_VNC_REMOTE_DESKTOP',
+  // TIGHT_VNC_REMOTE_DESKTOP = 'TIGHT_VNC_REMOTE_DESKTOP',
+  VNC_REMOTE_DESKTOP = 'VNC_REMOTE_DESKTOP',
   RDP_REMOTE_DESKTOP = 'RDP_REMOTE_DESKTOP',
   SCP_FILE_EXPLORER = 'SCP_FILE_EXPLORER',
   SFTP_FILE_EXPLORER = 'SFTP_FILE_EXPLORER',
+
+  CUSTOM = 'CUSTOM',
 }
 
 export const ProfileCategoryTypeMap = new Map<ProfileCategory, any>([
@@ -30,8 +36,9 @@ export const ProfileCategoryTypeMap = new Map<ProfileCategory, any>([
   ]],
 
   [ProfileCategory.REMOTE_DESKTOP, [
-    ProfileType.REAL_VNC_REMOTE_DESKTOP,
-    ProfileType.TIGHT_VNC_REMOTE_DESKTOP,
+    // ProfileType.REAL_VNC_REMOTE_DESKTOP,
+    // ProfileType.TIGHT_VNC_REMOTE_DESKTOP,
+    ProfileType.VNC_REMOTE_DESKTOP,
     ProfileType.RDP_REMOTE_DESKTOP,
   ]],
 
@@ -40,6 +47,7 @@ export const ProfileCategoryTypeMap = new Map<ProfileCategory, any>([
     ProfileType.SCP_FILE_EXPLORER,
     ProfileType.SFTP_FILE_EXPLORER,
   ]],
+
 ]);
 
 export class Profiles {
@@ -89,6 +97,8 @@ export class Profile {
   public localTerminal!: LocalTerminalProfile;
   public sshTerminalProfile!: SSHTerminalProfile;
   public rdpProfile!: RdpProfile;
+  public vncProfile!: VncProfile;
+  public customProfile!: CustomProfile;
 
   public group!: string
   public tags: string[] = [];
@@ -100,6 +110,8 @@ export class Profile {
     this.localTerminal = new LocalTerminalProfile();
     this.sshTerminalProfile = new SSHTerminalProfile();
     this.rdpProfile = new RdpProfile();
+    this.vncProfile = new VncProfile();
+    this.customProfile = new CustomProfile();
   }
 
   static clone(base: Profile): Profile {
@@ -110,6 +122,8 @@ export class Profile {
     cloned.profileType = base.profileType;
     cloned.localTerminal = base.localTerminal;
     cloned.sshTerminalProfile = base.sshTerminalProfile;
+    cloned.vncProfile = base.vncProfile;
+    cloned.customProfile = base.customProfile;
     cloned.group = base.group;
     cloned.tags = base.tags;
 

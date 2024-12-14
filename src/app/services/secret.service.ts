@@ -1,9 +1,10 @@
 import {Injectable} from '@angular/core';
 import {Secret, Secrets} from '../domain/Secret';
 import {ElectronService} from './electron.service';
-import {SECRETS_LOADED} from './electronConstant';
+import {SECRETS_LOADED} from '../domain/electronConstant';
 import {MasterKeyService} from './master-key.service';
 import {SecretStorageService} from './secret-storage.service';
+import {SettingStorageService} from './setting-storage.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +18,7 @@ export class SecretService {
     private electron: ElectronService,
 
     private secretStorage: SecretStorageService,
+    private settingStorage: SettingStorageService,
     private masterKeyService: MasterKeyService
   ) {
     electron.onLoadedEvent(SECRETS_LOADED, data => {
@@ -67,6 +69,25 @@ export class SecretService {
   reload() {
     this._loaded = false;
     this.electron.reloadSecrets();
+  }
+
+  displaySecretOptionName(secret: Secret) {
+    let label = '';
+    let LIMIT = this.settingStorage.settings?.ui?.secretLabelLengthInDropDown || 8;
+    if (secret && secret.name) {
+      label = secret.name;
+      if (secret.name.length > LIMIT) {
+        label = label.slice(0, LIMIT) + '...';
+      }
+    }
+    if (secret && secret.login) {
+      let loginPart = '-' + secret.login;
+      if (loginPart.length > LIMIT) {
+        loginPart = loginPart.slice(0, LIMIT) + '...';
+      }
+      label += loginPart + '/***';
+    }
+    return label;
   }
 
 }

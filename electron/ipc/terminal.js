@@ -28,14 +28,19 @@ function initTerminalIpcHandler(terminalMap) {
       );
     });
 
-    terminalMap.set(id, (data) => ptyProcess.write(data));
+    terminalMap.set(id,
+      {
+        type: 'local',
+        process: ptyProcess,
+        callback: (data) => ptyProcess.write(data),
+      });
 
   });
 
   ipcMain.on('terminal.input', (event, data) => {
     const id = data.terminalId; // cf terminal.component.ts
     const input = data.input;
-    const terminalCallback = terminalMap.get(id);
+    const terminalCallback = terminalMap.get(id)?.callback;
     console.log('Terminal id to find ' + id);
     if (terminalCallback) {
       console.log('Terminal found. Sending input.');
@@ -70,7 +75,12 @@ function initTerminalIpcHandler(terminalMap) {
           );
         });
 
-        terminalMap.set(id, (data) => stream.write(data));
+        terminalMap.set(id,
+          {
+            type: 'ssh',
+            process: conn,
+            callback: (data) => stream.write(data),
+          });
       });
     }).connect(sshConfig);
 

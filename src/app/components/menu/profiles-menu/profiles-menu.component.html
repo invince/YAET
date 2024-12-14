@@ -42,7 +42,7 @@
                   <div class="group-name"
                        [class.selected]="node.profile && node.profile.id === selectedProfileId"
                        (click)="onTabChange(node.profile)">
-                            {{ profileTabLabel(node) }}
+                            {{ displayProfileTabLabel(node) }}
                   </div>
                 </mat-nested-tree-node>
 
@@ -54,7 +54,7 @@
                       {{ treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}
                       </mat-icon>
                     </button>
-                    <div class="group-name" matTreeNodeToggle >{{ profileTabLabel(node) }}</div>
+                    <div class="group-name" matTreeNodeToggle >{{ displayProfileTabLabel(node) }}</div>
                   </div>
                     <!-- There is inline padding applied to this div using styles.
                       This padding value depends on the mat-icon-button width.  -->
@@ -71,7 +71,7 @@
                 <button mat-button
                         [class.selected]="profile.id === selectedProfileId"
                         (click)="onTabChange(profile)">
-                  {{ profileTabLabel(profile) }}
+                  {{ displayProfileTabLabel(profile) }}
                 </button>
               </div>
               }
