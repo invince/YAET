@@ -46,7 +46,18 @@ app.on('ready', () => {
 });
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+  if (process.platform !== 'darwin') {
+
+    terminalMap.forEach((value) => {
+      value?.process?.kill();
+    });
+
+    vncMap.forEach((value) => {
+      value?.end();
+    });
+
+    app.quit();
+  }
 });
 
 

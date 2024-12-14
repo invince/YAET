@@ -1,6 +1,10 @@
-<div>
-  <button (click)="connect()">Connect</button>
-  <button (click)="disconnect()">Disconnect</button>
-  <p>Status: {{ status }}</p>
-  <canvas #canvas width="800" height="600"></canvas>
+<!-- Toolbar -->
+<div class="toolbar">
+  <button (click)="showRealSize()">Real Size</button>
+  <button (click)="resizeToFit()">Resize to Fit</button>
+</div>
+
+<!-- Canvas Container -->
+<div class="canvas-container" #container>
+  <canvas #canvas ></canvas>
 </div>
