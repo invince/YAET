@@ -1,5 +1,25 @@
-canvas {
-  border: 1px solid black;
+/* Toolbar styling */
+.toolbar {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  background: #f1f1f1;
+  border-bottom: 1px solid #ccc;
+}
+
+/* Canvas container styling */
+.canvas-container {
   width: 100%;
+  height: calc(100vh - 50px - 48px); /* Full height minus toolbar */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #000; /* Black background for contrast */
+}
+
+/* Canvas styling */
+canvas {
+  border: 1px solid #ccc;
+  background: #333;
   height: auto;
 }

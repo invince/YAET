@@ -21,7 +21,6 @@ function initVncHandler(vncMap, mainWindow) {
     vncClient.on('rect', (rect) => {
       if (rect.encoding === rfb.encodings.raw) {
         // Forward the rectangle data to the renderer
-        console.log("frame: " + {id: id, frame: rect} )
         mainWindow.webContents.send('vnc.frame', {id: id, frame: rect});
       }
     });
