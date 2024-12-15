@@ -1,3 +1,17 @@
+/* Ensure the body and html take up full height */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Container that holds the toolbar and VNC */
+.vnc-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;  /* Full height of the parent container */
+}
+
 /* Toolbar styling */
 .toolbar {
   display: flex;
@@ -7,19 +21,12 @@
   border-bottom: 1px solid #ccc;
 }
 
-/* Canvas container styling */
-.canvas-container {
-  width: 100%;
-  height: calc(100vh - 50px - 48px); /* Full height minus toolbar */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: #000; /* Black background for contrast */
+/* VNC container takes the remaining space */
+.vnc {
+  flex-grow: 1; /* Takes the remaining space */
+  width: 100%;  /* Ensures the width is 100% of its parent */
+  background-color: #000; /* Optional background color */
 }
 
-/* Canvas styling */
-canvas {
-  border: 1px solid #ccc;
-  background: #333;
-  height: auto;
-}
+
+

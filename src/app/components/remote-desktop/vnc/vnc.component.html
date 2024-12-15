@@ -1,10 +1,8 @@
-<!-- Toolbar -->
-<div class="toolbar">
-  <button (click)="showRealSize()">Real Size</button>
-  <button (click)="resizeToFit()">Resize to Fit</button>
-</div>
+<div class="vnc-container">
+  <div class="toolbar">
+    <button (click)="showRealSize()">Real Size</button>
+    <button (click)="resizeToFit()">Resize to Fit</button>
+  </div>
 
-<!-- Canvas Container -->
-<div class="canvas-container" #container>
-  <canvas #canvas ></canvas>
+  <div #vnc class="vnc"></div>
 </div>

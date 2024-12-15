@@ -53,7 +53,7 @@ app.on('window-all-closed', () => {
     });
 
     vncMap.forEach((value) => {
-      value?.end();
+      // value?.end();
     });
 
     app.quit();
