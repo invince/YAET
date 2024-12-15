@@ -20,7 +20,7 @@ function initVncHandler(vncMap, mainWindow) {
       console.log(`Connect to VNC server ${host}:${port}`);
 
       // Connect to the VNC server
-      const vncSocket = net.createConnection(host, port, () => {
+      const vncSocket = net.createConnection(port, host,() => {
         console.log(`Connected to VNC server`);
         event.sender.send('session.connect.rd.vnc', { id: id});
       });

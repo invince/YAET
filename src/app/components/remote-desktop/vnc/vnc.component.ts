@@ -42,7 +42,9 @@ export class VncComponent implements AfterViewInit, OnChanges {
   }
   connect() {
     this.spinner.show();
-    this.vncService.connect(this.tab?.id, this.tab?.profile?.vncProfile, this.vncContainer);
+    this.vncService.connect(this.tab?.id, this.tab?.profile?.vncProfile, this.vncContainer).then(
+      () => this.spinner.hide()
+    );
   }
 
   disconnect() {
