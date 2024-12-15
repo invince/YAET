@@ -1,35 +1,28 @@
-import { Injectable } from '@angular/core';
+import {ElementRef, Injectable} from '@angular/core';
 // @ts-ignore
 import {VncProfile} from '../domain/profile/VncProfile';
 import {AuthType, SecretType} from '../domain/Secret';
 import {SecretStorageService} from './secret-storage.service';
 import {ElectronService} from './electron.service';
-import {BehaviorSubject} from 'rxjs';
+import RFB from '@novnc/novnc/lib/rfb';
 
-
-// we use websockifyPath to proxy to the vnc server
+// we use ws to proxy to the vnc server
 // then use noVnc to display it
 @Injectable({
   providedIn: 'root',
 })
 export class VncService {
 
-  private frameSubject = new BehaviorSubject<any>(null);
-  private statusSubject = new BehaviorSubject<any>(null);
 
-  frame$ = this.frameSubject.asObservable();
-  status$ = this.statusSubject.asObservable();
 
   constructor(
     private secretStorage: SecretStorageService,
     private electronService: ElectronService,
   ) {
 
-    this.electronService.initVncListener(this.frameSubject, this.statusSubject);
-
   }
 
-  connect(id: string, vncProfile: VncProfile) {
+  connect(id: string, vncProfile: VncProfile, vncCanvas: ElementRef) {
     if (!vncProfile) {
       return;
     }
@@ -52,8 +45,16 @@ export class VncService {
         }
       }
     }
-
-    this.electronService.openVncSession(id, vncProfile.host, vncProfile.port, vncProfile.password);
+    this.electronService.openVncSession(id, vncProfile.host, vncProfile.port).then(
+      websocketPort => {
+        const rfb = new RFB(vncCanvas.nativeElement, `ws://localhost:${websocketPort}`, {
+          // @ts-ignore
+          credentials: { password: vncProfile.password }
+        });
+        rfb.viewOnly = false; // Set to true if you want a read-only connection
+        rfb.clipViewport = true;
+      }
+    );
   }
 
   disconnect(id: string) {

@@ -16,7 +16,7 @@ import {
   SETTINGS_RELOAD,
   SETTINGS_SAVE, SESSION_DISCONNECT_SSH,
   TERMINAL_INPUT,
-  TERMINAL_OUTPUT, SESSION_OPEN_RDP, SESSION_OPEN_VNC, SESSION_DISCONNECT_VNC, VNC_FRAME, VNC_STATUS
+  TERMINAL_OUTPUT, SESSION_OPEN_RDP, SESSION_OPEN_VNC, SESSION_DISCONNECT_VNC
 } from '../domain/electronConstant';
 import {LocalTerminalProfile} from '../domain/profile/LocalTerminalProfile';
 import {Profile, ProfileType} from '../domain/profile/Profile';
@@ -49,6 +49,7 @@ export class ElectronService {
 
       this.initCommonListener();
       this.initTerminalListener();
+      this.initVncListener();
     }
   }
 
@@ -187,31 +188,20 @@ export class ElectronService {
     }
   }
 
-  initVncListener(frameSubject: BehaviorSubject<any>, statusSubject: BehaviorSubject<any>) {
+  initVncListener() {
     this.ipc.on(ERROR, (event, data) => {
       if (data.category == 'vnc') {
         this.tabService.removeById(data.id);
       }
       return;
     });
-
-    this.ipc.on(VNC_FRAME, (event, data) => {
-      if (data) {
-        frameSubject.next({id: data.id, frame: data.frame});
-      }
-    });
-
-    this.ipc.on(VNC_STATUS, (event, data) => {
-      if (data) {
-        statusSubject.next({id: data.id, status: data.status});
-      }
-    });
   }
 
-  openVncSession(id: string, host: string, port: number, password: string) {
+  async openVncSession(id: string, host: string, port: number) {
     if (this.ipc) {
-      this.ipc.send(SESSION_OPEN_VNC, { id: id, host: host, port: port, password: password });
+      return this.ipc.invoke(SESSION_OPEN_VNC, { id: id, host: host, port: port });
     }
+    return;
   }
 
 
