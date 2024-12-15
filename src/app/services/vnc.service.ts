@@ -22,39 +22,45 @@ export class VncService {
 
   }
 
-  connect(id: string, vncProfile: VncProfile, vncCanvas: ElementRef) {
-    if (!vncProfile) {
-      return;
-    }
-
-    if (vncProfile.authType == AuthType.SECRET) {
-      let secret = this.secretStorage.findById(vncProfile.secretId);
-      if (!secret) {
-        console.error("Invalid secret " + vncProfile.secretId);
+  async connect(id: string, vncProfile: VncProfile, vncCanvas: ElementRef) {
+    return new Promise((resolve, reject) => {
+      if (!vncProfile) {
+        reject(new Error('Invalid vnc profile'));
         return;
       }
-      switch (secret.secretType) {
-        case SecretType.LOGIN_PASSWORD: {
-          vncProfile.login = secret.login;
-          vncProfile.password = secret.password;
-          break;
+
+      if (vncProfile.authType == AuthType.SECRET) {
+        let secret = this.secretStorage.findById(vncProfile.secretId);
+        if (!secret) {
+          console.error("Invalid secret " + vncProfile.secretId);
+          reject(new Error('Invalid secret profile'));
+          return;
         }
-        case SecretType.PASSWORD_ONLY: {
-          vncProfile.password = secret.password;
-          break;
+        switch (secret.secretType) {
+          case SecretType.LOGIN_PASSWORD: {
+            vncProfile.login = secret.login;
+            vncProfile.password = secret.password;
+            break;
+          }
+          case SecretType.PASSWORD_ONLY: {
+            vncProfile.password = secret.password;
+            break;
+          }
         }
       }
-    }
-    this.electronService.openVncSession(id, vncProfile.host, vncProfile.port).then(
-      websocketPort => {
-        const rfb = new RFB(vncCanvas.nativeElement, `ws://localhost:${websocketPort}`, {
-          // @ts-ignore
-          credentials: { password: vncProfile.password }
-        });
-        rfb.viewOnly = false; // Set to true if you want a read-only connection
-        rfb.clipViewport = true;
-      }
-    );
+      this.electronService.openVncSession(id, vncProfile.host, vncProfile.port).then(
+        websocketPort => {
+          const rfb = new RFB(vncCanvas.nativeElement, `ws://localhost:${websocketPort}`, {
+            // @ts-ignore
+            credentials: {password: vncProfile.password}
+          });
+          rfb.viewOnly = false; // Set to true if you want a read-only connection
+          rfb.clipViewport = true;
+
+          resolve('ok');  // Successfully connected
+        }
+      );
+    });
   }
 
   disconnect(id: string) {
