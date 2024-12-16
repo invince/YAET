@@ -1,5 +1,7 @@
 //#region "Common"
 export const ERROR = 'error';
+export const CLIPBOARD_PASTE = 'clipboard-paste';
+export const TRIGGER_NATIVE_CLIPBOARD_PASTE = 'trigger-native-clipboard-paste';
 //#endregion "Common"
 
 //#region "Sessions"
@@ -11,8 +13,7 @@ export const TERMINAL_INPUT = 'terminal.input';
 export const TERMINAL_OUTPUT = 'terminal.output';
 export const SESSION_OPEN_VNC = 'session.open.rd.vnc';
 export const SESSION_DISCONNECT_VNC = 'session.disconnect.rd.vnc';
-export const VNC_FRAME = 'vnc.frame';
-export const VNC_STATUS = 'vnc.status';
+
 //#endregion "Sessions"
 
 

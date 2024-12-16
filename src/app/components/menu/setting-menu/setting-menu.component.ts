@@ -25,31 +25,33 @@ import {GroupsFormComponent} from './groups-form/groups-form.component';
 import {MatDivider} from "@angular/material/divider";
 import {GeneralSettings} from '../../../domain/setting/GeneralSettings';
 import {NgxSpinnerService} from 'ngx-spinner';
+import {MatCheckbox} from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-setting-menu',
   standalone: true,
-    imports: [
-        FormsModule,
-        ReactiveFormsModule,
-        CommonModule,
-        MatIcon,
-        MatIconButton,
-        MatTabGroup,
-        MatTab,
-        MatFormField,
-        MatLabel,
-        MatSelect,
-        MatOption,
-        KeyValuePipe,
-        MatInput,
-        MatButton,
-        MatSuffix,
-        MatChip,
-        TagsFormComponent,
-        GroupsFormComponent,
-        MatDivider,
-    ],
+  imports: [
+    FormsModule,
+    ReactiveFormsModule,
+    CommonModule,
+    MatIcon,
+    MatIconButton,
+    MatTabGroup,
+    MatTab,
+    MatFormField,
+    MatLabel,
+    MatSelect,
+    MatOption,
+    KeyValuePipe,
+    MatInput,
+    MatButton,
+    MatSuffix,
+    MatChip,
+    TagsFormComponent,
+    GroupsFormComponent,
+    MatDivider,
+    MatCheckbox,
+  ],
   templateUrl: './setting-menu.component.html',
   styleUrl: './setting-menu.component.css'
 })
@@ -57,6 +59,8 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
   localTermForm!: FormGroup;
   uiForm!: FormGroup;
+
+  generalForm!: FormGroup;
 
   LOCAL_TERM_OPTIONS = LocalTerminalType;
 
@@ -112,6 +116,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
     this.uiForm = this.initUiForm();
     this.localTermForm = this.initLocalTermForm();
+    this.generalForm = this.initGeneralForm();
     this.settingsCopy = this.settingStorage.settings;
 
     this.refreshForm(this.settingsCopy);
@@ -125,6 +130,16 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
 
   }
+
+  private initGeneralForm() {
+    return this.fb.group(
+      {
+        vncClipboardCompatibleMode:     [''],
+      },
+      {validators: []}
+    );
+  }
+
   private initUiForm() {
     return this.fb.group(
       {
@@ -212,6 +227,11 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       value = new MySettings();
     }
 
+    if(this.generalForm) {
+      this.generalForm.reset();
+      this.generalForm.get('vncClipboardCompatibleMode')?.setValue(value.general.vncClipboardCompatibleMode);
+    }
+
     if (this.uiForm) {
       this.uiForm.reset();
       if (!value.ui) {
@@ -252,7 +272,11 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
   private generalFormToModel() {
-    return new GeneralSettings();
+    let general = new GeneralSettings();
+
+    general.vncClipboardCompatibleMode = this.generalForm.get('vncClipboardCompatibleMode')?.value;
+
+    return general;
   }
 
   private localTermFormToModel() {

@@ -1,59 +1,105 @@
-import { Injectable } from '@angular/core';
+import {ElementRef, Injectable} from '@angular/core';
 // @ts-ignore
 import {VncProfile} from '../domain/profile/VncProfile';
 import {AuthType, SecretType} from '../domain/Secret';
 import {SecretStorageService} from './secret-storage.service';
 import {ElectronService} from './electron.service';
-import {BehaviorSubject} from 'rxjs';
+import RFB from '@novnc/novnc/lib/rfb';
+import {Subject} from 'rxjs';
+import {Profile, ProfileType} from '../domain/profile/Profile';
+import {SettingStorageService} from './setting-storage.service';
 
 
-// we use websockifyPath to proxy to the vnc server
+// we use ws to proxy to the vnc server
 // then use noVnc to display it
 @Injectable({
   providedIn: 'root',
 })
 export class VncService {
+  readonly XK_Control_L= 0xffe3; // from keysym.js
+  readonly XK_Shift_L= 0xffe1; // from keysym.js
+  readonly   XK_V =  0x0056; // from keysym.js
+  vncMap: Map<string, RFB> = new Map();
 
-  private frameSubject = new BehaviorSubject<any>(null);
-  private statusSubject = new BehaviorSubject<any>(null);
-
-  frame$ = this.frameSubject.asObservable();
-  status$ = this.statusSubject.asObservable();
+  private clipboardEventSubject = new Subject<string>();
+  clipboardEvent$ = this.clipboardEventSubject.asObservable();
 
   constructor(
+    private settingStorage: SettingStorageService,
     private secretStorage: SecretStorageService,
     private electronService: ElectronService,
   ) {
-
-    this.electronService.initVncListener(this.frameSubject, this.statusSubject);
-
+    this.electronService.subscribeClipboard(ProfileType.VNC_REMOTE_DESKTOP, (id: string, text: string) => {
+      if(this.vncMap) {
+        let rfb = this.vncMap.get(id);
+        if (rfb) {
+          rfb.clipboardPasteFrom(text);
+          if (this.settingStorage.settings?.general?.vncClipboardCompatibleMode) {
+            rfb.sendKey(this.XK_Control_L, "ControlLeft", true);
+            rfb.sendKey(this.XK_Shift_L, "ShiftLeft", true);
+            rfb.sendKey(this.XK_V, "v");
+            rfb.sendKey(this.XK_Shift_L, "ShiftLeft", false);
+            rfb.sendKey(this.XK_Control_L, "ControlLeft", false);
+          }
+          return true;
+        }
+      }
+      return false;
+    });
   }
 
-  connect(id: string, vncProfile: VncProfile) {
-    if (!vncProfile) {
-      return;
-    }
-
-    if (vncProfile.authType == AuthType.SECRET) {
-      let secret = this.secretStorage.findById(vncProfile.secretId);
-      if (!secret) {
-        console.error("Invalid secret " + vncProfile.secretId);
+  async connect(id: string, vncProfile: VncProfile, vncCanvas: ElementRef) {
+    return new Promise((resolve, reject) => {
+      if (!vncProfile) {
+        reject(new Error('Invalid vnc profile'));
         return;
       }
-      switch (secret.secretType) {
-        case SecretType.LOGIN_PASSWORD: {
-          vncProfile.login = secret.login;
-          vncProfile.password = secret.password;
-          break;
+
+      if (vncProfile.authType == AuthType.SECRET) {
+        let secret = this.secretStorage.findById(vncProfile.secretId);
+        if (!secret) {
+          console.error("Invalid secret " + vncProfile.secretId);
+          reject(new Error('Invalid secret profile'));
+          return;
         }
-        case SecretType.PASSWORD_ONLY: {
-          vncProfile.password = secret.password;
-          break;
+        switch (secret.secretType) {
+          case SecretType.LOGIN_PASSWORD: {
+            vncProfile.login = secret.login;
+            vncProfile.password = secret.password;
+            break;
+          }
+          case SecretType.PASSWORD_ONLY: {
+            vncProfile.password = secret.password;
+            break;
+          }
         }
       }
-    }
+      this.electronService.openVncSession(id, vncProfile.host, vncProfile.port).then(
+        websocketPort => {
+          const rfb = new RFB(vncCanvas.nativeElement, `ws://localhost:${websocketPort}`, {
+            // @ts-ignore
+            credentials: {password: vncProfile.password}
+          });
+          rfb.viewOnly = false; // Set to true if you want a read-only connection
+          rfb.clipViewport = true; // Clip the remote session to the viewport
+          rfb.scaleViewport = true; // Scale the remote desktop to fit the container
+          rfb.resizeSession = true; // Resize the remote session to match the container
+          // Handle container resizing
+          window.addEventListener('resize', () => {
+            rfb.scaleViewport = true;
+          });
 
-    this.electronService.openVncSession(id, vncProfile.host, vncProfile.port, vncProfile.password);
+          rfb.addEventListener('clipboard', async (event: any) => {
+            const serverClipboardText = event.detail.text;
+            console.log('Received clipboard data:', serverClipboardText);
+            await navigator.clipboard.writeText(serverClipboardText); // Sync with browser clipboard
+          });
+          this.vncMap.set(id, rfb);
+
+          resolve('ok');  // Successfully connected
+        }
+      );
+    });
   }
 
   disconnect(id: string) {
