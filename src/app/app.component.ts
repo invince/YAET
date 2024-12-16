@@ -77,7 +77,6 @@ export class AppComponent implements OnInit, OnDestroy{
   title = 'yetAnotherElectronTerm';
 
   subscriptions: Subscription[] = []
-  currentTabIndex = 0;
 
   constructor(
     private settingService: SettingService,
@@ -108,7 +107,7 @@ export class AppComponent implements OnInit, OnDestroy{
           this.modalControl.closeModal([this.MENU_PROFILE, this.MENU_ADD ]);
           if (Profile.requireOpenNewTab(connection)) {
             this.tabService.addTab(new TabInstance(uuidv4(), connection.category, connection.profileType, connection)); // Adds a new terminal identifier
-            this.currentTabIndex = this.tabService.tabs.length - 1;
+            this.tabService.currentTabIndex = this.tabService.tabs.length - 1;
           } else {
             this.openSessionWithoutTab(connection);
           }
@@ -146,7 +145,7 @@ export class AppComponent implements OnInit, OnDestroy{
   addLocalTerminal() {
     this.modalControl.closeModal();
     this.tabService.addTab(new TabInstance(uuidv4(), ProfileCategory.TERMINAL, ProfileType.LOCAL_TERMINAL, this.settingService.createLocalTerminalProfile())); // Adds a new terminal identifier
-    this.currentTabIndex = this.tabService.tabs.length - 1;
+    this.tabService.currentTabIndex = this.tabService.tabs.length - 1;
   }
 
   openSessionWithoutTab(profile: Profile) {

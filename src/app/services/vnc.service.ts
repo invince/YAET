@@ -5,6 +5,10 @@ import {AuthType, SecretType} from '../domain/Secret';
 import {SecretStorageService} from './secret-storage.service';
 import {ElectronService} from './electron.service';
 import RFB from '@novnc/novnc/lib/rfb';
+import {Subject} from 'rxjs';
+import {Profile, ProfileType} from '../domain/profile/Profile';
+import {SettingStorageService} from './setting-storage.service';
+
 
 // we use ws to proxy to the vnc server
 // then use noVnc to display it
@@ -12,14 +16,36 @@ import RFB from '@novnc/novnc/lib/rfb';
   providedIn: 'root',
 })
 export class VncService {
+  readonly XK_Control_L= 0xffe3; // from keysym.js
+  readonly XK_Shift_L= 0xffe1; // from keysym.js
+  readonly   XK_V =  0x0056; // from keysym.js
+  vncMap: Map<string, RFB> = new Map();
 
-
+  private clipboardEventSubject = new Subject<string>();
+  clipboardEvent$ = this.clipboardEventSubject.asObservable();
 
   constructor(
+    private settingStorage: SettingStorageService,
     private secretStorage: SecretStorageService,
     private electronService: ElectronService,
   ) {
-
+    this.electronService.subscribeClipboard(ProfileType.VNC_REMOTE_DESKTOP, (id: string, text: string) => {
+      if(this.vncMap) {
+        let rfb = this.vncMap.get(id);
+        if (rfb) {
+          rfb.clipboardPasteFrom(text);
+          if (this.settingStorage.settings?.general?.vncClipboardCompatibleMode) {
+            rfb.sendKey(this.XK_Control_L, "ControlLeft", true);
+            rfb.sendKey(this.XK_Shift_L, "ShiftLeft", true);
+            rfb.sendKey(this.XK_V, "v");
+            rfb.sendKey(this.XK_Shift_L, "ShiftLeft", false);
+            rfb.sendKey(this.XK_Control_L, "ControlLeft", false);
+          }
+          return true;
+        }
+      }
+      return false;
+    });
   }
 
   async connect(id: string, vncProfile: VncProfile, vncCanvas: ElementRef) {
@@ -55,7 +81,20 @@ export class VncService {
             credentials: {password: vncProfile.password}
           });
           rfb.viewOnly = false; // Set to true if you want a read-only connection
-          rfb.clipViewport = true;
+          rfb.clipViewport = true; // Clip the remote session to the viewport
+          rfb.scaleViewport = true; // Scale the remote desktop to fit the container
+          rfb.resizeSession = true; // Resize the remote session to match the container
+          // Handle container resizing
+          window.addEventListener('resize', () => {
+            rfb.scaleViewport = true;
+          });
+
+          rfb.addEventListener('clipboard', async (event: any) => {
+            const serverClipboardText = event.detail.text;
+            console.log('Received clipboard data:', serverClipboardText);
+            await navigator.clipboard.writeText(serverClipboardText); // Sync with browser clipboard
+          });
+          this.vncMap.set(id, rfb);
 
           resolve('ok');  // Successfully connected
         }
