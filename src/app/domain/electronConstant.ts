@@ -1,5 +1,7 @@
 //#region "Common"
 export const ERROR = 'error';
+export const CLIPBOARD_PASTE = 'clipboard-paste';
+export const TRIGGER_NATIVE_CLIPBOARD_PASTE = 'trigger-native-clipboard-paste';
 //#endregion "Common"
 
 //#region "Sessions"

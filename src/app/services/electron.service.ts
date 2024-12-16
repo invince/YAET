@@ -1,12 +1,15 @@
 import {Injectable} from '@angular/core';
-import {IpcRenderer} from 'electron';
+import {IpcRenderer } from 'electron';
 import {TabInstance} from '../domain/TabInstance';
 import {
   CLOUD_DOWNLOAD,
-  CLOUD_RELOAD, CLOUD_SAVE, CLOUD_UPLOAD,
+  CLOUD_RELOAD,
+  CLOUD_SAVE,
+  CLOUD_UPLOAD,
   SESSION_OPEN_LOCAL_TERMINAL,
   SESSION_OPEN_SSH_TERMINAL,
-  DELETE_MASTERKEY, ERROR,
+  DELETE_MASTERKEY,
+  ERROR,
   GET_MASTERKEY,
   PROFILES_RELOAD,
   PROFILES_SAVE,
@@ -14,9 +17,15 @@ import {
   SECRETS_RELOAD,
   SECRETS_SAVE,
   SETTINGS_RELOAD,
-  SETTINGS_SAVE, SESSION_DISCONNECT_SSH,
+  SETTINGS_SAVE,
+  SESSION_DISCONNECT_SSH,
   TERMINAL_INPUT,
-  TERMINAL_OUTPUT, SESSION_OPEN_RDP, SESSION_OPEN_VNC, SESSION_DISCONNECT_VNC
+  TERMINAL_OUTPUT,
+  SESSION_OPEN_RDP,
+  SESSION_OPEN_VNC,
+  SESSION_DISCONNECT_VNC,
+  CLIPBOARD_PASTE,
+  TRIGGER_NATIVE_CLIPBOARD_PASTE
 } from '../domain/electronConstant';
 import {LocalTerminalProfile} from '../domain/profile/LocalTerminalProfile';
 import {Profile, ProfileType} from '../domain/profile/Profile';
@@ -37,6 +46,8 @@ import {BehaviorSubject} from 'rxjs';
 export class ElectronService {
   private readonly ipc!: IpcRenderer;
 
+  private clipboardCallbackMap: Map<ProfileType, (id: string, text: string)=> boolean> = new Map();
+
   constructor(
     private secretStorage: SecretStorageService,
     private _snackBar: MatSnackBar,
@@ -50,6 +61,7 @@ export class ElectronService {
       this.initCommonListener();
       this.initTerminalListener();
       this.initVncListener();
+      this.initClipboardListener();
     }
   }
 
@@ -69,6 +81,30 @@ export class ElectronService {
       return;
     });
 
+  }
+
+  private initClipboardListener() {
+    if(this.ipc) {
+      this.ipc.on(CLIPBOARD_PASTE, (event, data) => {
+        let used = false;
+        let tabSelected = this.tabService.getSelectedTab();
+        if (tabSelected && [ProfileType.VNC_REMOTE_DESKTOP].includes(tabSelected.tabType)) {
+          let callback = this.clipboardCallbackMap.get(tabSelected.tabType);
+          if (callback && callback(tabSelected.id, data)) {
+            used = true;
+          }
+        }
+
+        if (!used) {
+          this.ipc.send(TRIGGER_NATIVE_CLIPBOARD_PASTE, {data} );
+        }
+      });
+    }
+  }
+
+
+  public subscribeClipboard (profileType: ProfileType, callback : (id: string, text: string)=> boolean) {
+    this.clipboardCallbackMap.set(profileType, callback);
   }
 //#endregion "Common"
 

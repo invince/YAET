@@ -19,7 +19,7 @@ export class VncComponent implements AfterViewInit, OnChanges {
   status: string = 'disconnected';
 
   constructor(
-    private vncService: VncService,
+    public vncService: VncService,
     private spinner: NgxSpinnerService,
   ) {}
 

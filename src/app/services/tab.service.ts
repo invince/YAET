@@ -8,6 +8,7 @@ export class TabService {
 
   private _tabs: TabInstance[] = [];
 
+  public currentTabIndex = 0;
 
   constructor() { }
 
@@ -44,5 +45,12 @@ export class TabService {
     if(this._tabs) {
       this._tabs[i] = this._tabs[i].clone();
     }
+  }
+
+  getSelectedTab() {
+    if(this._tabs) {
+      return this._tabs[this.currentTabIndex];
+    }
+    return;
   }
 }
