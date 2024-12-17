@@ -161,6 +161,16 @@ export class AppComponent implements OnInit, OnDestroy{
           }
           this.electronService.openRdpSession(profile.rdpProfile);
           break;
+        case ProfileType.CUSTOM:
+          if (!profile.customProfile || !profile.customProfile.execPath) {
+            this._snackBar.open('Invalid Custom Profile', 'OK', {
+              duration: 3000,
+              panelClass: [ 'error-snackbar']
+            });
+            return;
+          }
+          this.electronService.openCustomSession(profile.customProfile);
+          break;
       }
     }
   }

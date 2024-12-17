@@ -22,6 +22,7 @@ import {SecretStorageService} from '../../../../services/secret-storage.service'
 import {SecretService} from '../../../../services/secret.service';
 import {SettingStorageService} from '../../../../services/setting-storage.service';
 import {CustomProfile} from '../../../../domain/profile/CustomProfile';
+import {CdkTextareaAutosize} from '@angular/cdk/text-field';
 
 @Component({
   selector: 'app-custom-profile-form',
@@ -37,6 +38,7 @@ import {CustomProfile} from '../../../../domain/profile/CustomProfile';
     MatInput,
     MatIcon,
     MatIconButton,
+    CdkTextareaAutosize,
 
   ],
   templateUrl: './custom-profile-form.component.html',
@@ -72,11 +74,6 @@ export class CustomProfileFormComponent extends ChildFormAsFormControl(MenuCompo
     return  this.fb.group(
       {
         customExecPath:       ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
-        authType:             ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
-        login:                [],
-        password:             [],
-        confirmPassword:      [],
-        secretId:             [],
 
       },
       {validators: [this.secretOrPasswordMatchValidator]}
@@ -105,21 +102,12 @@ export class CustomProfileFormComponent extends ChildFormAsFormControl(MenuCompo
     return null;
   }
 
-  onSelectSecret($event: MatSelectChange) {
-    this.form.get('password')?.setValue(null);
-    this.form.get('confirmPassword')?.setValue(null);
-  }
 
   override refreshForm(custom: any) {
     if (this.form) {
       this.form.reset();
 
-      this.form.get('customExecPath')?.setValue(custom?.host);
-      this.form.get('authType')?.setValue(custom?.authType);
-      this.form.get('password')?.setValue(custom?.password);
-      this.form.get('confirmPassword')?.setValue(custom?.password);
-      this.form.get('secretId')?.setValue(custom?.secretId);
-
+      this.form.get('customExecPath')?.setValue(custom?.execPath);
 
       this.onSubmit(); // reset dirty and invalid status
     }
@@ -128,12 +116,6 @@ export class CustomProfileFormComponent extends ChildFormAsFormControl(MenuCompo
   override formToModel(): CustomProfile {
     let custom = new CustomProfile();
     custom.execPath = this.form.get('customExecPath')?.value;
-    custom.authType = this.form.get('authType')?.value;
-    if (custom.authType  == 'login') {
-      custom.password = this.form.get('password')?.value;
-    } else if (custom.authType  == 'secret') {
-      custom.secretId = this.form.get('secretId')?.value;
-    }
     return custom;
   }
 }

@@ -25,7 +25,7 @@ import {
   SESSION_OPEN_VNC,
   SESSION_DISCONNECT_VNC,
   CLIPBOARD_PASTE,
-  TRIGGER_NATIVE_CLIPBOARD_PASTE
+  TRIGGER_NATIVE_CLIPBOARD_PASTE, SESSION_OPEN_CUSTOM
 } from '../domain/electronConstant';
 import {LocalTerminalProfile} from '../domain/profile/LocalTerminalProfile';
 import {Profile, ProfileType} from '../domain/profile/Profile';
@@ -38,6 +38,7 @@ import {MatSnackBar} from '@angular/material/snack-bar';
 import {TabService} from './tab.service';
 import {RdpProfile} from '../domain/profile/RdpProfile';
 import {BehaviorSubject} from 'rxjs';
+import {CustomProfile} from '../domain/profile/CustomProfile';
 
 
 @Injectable({
@@ -221,6 +222,12 @@ export class ElectronService {
     let options = {fullscreen: rdpProfile.fullScreen, admin: rdpProfile.asAdmin};
     if (this.ipc) {
       this.ipc.send(SESSION_OPEN_RDP, { hostname, options });
+    }
+  }
+
+  openCustomSession(customProfile: CustomProfile) {
+    if (this.ipc) {
+      this.ipc.send(SESSION_OPEN_CUSTOM, { command: customProfile.execPath });
     }
   }
 

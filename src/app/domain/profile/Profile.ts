@@ -134,7 +134,8 @@ export class Profile {
   }
 
   static requireOpenNewTab(profile: Profile) {
-    return ![ProfileType.RDP_REMOTE_DESKTOP].includes(profile.profileType);
+    return ![ProfileType.RDP_REMOTE_DESKTOP, ProfileType.CUSTOM]
+      .includes(profile.profileType);
   }
 
 
