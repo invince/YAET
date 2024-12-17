@@ -11,6 +11,7 @@ const {initClipboard} = require('./ipc/clipboard');
 
 const {CONFIG_FOLDER, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON} = require("./common");
 const {initVncHandler} = require("./ipc/vnc");
+const {initCustomHandler} = require("./ipc/custom");
 
 let mainWindow;
 let terminalMap = new Map();
@@ -43,6 +44,7 @@ app.on('ready', () => {
   initRdpHandler();
   initVncHandler(vncMap, mainWindow);
   initClipboard(mainWindow);
+  initCustomHandler();
 
 });
 
