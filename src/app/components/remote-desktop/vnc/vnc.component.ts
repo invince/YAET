@@ -2,6 +2,7 @@ import {AfterViewInit, Component, ElementRef, Input, OnChanges, OnInit, SimpleCh
 import {VncService} from '../../../services/vnc.service';
 import {TabInstance} from '../../../domain/TabInstance';
 import {NgxSpinnerService} from 'ngx-spinner';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
 
 @Component({
@@ -21,6 +22,8 @@ export class VncComponent implements AfterViewInit, OnChanges {
   constructor(
     public vncService: VncService,
     private spinner: NgxSpinnerService,
+    private _snackBar: MatSnackBar,
+
   ) {}
 
 
@@ -42,9 +45,18 @@ export class VncComponent implements AfterViewInit, OnChanges {
   }
   connect() {
     this.spinner.show();
-    this.vncService.connect(this.tab?.id, this.tab?.profile?.vncProfile, this.vncContainer).then(
-      () => this.spinner.hide()
-    );
+    this.vncService.connect(this.tab?.id, this.tab?.profile?.vncProfile, this.vncContainer)
+      .then(
+        () => this.spinner.hide()
+      ).catch(
+        err => {
+          this.spinner.hide();
+          this._snackBar.open('ERROR: ' + err,'ok', {
+            duration: 3000,
+            panelClass: [ 'error-snackbar']
+          });
+        }
+      );
   }
 
   disconnect() {

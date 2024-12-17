@@ -1,6 +1,7 @@
 
 const { ipcMain } = require('electron');
 const WebSocket = require('ws');
+const findFreePorts = require('find-free-ports');
 const net = require('net');
 
 function initVncHandler(vncMap, mainWindow) {
@@ -9,7 +10,8 @@ function initVncHandler(vncMap, mainWindow) {
   ipcMain.handle('session.open.rd.vnc', async (event, {id, host, port}) => {
 
 // Configuration
-    const proxyPort = await getFreePort(); // Port for the WebSocket proxy
+    const proxyPorts = await findFreePorts(1, {startPort: 6900}); // Port for the WebSocket proxy
+    const proxyPort = proxyPorts[0];
 
 // Start the WebSocket server
     const wss = new WebSocket.Server({port: proxyPort});
@@ -87,24 +89,13 @@ function initVncHandler(vncMap, mainWindow) {
     if (id) {
       let vncClient = vncMap.get(id);
       if (vncClient) {
-        vncClient.end();
+        vncClient.close(() => {
+          console.log(`WebSocket server for ID: ${id} closed`);
+        });
         vncMap.delete(id);
       }
     }
   });
-
-  function getFreePort(startPort = 6900) {
-    return new Promise((resolve, reject) => {
-      const server = net.createServer();
-      server.unref();
-      server.on('error', reject);
-
-      server.listen({ port: startPort, host: '127.0.0.1' }, () => {
-        const port = server.address().port; // Get the allocated port
-        server.close(() => resolve(port)); // Resolve the promise with the free port
-      });
-    });
-  }
 
 }
 

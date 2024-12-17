@@ -26,6 +26,7 @@
     "@types/novnc__novnc": "^1.5.0",
     "@xterm/addon-web-links": "^0.11.0",
     "crypto-js": "^4.2.0",
+    "find-free-ports": "^3.1.1",
     "keytar": "^7.9.0",
     "ng-terminal": "^6.2.0",
     "ngx-spinner": "^17.0.0",
