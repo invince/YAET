@@ -48,6 +48,9 @@ export const ProfileCategoryTypeMap = new Map<ProfileCategory, any>([
     ProfileType.SFTP_FILE_EXPLORER,
   ]],
 
+  [ProfileCategory.CUSTOM, [
+    ProfileType.CUSTOM,
+  ]],
 ]);
 
 export class Profiles {

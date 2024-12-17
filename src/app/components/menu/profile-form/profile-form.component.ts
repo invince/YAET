@@ -134,6 +134,9 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     let cat = $event.value;
     if (cat == ProfileCategory.CUSTOM) {
       this.form.get('customProfileForm')?.setValue(new CustomProfile());
+      this.form.patchValue({
+        profileType: 'CUSTOM', // Reset dependent fields if needed
+      });
     } else {
       this.form.patchValue({
         profileType: null, // Reset dependent fields if needed

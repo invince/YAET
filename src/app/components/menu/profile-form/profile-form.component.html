@@ -72,8 +72,8 @@
           }
         </mat-select>
       </mat-form-field>
-      @if (form.get('category')?.value && form.get('category')?.value != 'CUSTOM') {
-      <mat-form-field class="field">
+      @if (form.get('category')?.value) {
+      <mat-form-field class="field" >
         <mat-label>Terminal Type</mat-label>
         <mat-select (selectionChange)="onSelectType($event)" required formControlName="profileType">
           <mat-option *ngFor="let oneType of getTypeOptions()  | keyvalue : unordered "

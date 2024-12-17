@@ -3,7 +3,15 @@ import {SSHTerminalProfile} from '../../../../domain/profile/SSHTerminalProfile'
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatIcon} from '@angular/material/icon';
-import {FormBuilder, FormGroup, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators} from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  NG_VALIDATORS,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
 import {CommonModule} from '@angular/common';
 import {AuthType, Secret} from '../../../../domain/Secret';
 import {MenuComponent} from '../../menu.component';
@@ -33,6 +41,11 @@ import {SecretService} from '../../../../services/secret.service';
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => SshProfileFormComponent),
+      multi: true,
+    },
+    {
+      provide: NG_VALIDATORS,
       useExisting: forwardRef(() => SshProfileFormComponent),
       multi: true,
     },
