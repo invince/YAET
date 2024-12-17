@@ -1,6 +1,14 @@
-import {Component, forwardRef} from '@angular/core';
+import {Component, forwardRef, Injector, Self} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {FormBuilder, FormGroup, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators} from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule, NG_VALIDATORS,
+  NG_VALUE_ACCESSOR,
+  NgControl,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
 import {MatSelectChange, MatSelectModule} from '@angular/material/select';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -39,12 +47,19 @@ import {CustomProfile} from '../../../../domain/profile/CustomProfile';
       useExisting: forwardRef(() => CustomProfileFormComponent),
       multi: true,
     },
+    {
+      provide: NG_VALIDATORS,
+      useExisting: forwardRef(() => CustomProfileFormComponent),
+      multi: true,
+    },
   ],
 })
 export class CustomProfileFormComponent extends ChildFormAsFormControl(MenuComponent)  {
   AUTH_OPTIONS = AuthType;
 
   constructor(
+
+    private injector: Injector, // we shall inject ngControl after constructor, it cannot coexist with NG_VALUE_ACCESSOR, this creates circular dependency
     private fb: FormBuilder,
     public secretStorageService: SecretStorageService, // in html
     public secretService: SecretService, // in html

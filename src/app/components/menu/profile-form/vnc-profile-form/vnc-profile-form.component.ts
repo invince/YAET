@@ -1,5 +1,13 @@
 import {Component, forwardRef} from '@angular/core';
-import {FormBuilder, FormGroup, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators} from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  NG_VALIDATORS,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
 import {ChildFormAsFormControl} from '../../../enhanced-form-mixin';
 import {MenuComponent} from '../../menu.component';
 import {CommonModule} from '@angular/common';
@@ -36,6 +44,11 @@ import {VncProfile} from '../../../../domain/profile/VncProfile';
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => VncProfileFormComponent),
+      multi: true,
+    },
+    {
+      provide: NG_VALIDATORS,
       useExisting: forwardRef(() => VncProfileFormComponent),
       multi: true,
     },
