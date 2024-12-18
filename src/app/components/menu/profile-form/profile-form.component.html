@@ -135,7 +135,8 @@
       <button mat-raised-button color="warn" (click)="onDelete()">Delete</button>
     }
     @if (!profile.isNew && buttons.includes('clone')) {
-    <button mat-raised-button color="warn" (click)="onClone()">Clone</button>
+    <button mat-raised-button color="warn" (click)="onClone()"
+        [disabled]="form.invalid || !form.dirty">Clone</button>
     }
     @if (masterKeyService.hasMasterKey && buttons.includes('save')) {
       <button mat-raised-button class="mat-primary" (click)="onSave()"
