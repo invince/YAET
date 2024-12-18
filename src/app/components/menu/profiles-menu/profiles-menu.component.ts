@@ -24,6 +24,8 @@ import {NestedTreeControl} from '@angular/cdk/tree';
 import {SideNavType} from '../../../domain/setting/UISettings';
 import {MatDialog} from '@angular/material/dialog';
 import {ConfirmationComponent} from '../../confirmation/confirmation.component';
+import {ModalControllerService} from '../../../services/modal-controller.service';
+import {MenuConsts} from '../../../domain/MenuConsts';
 
 @Component({
   selector: 'app-profiles-menu',
@@ -74,7 +76,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     public settingStorage: SettingStorageService,
     private settingService: SettingService,
     private _snackBar: MatSnackBar,
-
+    private modalControl: ModalControllerService,
     private keywordPipe: FilterKeywordPipe,
 
     private cdr: ChangeDetectorRef,
@@ -91,6 +93,11 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   }
 
   ngOnInit(): void {
+    this.subscription = this.modalControl.modalCloseEvent.subscribe(one => {
+      if (one && one.includes(MenuConsts.MENU_PROFILE)) {
+        this.modalControl.closeModal();
+      }
+    });
     if (!this.profileService.isLoaded) {
       let message = 'Profiles not loaded, we\'ll reload it, please close Profile menu and reopen';
       if (!this.settingService.isLoaded) {
