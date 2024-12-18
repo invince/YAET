@@ -19,6 +19,8 @@ import {Subscription} from 'rxjs';
 import {FilterKeywordPipe} from '../../../pipes/filter-keyword.pipe';
 import {ConfirmationComponent} from '../../confirmation/confirmation.component';
 import {MatDialog} from '@angular/material/dialog';
+import {ModalControllerService} from '../../../services/modal-controller.service';
+import {MenuConsts} from '../../../domain/MenuConsts';
 
 @Component({
   selector: 'app-secures-menu',
@@ -67,6 +69,8 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
     private _snackBar: MatSnackBar,
     private keywordPipe: FilterKeywordPipe,
     private dialog: MatDialog,
+
+    private modalControl: ModalControllerService,
     ) {
     super();
   }
@@ -77,6 +81,11 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
   }
 
   ngOnInit(): void {
+    this.subscription = this.modalControl.modalCloseEvent.subscribe(one => {
+      if (one && one.includes(MenuConsts.MENU_SECURE)) {
+        this.modalControl.closeModal();
+      }
+    });
     if (!this.secretService.isLoaded) {
       this._snackBar.open('Secure not loaded, we\'ll reload it, please close secure menu and reopen', 'OK', {
         duration: 3000

@@ -86,7 +86,6 @@ export class AppComponent implements OnInit, OnDestroy{
     private cloudService: CloudService,
 
     public tabService: TabService,
-    public electronService: ElectronService,
 
     public modalControl: ModalControllerService,
 
@@ -109,7 +108,7 @@ export class AppComponent implements OnInit, OnDestroy{
             this.tabService.addTab(new TabInstance(uuidv4(), connection.category, connection.profileType, connection)); // Adds a new terminal identifier
             this.tabService.currentTabIndex = this.tabService.tabs.length - 1;
           } else {
-            this.openSessionWithoutTab(connection);
+            this.profileService.openSessionWithoutTab(connection);
           }
         }
       )
@@ -148,32 +147,7 @@ export class AppComponent implements OnInit, OnDestroy{
     this.tabService.currentTabIndex = this.tabService.tabs.length - 1;
   }
 
-  openSessionWithoutTab(profile: Profile) {
-    if (profile) {
-      switch (profile.profileType) {
-        case ProfileType.RDP_REMOTE_DESKTOP:
-          if (!profile.rdpProfile || !profile.rdpProfile.host) {
-            this._snackBar.open('Invalid Rdp Config', 'OK', {
-              duration: 3000,
-              panelClass: [ 'error-snackbar']
-            });
-            return;
-          }
-          this.electronService.openRdpSession(profile.rdpProfile);
-          break;
-        case ProfileType.CUSTOM:
-          if (!profile.customProfile || !profile.customProfile.execPath) {
-            this._snackBar.open('Invalid Custom Profile', 'OK', {
-              duration: 3000,
-              panelClass: [ 'error-snackbar']
-            });
-            return;
-          }
-          this.electronService.openCustomSession(profile.customProfile);
-          break;
-      }
-    }
-  }
+
 
   addMenu() {
     this.toggleMenu(this.MENU_ADD);
