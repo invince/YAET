@@ -1,5 +1,5 @@
 import {Group} from './Group';
-import {Profile} from './Profile';
+import {Profile} from './profile/Profile';
 
 export const NODE_DEFAULT_NAME: string = 'default';
 

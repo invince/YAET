@@ -29,7 +29,7 @@
               </mat-form-field>
             </div>
 
-            <div class="sidenav-item">
+            <div class="sidenav-add">
               <button mat-button (click)="addTab()" [disabled]="lastChildFormDirtyState || hasNewProfile()" aria-label="Add Profile" >
                 <mat-icon>add</mat-icon>
               </button>
@@ -42,7 +42,7 @@
                   <div class="group-name"
                        [class.selected]="node.profile && node.profile.id === selectedProfileId"
                        (click)="onTabChange(node.profile)">
-                            {{ profileTabLabel(node) }}
+                            {{ displayProfileTabLabel(node) }}
                   </div>
                 </mat-nested-tree-node>
 
@@ -54,7 +54,7 @@
                       {{ treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}
                       </mat-icon>
                     </button>
-                    <div class="group-name" matTreeNodeToggle >{{ profileTabLabel(node) }}</div>
+                    <div class="group-name" matTreeNodeToggle >{{ displayProfileTabLabel(node) }}</div>
                   </div>
                     <!-- There is inline padding applied to this div using styles.
                       This padding value depends on the mat-icon-button width.  -->
@@ -66,12 +66,12 @@
               </mat-tree>
             }
             @else {
-              @for (profile of profileService.profiles | filterKeyword:keywordsProviders:filter; track profile.id) {
+              @for (profile of profilesCopy.profiles | filterKeyword:keywordsProviders:filter; track profile.id) {
               <div class="sidenav-item">
                 <button mat-button
                         [class.selected]="profile.id === selectedProfileId"
                         (click)="onTabChange(profile)">
-                  {{ profileTabLabel(profile) }}
+                  {{ displayProfileTabLabel(profile) }}
                 </button>
               </div>
               }
@@ -94,9 +94,11 @@
           @if (selectedProfile) {
           <app-profile-form
             [profile]="selectedProfile"
+            [buttons]="['close', 'delete', 'clone', 'save', 'connect' ]"
             (onProfileCancel)="onCancel($event)"
             (onProfileDelete)="onDelete($event)"
             (onProfileSave)="onSaveOne($event)"
+            (onProfileClone)="onCloneOne($event)"
             (invalidStateChange)="onChildFormInvalidStateChange($event)"
             (dirtyStateChange)="onChildFormDirtyStateChange($event)"
           ></app-profile-form>

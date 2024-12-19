@@ -28,13 +28,13 @@
             </mat-form-field>
           </div>
 
-          <div class="sidenav-item">
+          <div class="sidenav-add">
             <button mat-button (click)="addTab()" [disabled]="lastChildFormDirtyState || hasNewSecret()" aria-label="Add Secret" >
               <mat-icon>add</mat-icon>
             </button>
           </div>
 
-          @for (secret of secretStorageService.data.secrets | filterKeyword:keywordsProviders:filter; track secret.id) {
+          @for (secret of secretsCopy.secrets | filterKeyword:keywordsProviders:filter; track secret.id) {
           <div class="sidenav-item">
             <button mat-button
                     [class.selected]="secret.id === selectedId"

@@ -3,7 +3,7 @@ import {RouterOutlet} from '@angular/router';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatTabsModule} from '@angular/material/tabs';
 import {TerminalComponent} from './components/terminal/terminal.component';
-import { ProfileCategory, ProfileType} from './domain/Profile';
+import {Profile, ProfileCategory, ProfileType} from './domain/profile/Profile';
 import {TabInstance} from './domain/TabInstance';
 import {CommonModule} from '@angular/common';
 import {MatIcon} from '@angular/material/icon';
@@ -22,7 +22,7 @@ import {SecretService} from './services/secret.service';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {ProfilesMenuComponent} from './components/menu/profiles-menu/profiles-menu.component';
 import {QuickconnectMenuComponent} from "./components/menu/quickconnect-menu/quickconnect-menu.component";
-import {MasterKeyComponent} from './components/menu/master-key/master-key.component';
+import {MasterKeyComponent} from './components/menu/setting-menu/master-key/master-key.component';
 import {MatDialog} from '@angular/material/dialog';
 import {MasterKeyService} from './services/master-key.service';
 import {Subscription} from 'rxjs';
@@ -31,6 +31,8 @@ import {CloudComponent} from './components/menu/cloud/cloud.component';
 import {CloudService} from './services/cloud.service';
 import {NgxSpinnerModule} from 'ngx-spinner';
 import {TabService} from './services/tab.service';
+import {ElectronService} from './services/electron.service';
+import {MenuConsts} from './domain/MenuConsts';
 
 @Component({
   selector: 'app-root',
@@ -66,11 +68,15 @@ import {TabService} from './services/tab.service';
 })
 export class AppComponent implements OnInit, OnDestroy{
 
+  MENU_ADD: string = MenuConsts.MENU_ADD;
+  MENU_PROFILE: string = MenuConsts.MENU_PROFILE;
+  MENU_SECURE: string = MenuConsts.MENU_SECURE;
+  MENU_CLOUD: string = MenuConsts.MENU_CLOUD;
+  MENU_SETTING: string = MenuConsts.MENU_SETTING;
 
   title = 'yetAnotherElectronTerm';
 
   subscriptions: Subscription[] = []
-  currentTabIndex = 0;
 
   constructor(
     private settingService: SettingService,
@@ -80,6 +86,7 @@ export class AppComponent implements OnInit, OnDestroy{
     private cloudService: CloudService,
 
     public tabService: TabService,
+    public electronService: ElectronService,
 
     public modalControl: ModalControllerService,
 
@@ -97,9 +104,13 @@ export class AppComponent implements OnInit, OnDestroy{
             });
             return;
           }
-          this.modalControl.closeModal(['favorite', 'add']);
-          this.tabService.addTab(new TabInstance(uuidv4(), connection.category, connection.profileType, connection)); // Adds a new terminal identifier
-          this.currentTabIndex = this.tabService.tabs.length - 1;
+          this.modalControl.closeModal([this.MENU_PROFILE, this.MENU_ADD ]);
+          if (Profile.requireOpenNewTab(connection)) {
+            this.tabService.addTab(new TabInstance(uuidv4(), connection.category, connection.profileType, connection)); // Adds a new terminal identifier
+            this.tabService.currentTabIndex = this.tabService.tabs.length - 1;
+          } else {
+            this.openSessionWithoutTab(connection);
+          }
         }
       )
     )
@@ -127,19 +138,50 @@ export class AppComponent implements OnInit, OnDestroy{
     this.modalControl.toggleMenu(menu);
   }
 
+  reconnect(i: number) {
+    this.tabService.reconnect(i);
+  }
+
   addLocalTerminal() {
     this.modalControl.closeModal();
     this.tabService.addTab(new TabInstance(uuidv4(), ProfileCategory.TERMINAL, ProfileType.LOCAL_TERMINAL, this.settingService.createLocalTerminalProfile())); // Adds a new terminal identifier
-    this.currentTabIndex = this.tabService.tabs.length - 1;
+    this.tabService.currentTabIndex = this.tabService.tabs.length - 1;
+  }
+
+  openSessionWithoutTab(profile: Profile) {
+    if (profile) {
+      switch (profile.profileType) {
+        case ProfileType.RDP_REMOTE_DESKTOP:
+          if (!profile.rdpProfile || !profile.rdpProfile.host) {
+            this._snackBar.open('Invalid Rdp Config', 'OK', {
+              duration: 3000,
+              panelClass: [ 'error-snackbar']
+            });
+            return;
+          }
+          this.electronService.openRdpSession(profile.rdpProfile);
+          break;
+        case ProfileType.CUSTOM:
+          if (!profile.customProfile || !profile.customProfile.execPath) {
+            this._snackBar.open('Invalid Custom Profile', 'OK', {
+              duration: 3000,
+              panelClass: [ 'error-snackbar']
+            });
+            return;
+          }
+          this.electronService.openCustomSession(profile.customProfile);
+          break;
+      }
+    }
   }
 
   addMenu() {
-    this.toggleMenu('add');
+    this.toggleMenu(this.MENU_ADD);
   }
 
 
   secureMenu() {
-    this.requireMasterKey(() => this.toggleMenu('secure'));
+    this.requireMasterKey(() => this.toggleMenu( this.MENU_SECURE));
   }
 
   requireMasterKey(callback: ()=>void) {
@@ -167,17 +209,18 @@ export class AppComponent implements OnInit, OnDestroy{
     });
   }
 
-  favoriteMenu() {
-    this.requireMasterKey(() => this.toggleMenu('favorite'));
+  profileMenu() {
+    this.requireMasterKey(() => this.toggleMenu(this.MENU_PROFILE));
   }
 
   cloudMenu() {
-    this.requireMasterKey(() => this.toggleMenu('cloud'));
+    this.requireMasterKey(() => this.toggleMenu(this.MENU_CLOUD));
   }
 
 
   settingMenu() {
-    this.toggleMenu('setting');
+    this.toggleMenu(this.MENU_SETTING);
   }
+
 
 }

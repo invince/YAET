@@ -1,17 +1,17 @@
 import {Injectable} from '@angular/core';
-import {MySettings} from '../domain/MySettings';
-import {Profile} from '../domain/Profile';
+import {MySettings} from '../domain/setting/MySettings';
+import {Profile} from '../domain/profile/Profile';
 import {ElectronService} from './electron.service';
-import {SETTINGS_LOADED} from './electronConstant';
-import {LocalTerminalProfile, LocalTerminalType} from '../domain/LocalTerminalProfile';
+import {SETTINGS_LOADED} from '../domain/electronConstant';
+import {LocalTerminalProfile, LocalTerminalType} from '../domain/profile/LocalTerminalProfile';
 import {Subject} from 'rxjs';
 import {SettingStorageService} from './setting-storage.service';
 import {Tag} from '../domain/Tag';
 import {ProfileService} from './profile.service';
 import {Group} from '../domain/Group';
-import {UISettings} from '../domain/UISettings';
-import {GeneralSettings} from '../domain/GeneralSettings';
-import {CloudSettings} from '../domain/CloudSettings';
+import {UISettings} from '../domain/setting/UISettings';
+import {GeneralSettings} from '../domain/setting/GeneralSettings';
+import {CloudSettings} from '../domain/setting/CloudSettings';
 
 @Injectable({
   providedIn: 'root'
@@ -34,12 +34,14 @@ export class SettingService {
   }
 
   private apply(data: any) {
-    if (typeof data === "string") {
-      this.settingStorage.settings = JSON.parse(data);
-    } else {
-      this.settingStorage.settings = data;
+    if (data) {
+      if (typeof data === "string") {
+        this.settingStorage.settings = JSON.parse(data);
+      } else {
+        this.settingStorage.settings = data;
+      }
+      this.validate(this.settingStorage.settings);
     }
-    this.validate(this.settingStorage.settings);
     this._loaded = true;
     this.settingLoadedSubject.next({})
   }
@@ -58,6 +60,7 @@ export class SettingService {
     if (settings) {
       this.settingStorage.settings = settings;
     }
+    this.settingStorage.settings.isNew = false;
     this.settingStorage.settings.revision = Date.now();
     this.electron.saveSetting(this.settingStorage.settings);
   }
@@ -190,21 +193,6 @@ export class SettingService {
           one.color = color;
         }
       });
-    this.save();
-  }
-
-  saveLocalTermConfig(localTerm: LocalTerminalProfile) {
-    this.settingStorage.settings.localTerminal = localTerm;
-    this.save();
-  }
-
-  saveGeneralConfig(general: GeneralSettings) {
-    this.settingStorage.settings.general = general;
-    this.save();
-  }
-
-  saveUiConfig(ui: UISettings) {
-    this.settingStorage.settings.ui = ui;
     this.save();
   }
 

@@ -2,7 +2,11 @@
 <div mat-dialog-content>
   <p>{{ data.message }}</p>
 </div>
-<div mat-dialog-actions>
-  <button mat-button (click)="onAbort()">Abort</button>
-  <button mat-raised-button color="primary" (click)="onContinue()">Force Continue</button>
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="onAbort()">
+    {{ data.abortBtnLabel? data.abortBtnLabel : 'Abort'}}
+  </button>
+  <button mat-raised-button color="primary" (click)="onContinue()">
+    {{ data.okBtnLabel? data.okBtnLabel : 'OK'}}
+  </button>
 </div>

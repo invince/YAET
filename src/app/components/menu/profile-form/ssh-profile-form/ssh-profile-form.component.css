@@ -1,0 +1,17 @@
+.field {
+  margin-left: 16px;
+  margin-top: 16px;
+  width: 280px;
+}
+
+.host-field {
+  margin-left: 16px;
+  margin-top: 16px;
+  width: 195px;
+}
+
+.port-field {
+  margin-left: 16px;
+  margin-top: 16px;
+  width: 65px;
+}

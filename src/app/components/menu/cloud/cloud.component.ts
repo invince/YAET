@@ -7,7 +7,7 @@ import {MatInput} from '@angular/material/input';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatSelectChange, MatSelectModule} from '@angular/material/select';
 import {AuthType, Secret, SecretType} from '../../../domain/Secret';
-import {CloudSettings} from '../../../domain/CloudSettings';
+import {CloudSettings} from '../../../domain/setting/CloudSettings';
 import {MatButtonModule} from '@angular/material/button';
 import {SecretStorageService} from '../../../services/secret-storage.service';
 import {CloudService} from '../../../services/cloud.service';
@@ -60,7 +60,7 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
     public masterKeyService: MasterKeyService, // in html
     public secretStorageService: SecretStorageService, // in html
 
-    private secretService: SecretService,
+    public secretService: SecretService,
     private settingService: SettingService,
     private profileService: ProfileService,
     private cloudService: CloudService,
@@ -76,6 +76,13 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    if (!this.cloudService.isLoaded ) {
+      this._snackBar.open('Cloud Setting not loaded, we\'ll reload it, please close Cloud menu and reopen', 'OK', {
+        duration: 3000
+      });
+      this.cloudService.reload();
+    }
+
     let cloudSettings = this.cloudService.cloud;
 
     this.form = this.fb.group(
@@ -124,24 +131,6 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
     }
   }
 
-  displaySecretOptionName(secret: Secret) {
-    let label = '';
-    if (secret && secret.name) {
-      label = secret.name;
-      if (secret.name.length > 6) {
-        label = label.slice(0, 6) + '...';
-      }
-    }
-    if (secret && secret.login) {
-      let loginPart = '-' + secret.login;
-      if (loginPart.length > 6) {
-        loginPart = loginPart.slice(0, 6) + '...';
-      }
-      label += loginPart + '/***';
-    }
-    return label;
-  }
-
   onSelectSecret($event: MatSelectChange) {
     this.form.get('password')?.setValue(null);
     this.form.get('confirmPassword')?.setValue(null);
@@ -178,7 +167,8 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
 
               } else {
                 this._snackBar.open('Error Occurred: ' + response.ko, 'Ok', {
-                  duration: 3000
+                  duration: 3000,
+                  panelClass: [ 'error-snackbar']
                 });
                 this.processing = false;
               }
@@ -217,7 +207,8 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
                 this.processing = false;
               } else {
                 this._snackBar.open('Error Occurred: ' + response.ko, 'Ok', {
-                  duration: 3000
+                  duration: 3000,
+                  panelClass: [ 'error-snackbar']
                 });
                 this.processing = false;
               }

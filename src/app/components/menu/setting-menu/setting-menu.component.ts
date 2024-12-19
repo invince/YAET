@@ -3,53 +3,55 @@ import {MenuComponent} from '../menu.component';
 import {MatIcon} from '@angular/material/icon';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatTab, MatTabGroup} from '@angular/material/tabs';
-import {MySettings} from '../../../domain/MySettings';
+import {MySettings} from '../../../domain/setting/MySettings';
 import {SettingService} from '../../../services/setting.service';
 import {MatFormField, MatLabel, MatSuffix} from '@angular/material/form-field';
 import {MatOption, MatSelect} from '@angular/material/select';
-import {LocalTerminalProfile, LocalTerminalType} from '../../../domain/LocalTerminalProfile';
+import {LocalTerminalProfile, LocalTerminalType} from '../../../domain/profile/LocalTerminalProfile';
 import {CommonModule, KeyValuePipe} from '@angular/common';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatInput} from '@angular/material/input';
 import {Subscription} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
-import {MasterKeyComponent} from '../master-key/master-key.component';
+import {MasterKeyComponent} from './master-key/master-key.component';
 import {ConfirmationComponent} from '../../confirmation/confirmation.component';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {MasterKeyService} from '../../../services/master-key.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';
-import {SideNavType, UISettings} from '../../../domain/UISettings';
+import {SideNavType, UISettings} from '../../../domain/setting/UISettings';
 import {MatChip} from '@angular/material/chips';
-import {TagsFormComponent} from '../tags-form/tags-form.component';
-import {GroupsFormComponent} from '../groups-form/groups-form.component';
+import {TagsFormComponent} from './tags-form/tags-form.component';
+import {GroupsFormComponent} from './groups-form/groups-form.component';
 import {MatDivider} from "@angular/material/divider";
-import {GeneralSettings} from '../../../domain/GeneralSettings';
+import {GeneralSettings} from '../../../domain/setting/GeneralSettings';
 import {NgxSpinnerService} from 'ngx-spinner';
+import {MatCheckbox} from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-setting-menu',
   standalone: true,
-    imports: [
-        FormsModule,
-        ReactiveFormsModule,
-        CommonModule,
-        MatIcon,
-        MatIconButton,
-        MatTabGroup,
-        MatTab,
-        MatFormField,
-        MatLabel,
-        MatSelect,
-        MatOption,
-        KeyValuePipe,
-        MatInput,
-        MatButton,
-        MatSuffix,
-        MatChip,
-        TagsFormComponent,
-        GroupsFormComponent,
-        MatDivider,
-    ],
+  imports: [
+    FormsModule,
+    ReactiveFormsModule,
+    CommonModule,
+    MatIcon,
+    MatIconButton,
+    MatTabGroup,
+    MatTab,
+    MatFormField,
+    MatLabel,
+    MatSelect,
+    MatOption,
+    KeyValuePipe,
+    MatInput,
+    MatButton,
+    MatSuffix,
+    MatChip,
+    TagsFormComponent,
+    GroupsFormComponent,
+    MatDivider,
+    MatCheckbox,
+  ],
   templateUrl: './setting-menu.component.html',
   styleUrl: './setting-menu.component.css'
 })
@@ -58,10 +60,13 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   localTermForm!: FormGroup;
   uiForm!: FormGroup;
 
+  generalForm!: FormGroup;
+
   LOCAL_TERM_OPTIONS = LocalTerminalType;
 
   SIDE_NAV_TYPE_OPTIONS = SideNavType;
 
+  settingsCopy!: MySettings;
   private subscription!: Subscription;
   currentTabIndex: number = 0;
 
@@ -102,17 +107,39 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
   ngOnInit() {
+    if (!this.settingService.isLoaded ) {
+      this._snackBar.open('Settings not loaded, we\'ll reload it, please close setting menu and reopen', 'OK', {
+        duration: 3000
+      });
+      this.settingService.reload();
+    }
 
     this.uiForm = this.initUiForm();
     this.localTermForm = this.initLocalTermForm();
+    this.generalForm = this.initGeneralForm();
+    this.settingsCopy = this.settingStorage.settings;
 
-    this.refreshForm(this.settingStorage.settings);
+    this.refreshForm(this.settingsCopy);
 
     this.subscription =  this.settingService.settingLoadedEvent.subscribe(() => {
-      this.refreshForm(this.settingStorage.settings);
+      this.settingsCopy = this.settingStorage.settings;
+      this.refreshForm(this.settingsCopy);
       this.cdr.detectChanges(); // mat select doesn't detect well change from event subscription
     })
+
+
+
   }
+
+  private initGeneralForm() {
+    return this.fb.group(
+      {
+        vncClipboardCompatibleMode:     [''],
+      },
+      {validators: []}
+    );
+  }
+
   private initUiForm() {
     return this.fb.group(
       {
@@ -140,15 +167,18 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
 
 
-  override onSave() {
+  override async onSave() {
     if (this.currentTabIndex == this.GENERAL_FORM_TAB_INDEX) {
-      this.settingService.saveGeneralConfig(this.generalFormToModel());
+      this.settingsCopy.general = this.generalFormToModel();
+      await this.commitChange();
     }
     if (this.currentTabIndex == this.UI_FORM_TAB_INDEX && this.uiForm.valid) {
-      this.settingService.saveUiConfig(this.uiFormToModel());
+      this.settingsCopy.ui = this.uiFormToModel();
+      await this.commitChange();
     }
     if (this.currentTabIndex == this.LOCAL_TERM_FORM_TAB_INDEX && this.localTermForm.valid) {
-      this.settingService.saveLocalTermConfig(this.localTermFormToModel());
+      this.settingsCopy.localTerminal = this.localTermFormToModel();
+      await this.commitChange();
     }
   }
 
@@ -197,6 +227,11 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       value = new MySettings();
     }
 
+    if(this.generalForm) {
+      this.generalForm.reset();
+      this.generalForm.get('vncClipboardCompatibleMode')?.setValue(value.general.vncClipboardCompatibleMode);
+    }
+
     if (this.uiForm) {
       this.uiForm.reset();
       if (!value.ui) {
@@ -237,7 +272,11 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
   private generalFormToModel() {
-    return new GeneralSettings();
+    let general = new GeneralSettings();
+
+    general.vncClipboardCompatibleMode = this.generalForm.get('vncClipboardCompatibleMode')?.value;
+
+    return general;
   }
 
   private localTermFormToModel() {
@@ -247,5 +286,8 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     return localTerminal;
   }
 
+  async commitChange() {
+    await this.settingService.save(this.settingsCopy);
+  }
 
 }

@@ -1,4 +1,5 @@
 import {v4 as uuidv4} from 'uuid';
+import {Profile} from './profile/Profile';
 
 
 export enum SecretType {
@@ -23,6 +24,28 @@ export class Secrets {
     this.revision = Date.now();
     this.secrets = [];
   }
+
+  update($event: Secret) {
+    if ($event) {
+      let index = this.secrets.findIndex(one => one.id == $event.id);
+      if (index >= 0) {
+        this.secrets[index] = $event;
+      } else {
+        console.warn("Secret not found, we'll add new secret");
+        this.secrets.push($event);
+      }
+    }
+  }
+  delete(secret: Secret) {
+    if (!secret) {
+      return;
+    }
+    if (!this.secrets) {
+      this.secrets= [];
+    }
+    this.secrets = this.secrets.filter(one => one.id != secret.id);
+  }
+
 }
 
 export class Secret {

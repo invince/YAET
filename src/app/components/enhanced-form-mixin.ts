@@ -1,6 +1,6 @@
 
 import {Component, EventEmitter, OnDestroy, OnInit, Output} from '@angular/core';
-import {ControlValueAccessor, FormGroup} from '@angular/forms';
+import {AbstractControl, ControlValueAccessor, FormGroup, ValidationErrors, Validator} from '@angular/forms';
 import {Subscription} from 'rxjs';
 
 type Constructor<T = {}> = new (...args: any[]) => T;
@@ -103,7 +103,7 @@ export function ChildFormAsFormControl<TBase extends Constructor>(Base: TBase) {
     imports: [],
     template: `<p>Abstract Menu</p>`,
   })
-  abstract class ChildFormAsFormClazz extends Base implements OnInit, OnDestroy, ControlValueAccessor  {
+  abstract class ChildFormAsFormClazz extends Base implements OnInit, OnDestroy, ControlValueAccessor, Validator   {
 
     form!: FormGroup;
 
@@ -153,6 +153,11 @@ export function ChildFormAsFormControl<TBase extends Constructor>(Base: TBase) {
 
     setDisabledState?(isDisabled: boolean): void {
       isDisabled ? this.form.disable() : this.form.enable();
+    }
+
+    // Add validation logic
+    validate(control: AbstractControl): ValidationErrors | null {
+      return this.form.valid ? null : { invalidChildForm: true };
     }
 
   }

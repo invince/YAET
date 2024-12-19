@@ -1,9 +1,10 @@
 import {Injectable} from '@angular/core';
-import {Secret} from '../domain/Secret';
+import {Secret, Secrets} from '../domain/Secret';
 import {ElectronService} from './electron.service';
-import {SECRETS_LOADED} from './electronConstant';
+import {SECRETS_LOADED} from '../domain/electronConstant';
 import {MasterKeyService} from './master-key.service';
 import {SecretStorageService} from './secret-storage.service';
+import {SettingStorageService} from './setting-storage.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +18,7 @@ export class SecretService {
     private electron: ElectronService,
 
     private secretStorage: SecretStorageService,
+    private settingStorage: SettingStorageService,
     private masterKeyService: MasterKeyService
   ) {
     electron.onLoadedEvent(SECRETS_LOADED, data => {
@@ -25,6 +27,10 @@ export class SecretService {
   }
 
   apply(data: any) {
+    if (!data) {
+      this._loaded = true; // this means you don't have secret yet
+      return;
+    }
     this.masterKeyService.decrypt2String(data).then(
       decrypted => {
         if (decrypted) {
@@ -38,20 +44,13 @@ export class SecretService {
   get isLoaded() {
     return this._loaded;
   }
-  deleteLocal(secret: Secret) {
-    if (!secret) {
-      return;
-    }
-    if (!this.secretStorage.data.secrets) {
-      this.secretStorage.data.secrets= [];
-    }
-    this.secretStorage.data.secrets = this.secretStorage.data.secrets.filter(one => one.id != secret.id);
-  }
 
-  async saveAll() {
-    if (!this.secretStorage.data.secrets) {
-      return;
+
+  async save(secrets: Secrets = this.secretStorage.data) {
+    if (!secrets) {
+      secrets = new Secrets();
     }
+    this.secretStorage.data = secrets;
     for (let one of this.secretStorage.data.secrets) {
       one.isNew = false;
     }
@@ -72,8 +71,23 @@ export class SecretService {
     this.electron.reloadSecrets();
   }
 
-
-  deleteNotSavedNewSecretInLocal() {
-    this.secretStorage.data.secrets = this.secretStorage.data.secrets.filter(one => !one.isNew);
+  displaySecretOptionName(secret: Secret) {
+    let label = '';
+    let LIMIT = this.settingStorage.settings?.ui?.secretLabelLengthInDropDown || 8;
+    if (secret && secret.name) {
+      label = secret.name;
+      if (secret.name.length > LIMIT) {
+        label = label.slice(0, LIMIT) + '...';
+      }
+    }
+    if (secret && secret.login) {
+      let loginPart = '-' + secret.login;
+      if (loginPart.length > LIMIT) {
+        loginPart = loginPart.slice(0, LIMIT) + '...';
+      }
+      label += loginPart + '/***';
+    }
+    return label;
   }
+
 }

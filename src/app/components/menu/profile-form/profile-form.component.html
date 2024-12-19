@@ -73,7 +73,7 @@
         </mat-select>
       </mat-form-field>
       @if (form.get('category')?.value) {
-      <mat-form-field class="field">
+      <mat-form-field class="field" >
         <mat-label>Terminal Type</mat-label>
         <mat-select (selectionChange)="onSelectType($event)" required formControlName="profileType">
           <mat-option *ngFor="let oneType of getTypeOptions()  | keyvalue : unordered "
@@ -98,27 +98,52 @@
         }
       </mat-form-field>
 
-      @switch (form.get('profileType')?.value) {
-        @case('SSH_TERMINAL') {
-          <app-ssh-profile-form formControlName="sshProfileForm"></app-ssh-profile-form>
-        }
+      @if (form.get('category')?.value == 'CUSTOM') {
+        <app-custom-profile-form formControlName="customProfileForm"></app-custom-profile-form>
+      }
+      @else {
+        @switch (form.get('profileType')?.value) {
+          @case('SSH_TERMINAL') {
+            <app-ssh-profile-form formControlName="sshProfileForm"></app-ssh-profile-form>
+          }
 
+          @case('RDP_REMOTE_DESKTOP') {
+            <app-rdp-profile-form formControlName="rdpProfileForm"></app-rdp-profile-form>
+          }
+
+          @case('VNC_REMOTE_DESKTOP') {
+            <app-vnc-profile-form formControlName="vncProfileForm"></app-vnc-profile-form>
+          }
+
+          @case('CUSTOM') {
+            <app-vnc-profile-form formControlName="vncProfileForm"></app-vnc-profile-form>
+          }
+        }
       }
 
     </div>
   </div>
 
   <div class="profile-form-footer modal-footer">
-    <button mat-button (click)="onClose()">Cancel</button>
-    <!--                <button mat-stroked-button class="mat-accent" (click)="reload()">Reload</button>-->
-    @if (!profile.isNew) {
-    <button mat-raised-button color="warn" (click)="onDelete()">Delete</button>
+    @if (!profile.isNew && buttons.includes('close')) {
+      <button mat-button (click)="onClose()">Cancel</button>
     }
-    @if (masterKeyService.hasMasterKey) {
-    <button mat-raised-button class="mat-primary" (click)="onSave()"
+    @if (buttons.includes('reload')) {
+      <button mat-stroked-button class="mat-accent" (click)="onReload()">Reload</button>
+    }
+    @if (buttons.includes('delete')) {
+      <button mat-raised-button color="warn" (click)="onDelete()">Delete</button>
+    }
+    @if (!profile.isNew && buttons.includes('clone')) {
+    <button mat-raised-button color="warn" (click)="onClone()">Clone</button>
+    }
+    @if (masterKeyService.hasMasterKey && buttons.includes('save')) {
+      <button mat-raised-button class="mat-primary" (click)="onSave()"
             [disabled]="form.invalid || !form.dirty" cdkFocusInitial>Save</button>
     }
-    <button mat-raised-button class="mat-primary" (click)="onConnect()"
-            [disabled]="form.invalid" >Connect</button>
+    @if (buttons.includes('connect')) {
+      <button mat-raised-button class="mat-primary" (click)="onConnect()"
+              [disabled]="form.invalid" >Connect</button>
+    }
   </div>
 </div>

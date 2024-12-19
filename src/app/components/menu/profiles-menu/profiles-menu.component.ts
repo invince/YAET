@@ -4,7 +4,7 @@ import {MatSidenavModule} from '@angular/material/sidenav';
 import {MenuComponent} from '../menu.component';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {ProfileService} from '../../../services/profile.service';
-import {Profile} from '../../../domain/Profile';
+import {Profile, Profiles} from '../../../domain/profile/Profile';
 import {CommonModule} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -15,14 +15,15 @@ import {MatSelect} from '@angular/material/select';
 import {ProfileFormComponent} from '../profile-form/profile-form.component';
 import {HasChildForm} from '../../enhanced-form-mixin';
 import {SettingStorageService} from '../../../services/setting-storage.service';
-import {ModalControllerService} from '../../../services/modal-controller.service';
 import {Subscription} from 'rxjs';
 import {SettingService} from '../../../services/setting.service';
 import {FilterKeywordPipe} from '../../../pipes/filter-keyword.pipe';
 import {MatTree, MatTreeModule, MatTreeNestedDataSource} from '@angular/material/tree'
 import {NODE_DEFAULT_NAME, GroupNode} from '../../../domain/GroupNode';
 import {NestedTreeControl} from '@angular/cdk/tree';
-import {SideNavType} from '../../../domain/UISettings';
+import {SideNavType} from '../../../domain/setting/UISettings';
+import {MatDialog} from '@angular/material/dialog';
+import {ConfirmationComponent} from '../../confirmation/confirmation.component';
 
 @Component({
   selector: 'app-profiles-menu',
@@ -54,6 +55,8 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   selectedProfileId: string | undefined;
   selectedProfile: Profile | undefined;
 
+  profilesCopy!: Profiles;
+
   subscription!: Subscription;
   filter!: string;
 
@@ -72,11 +75,11 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     private settingService: SettingService,
     private _snackBar: MatSnackBar,
 
-    private modalControl: ModalControllerService,
-
     private keywordPipe: FilterKeywordPipe,
 
     private cdr: ChangeDetectorRef,
+
+    private dialog: MatDialog,
   ) {
     super();
   }
@@ -88,20 +91,30 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   }
 
   ngOnInit(): void {
-    this.subscription = this.modalControl.modalCloseEvent.subscribe(one => {
-      if (one && one.includes('favorite')) {
-        this.profileService.deleteNotSavedNewProfileInLocal();
-        this.modalControl.closeModal();
+    if (!this.profileService.isLoaded) {
+      let message = 'Profiles not loaded, we\'ll reload it, please close Profile menu and reopen';
+      if (!this.settingService.isLoaded) {
+        message = 'Settings And ' + message
+        this.settingService.reload();
       }
-    });
+      this.profileService.reload();
+      this._snackBar.open(message, 'OK', {
+        duration: 3000
+      });
+    }
+
+    this.profilesCopy = this.profileService.profiles;
 
     this.sideNavType = this.settingStorage.settings.ui.profileSideNavType;
     this.refreshForm();
   }
 
   addTab() {
-    let newProfile = new Profile();
-    this.profileService.profiles.push(newProfile);
+    this.doAddTab(new Profile());
+  }
+
+  doAddTab(newProfile: Profile) {
+    this.profilesCopy.profiles.push(newProfile);
     this.selectedProfileId = newProfile.id;// Focus on the newly added tab
     this.selectedProfile = newProfile;
     this.refreshForm();
@@ -112,6 +125,11 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
         }
       });
     }
+  }
+
+  onCloneOne($event: Profile) {
+    // we'll add a new tab, and copy all the fields of $event
+    this.doAddTab(Profile.clone($event));
   }
 
   onTabChange(profile: Profile) {
@@ -138,31 +156,33 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
 
 
   async onDelete($event: Profile) {
-    this.profileService.deleteLocal($event);
-    if (!$event.isNew) {
-      await this.profileService.saveAll();
-    }
-    this.selectedProfileId = undefined;
-    this.selectedProfile = undefined;
-    this.refreshForm();
+    const dialogRef = this.dialog.open(ConfirmationComponent, {
+      width: '300px',
+      data: { message: 'Do you want to delete this profile: ' + $event.name + '?' },
+    });
+
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (result) {
+        this.profilesCopy.delete($event);
+        await this.commitChange();
+        this.selectedProfileId = undefined;
+        this.selectedProfile = undefined;
+        this.refreshForm();
+      }
+    });
   }
 
   async onSaveOne($event: Profile) {
-    this.profileService.updateProfile($event);
-    await this.profileService.saveAll();
+    this.profilesCopy.update($event);
+    await this.commitChange();
     this.refreshForm();
   }
 
   onCancel($event: Profile) {
-    if ($event) {
-      if ($event.isNew) {
-        this.profileService.deleteLocal($event);
-      }
-    }
     this.close();
   }
 
-  profileTabLabel(profile: Profile | GroupNode) {
+  displayProfileTabLabel(profile: Profile | GroupNode) {
     let LIMIT = this.settingStorage.settings?.ui?.profileLabelLength || 10;
 
     let label = 'New';
@@ -234,7 +254,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   createGroupDataSource(): GroupNode[] {
     return GroupNode.map2DataSource(
       this.settingStorage.settings.groups,
-      this.keywordPipe.transform(this.profileService.profiles, this.keywordsProviders, this.filter),
+      this.keywordPipe.transform(this.profilesCopy.profiles, this.keywordsProviders, this.filter),
       false,
       true);
   }
@@ -266,5 +286,9 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   clearFilter() {
     this.filter = '';
     this.applyFilterToTree();
+  }
+
+  async commitChange() {
+    await this.profileService.save(this.profilesCopy);
   }
 }

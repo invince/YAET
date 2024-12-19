@@ -9,7 +9,7 @@
       <button mat-mini-fab color="primary" (click)="addMenu()" aria-label="Add Profile">
         <mat-icon>add</mat-icon>
       </button>
-      <button mat-mini-fab color="primary" (click)="favoriteMenu()" aria-label="Favorite">
+      <button mat-mini-fab color="primary" (click)="profileMenu()" aria-label="Favorite">
         <mat-icon>favorite</mat-icon>
       </button>
       <button mat-mini-fab color="primary" (click)="secureMenu()" aria-label="Save">
@@ -26,12 +26,17 @@
   </mat-sidenav>
 
   <mat-sidenav-content>
-    <mat-tab-group id="tab-group" [@.disabled]="true" [selectedIndex]="currentTabIndex">
+    <mat-tab-group id="tab-group" [@.disabled]="true" [selectedIndex]="tabService.currentTabIndex">
       @for (tab of tabService.tabs ; let i = $index; track tab.id) {
-      <mat-tab>
-        <ng-template mat-tab-label>
-          <div class="tab-label">
-            <span>{{ tab.name }} </span>
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <div class="tab-label">
+              @if (!tab.connected) {
+              <button mat-icon-button (click)="reconnect(i)" aria-label="Reconnect tab">
+                <mat-icon>refresh</mat-icon>
+              </button>
+              }
+              <span>{{ tab.name }} </span>
               <button mat-icon-button (click)="removeTab(i)" aria-label="Remove tab">
                 <mat-icon>close</mat-icon>
               </button>
@@ -59,21 +64,25 @@
     @if (modalControl.isMenuModalOpen) {
     <div>
       @switch(modalControl.currentOpenedMenu) {
-        @case('add') {
-      <!-- Menu components based on the switch case -->
-          <app-quickconnect-menu [@slideInOut]="'in'" (closeEvent)="modalControl.closeModal('add')"></app-quickconnect-menu>
+        @case(MENU_ADD) {
+          <app-quickconnect-menu [@slideInOut]="'in'"
+            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-quickconnect-menu>
         }
-        @case('favorite') {
-          <app-profiles-menu [@slideInOut]="'in'"  (closeEvent)="modalControl.closeModal('favorite', true)"></app-profiles-menu>
+        @case(MENU_PROFILE) {
+          <app-profiles-menu [@slideInOut]="'in'"
+            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-profiles-menu>
         }
-        @case('secure') {
-          <app-secures-menu [@slideInOut]="'in'" (closeEvent)="modalControl.closeModal('secure', true)"></app-secures-menu>
+        @case(MENU_SECURE) {
+          <app-secures-menu [@slideInOut]="'in'"
+            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-secures-menu>
         }
-        @case('cloud') {
-        <app-cloud-menu [@slideInOut]="'in'" (closeEvent)="modalControl.closeModal('cloud')"></app-cloud-menu>
+        @case(MENU_CLOUD) {
+          <app-cloud-menu [@slideInOut]="'in'"
+            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-cloud-menu>
         }
-        @case('setting') {
-          <app-setting-menu [@slideInOut]="'in'" (closeEvent)="modalControl.closeModal('setting')"></app-setting-menu>
+        @case(MENU_SETTING) {
+          <app-setting-menu [@slideInOut]="'in'"
+            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-setting-menu>
         }
       }
     </div>

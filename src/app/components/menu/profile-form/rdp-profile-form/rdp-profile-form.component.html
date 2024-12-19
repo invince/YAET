@@ -1,0 +1,21 @@
+<div [formGroup]="form">
+  <mat-form-field class="field">
+    <mat-label>Host Name</mat-label>
+    <input matInput type="text" formControlName="host" required/>
+    @if (form.get('host')?.value) {
+    <button
+      matSuffix
+      mat-icon-button
+      aria-label="Clear"
+      (click)="clear(form,'host')">
+      <mat-icon>close</mat-icon>
+    </button>
+    }
+  </mat-form-field>
+
+  <mat-slide-toggle formControlName="fullScreen">Show in full screen</mat-slide-toggle>
+  <br>
+  <br>
+  <mat-slide-toggle formControlName="asAdmin">Log As Admin</mat-slide-toggle>
+
+</div>

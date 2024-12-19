@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {CommonModule, KeyValuePipe} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatIcon} from '@angular/material/icon';
@@ -8,7 +8,7 @@ import {MatSelectModule} from '@angular/material/select';
 import {MatInput} from '@angular/material/input';
 import {MenuComponent} from '../menu.component';
 import {ProfileFormComponent} from "../profile-form/profile-form.component";
-import {Profile} from '../../../domain/Profile';
+import {Profile, Profiles} from '../../../domain/profile/Profile';
 import {ProfileService} from '../../../services/profile.service';
 
 @Component({
@@ -32,16 +32,21 @@ import {ProfileService} from '../../../services/profile.service';
   templateUrl: './quickconnect-menu.component.html',
   styleUrl: './quickconnect-menu.component.css'
 })
-export class QuickconnectMenuComponent extends MenuComponent {
+export class QuickconnectMenuComponent extends MenuComponent  implements OnInit {
 
   profile: Profile = new Profile();
+  profilesCopy!: Profiles;
   constructor(private profileService: ProfileService) {
     super();
   }
 
+  ngOnInit(): void {
+    this.profilesCopy = this.profileService.profiles;
+  }
+
   async onSaveOne($event: Profile) {
-    this.profileService.profiles.push($event);
-    await this.profileService.saveAll();
+    this.profilesCopy.update($event);
+    await this.profileService.save(this.profilesCopy);
     this.close();
     // this.refreshSecretForm();
   }

@@ -10,7 +10,7 @@
     <div class="modal-content" >
       <mat-tab-group [(selectedIndex)]="currentTabIndex">
         <mat-tab label="General">
-          <div class="setting-form">
+          <div class="setting-form" [formGroup]="generalForm">
             <div>
               <mat-label>Set Master Key</mat-label>
               <button mat-button class="mat-primary" (click)="openMasterKeyModal()">
@@ -23,6 +23,10 @@
                 </button>
               }
             </div>
+
+            <mat-checkbox formControlName="vncClipboardCompatibleMode">
+              Enable Vnc Clipboard Compatible Mode
+            </mat-checkbox>
 
           </div>
         </mat-tab>

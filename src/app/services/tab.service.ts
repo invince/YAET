@@ -8,6 +8,7 @@ export class TabService {
 
   private _tabs: TabInstance[] = [];
 
+  public currentTabIndex = 0;
 
   constructor() { }
 
@@ -16,6 +17,13 @@ export class TabService {
     return this._tabs;
   }
 
+  connected(id: string) {
+    this._tabs.filter(one => one.id == id).forEach(one => one.connected = true);
+  }
+
+  disconnected(id: string) {
+    this._tabs.filter(one => one.id == id).forEach(one => one.connected = false);
+  }
 
   removeById(id: string) {
     this._tabs = this._tabs.filter(one => one.id != id);
@@ -31,5 +39,18 @@ export class TabService {
       tabInstance.name = tabInstance.name + '_' + index;
     }
     this._tabs.push(tabInstance);
+  }
+
+  reconnect(i: number) {
+    if(this._tabs) {
+      this._tabs[i] = this._tabs[i].clone();
+    }
+  }
+
+  getSelectedTab() {
+    if(this._tabs) {
+      return this._tabs[this.currentTabIndex];
+    }
+    return;
   }
 }
