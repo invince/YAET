@@ -227,7 +227,36 @@ export class ElectronService {
 
   openCustomSession(customProfile: CustomProfile) {
     if (this.ipc) {
-      this.ipc.send(SESSION_OPEN_CUSTOM, { command: customProfile.execPath });
+      let cmd = customProfile.execPath;
+      if (!cmd) {
+        return;
+      }
+      if (cmd.includes('$login') || cmd.includes('$password')) {
+        if(customProfile.authType == AuthType.SECRET) {
+          let secret = this.secretStorage.findById(customProfile.secretId);
+          if (!secret) {
+            console.error("Invalid secret " + customProfile.secretId);
+            return;
+          }
+          switch (secret.secretType) {
+            case SecretType.LOGIN_PASSWORD: {
+              customProfile.login = secret.login;
+              customProfile.password = secret.password;
+              break;
+            }
+
+            case SecretType.PASSWORD_ONLY: {
+              customProfile.password = secret.password;
+              break;
+            }
+          }
+        }
+
+        cmd = cmd.replaceAll('$login', customProfile.login);
+        cmd = cmd.replaceAll('$password', customProfile.password);
+      }
+
+      this.ipc.send(SESSION_OPEN_CUSTOM, { command: cmd });
     }
   }
 
