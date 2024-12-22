@@ -6,7 +6,7 @@
               cdkTextareaAutosize>
 
     </textarea>
-    <mat-hint align="start"><strong>you can use $login $password in the command</strong> </mat-hint>
+    <mat-hint align="start"><strong> you can use $login $password in the command </strong> </mat-hint>
     @if (form.get('customExecPath')?.value) {
     <button
       matSuffix
@@ -21,7 +21,7 @@
   <br/>
   <br/>
 
-  <mat-radio-group aria-label="Auth Type" formControlName="authType" required>
+  <mat-radio-group aria-label="Auth Type" formControlName="authType" required (change)="onSelectAuthType($event)">
     @for (oneType of AUTH_OPTIONS | keyvalue : unordered; track oneType.value) {
     <mat-radio-button [value]="oneType.value">{{ oneType.value }}</mat-radio-button>
     }

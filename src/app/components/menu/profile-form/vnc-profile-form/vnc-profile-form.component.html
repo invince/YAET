@@ -18,7 +18,7 @@
     <input matInput type="number" formControlName="port" required/>
   </mat-form-field>
 
-  <mat-radio-group aria-label="Auth Type" formControlName="authType" required>
+  <mat-radio-group aria-label="Auth Type" formControlName="authType" required (change)="onSelectAuthType($event)">
     @for (oneType of AUTH_OPTIONS | keyvalue : unordered; track oneType.value) {
     <mat-radio-button [value]="oneType.value">{{ oneType.value }}</mat-radio-button>
     }

@@ -10,6 +10,8 @@ export enum SecretType {
 
 
 export enum AuthType {
+
+  NA = 'N/A',
   LOGIN = 'login',
   SECRET = 'secret',
 }
