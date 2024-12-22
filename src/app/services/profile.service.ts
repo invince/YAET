@@ -67,6 +67,26 @@ export class ProfileService {
     this._profiles = profiles;
     for (let one of this._profiles.profiles) {
       one.isNew = false;
+
+       if (!one.icon) {
+        switch (one.profileType) {
+          case ProfileType.LOCAL_TERMINAL:
+          case ProfileType.SSH_TERMINAL:
+          case ProfileType.TELNET_TERMINAL:
+            one.icon = 'terminal'; break;
+
+          case ProfileType.VNC_REMOTE_DESKTOP:
+          case ProfileType.RDP_REMOTE_DESKTOP:
+            one.icon = 'computer'; break;
+
+          case ProfileType.SCP_FILE_EXPLORER:
+          case ProfileType.SFTP_FILE_EXPLORER:
+            one.icon = 'folder'; break;
+          case ProfileType.CUSTOM:
+            one.icon = 'star'; break;
+        }
+       }
+
     }
     this._profiles.revision = Date.now();
     this.masterKeyService.encrypt(this._profiles).then(

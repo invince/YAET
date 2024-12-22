@@ -67,6 +67,12 @@ app-secret-form {
 
 .group-name {
   cursor: pointer;
+  display: flex;
+  align-items: center;
+
+  mat-icon {
+    padding-right: 2px;
+  }
 }
 
 
@@ -76,7 +82,7 @@ app-secret-form {
   }
 
   .mat-nested-tree-node div[role=group] {
-    padding-left: 48px;
+    padding-left: 28px;
     padding-bottom: 10px;
   }
 

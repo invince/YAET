@@ -18,8 +18,6 @@ export enum ProfileType {
   SSH_TERMINAL = 'SSH_TERMINAL',
   TELNET_TERMINAL = 'TELNET_TERMINAL',
 
-  // REAL_VNC_REMOTE_DESKTOP = 'REAL_VNC_REMOTE_DESKTOP',
-  // TIGHT_VNC_REMOTE_DESKTOP = 'TIGHT_VNC_REMOTE_DESKTOP',
   VNC_REMOTE_DESKTOP = 'VNC_REMOTE_DESKTOP',
   RDP_REMOTE_DESKTOP = 'RDP_REMOTE_DESKTOP',
   SCP_FILE_EXPLORER = 'SCP_FILE_EXPLORER',
@@ -93,6 +91,7 @@ export class Profile {
   readonly id: string = uuidv4(); // uuid
   public name: string = '';
 
+  public icon: string = '';
   public comment:string = '';
 
   public category!: ProfileCategory;
@@ -121,6 +120,7 @@ export class Profile {
     let cloned = new Profile();
 
     cloned.name = base.name;
+    cloned.icon = base.icon;
     cloned.category = base.category;
     cloned.profileType = base.profileType;
     cloned.localTerminal = base.localTerminal;
