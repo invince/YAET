@@ -10,7 +10,7 @@ import {
   Validators
 } from '@angular/forms';
 import {MatSelectChange, MatSelectModule} from '@angular/material/select';
-import {MatRadioModule} from '@angular/material/radio';
+import {MatRadioChange, MatRadioModule} from '@angular/material/radio';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatIcon} from '@angular/material/icon';
@@ -87,29 +87,34 @@ export class CustomProfileFormComponent extends ChildFormAsFormControl(MenuCompo
 
 
   secretOrPasswordMatchValidator(group: FormGroup) {
-    // let authType = group.get('authType')?.value;
-    // if (authType == 'login') {
-    //   group.get('password')?.addValidators(Validators.required);
-    //   group.get('confirmPassword')?.addValidators(Validators.required);
-    //   group.get('secretId')?.removeValidators(Validators.required);
-    //   const password = group.get('password')?.value;
-    //   const confirmPassword = group.get('confirmPassword')?.value;
-    //   return password === confirmPassword ? null : { passwordMismatch: true };
-    // } else if (authType == 'secret') {
-    //   group.get('password')?.removeValidators(Validators.required);
-    //   group.get('confirmPassword')?.removeValidators(Validators.required);
-    //   group.get('secretId')?.addValidators(Validators.required);
-    //   return group.get('secretId')?.value ? null : {secretRequired: true};
-    // } else {
-    //
-    //   return {authTypeRequired: true};
-    // }
-    return null;
+    let authType = group.get('authType')?.value;
+    if (authType ==  AuthType.LOGIN) {
+      group.get('password')?.addValidators(Validators.required);
+      group.get('confirmPassword')?.addValidators(Validators.required);
+      group.get('secretId')?.removeValidators(Validators.required);
+      const password = group.get('password')?.value;
+      const confirmPassword = group.get('confirmPassword')?.value;
+      if (!password) {
+        return {passwordRequired: true};
+      }
+      return password === confirmPassword ? null : { passwordMismatch: true };
+    } else if (authType ==  AuthType.SECRET) {
+      group.get('password')?.removeValidators(Validators.required);
+      group.get('confirmPassword')?.removeValidators(Validators.required);
+      group.get('secretId')?.addValidators(Validators.required);
+      return group.get('secretId')?.value ? null : {secretRequired: true};
+    } else if (authType == AuthType.NA) {
+      group.get('password')?.removeValidators(Validators.required);
+      group.get('confirmPassword')?.removeValidators(Validators.required);
+      group.get('secretId')?.removeValidators(Validators.required);
+      return {};
+    }
+    return {};
   }
 
   onSelectSecret($event: MatSelectChange) {
-    this.form.get('password')?.setValue(null);
-    this.form.get('confirmPassword')?.setValue(null);
+    // this.form.get('password')?.setValue(null);
+    // this.form.get('confirmPassword')?.setValue(null);
   }
 
   override refreshForm(custom: any) {
@@ -136,5 +141,19 @@ export class CustomProfileFormComponent extends ChildFormAsFormControl(MenuCompo
       custom.secretId = this.form.get('secretId')?.value;
     }
     return custom;
+  }
+
+  onSelectAuthType($event: MatRadioChange) {
+    let authType = $event.value;
+    if (authType ==  AuthType.LOGIN) {
+      this.form.get('secretId')?.setValue(null);
+    } else if (authType ==  AuthType.SECRET) {
+      this.form.get('password')?.setValue(null);
+      this.form.get('confirmPassword')?.setValue(null);
+    } else if (authType == AuthType.NA) {
+      this.form.get('password')?.setValue(null);
+      this.form.get('confirmPassword')?.setValue(null);
+      this.form.get('secretId')?.setValue(null);
+    }
   }
 }
