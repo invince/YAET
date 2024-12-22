@@ -42,6 +42,9 @@
                   <div class="group-name"
                        [class.selected]="node.profile && node.profile.id === selectedProfileId"
                        (click)="onTabChange(node.profile)">
+                        @if (node.profile.icon) {
+                          <mat-icon>{{node.profile.icon}}</mat-icon>
+                        }
                             {{ displayProfileTabLabel(node) }}
                   </div>
                 </mat-nested-tree-node>
@@ -71,6 +74,9 @@
                 <button mat-button
                         [class.selected]="profile.id === selectedProfileId"
                         (click)="onTabChange(profile)">
+                  @if (profile.icon) {
+                  <mat-icon>{{profile.icon}}</mat-icon>
+                  }
                   {{ displayProfileTabLabel(profile) }}
                 </button>
               </div>
