@@ -1,6 +1,6 @@
 import {LocalTerminalProfile} from './LocalTerminalProfile';
 import {v4 as uuidv4} from 'uuid';
-import {SSHTerminalProfile} from './SSHTerminalProfile';
+import {SSHProfile} from './SSHProfile';
 import {Secret} from '../Secret';
 import {RdpProfile} from './RdpProfile';
 import {VncProfile} from './VncProfile';
@@ -97,7 +97,7 @@ export class Profile {
   public category!: ProfileCategory;
   public profileType!: ProfileType;
   public localTerminal!: LocalTerminalProfile;
-  public sshTerminalProfile!: SSHTerminalProfile;
+  public sshProfile!: SSHProfile;
   public rdpProfile!: RdpProfile;
   public vncProfile!: VncProfile;
   public customProfile!: CustomProfile;
@@ -110,7 +110,7 @@ export class Profile {
 
   constructor() {
     this.localTerminal = new LocalTerminalProfile();
-    this.sshTerminalProfile = new SSHTerminalProfile();
+    this.sshProfile = new SSHProfile();
     this.rdpProfile = new RdpProfile();
     this.vncProfile = new VncProfile();
     this.customProfile = new CustomProfile();
@@ -124,7 +124,7 @@ export class Profile {
     cloned.category = base.category;
     cloned.profileType = base.profileType;
     cloned.localTerminal = base.localTerminal;
-    cloned.sshTerminalProfile = base.sshTerminalProfile;
+    cloned.sshProfile = base.sshProfile;
     cloned.vncProfile = base.vncProfile;
     cloned.customProfile = base.customProfile;
     cloned.group = base.group;

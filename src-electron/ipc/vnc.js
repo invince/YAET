@@ -4,7 +4,9 @@ const WebSocket = require('ws');
 const findFreePorts = require('find-free-ports');
 const net = require('net');
 
-function initVncHandler(vncMap, mainWindow) {
+
+// for vnc, we create a websocket proxy to vnc server, than use noVnc to connect it
+function initVncHandler(vncMap) {
 
   // Handle VNC Connection
   ipcMain.handle('session.open.rd.vnc', async (event, {id, host, port}) => {

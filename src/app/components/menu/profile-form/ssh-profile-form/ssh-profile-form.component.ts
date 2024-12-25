@@ -1,5 +1,5 @@
 import {Component, forwardRef} from '@angular/core';
-import {SSHTerminalProfile} from '../../../../domain/profile/SSHTerminalProfile';
+import {SSHProfile} from '../../../../domain/profile/SSHProfile';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatIcon} from '@angular/material/icon';
@@ -127,8 +127,8 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
     }
   }
 
-  override formToModel(): SSHTerminalProfile {
-    let ssh = new SSHTerminalProfile();
+  override formToModel(): SSHProfile {
+    let ssh = new SSHProfile();
     ssh.host = this.form.get('host')?.value;
     ssh.port = this.form.get('port')?.value;
     ssh.authType = this.form.get('authType')?.value;
