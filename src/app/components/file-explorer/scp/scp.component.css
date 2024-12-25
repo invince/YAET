@@ -1,0 +1,6 @@
+
+.scp-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;  /* Full height of the parent container */
+}

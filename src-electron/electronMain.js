@@ -8,14 +8,29 @@ const {initCloudIpcHandler} = require('./ipc/cloud');
 const {initSecurityIpcHandler} = require('./ipc/security');
 const {initRdpHandler} = require('./ipc/rdp');
 const {initClipboard} = require('./ipc/clipboard');
-
 const {CONFIG_FOLDER, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON} = require("./common");
 const {initVncHandler} = require("./ipc/vnc");
 const {initCustomHandler} = require("./ipc/custom");
+const {initScpSftpHandler} = require("./ipc/scp");
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require("express");
+
+
+const expressApp = express(); // we define the express backend here, because maybe multiple module needs create custom backend
+expressApp.use(bodyParser.urlencoded({ extended: true })); // to accept application/x-www-form-urlencoded
+expressApp.use(express.json());
+expressApp.use(  cors({
+  origin: 'http://localhost:4200', // Allow Angular dev server
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+  credentials: true, // If you need to send cookies or authentication
+}));
 
 let mainWindow;
 let terminalMap = new Map();
 let vncMap = new Map();
+let scpMap = new Map();
 app.on('ready', () => {
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -42,7 +57,8 @@ app.on('ready', () => {
   initCloudIpcHandler();
   initSecurityIpcHandler();
   initRdpHandler();
-  initVncHandler(vncMap, mainWindow);
+  initVncHandler(vncMap);
+  initScpSftpHandler(scpMap, expressApp);
   initClipboard(mainWindow);
   initCustomHandler();
 
