@@ -25,7 +25,9 @@ import {
   SESSION_OPEN_VNC,
   SESSION_DISCONNECT_VNC,
   CLIPBOARD_PASTE,
-  TRIGGER_NATIVE_CLIPBOARD_PASTE, SESSION_OPEN_CUSTOM
+  TRIGGER_NATIVE_CLIPBOARD_PASTE,
+  SESSION_OPEN_CUSTOM,
+  SESSION_SCP_REGISTER
 } from '../domain/electronConstant';
 import {LocalTerminalProfile} from '../domain/profile/LocalTerminalProfile';
 import {Profile, ProfileType} from '../domain/profile/Profile';
@@ -37,8 +39,8 @@ import {CloudResponse} from '../domain/setting/CloudResponse';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {TabService} from './tab.service';
 import {RdpProfile} from '../domain/profile/RdpProfile';
-import {BehaviorSubject} from 'rxjs';
 import {CustomProfile} from '../domain/profile/CustomProfile';
+import {SSHProfile} from '../domain/profile/SSHProfile';
 
 
 @Injectable({
@@ -153,7 +155,7 @@ export class ElectronService {
   }
 
   private openSSHTerminalSession(tab: TabInstance) {
-    if (!tab.profile || !tab.profile.sshTerminalProfile) {
+    if (!tab.profile || !tab.profile.sshProfile) {
       console.error("Invalid configuration");
       return;
     }
@@ -163,7 +165,7 @@ export class ElectronService {
       keepaliveInterval: 15000,      // Send keepalive packets every 15 seconds.
       keepaliveCountMax: 5,          // Disconnect after 5 failed keepalive packets.
     };
-    let sshProfile = tab.profile.sshTerminalProfile;
+    let sshProfile = tab.profile.sshProfile;
     sshConfig.host = sshProfile.host;
     sshConfig.port = sshProfile.port;
     if (sshProfile.authType == AuthType.LOGIN) {
@@ -283,6 +285,50 @@ export class ElectronService {
     }
   }
 
+  async registerScpSession(id: string, sshProfile: SSHProfile) {
+    if (!id || !sshProfile) {
+      console.error("Invalid configuration");
+      return;
+    }
+    let sshConfig: any = {
+      readyTimeout: 30000,           // Wait up to 30 seconds for the connection.
+      keepaliveInterval: 15000,      // Send keepalive packets every 15 seconds.
+      keepaliveCountMax: 5,          // Disconnect after 5 failed keepalive packets.
+    };
+
+    sshConfig.host = sshProfile.host;
+    sshConfig.port = sshProfile.port;
+    if (sshProfile.authType == AuthType.LOGIN) {
+      sshConfig.username = sshProfile.login;
+      sshConfig.password = sshProfile.password;
+    } else if (sshProfile.authType == AuthType.SECRET) {
+      let secret = this.secretStorage.findById(sshProfile.secretId);
+      if (!secret) {
+        console.error("Invalid secret " + sshProfile.secretId);
+        return;
+      }
+      switch (secret.secretType) {
+        case SecretType.LOGIN_PASSWORD: {
+          sshConfig.username = secret.login;
+          sshConfig.password = secret.password;
+          break;
+        }
+        case SecretType.SSH_KEY: {
+          sshConfig.username = secret.login;
+          sshConfig.privateKey = secret.key.replace(/\\n/g, '\n');
+          if (secret.passphrase) {
+            sshConfig.passphrase = secret.passphrase;
+          }
+          break;
+        }
+        case SecretType.PASSWORD_ONLY: {
+          // todo
+          break;
+        }
+      }
+    }
+    await this.ipc.invoke(SESSION_SCP_REGISTER, {id: id, config: sshConfig});
+  }
 
 //#endregion "Sessions"
 

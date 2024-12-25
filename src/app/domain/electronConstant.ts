@@ -16,6 +16,7 @@ export const SESSION_DISCONNECT_VNC = 'session.disconnect.rd.vnc';
 
 
 export const SESSION_OPEN_CUSTOM = 'session.open.custom';
+export const SESSION_SCP_REGISTER= 'session.fe.scp.register';
 
 //#endregion "Sessions"
 

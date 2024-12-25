@@ -1,6 +1,6 @@
 import {AuthType} from '../Secret';
 
-export class SSHTerminalProfile {
+export class SSHProfile {
   public host: string = '';
   public port: number = 22;
 
@@ -8,4 +8,5 @@ export class SSHTerminalProfile {
   public login: string = '';
   public password: string = '';
   public secretId!: string;
+
 }
