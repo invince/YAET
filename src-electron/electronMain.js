@@ -1,6 +1,6 @@
 const path = require("path");
 
-const {app, globalShortcut, clipboard, BrowserWindow} = require('electron');
+const {app, globalShortcut, BrowserWindow} = require('electron');
 const {createMenu} = require('./ui/menu');
 const {initConfigFilesIpcHandler} = require('./ipc/configFiles');
 const {initTerminalIpcHandler} = require('./ipc/terminal');
@@ -43,7 +43,8 @@ app.on('ready', () => {
     },
   });
 
-  mainWindow.loadURL(`http://localhost:4200`);
+  // mainWindow.loadURL(`http://localhost:4200`);
+  mainWindow.loadFile(path.join(__dirname, '../dist/yet-another-electron-term/browser/index.html'));
 
   mainWindow.webContents.once('dom-ready', () => {
     load(path.join(CONFIG_FOLDER, SETTINGS_JSON), "settings.loaded", false, mainWindow);
