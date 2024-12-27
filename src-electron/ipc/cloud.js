@@ -1,6 +1,6 @@
 const { ipcMain } = require('electron');
 const path = require("path");
-const {CONFIG_FOLDER, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, GIT_FOLDER  }= require("../common");
+const {SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, GIT_FOLDER, APP_CONFIG_PATH, BACKUP_FOLDER}= require("../common");
 const {promises: fsPromise} = require("fs");
 const simpleGit = require("simple-git");
 function initCloudIpcHandler() {
@@ -20,7 +20,7 @@ function initCloudIpcHandler() {
     }
 
     try {
-      const gitAbsDir = path.join(process.cwd(), CONFIG_FOLDER, GIT_FOLDER);
+      const gitAbsDir = path.join(APP_CONFIG_PATH, GIT_FOLDER);
 
       let cloudSettings = data.data;
 
@@ -98,8 +98,8 @@ function initCloudIpcHandler() {
       return response;
     }
 
-    const backupAbsDir = path.join(process.cwd(), CONFIG_FOLDER, BACKUP_FOLDER);
-    const gitAbsDir = path.join(process.cwd(), CONFIG_FOLDER, GIT_FOLDER);
+    const backupAbsDir = path.join(APP_CONFIG_PATH, BACKUP_FOLDER);
+    const gitAbsDir = path.join(APP_CONFIG_PATH, GIT_FOLDER);
 
     let cloudSettings = data.data;
 
@@ -180,17 +180,16 @@ function initCloudIpcHandler() {
     if (!items) {
       return [];
     }
-    const configAbsDir = path.join(process.cwd(), CONFIG_FOLDER);
     const result = [];
     for (const item of items) {
       if (item.toLowerCase() === 'Setting'.toLowerCase()) {
-        result.push(path.join(configAbsDir,SETTINGS_JSON));
+        result.push(path.join(APP_CONFIG_PATH,SETTINGS_JSON));
       }
       if (item.toLowerCase() === 'Profile'.toLowerCase()) {
-        result.push(path.join(configAbsDir,PROFILES_JSON));
+        result.push(path.join(APP_CONFIG_PATH,PROFILES_JSON));
       }
       if (item.toLowerCase() === 'Secret'.toLowerCase()) {
-        result.push(path.join(configAbsDir,SECRETS_JSON));
+        result.push(path.join(APP_CONFIG_PATH,SECRETS_JSON));
       }
     }
     return result;

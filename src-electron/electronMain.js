@@ -1,4 +1,5 @@
 const path = require("path");
+const fs = require("fs");
 
 const {app, globalShortcut, BrowserWindow} = require('electron');
 const {createMenu} = require('./ui/menu');
@@ -8,7 +9,7 @@ const {initCloudIpcHandler} = require('./ipc/cloud');
 const {initSecurityIpcHandler} = require('./ipc/security');
 const {initRdpHandler} = require('./ipc/rdp');
 const {initClipboard} = require('./ipc/clipboard');
-const {CONFIG_FOLDER, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON} = require("./common");
+const {SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON, APP_CONFIG_PATH} = require("./common");
 const {initVncHandler} = require("./ipc/vnc");
 const {initCustomHandler} = require("./ipc/custom");
 const {initScpSftpHandler} = require("./ipc/scp");
@@ -32,6 +33,9 @@ let terminalMap = new Map();
 let vncMap = new Map();
 let scpMap = new Map();
 app.on('ready', () => {
+
+  const isDev = process.env.NODE_ENV === 'development';
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -43,14 +47,22 @@ app.on('ready', () => {
     },
   });
 
-  // mainWindow.loadURL(`http://localhost:4200`);
-  mainWindow.loadFile(path.join(__dirname, '../dist/yet-another-electron-term/browser/index.html'));
+  if (isDev) {
+    mainWindow.loadURL(`http://localhost:4200`);
+  } else {
+    mainWindow.setMenu(null); // Disable the menu bar in production
+    mainWindow.loadFile(path.join(__dirname, '../dist/yet-another-electron-term/browser/index.html'));
+  }
+
+  if (!fs.existsSync(APP_CONFIG_PATH)) {
+    fs.mkdirSync(APP_CONFIG_PATH);
+  }
 
   mainWindow.webContents.once('dom-ready', () => {
-    load(path.join(CONFIG_FOLDER, SETTINGS_JSON), "settings.loaded", false, mainWindow);
-    load(path.join(CONFIG_FOLDER, PROFILES_JSON), "profiles.loaded", false, mainWindow);
-    load(path.join(CONFIG_FOLDER, SECRETS_JSON), "secrets.loaded", true, mainWindow);
-    load(path.join(CONFIG_FOLDER, CLOUD_JSON), "cloud.loaded", true, mainWindow);
+    load( SETTINGS_JSON, "settings.loaded", false, mainWindow);
+    load( PROFILES_JSON, "profiles.loaded", false, mainWindow);
+    load( SECRETS_JSON, "secrets.loaded", true, mainWindow);
+    load( CLOUD_JSON, "cloud.loaded", true, mainWindow);
   });
   // createMenu();
   initConfigFilesIpcHandler(mainWindow);
