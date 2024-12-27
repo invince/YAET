@@ -1,14 +1,31 @@
 {
   "name": "yet-another-electron-term",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "main": "src-electron/electronMain.js",
   "scripts": {
     "ng": "ng",
+    "clean": "rimraf dist",
     "start": "ng serve",
-    "build": "node build.js",
+    "build": "npm run clean && ng build --base-href ./ && electron-builder",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "electron": "electron ."
+    "electron": "ng build && electron ."
+  },
+  "build": {
+    "appId": "io.github.invince",
+    "productName": "YetAnotherElectronTerm",
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "files": [
+      "dist/",
+      "src-electron/",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis"
+    }
   },
   "private": true,
   "dependencies": {
@@ -52,6 +69,7 @@
     "@types/crypto-js": "^4.2.2",
     "@types/jasmine": "~5.1.0",
     "electron": "^31.7.5",
+    "electron-builder": "^25.1.8",
     "electron-packager": "^17.1.2",
     "electron-rebuild": "^3.2.9",
     "jasmine-core": "~5.2.0",
@@ -60,6 +78,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "rimraf": "^6.0.1",
     "typescript": "~5.5.2"
   }
 }
