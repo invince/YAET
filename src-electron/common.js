@@ -1,7 +1,9 @@
 const path = require("path");
 const fs = require("fs");
+const os = require('os');
 
-const CONFIG_FOLDER = 'config';
+const USER_HOME = os.homedir();
+const APP_CONFIG_PATH = USER_HOME + '/.yaet'
 const BACKUP_FOLDER = 'backup';
 const GIT_FOLDER = 'git';
 const SETTINGS_JSON = 'settings.json';
@@ -10,9 +12,12 @@ const SECRETS_JSON = 'secrets.json';
 const CLOUD_JSON = 'cloud.json';
 const MANIFEST_JSON = 'manifest.json';
 
+
+
 function load(jsonFileName, loadedEvent, isRaw, mainWindow) {
   try {
-    const settingsPath = path.join(process.cwd(), jsonFileName); // same folder as exe
+    const settingsPath = path.join(APP_CONFIG_PATH, jsonFileName); // same folder as exe
+    console.log(settingsPath);
     if (fs.existsSync(settingsPath)){
       fs.readFile(settingsPath, 'utf-8', (err, data) => {
         if (!err) {
@@ -40,7 +45,7 @@ function load(jsonFileName, loadedEvent, isRaw, mainWindow) {
 function save(jsonFileName, data, isRaw) {
   return new Promise((resolve, reject) => {
     try {
-      const settingsPath = path.join(process.cwd(), jsonFileName); // same folder as exe
+      const settingsPath = path.join(APP_CONFIG_PATH, jsonFileName); // same folder as exe
       // Convert content to JSON string with pretty format
       let jsonString = isRaw ? data : JSON.stringify(data, null, 2);
       // Write the JSON string to the specified file
@@ -62,7 +67,7 @@ function save(jsonFileName, data, isRaw) {
 
 function updateManifest(newConfigSaved) {
   try {
-    const manifestFile = path.join(process.cwd(), CONFIG_FOLDER, MANIFEST_JSON); // same folder as exe
+    const manifestFile = path.join(APP_CONFIG_PATH, MANIFEST_JSON); // same folder as exe
     if (!fs.existsSync(manifestFile)) {
       const manifest = {};
       manifest.data = [newConfigSaved];
@@ -102,7 +107,7 @@ function updateManifest(newConfigSaved) {
 function hasConfig(configToCheck) {
   return new Promise((resolve, reject) => {
     try {
-      const manifestFile = path.join(process.cwd(), CONFIG_FOLDER, MANIFEST_JSON); // same folder as exe
+      const manifestFile = path.join(APP_CONFIG_PATH, MANIFEST_JSON); // same folder as exe
       if (!fs.existsSync(manifestFile)) {
         const manifest = {};
         fs.writeFile(manifestFile, JSON.stringify(manifest, null, 2), 'utf8', (err) => {
@@ -135,7 +140,6 @@ function hasConfig(configToCheck) {
 
 
 module.exports = {load, save,
-  CONFIG_FOLDER, BACKUP_FOLDER, GIT_FOLDER, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON,
-  updateManifest, hasConfig
-
+  BACKUP_FOLDER, GIT_FOLDER, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON,
+  updateManifest, hasConfig, APP_CONFIG_PATH
 };

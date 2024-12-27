@@ -5,11 +5,12 @@
   "scripts": {
     "ng": "ng",
     "clean": "rimraf dist",
-    "start": "ng serve",
-    "build": "npm run clean && ng build --base-href ./ && electron-builder",
+    "build": "npm run clean && ng build --base-href ./ && cross-env NODE_ENV=production  electron-builder",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "electron": "ng build && electron ."
+    "start": "concurrently \"npm run ng:serve\" \"npm run electron:dev\"",
+    "ng:serve": "ng serve",
+    "electron:dev": "wait-on http://localhost:4200 && cross-env NODE_ENV=development electron ."
   },
   "build": {
     "appId": "io.github.invince",
@@ -68,6 +69,8 @@
     "@angular/compiler-cli": "^18.2.0",
     "@types/crypto-js": "^4.2.2",
     "@types/jasmine": "~5.1.0",
+    "concurrently": "^9.1.1",
+    "cross-env": "^7.0.3",
     "electron": "^31.7.5",
     "electron-builder": "^25.1.8",
     "electron-packager": "^17.1.2",
@@ -79,6 +82,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "rimraf": "^6.0.1",
-    "typescript": "~5.5.2"
+    "typescript": "~5.5.2",
+    "wait-on": "^8.0.1"
   }
 }
