@@ -9,7 +9,7 @@ export class ScpService {
 
   constructor(private electron: ElectronService) { }
 
-  connect(id:string , sshProfile: SSHProfile) {
-    this.electron.registerScpSession(id , sshProfile);
+  async connect(id:string , sshProfile: SSHProfile) {
+    return this.electron.registerScpSession(id , sshProfile);
   }
 }
