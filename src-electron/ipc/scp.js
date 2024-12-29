@@ -1,8 +1,9 @@
-const { ipcMain , dialog } = require('electron');
+const { ipcMain  } = require('electron');
 const SftpClient = require('ssh2-sftp-client');
 const multer = require('multer');
 const upload = multer();
 const path = require('path');
+const archiver = require('archiver');
 
 function initScpSftpHandler(scpMap, expressApp) {
 
@@ -173,15 +174,42 @@ function initScpSftpHandler(scpMap, expressApp) {
       const sftp = new SftpClient();
       await sftp.connect(config);
 
-      for (const name of names) {
-        const fullPath = path + name;
+      if (names.length === 1) {
+        const fullPath = path + names[0];
         const buffer = await sftp.get(fullPath);
 
-        res.set('Content-Disposition', `attachment; filename=${path.split('/').pop()}`);
+        res.set('Content-Disposition', `attachment; filename=${names[0]}`);
         res.send(buffer);
+
+
+        await sftp.end();
+
+      } else if (names.length > 1) {
+
+        const archive = archiver('zip', { zlib: { level: 9 } });
+        res.setHeader('Content-Disposition', 'attachment; filename="download.zip"');
+        res.setHeader('Content-Type', 'application/zip');
+        archive.pipe(res);
+
+        for (const name of names) {
+          const fullPath = `${path}${name}`;
+
+          try {
+            // Fetch the file as a buffer from the server
+            const buffer = await sftp.get(fullPath);
+
+            // Add the file to the ZIP archive
+            archive.append(buffer, { name });
+          } catch (fileError) {
+            console.error(`Error fetching file ${fullPath}:`, fileError.message);
+          }
+        }
+
+        await sftp.end();
+        // Finalize the ZIP archive
+        await archive.finalize();
       }
 
-      await sftp.end();
     } catch (error) {
       console.error('Error downloading file:', error);
       res.status(400).send({ error: {code: 400, message: 'Error download file:' + error} });
