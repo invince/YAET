@@ -262,8 +262,8 @@ function initScpSftpHandler(scpMap, expressApp) {
     return targetFilePath;
   }
   async function getDetails(sftp, path, names = undefined) {
-    if (!names) {
-      const fullPath = `${path}/`;
+    if (!names || names.length === 0) {
+      const fullPath = `${path}`;
       const stats = await sftp.stat(fullPath);
 
       return {
