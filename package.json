@@ -25,7 +25,14 @@
       "package.json"
     ],
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "src-electron/assets/icons/app-icon.ico"
+    },
+    "linux": {
+      "icon": "src-electron/assets/icons/"
+    },
+    "mac": {
+      "icon": "src-electron/assets/icons/app-icon.icns"
     }
   },
   "private": true,

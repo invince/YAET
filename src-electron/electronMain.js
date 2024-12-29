@@ -1,7 +1,7 @@
 const path = require("path");
 const fs = require("fs");
 
-const {app, globalShortcut, BrowserWindow} = require('electron');
+const {app, globalShortcut, BrowserWindow, Tray} = require('electron');
 const {createMenu} = require('./ui/menu');
 const {initConfigFilesIpcHandler} = require('./ipc/configFiles');
 const {initTerminalIpcHandler} = require('./ipc/terminal');
@@ -28,6 +28,7 @@ expressApp.use(  cors({
   credentials: true, // If you need to send cookies or authentication
 }));
 
+let tray;
 let mainWindow;
 let terminalMap = new Map();
 let vncMap = new Map();
@@ -36,9 +37,13 @@ app.on('ready', () => {
 
   const isDev = process.env.NODE_ENV === 'development';
 
+  tray = new Tray( __dirname + '/assets/icons/app-icon.png',);
+  tray.setToolTip('Yet Another Electron Terminal');
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    icon: __dirname + '/assets/icons/app-icon.png', // Path to your icon
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
