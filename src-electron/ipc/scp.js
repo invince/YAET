@@ -40,6 +40,31 @@ function initScpSftpHandler(scpMap, expressApp) {
           res.json({ cwd: { name: pathParam, type: 'folder' }, files: formattedFiles });
           break;
         }
+        case 'search': {
+          const files = await sftp.list(pathParam);
+
+          const regexFlags = req.body.caseSensitive ? '' : 'i';
+          const searchRegex = new RegExp(req.body.searchString.replace(/\*/g, '.*'), regexFlags);
+
+          const formattedFiles = [];
+          for (const item of files) {
+            const isHidden = item.name.startsWith('.');
+            if (!req.body.showHiddenItems && isHidden) continue;
+
+            if (searchRegex.test(item.name)) {
+              formattedFiles.push({
+                name: item.name,
+                type: item.type === '-' ? 'file' : 'folder',
+                size: item.size,
+                modifyTime: item.modifyTime,
+                accessTime: item.accessTime,
+              });
+            }
+          }
+
+          res.json({ cwd: { name: pathParam, type: 'folder' }, files: formattedFiles });
+          break;
+        }
         case 'delete': {
           const data = req.body.data || [];
           const details = [];
