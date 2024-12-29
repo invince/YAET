@@ -19,8 +19,7 @@ function initScpSftpHandler(scpMap, expressApp) {
     const configId = req.params['id'];
     const config = scpMap.get(configId);
     if (!config) {
-      console.error('Error connection config not found');
-      res.status(500).send({ error: 'Failed to list files' });
+      res.status(400).send({ error: {code: 400, message: 'Error connection config not found'} });
     }
     try {
       const sftp = new SftpClient();
@@ -41,13 +40,18 @@ function initScpSftpHandler(scpMap, expressApp) {
           break;
         }
         case 'delete': {
-          const names = req.body.names || [];
+          const data = req.body.data || [];
           const details = [];
-          for (let i = 0; i < names.length; i++) {
-            const name = names[i];
+          for (let i = 0; i < data.length; i++) {
+            const oneData = data[i];
+            const name = oneData.name;
             const fileAbsPath = `${pathParam}${name}`;
-            details.push(getDetails(sftp, pathParam, name));
-            await sftp.delete(fileAbsPath);
+            details.push(await getDetails(sftp, pathParam, [name]));
+            if (oneData.type === 'folder') {
+              await sftp.rmdir(fileAbsPath, true);
+            } else {
+              await sftp.delete(fileAbsPath);
+            }
           }
           res.json({ cwd: { name: pathParam, type: 'folder' }, files: details});
           break;
@@ -56,7 +60,7 @@ function initScpSftpHandler(scpMap, expressApp) {
           const name = req.body.name;
           const newName = req.body.newName;
           await sftp.rename(`${pathParam}${name}`, `${pathParam}${newName}`);
-          res.json({ cwd: { name: pathParam, type: 'folder' }, files: getDetails(sftp, pathParam, newName) });
+          res.json({ cwd: { name: pathParam, type: 'folder' }, files: await getDetails(sftp, pathParam, newName) });
           break;
         }
         case 'copy': {
@@ -68,7 +72,7 @@ function initScpSftpHandler(scpMap, expressApp) {
             const targetFilePath = await avoidDuplicateName(sftp, targetFilePathOg);
             // Copy file
             await sftp.rcopy(sourceFilePath, targetFilePath)
-            res.json({ cwd: { name: pathParam, type: 'folder' }, files: getDetails(sftp, targetPath, names) });
+            res.json({ cwd: { name: pathParam, type: 'folder' }, files: await getDetails(sftp, targetPath, names) });
           }
           break;
         }
@@ -86,20 +90,25 @@ function initScpSftpHandler(scpMap, expressApp) {
             await sftp.rcopy(sourceFilePath, targetFilePath);
             await sftp.delete(sourceFilePath, true);
           }
-          res.json({ cwd: { name: pathParam, type: 'folder' }, files: getDetails(sftp, targetPath, names) });
+          res.json({ cwd: { name: pathParam, type: 'folder' }, files: await getDetails(sftp, targetPath, names) });
           break;
         }
         case 'create': { // for now only mkdir is possible
           const name = req.body.name;
-          const newFolderPath = `${pathParam}${name}/`;
-          // Create the folder
-          await sftp.mkdir(newFolderPath, true);
-          res.json({ cwd: { name: pathParam, type: 'folder' }, files: getDetails(sftp, newFolderPath) });
+          const newFolderPath = `${pathParam}${name}`;
+          if (await sftp.exists(newFolderPath)) {
+            res.json({ cwd: { name: pathParam, type: 'folder' }, error: {code: 416, message: 'folder already exists'} });
+          } else {
+            // Create the folder
+            await sftp.mkdir(newFolderPath, true);
+
+            res.json({ cwd: { name: pathParam, type: 'folder' }, files: await getDetails(sftp, newFolderPath) });
+          }
           break;
         }
         case 'details': {
           const names = req.body.names || [];
-          res.json({ cwd: { name: pathParam, type: 'folder' }, files: getDetails(sftp, pathParam, names) });
+          res.json({ cwd: { name: pathParam, type: 'folder' }, files: await getDetails(sftp, pathParam, names) });
           break;
         }
 
@@ -108,7 +117,7 @@ function initScpSftpHandler(scpMap, expressApp) {
       await sftp.end();
     } catch (error) {
       console.error('Error listing files:', error);
-      res.status(500).send({ error: 'Failed to list files' });
+      res.status(500).send({ error: {code: 500, message: error} });
     }
   });
 
@@ -121,11 +130,11 @@ function initScpSftpHandler(scpMap, expressApp) {
     const config = scpMap.get(configId);
     if (!config) {
       console.error('Error connection config not found');
-      res.status(500).send({ error: 'Failed to list files' });
+      res.status(400).send({ error: {code: 400, message: 'Error connection config not found'} });
     }
     if (!req.file) {
       console.error('Error: No file uploaded');
-      return res.status(400).send({ error: 'No file uploaded' });
+      res.status(400).send({ error: {code: 400, message: 'No file uploaded'} });
     }
 
     try {
@@ -144,7 +153,7 @@ function initScpSftpHandler(scpMap, expressApp) {
       await sftp.end();
     } catch (error) {
       console.error('Error uploading file:', error);
-      res.status(500).send({ error: 'Failed to upload file' });
+      res.status(400).send({ error: {code: 400, message: 'Error uploading file:' + error} });
     }
   });
 
@@ -154,12 +163,11 @@ function initScpSftpHandler(scpMap, expressApp) {
     const path = downloadInput.path;
     const names = downloadInput.names; // Assuming a single file download
 
-    console.log(req.body);
     const configId = req.params['id'];
     const config = scpMap.get(configId);
     if (!config) {
       console.error('Error connection config not found');
-      res.status(500).send({ error: 'Failed to list files' });
+      res.status(400).send({ error: {code: 400, message: 'Error connection config not found'} });
     }
     try {
       const sftp = new SftpClient();
@@ -176,7 +184,7 @@ function initScpSftpHandler(scpMap, expressApp) {
       await sftp.end();
     } catch (error) {
       console.error('Error downloading file:', error);
-      res.status(500).send({ error: 'Failed to download file' });
+      res.status(400).send({ error: {code: 400, message: 'Error download file:' + error} });
     }
   });
 
@@ -204,11 +212,11 @@ function initScpSftpHandler(scpMap, expressApp) {
   async function getDetails(sftp, path, names = undefined) {
     const details = [];
     if (!names) {
-      const fullPath = `${path}`;
+      const fullPath = `${path}/`;
       const stats = await sftp.stat(fullPath);
 
       details.push({
-        name,
+        name: fullPath,
         type: stats.isDirectory ? 'folder' : 'file',
         size: stats.size,
         accessTime: stats.atime,
@@ -219,9 +227,8 @@ function initScpSftpHandler(scpMap, expressApp) {
       for (const name of names) {
         const fullPath = `${path}${name}`;
         const stats = await sftp.stat(fullPath);
-
         details.push({
-          name,
+          name: name,
           type: stats.isDirectory ? 'folder' : 'file',
           size: stats.size,
           accessTime: stats.atime,
