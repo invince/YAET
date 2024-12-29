@@ -34,9 +34,9 @@ export class ScpComponent implements OnInit{
     this.scpService.connect(this.tab.id, this.tab.profile.sshProfile);
 
     this.ajaxSettings = {
-      url: 'http://localhost:3000/list/' + this.tab.id, // Custom backend API
-      uploadUrl: 'http://localhost:3000/upload/' + this.tab.id , // Custom upload endpoint
-      downloadUrl: 'http://localhost:3000/download/' + this.tab.id, // Custom download endpoint
+      url: 'http://localhost:3000/api/v1/scp/' + this.tab.id, // Custom backend API
+      uploadUrl: 'http://localhost:3000/api/v1/scp/upload/' + this.tab.id , // Custom upload endpoint
+      downloadUrl: 'http://localhost:3000/api/v1/scp/download/' + this.tab.id, // Custom download endpoint
     }
   }
 
