@@ -109,7 +109,7 @@ function initScpSftpHandler(scpMap, expressApp) {
         }
         case 'details': {
           const names = req.body.names || [];
-          res.json({ cwd: { name: pathParam, type: 'folder' }, files: await getDetails(sftp, pathParam, names) });
+          res.json({ cwd: { name: pathParam, type: 'folder' }, details: await getDetails(sftp, pathParam, names) });
           break;
         }
 
@@ -125,7 +125,6 @@ function initScpSftpHandler(scpMap, expressApp) {
 // File Upload
   expressApp.post('/api/v1/scp/upload/:id', upload.single('uploadFiles'), async (req, res) => {
     const {  data } = req.body;
-    console.log(req.body);
     const path = JSON.parse(data).name; // path is incorrect on req.body
     const configId = req.params['id'];
     const config = scpMap.get(configId);
@@ -238,34 +237,42 @@ function initScpSftpHandler(scpMap, expressApp) {
     return targetFilePath;
   }
   async function getDetails(sftp, path, names = undefined) {
-    const details = [];
     if (!names) {
       const fullPath = `${path}/`;
       const stats = await sftp.stat(fullPath);
 
-      details.push({
+      return {
         name: fullPath,
         type: stats.isDirectory ? 'folder' : 'file',
         size: stats.size,
         accessTime: stats.atime,
         modifyTime: stats.mtime,
         createTime: stats.birthtime || null, // birthtime may not always be available
-      });
+      };
     } else {
+      let details;
       for (const name of names) {
         const fullPath = `${path}${name}`;
         const stats = await sftp.stat(fullPath);
-        details.push({
-          name: name,
-          type: stats.isDirectory ? 'folder' : 'file',
-          size: stats.size,
-          accessTime: stats.atime,
-          modifyTime: stats.mtime,
-          createTime: stats.birthtime || null, // birthtime may not always be available
-        });
+        if (details) {
+          details.size = details.size + stats.size;
+          details.name = details.name + ", " + name;
+          details.multipleFiles = true;
+          details.type = undefined;
+          details.modified = undefined;
+        } else {
+          details = {
+            name: name,
+            type: stats.isDirectory ? 'folder' : 'file',
+            size: stats.size,
+            location: path,
+            modified: stats.modifyTime,
+          }
+        }
       }
+      return details;
     }
-    return details;
+
   }
 
 
