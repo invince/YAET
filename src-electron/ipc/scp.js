@@ -71,9 +71,9 @@ function initScpSftpHandler(scpMap, expressApp) {
             const targetFilePathOg = `${targetPath}${name}`;
             const targetFilePath = await avoidDuplicateName(sftp, targetFilePathOg);
             // Copy file
-            await sftp.rcopy(sourceFilePath, targetFilePath)
-            res.json({ cwd: { name: pathParam, type: 'folder' }, files: await getDetails(sftp, targetPath, names) });
+            await sftp.rcopy(sourceFilePath, targetFilePath);
           }
+          res.json({ cwd: { name: pathParam, type: 'folder' }, files: await getDetails(sftp, targetPath, names) });
           break;
         }
         case 'move': {
