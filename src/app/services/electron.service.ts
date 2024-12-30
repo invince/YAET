@@ -197,7 +197,14 @@ export class ElectronService {
         }
       }
     }
-    this.ipc.send(SESSION_OPEN_SSH_TERMINAL, {terminalId: tab.id, config: sshConfig});
+    let data: {[key: string]: any;} = {terminalId: tab.id, config: sshConfig};
+    if (sshProfile.initPath) {
+      data['initPath'] = sshProfile.initPath;
+    }
+    if (sshProfile.initCmd) {
+      data['initCmd'] = sshProfile.initCmd;
+    }
+    this.ipc.send(SESSION_OPEN_SSH_TERMINAL, data);
     this.tabService.connected(tab.id);
   }
 
