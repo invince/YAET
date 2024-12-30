@@ -4,9 +4,9 @@ import {Profile} from './profile/Profile';
 export const NODE_DEFAULT_NAME: string = 'default';
 
 export class GroupNode {
-  name? : string;
+  name! : string;
 
-  oldName? : string;
+  oldName! : string;
 
   id? : string;
 
@@ -113,6 +113,7 @@ export class GroupNode {
       }
       result.push(defaultNode);
     }
+    result = this.sortChild(result, (a: GroupNode, b: GroupNode) => a.name.localeCompare(b.name));
     return result;
   }
 
@@ -144,5 +145,16 @@ export class GroupNode {
       this.children.push(groupNode);
     }
 
+  }
+
+  private static sortChild(nodes: GroupNode[], comparator: (a: GroupNode, b: GroupNode) => number): GroupNode[] {
+    return nodes.map(
+      node => {
+        if (node.children) {
+          node.children = node.children.sort(comparator);
+        }
+        return node;
+      }
+    );
   }
 }

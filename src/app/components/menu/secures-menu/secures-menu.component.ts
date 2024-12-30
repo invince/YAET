@@ -21,6 +21,7 @@ import {ConfirmationComponent} from '../../confirmation/confirmation.component';
 import {MatDialog} from '@angular/material/dialog';
 import {ModalControllerService} from '../../../services/modal-controller.service';
 import {MenuConsts} from '../../../domain/MenuConsts';
+import {Profile} from '../../../domain/profile/Profile';
 
 @Component({
   selector: 'app-secures-menu',
@@ -94,6 +95,7 @@ export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements
     }
 
     this.secretsCopy = this.secretStorageService.data;
+    this.secretsCopy.secrets = this.secretsCopy.secrets.sort((a: Secret, b: Secret) => a.name.localeCompare(b.name));
   }
 
   addTab() {
