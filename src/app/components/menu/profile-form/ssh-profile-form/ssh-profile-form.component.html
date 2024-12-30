@@ -18,6 +18,35 @@
     <input matInput type="number" formControlName="port" required/>
   </mat-form-field>
 
+  <mat-form-field class="field">
+    <mat-label>Init Path</mat-label>
+    <input matInput type="text" formControlName="path"/>
+    @if (form.get('path')?.value) {
+    <button
+      matSuffix
+      mat-icon-button
+      aria-label="Clear"
+      (click)="clear(form,'path')">
+      <mat-icon>close</mat-icon>
+    </button>
+    }
+  </mat-form-field>
+
+  @if (type !== 'scp') {
+    <mat-form-field class="field">
+      <mat-label>Init Command</mat-label>
+      <textarea matInput type="text" formControlName="cmd" cdkTextareaAutosize></textarea>
+      @if (form.get('cmd')?.value) {
+      <button
+        matSuffix
+        mat-icon-button
+        aria-label="Clear"
+        (click)="clear(form,'cmd')">
+        <mat-icon>close</mat-icon>
+      </button>
+      }
+    </mat-form-field>
+  }
   <mat-radio-group aria-label="Auth Type" formControlName="authType" required>
     @for (oneType of AUTH_OPTIONS | keyvalue : unordered; track oneType.value) {
     <mat-radio-button [value]="oneType.value">{{ oneType.value }}</mat-radio-button>

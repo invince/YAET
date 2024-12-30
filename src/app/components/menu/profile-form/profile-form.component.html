@@ -107,7 +107,7 @@
             <app-ssh-profile-form formControlName="sshProfileForm"></app-ssh-profile-form>
           }
           @case('SCP_FILE_EXPLORER') {
-            <app-ssh-profile-form formControlName="sshProfileForm"></app-ssh-profile-form>
+            <app-ssh-profile-form formControlName="sshProfileForm" [type]="'scp'"></app-ssh-profile-form>
           }
 
           @case('RDP_REMOTE_DESKTOP') {
