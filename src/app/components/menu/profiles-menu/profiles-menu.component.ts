@@ -111,7 +111,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     }
 
     this.profilesCopy = this.profileService.profiles;
-
+    this.profilesCopy.profiles = this.profilesCopy.profiles.sort((a: Profile, b: Profile) => a.name.localeCompare(b.name));
     this.sideNavType = this.settingStorage.settings.ui.profileSideNavType;
     this.refreshForm();
   }
