@@ -3,6 +3,7 @@ import {FileManagerAllModule, FileManagerModule} from '@syncfusion/ej2-angular-f
 import {TabInstance} from '../../../domain/TabInstance';
 import {ScpService} from '../../../services/scp.service';
 import {AuthType} from '../../../domain/Secret';
+import {TabService} from '../../../services/tab.service';
 
 
 @Component({
@@ -32,12 +33,13 @@ export class ScpComponent implements OnInit{
   public toolbarSettings = {
     visible: true, // Show toolbar
   };
-  constructor(private scpService: ScpService) {
+  constructor(private scpService: ScpService,
+              private tabService: TabService) {
   }
   ngOnInit(): void {
 
     this.scpService.connect(this.tab.id, this.tab.profile.sshProfile).then(
-      () => this.tab.connected = true
+      () => this.tabService.connected(this.tab.id)
     );
 
     if (this.tab.profile.sshProfile?.initPath) {

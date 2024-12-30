@@ -3,7 +3,6 @@ import {ElectronService} from '../../services/electron.service';
 import {NgTerminal, NgTerminalModule} from 'ng-terminal';
 import {Terminal} from '@xterm/xterm';
 import {TabInstance} from '../../domain/TabInstance';
-import {TabService} from '../../services/tab.service';
 
 @Component({
   selector: 'app-terminal',
