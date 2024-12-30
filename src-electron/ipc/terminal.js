@@ -69,6 +69,16 @@ function initTerminalIpcHandler(terminalMap) {
         }
         console.log('Shell started for id:', id);
 
+        if (data.initPath) {
+          const initPath = data.initPath;
+          stream.write(`cd ${initPath}\n`);
+        }
+
+        if (data.initCmd) {
+          const initCmd = data.initCmd;
+          stream.write(`${initCmd}\n`);
+        }
+
         stream.on('data', (data) => {
           event.sender.send('terminal.output',
             {id: id, data: data.toString()}
