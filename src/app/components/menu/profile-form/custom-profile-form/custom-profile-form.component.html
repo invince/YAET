@@ -31,6 +31,11 @@
   @case (AUTH_OPTIONS.LOGIN) {
 
   <mat-form-field class="field" required>
+    <mat-label>Login</mat-label>
+    <input matInput formControlName="login" />
+  </mat-form-field>
+
+  <mat-form-field class="field" required>
     <mat-label>Password</mat-label>
     <input matInput type="password" formControlName="password" />
   </mat-form-field>

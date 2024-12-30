@@ -17,11 +17,16 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatIcon} from '@angular/material/icon';
 import {MatIconButton} from '@angular/material/button';
-import {AuthType, Secret} from '../../../../domain/Secret';
+import {AuthType} from '../../../../domain/Secret';
 import {SecretStorageService} from '../../../../services/secret-storage.service';
 import {SettingStorageService} from '../../../../services/setting-storage.service';
 import {SecretService} from '../../../../services/secret.service';
 import {VncProfile} from '../../../../domain/profile/VncProfile';
+import {
+  FormFieldWithPrecondition,
+  ModelFieldWithPrecondition,
+  ModelFormController
+} from '../../../../utils/ModelFormController';
 
 @Component({
   selector: 'app-vnc-profile-form',
@@ -57,6 +62,7 @@ import {VncProfile} from '../../../../domain/profile/VncProfile';
 export class VncProfileFormComponent extends ChildFormAsFormControl(MenuComponent)  {
   AUTH_OPTIONS = AuthType;
 
+  private modelFormController : ModelFormController<VncProfile>;
   constructor(
     private fb: FormBuilder,
     public secretStorageService: SecretStorageService, // in html
@@ -64,22 +70,21 @@ export class VncProfileFormComponent extends ChildFormAsFormControl(MenuComponen
     public settingStorage: SettingStorageService,
   ) {
     super();
+
+    let mappings = new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>();
+    mappings.set('host' , {name: 'host', formControlOption:  ['', [Validators.required]]});
+    mappings.set('port' , {name: 'port', formControlOption:  ['', [Validators.required]]});
+    mappings.set('authType' , {name: 'authType', formControlOption:  ['', [Validators.required]]});
+    mappings.set({name: 'password', precondition: form => this.form.get('authType')?.value  == 'login'} , 'password');
+    mappings.set({name: 'password', precondition: form => false } , 'confirmPassword'); // we don't set model.password via confirmPassword control
+    mappings.set({name: 'secretId', precondition: form => this.form.get('authType')?.value  == 'secret' } , 'secretId');
+
+    this.modelFormController = new ModelFormController<VncProfile>(mappings);
   }
 
   onInitForm(): FormGroup {
-    return  this.fb.group(
-      {
-        host:                 ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
-        port:                 ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
-        authType:             ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
-        login:                [],
-        password:             [],
-        confirmPassword:      [],
-        secretId:             [],
-
-      },
-      {validators: [this.secretOrPasswordMatchValidator]}
-    );
+    // we shall avoid use ngModel and formControl at same time
+    return this.modelFormController.onInitForm(this.fb, {validators: [this.secretOrPasswordMatchValidator]});
   }
 
 
@@ -116,31 +121,12 @@ export class VncProfileFormComponent extends ChildFormAsFormControl(MenuComponen
 
   override refreshForm(vnc: any) {
     if (this.form) {
-      this.form.reset();
-
-      this.form.get('host')?.setValue(vnc?.host);
-      this.form.get('port')?.setValue(vnc?.port);
-      this.form.get('authType')?.setValue(vnc?.authType);
-      this.form.get('password')?.setValue(vnc?.password);
-      this.form.get('confirmPassword')?.setValue(vnc?.password);
-      this.form.get('secretId')?.setValue(vnc?.secretId);
-
-
-      this.onSubmit(); // reset dirty and invalid status
+      this.modelFormController.refreshForm(vnc, this.form);
     }
   }
 
   override formToModel(): VncProfile {
-    let vnc = new VncProfile();
-    vnc.host = this.form.get('host')?.value;
-    vnc.port = this.form.get('port')?.value;
-    vnc.authType = this.form.get('authType')?.value;
-    if (vnc.authType  == 'login') {
-      vnc.password = this.form.get('password')?.value;
-    } else if (vnc.authType  == 'secret') {
-      vnc.secretId = this.form.get('secretId')?.value;
-    }
-    return vnc;
+    return this.modelFormController.formToModel(new VncProfile(), this.form);
   }
 
   onSelectAuthType($event: MatRadioChange) {

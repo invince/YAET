@@ -23,6 +23,12 @@ import {SecretStorageService} from '../../../../services/secret-storage.service'
 import {SettingStorageService} from '../../../../services/setting-storage.service';
 import {SecretService} from '../../../../services/secret.service';
 import {CdkTextareaAutosize} from '@angular/cdk/text-field';
+import {
+  FormFieldWithPrecondition,
+  ModelFieldWithPrecondition,
+  ModelFormController
+} from '../../../../utils/ModelFormController';
+import {VncProfile} from '../../../../domain/profile/VncProfile';
 
 @Component({
   selector: 'app-ssh-profile-form',
@@ -61,7 +67,7 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
   AUTH_OPTIONS = AuthType;
 
   @Input() type!: String;
-
+  private modelFormController : ModelFormController<SSHProfile>;
   constructor(
     private fb: FormBuilder,
     public secretStorageService: SecretStorageService, // in html
@@ -70,24 +76,23 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
     public settingStorage: SettingStorageService,
   ) {
     super();
+
+    let mappings = new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>();
+    mappings.set('host' , {name: 'host', formControlOption:  ['', [Validators.required]]});
+    mappings.set('port' , {name: 'port', formControlOption:  ['', [Validators.required]]});
+    mappings.set('initPath' , 'path');
+    mappings.set('initCmd' , 'cmd');
+    mappings.set('authType' , {name: 'authType', formControlOption:  ['', [Validators.required]]});
+    mappings.set({name: 'login', precondition: form => this.form.get('authType')?.value  == 'login'} , 'login');
+    mappings.set({name: 'password', precondition: form => this.form.get('authType')?.value  == 'login'} , 'password');
+    mappings.set({name: 'password', precondition: form => false } , 'confirmPassword'); // we don't set model.password via confirmPassword control
+    mappings.set({name: 'secretId', precondition: form => this.form.get('authType')?.value  == 'secret' } , 'secretId');
+
+    this.modelFormController = new ModelFormController<SSHProfile>(mappings);
   }
 
   onInitForm(): FormGroup {
-    return  this.fb.group(
-      {
-        host:                 ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
-        port:                 ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
-        path:                 [''], // we shall avoid use ngModel and formControl at same time
-        cmd:                  [''], // we shall avoid use ngModel and formControl at same time
-        authType:             ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
-        login:                [],
-        password:             [],
-        confirmPassword:      [],
-        secretId:             [],
-
-      },
-      {validators: [this.secretOrPasswordMatchValidator]}
-    );
+    return this.modelFormController.onInitForm(this.fb, {validators: [this.secretOrPasswordMatchValidator]});  // we shall avoid use ngModel and formControl at same time
   }
 
 
@@ -119,36 +124,11 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
 
   override refreshForm(ssh: any) {
     if (this.form) {
-      this.form.reset();
-
-      this.form.get('host')?.setValue(ssh?.host);
-      this.form.get('port')?.setValue(ssh?.port);
-      this.form.get('authType')?.setValue(ssh?.authType);
-      this.form.get('login')?.setValue(ssh?.login);
-      this.form.get('password')?.setValue(ssh?.password);
-      this.form.get('confirmPassword')?.setValue(ssh?.password);
-      this.form.get('secretId')?.setValue(ssh?.secretId);
-      this.form.get('path')?.setValue(ssh?.initPath);
-      this.form.get('cmd')?.setValue(ssh?.initCmd);
-
-
-      this.onSubmit(); // reset dirty and invalid status
+      this.modelFormController.refreshForm(ssh, this.form);
     }
   }
 
   override formToModel(): SSHProfile {
-    let ssh = new SSHProfile();
-    ssh.host = this.form.get('host')?.value;
-    ssh.port = this.form.get('port')?.value;
-    ssh.authType = this.form.get('authType')?.value;
-    if (ssh.authType  == 'login') {
-      ssh.login = this.form.get('login')?.value;
-      ssh.password = this.form.get('password')?.value;
-    } else if (ssh.authType  == 'secret') {
-      ssh.secretId = this.form.get('secretId')?.value;
-    }
-    ssh.initPath = this.form.get('path')?.value;
-    ssh.initCmd = this.form.get('cmd')?.value;
-    return ssh;
+    return this.modelFormController.formToModel(new SSHProfile(), this.form);
   }
 }

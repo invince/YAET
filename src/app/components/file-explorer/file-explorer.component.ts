@@ -1,6 +1,5 @@
-import {Component, Input, ViewChild} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {TabInstance} from '../../domain/TabInstance';
-import {NgTerminal} from 'ng-terminal';
 import {ScpComponent} from "./scp/scp.component";
 
 @Component({

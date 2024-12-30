@@ -67,8 +67,8 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
     private _snackBar: MatSnackBar,
 
     private spinner: NgxSpinnerService
-) {
-    super();
+  ) {
+      super();
   }
 
   ngOnDestroy(): void {
