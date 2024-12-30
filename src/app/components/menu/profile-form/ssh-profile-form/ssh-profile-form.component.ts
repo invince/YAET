@@ -1,4 +1,4 @@
-import {Component, forwardRef} from '@angular/core';
+import {Component, forwardRef, Input} from '@angular/core';
 import {SSHProfile} from '../../../../domain/profile/SSHProfile';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
@@ -22,6 +22,7 @@ import {MatRadioModule} from '@angular/material/radio';
 import {SecretStorageService} from '../../../../services/secret-storage.service';
 import {SettingStorageService} from '../../../../services/setting-storage.service';
 import {SecretService} from '../../../../services/secret.service';
+import {CdkTextareaAutosize} from '@angular/cdk/text-field';
 
 @Component({
   selector: 'app-ssh-profile-form',
@@ -33,6 +34,8 @@ import {SecretService} from '../../../../services/secret.service';
     MatSelectModule,
     MatRadioModule,
     MatFormFieldModule,
+
+    CdkTextareaAutosize,
 
     MatInput,
     MatIcon,
@@ -57,6 +60,8 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
 
   AUTH_OPTIONS = AuthType;
 
+  @Input() type!: String;
+
   constructor(
     private fb: FormBuilder,
     public secretStorageService: SecretStorageService, // in html
@@ -72,6 +77,8 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
       {
         host:                 ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
         port:                 ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
+        path:                 [''], // we shall avoid use ngModel and formControl at same time
+        cmd:                  [''], // we shall avoid use ngModel and formControl at same time
         authType:             ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
         login:                [],
         password:             [],
@@ -121,6 +128,8 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
       this.form.get('password')?.setValue(ssh?.password);
       this.form.get('confirmPassword')?.setValue(ssh?.password);
       this.form.get('secretId')?.setValue(ssh?.secretId);
+      this.form.get('path')?.setValue(ssh?.initPath);
+      this.form.get('cmd')?.setValue(ssh?.initCmd);
 
 
       this.onSubmit(); // reset dirty and invalid status
@@ -138,6 +147,8 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
     } else if (ssh.authType  == 'secret') {
       ssh.secretId = this.form.get('secretId')?.value;
     }
+    ssh.initPath = this.form.get('path')?.value;
+    ssh.initCmd = this.form.get('cmd')?.value;
     return ssh;
   }
 }

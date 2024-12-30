@@ -10,7 +10,8 @@
     "test": "ng test",
     "start": "concurrently \"npm run ng:serve\" \"npm run electron:dev\"",
     "ng:serve": "ng serve",
-    "electron:dev": "wait-on http://localhost:4200 && cross-env NODE_ENV=development electron ."
+    "electron:dev": "wait-on http://localhost:4200 && cross-env NODE_ENV=development electron .",
+    "postinstall": "patch-package"
   },
   "build": {
     "appId": "io.github.invince",
@@ -49,7 +50,7 @@
     "@angular/router": "^18.2.0",
     "@novnc/novnc": "^1.5.0",
     "@syncfusion/ej2-angular-base": "^28.1.33",
-    "@syncfusion/ej2-angular-filemanager": "^28.1.33",
+    "@syncfusion/ej2-angular-filemanager": "^28.1.36",
     "@types/novnc__novnc": "^1.5.0",
     "@xterm/addon-web-links": "^0.11.0",
     "archiver": "^7.0.1",
@@ -62,6 +63,7 @@
     "ng-terminal": "^6.2.0",
     "ngx-spinner": "^17.0.0",
     "node-pty": "^1.0.0",
+    "patch-package": "^8.0.0",
     "rxjs": "~7.8.0",
     "simple-git": "^3.27.0",
     "ssh2": "^1.16.0",

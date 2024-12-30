@@ -19,6 +19,8 @@ export class ScpComponent implements OnInit{
 
   @Input() tab!: TabInstance;
 
+  path:string = '/';
+
   public ajaxSettings = {};
   public navigationPaneSettings = {
     visible: true, // Show navigation pane
@@ -37,6 +39,11 @@ export class ScpComponent implements OnInit{
     this.scpService.connect(this.tab.id, this.tab.profile.sshProfile).then(
       () => this.tab.connected = true
     );
+
+    if (this.tab.profile.sshProfile?.initPath) {
+      this.path = this.tab.profile.sshProfile.initPath;
+    }
+
 
     this.ajaxSettings = {
       url: 'http://localhost:3000/api/v1/scp/' + this.tab.id, // Custom backend API
