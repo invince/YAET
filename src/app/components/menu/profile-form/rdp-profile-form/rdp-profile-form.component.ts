@@ -76,6 +76,8 @@ export class RdpProfileFormComponent extends ChildFormAsFormControl(MenuComponen
       this.form.reset();
 
       this.form.get('host')?.setValue(rdpProfile?.host);
+      this.form.get('fullScreen')?.setValue(rdpProfile?.fullScreen);
+      this.form.get('asAdmin')?.setValue(rdpProfile?.asAdmin);
       this.onSubmit(); // reset dirty and invalid status
     }
   }
