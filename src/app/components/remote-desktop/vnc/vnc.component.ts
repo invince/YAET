@@ -3,6 +3,7 @@ import {VncService} from '../../../services/vnc.service';
 import {TabInstance} from '../../../domain/TabInstance';
 import {NgxSpinnerService} from 'ngx-spinner';
 import {MatSnackBar} from '@angular/material/snack-bar';
+import {TabService} from '../../../services/tab.service';
 
 
 @Component({
@@ -23,7 +24,7 @@ export class VncComponent implements AfterViewInit, OnChanges {
     public vncService: VncService,
     private spinner: NgxSpinnerService,
     private _snackBar: MatSnackBar,
-
+    private tabService: TabService,
   ) {}
 
 
@@ -47,7 +48,10 @@ export class VncComponent implements AfterViewInit, OnChanges {
     this.spinner.show();
     this.vncService.connect(this.tab?.id, this.tab?.profile?.vncProfile, this.vncContainer)
       .then(
-        () => this.spinner.hide()
+        () => {
+          this.spinner.hide();
+          this.tabService.connected(this.tab.id);
+        }
       ).catch(
         err => {
           this.spinner.hide();
@@ -61,6 +65,7 @@ export class VncComponent implements AfterViewInit, OnChanges {
 
   disconnect() {
     this.vncService.disconnect(this.tab?.id);
+    this.tabService.disconnected(this.tab.id);
   }
 
   showRealSize() {
