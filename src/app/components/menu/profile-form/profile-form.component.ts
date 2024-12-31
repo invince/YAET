@@ -308,12 +308,13 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     this.groupColor = $event.value.color;
   }
 
-  remove(tag: Tag) {
+  removeTag(tag: Tag) {
     if (!tag) {
       return;
     }
     const currentTags = this.form.get('tags')?.value || [];
     this.form.get('tags')?.setValue(currentTags.filter((one: Tag) => one.id != tag.id));
+    this.form.get('tags')?.markAsDirty(); // force to dirty
     this.form.get('tags')?.updateValueAndValidity();
   }
 
