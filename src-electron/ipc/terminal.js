@@ -11,9 +11,18 @@ function initTerminalIpcHandler(terminalMap) {
     return terminalExec;
   }
 
+  ipcMain.on('session.close.terminal.local', (event, data) => {
+    const id = data.terminalId;
+    terminalMap.get(id)?.process.removeAllListeners();
+    terminalMap.get(id)?.process.kill();
+    terminalMap.delete(id);
+    console.log('Local Terminal ' + id + ' closed');
+  });
+
   ipcMain.on('session.open.terminal.local', (event, data) => {
 
     const id = data.terminalId; // cf ElectronService
+    console.log('Local Terminal ' + id + ' ready');
     let shell = validate(data.terminalExec);
     const ptyProcess = pty.spawn(shell, [], {
       name: 'xterm-color',
@@ -22,10 +31,16 @@ function initTerminalIpcHandler(terminalMap) {
       cwd: process.env.HOME,
       env: process.env,
     });
-    ptyProcess.on('data', (data) => {
+
+    ptyProcess.onData((data) => {
       event.sender.send('terminal.output',
         {id: id, data: data.toString()}
       );
+    });
+
+    ptyProcess.on('error', (err) => {
+      // there is a strange error when we do kill, ptyProcess continue receiving an \n, add onError can prevent error popup
+      console.error(`Error in terminal ${id}:`, err);
     });
 
     terminalMap.set(id,
@@ -50,6 +65,13 @@ function initTerminalIpcHandler(terminalMap) {
     }
   });
 
+  ipcMain.on('session.close.terminal.ssh', (event, data) => {
+    const id = data.terminalId;
+    terminalMap.get(id)?.process.end();
+    terminalMap.delete(id);
+    console.log('SSH connection ' + id + ' closed');
+  });
+
   ipcMain.on('session.open.terminal.ssh', (event, data) => {
     const conn = new Client();
     const sshConfig = data.config;
@@ -59,7 +81,6 @@ function initTerminalIpcHandler(terminalMap) {
       console.log('DEBUG:', info);
     };
 
-    console.log(sshConfig);
     conn.on('ready', () => {
       console.log('SSH connection ready for id:', id);
       conn.shell((err, stream) => {
@@ -107,13 +128,14 @@ function initTerminalIpcHandler(terminalMap) {
     // Handle end event
     conn.on('end', () => {
       console.log('SSH connection ended for id:', id);
-      event.sender.send('session.disconnect.terminal.ssh', { id: id });
     });
 
     // Handle close event
     conn.on('close', (hadError) => {
-      console.log(`SSH connection closed for id: ${id}, hadError: ${hadError}`);
-      event.sender.send('session.disconnect.terminal.ssh', { id: id });
+      if (hadError) {
+        console.log(`SSH connection closed for id: ${id}, hadError: ${hadError}`);
+        event.sender.send('session.disconnect.terminal.ssh', { id: id });
+      }
     });
   });
 

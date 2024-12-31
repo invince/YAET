@@ -16,6 +16,7 @@ const {initScpSftpHandler} = require("./ipc/scp");
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require("express");
+const {IPty} = require("node-pty");
 
 
 const expressApp = express(); // we define the express backend here, because maybe multiple module needs create custom backend
@@ -88,7 +89,16 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
 
     terminalMap.forEach((value) => {
-      value?.process?.kill();
+      switch (value.type) {
+        case 'local':
+          value.process?.removeAllListeners();
+          value.process?.kill() ;
+          break;
+        case 'ssh':
+          value.process?.end() ;
+          break;
+
+      }
     });
 
     vncMap.forEach((value) => {
