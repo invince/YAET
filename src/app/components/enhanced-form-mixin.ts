@@ -43,10 +43,10 @@ export function IsAChildForm<TBase extends Constructor>(Base: TBase) {
 
     form!: FormGroup;
     @Output() dirtyStateChange = new EventEmitter<boolean>();
-    private lastDirtyState = false;
+    private lastDirtyState?: boolean = undefined;
     // @ts-ignore
     @Output() invalidStateChange = new EventEmitter<boolean>();
-    private lastInvalidState = false;
+    private lastInvalidState?: boolean = undefined;
 
     private subscriptions: Subscription[] = [];
 
@@ -82,7 +82,6 @@ export function IsAChildForm<TBase extends Constructor>(Base: TBase) {
       // Reset the dirty state
       this.form.markAsPristine();
       this.form.markAsUntouched();
-      this.invalidStateChange.emit(false);
       this.dirtyStateChange.emit(false);
     }
 

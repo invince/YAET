@@ -117,10 +117,10 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   }
 
   addTab() {
-    this.doAddTab(new Profile());
+    this.doAddTabOfProfile(new Profile());
   }
 
-  doAddTab(newProfile: Profile) {
+  doAddTabOfProfile(newProfile: Profile) {
     this.profilesCopy.profiles.push(newProfile);
     this.selectedProfileId = newProfile.id;// Focus on the newly added tab
     this.selectedProfile = newProfile;
@@ -136,7 +136,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
 
   onCloneOne($event: Profile) {
     // we'll add a new tab, and copy all the fields of $event
-    this.doAddTab(Profile.clone($event));
+    this.doAddTabOfProfile(Profile.clone($event));
   }
 
   onTabChange(profile: Profile) {
