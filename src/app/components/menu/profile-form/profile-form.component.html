@@ -34,7 +34,7 @@
               <mat-chip-row
                   class="tag-chip"
                   [removable]="true"
-                  (removed)="remove(tag)"
+                  (removed)="removeTag(tag)"
                   [style.background]="tag.color"
                   [attr.aria-description]="'press enter to edit ' + tag.name"
                   [value]="tag"
