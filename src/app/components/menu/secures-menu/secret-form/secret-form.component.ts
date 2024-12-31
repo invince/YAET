@@ -14,6 +14,7 @@ import {
   ModelFieldWithPrecondition,
   ModelFormController
 } from '../../../../utils/ModelFormController';
+import {SecretStorageService} from '../../../../services/secret-storage.service';
 
 @Component({
   selector: 'app-secret-form',
@@ -51,7 +52,11 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
     this.refreshForm(value);
   }
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private secretStorageService: SecretStorageService,
+
+  ) {
     super();
 
     let mappings = new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>();
@@ -67,7 +72,7 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
   }
 
   onInitForm(): FormGroup {
-    return this.modelFormController.onInitForm(this.fb, {validators: [this.checkCurrentSecret, this.passwordMatchValidator]});
+    return this.modelFormController.onInitForm(this.fb, {validators: [this.secretNameShouldBeUnique(this.secretStorageService), this.checkCurrentSecret, this.passwordMatchValidator]});
 
   }
 
@@ -81,7 +86,17 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
     return null;
   }
 
-  checkCurrentSecret(group: FormGroup) {
+  secretNameShouldBeUnique(secretStorageService: SecretStorageService) { // NOTE: inside validatorFn, we cannot use inject thing
+    return (group: FormGroup) => {
+      let name = group.get('name')?.value;
+      if (name && secretStorageService.data.secrets?.find(one => one.name == name)) {
+        return {duplicateSecret: true};
+      }
+      return null;
+    }
+  }
+
+    checkCurrentSecret(group: FormGroup) {
     if (!group.dirty) {
       return null;
     }
