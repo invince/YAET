@@ -63,12 +63,14 @@ app.on('ready', () => {
     fs.mkdirSync(APP_CONFIG_PATH);
   }
 
-  mainWindow.webContents.once('dom-ready', () => {
-    load( SETTINGS_JSON, "settings.loaded", false, mainWindow);
-    load( PROFILES_JSON, "profiles.loaded", false, mainWindow);
-    load( SECRETS_JSON, "secrets.loaded", true, mainWindow);
-    load( CLOUD_JSON, "cloud.loaded", true, mainWindow);
+  // Ensure `load` runs on every page reload
+  mainWindow.webContents.on('did-finish-load', () => {
+    load(SETTINGS_JSON, "settings.loaded", false, mainWindow);
+    load(PROFILES_JSON, "profiles.loaded", false, mainWindow);
+    load(SECRETS_JSON, "secrets.loaded", true, mainWindow);
+    load(CLOUD_JSON, "cloud.loaded", true, mainWindow);
   });
+
   // createMenu();
   initConfigFilesIpcHandler(mainWindow);
   initTerminalIpcHandler(terminalMap);
