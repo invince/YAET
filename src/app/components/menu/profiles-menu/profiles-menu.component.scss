@@ -1,70 +1,105 @@
+// Modal Styling
 .modal-content {
   width: 900px;
   display: flex;
+  padding: 0;
+
+  .one-form {
+    background-color: #696969;
+    flex: 1; // Allow the child to grow
+    display: flex;
+    flex-direction: column; // Adjust for your layout
+  }
 }
 
-
-.field {
-  width: 100%;
-}
-
+// Sidenav Container
 .sidenav-container {
   height: 100%;
 }
 
 .sidenav {
-  width: 200px; /* Adjust the width as needed */
+  width: 200px; // Adjust the width as needed
   display: flex;
   flex-direction: column;
-  height: 100%; /* Ensure it fills the parent container */
+  height: 100%; // Ensure it fills the parent container
+
+  // Filter Section
+  .sidenav-filter {
+    flex-shrink: 0; // Avoid shrinking
+  }
+
+  // Add Button Section
+  .sidenav-add {
+    flex-shrink: 0; // Avoid shrinking
+
+    button {
+      width: 100%;
+      text-align: left;
+    }
+  }
+
+  // Type Bar Section
+  .sidenav-bottom-bar {
+    margin-top: auto; // Push this element to the bottom
+    display: flex;
+    justify-content: space-around; // Distribute buttons evenly
+    padding: 8px 0;
+    border-top: 1px solid #ccc; // Optional: Add a top border for separation
+  }
+
+  // Sidenav Content
+  .sidenav-content {
+    flex-grow: 1;
+    overflow-y: auto;
+  }
+
+  // Sidenav Item
+  .sidenav-item {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    height: 40px;
+
+    button {
+      width: 100%;
+      text-align: left;
+      justify-content: start;
+      padding-left: 20px;
+    }
+  }
 }
 
-.sidenav-item {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  height: 40px;
+// Group Tree
+.group-tree {
+  .child-tree-invisible {
+    display: none;
+  }
+
+  .mat-nested-tree-node {
+    div[role='group'] {
+      padding-left: 28px;
+      padding-bottom: 10px;
+
+      > .mat-nested-tree-node {
+        display: flex;
+        align-items: center; // Aligns items vertically
+        padding-left: 0;
+        padding-bottom: 12px;
+      }
+    }
+  }
+
+  .tree-parent-node {
+    display: flex;
+    align-items: center; // Aligns items vertically
+
+    .group-name {
+      font-weight: bold;
+    }
+  }
 }
 
-.sidenav-add button {
-  width: 100%;
-  text-align: left;
-}
-
-.sidenav-item button {
-  width: 100%;
-  text-align: left;
-  justify-content: start;
-  padding-left: 20px;
-}
-
-.mat-sidenav-content {
-  width: 700px;
-}
-
-.one-form {
-  background-color: #696969;
-  flex: 1; /* Allow the child to grow */
-  display: flex;
-  flex-direction: column; /* Adjust for your layout */
-}
-
-app-secret-form {
-  margin: 0;
-}
-
-.modal-content {
-  padding: 0;
-}
-
-.sidenav-type-bar {
-  margin-top: auto; /* Push this element to the bottom */
-  display: flex;
-  justify-content: space-around; /* Distribute buttons evenly */
-  padding: 8px 0;
-  border-top: 1px solid #ccc; /* Optional: Add a top border for separation */
-}
-
+// Group Name
 .group-name {
   cursor: pointer;
   display: flex;
@@ -75,31 +110,12 @@ app-secret-form {
   }
 }
 
-
-.group-tree {
-  .child-tree-invisible {
-    display: none;
-  }
-
-  .mat-nested-tree-node div[role=group] {
-    padding-left: 28px;
-    padding-bottom: 10px;
-  }
-
-  div[role=group] > .mat-nested-tree-node {
-    display: flex;
-    align-items: center; /* Aligns items vertically */
-    padding-left: 0px;
-    padding-bottom: 12px;
-  }
-
-  .tree-parent-node {
-    display: flex;
-    align-items: center; /* Aligns items vertically */
-
-    .group-name {
-      font-weight: bold;
-    }
-  }
+// Field Styling
+.field {
+  width: 100%;
 }
 
+// Mat Sidenav Content
+.mat-sidenav-content {
+  width: 700px;
+}
