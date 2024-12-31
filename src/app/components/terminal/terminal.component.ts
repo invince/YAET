@@ -1,4 +1,13 @@
-import {Component, Input, ViewChild, AfterViewInit, ViewEncapsulation, OnChanges, SimpleChanges} from '@angular/core';
+import {
+  Component,
+  Input,
+  ViewChild,
+  AfterViewInit,
+  ViewEncapsulation,
+  OnChanges,
+  SimpleChanges,
+  OnDestroy
+} from '@angular/core';
 import {ElectronService} from '../../services/electron.service';
 import {NgTerminal, NgTerminalModule} from 'ng-terminal';
 import {Terminal} from '@xterm/xterm';
@@ -12,7 +21,7 @@ import {TabInstance} from '../../domain/TabInstance';
   standalone: true,
   encapsulation: ViewEncapsulation.None
 })
-export class TerminalComponent implements AfterViewInit, OnChanges {
+export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() tab!: TabInstance;
   @ViewChild('term', {static: false}) terminal!: NgTerminal;
   private isViewInitialized = false;
@@ -68,5 +77,9 @@ export class TerminalComponent implements AfterViewInit, OnChanges {
     // Set up data listeners and communication with the Electron main process
     this.electronService.openTerminalSession(this.tab);
 
+  }
+
+  ngOnDestroy() {
+    this.electronService.closeTerminalSession(this.tab);
   }
 }

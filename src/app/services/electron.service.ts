@@ -27,7 +27,7 @@ import {
   CLIPBOARD_PASTE,
   TRIGGER_NATIVE_CLIPBOARD_PASTE,
   SESSION_OPEN_CUSTOM,
-  SESSION_SCP_REGISTER
+  SESSION_SCP_REGISTER, SESSION_CLOSE_LOCAL_TERMINAL, SESSION_CLOSE_SSH_TERMINAL
 } from '../domain/electronConstant';
 import {LocalTerminalProfile} from '../domain/profile/LocalTerminalProfile';
 import {Profile, ProfileType} from '../domain/profile/Profile';
@@ -138,6 +138,18 @@ export class ElectronService {
         case ProfileType.SSH_TERMINAL: this.openSSHTerminalSession(tab); break;
 
 
+      }
+    }
+  }
+  closeTerminalSession(tab: TabInstance) {
+    if (this.ipc) {
+      switch (tab.tabType) {
+        case ProfileType.LOCAL_TERMINAL:
+          this.ipc.send(SESSION_CLOSE_LOCAL_TERMINAL, {terminalId: tab.id});
+          break;
+        case ProfileType.SSH_TERMINAL:
+          this.ipc.send(SESSION_CLOSE_SSH_TERMINAL, {terminalId: tab.id});
+          break;
       }
     }
   }
