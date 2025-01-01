@@ -62,7 +62,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['tab'] && this.isViewInitialized) {
+    if (changes['session'] && this.isViewInitialized) {
       this.initTab();
     }
   }
