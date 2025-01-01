@@ -1,6 +1,6 @@
 import {Component, Input} from '@angular/core';
-import {TabInstance} from '../../domain/TabInstance';
 import {ScpComponent} from "./scp/scp.component";
+import {Session} from '../../domain/session/Session';
 
 @Component({
   selector: 'app-file-explorer',
@@ -12,5 +12,5 @@ import {ScpComponent} from "./scp/scp.component";
   styleUrl: './file-explorer.component.css'
 })
 export class FileExplorerComponent {
-  @Input() tab!: TabInstance;
+  @Input() session!: Session;
 }
