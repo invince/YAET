@@ -6,12 +6,14 @@ import {
   ViewEncapsulation,
   OnChanges,
   SimpleChanges,
-  OnDestroy
+  OnDestroy, ElementRef
 } from '@angular/core';
 import {ElectronService} from '../../services/electron.service';
 import {NgTerminal, NgTerminalModule} from 'ng-terminal';
 import {Terminal} from '@xterm/xterm';
 import {Session} from '../../domain/session/Session';
+import { FitAddon } from '@xterm/addon-fit';
+import { WebLinksAddon } from '@xterm/addon-web-links';
 
 @Component({
   selector: 'app-terminal',
@@ -24,6 +26,7 @@ import {Session} from '../../domain/session/Session';
 export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() session!: Session;
   @ViewChild('term', {static: false}) terminal!: NgTerminal;
+  @ViewChild('termContainer', {static: false}) termContainer!: ElementRef;
   private isViewInitialized = false;
 
   private xtermUnderlying : Terminal | undefined;
@@ -38,7 +41,8 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     // Open terminal in the container
     this.xtermUnderlying = this.terminal.underlying;
     if (this.xtermUnderlying) {
-      // this.xtermUnderlying.loadAddon(new WebLinksAddon());
+      this.xtermUnderlying.loadAddon(new WebLinksAddon());
+      this.xtermUnderlying.loadAddon(new FitAddon());
       this.terminal.setXtermOptions({
         fontFamily: '"Cascadia Code", Menlo, monospace',
         // theme: {
@@ -57,6 +61,15 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
           }
         }
         return true;
+      });
+
+      // right click for paste. NOTE: ctrl + v should work natively
+      this.termContainer.nativeElement.addEventListener('contextmenu', (event: MouseEvent) => {
+        event.preventDefault(); // Prevent the default context menu
+        navigator.clipboard.readText()
+          .then(text => {
+            this.electron.sendTerminalInput(this.session.id, text);
+          })
       });
 
     }
