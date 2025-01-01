@@ -116,4 +116,12 @@ app.on('will-quit', () => {
   globalShortcut.unregisterAll(); // Clean up on app exit
 });
 
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+
+  mainWindow.webContents.send('error', {
+    category: 'exception',
+    error: `Uncaught Exception: ${error.message}`
+  });
+});
 
