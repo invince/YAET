@@ -13,8 +13,8 @@ function initTerminalIpcHandler(terminalMap) {
 
   ipcMain.on('session.close.terminal.local', (event, data) => {
     const id = data.terminalId;
-    terminalMap.get(id)?.process.removeAllListeners();
-    terminalMap.get(id)?.process.kill();
+    let terminal = terminalMap.get(id)?.process;
+    terminal.kill();
     terminalMap.delete(id);
     console.log('Local Terminal ' + id + ' closed');
   });
@@ -30,6 +30,11 @@ function initTerminalIpcHandler(terminalMap) {
       rows: 30,
       cwd: process.env.HOME,
       env: process.env,
+      /* ISSUE 108, useConpty false to avoid Error: read EPIPE on close
+         ref: https://github.com/microsoft/node-pty/issues/512
+              https://github.com/vercel/hyper/issues/6961
+      */
+      useConpty: false
     });
 
     ptyProcess.onData((data) => {
