@@ -46,6 +46,19 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
         // },
         cursorBlink: true
       });
+
+      //  ctrl + shift + c for copy when selecting data, default otherwise
+      this.xtermUnderlying.attachCustomKeyEventHandler((arg) => {
+        if (arg.ctrlKey && arg.shiftKey && arg.code === "KeyC" && arg.type === "keydown") {
+          const selection = this.xtermUnderlying?.getSelection();
+          if (selection) {
+            navigator.clipboard.writeText(selection);
+            return false;
+          }
+        }
+        return true;
+      });
+
     }
 
     this.initTab();
