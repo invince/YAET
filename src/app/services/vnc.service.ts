@@ -104,5 +104,8 @@ export class VncService {
 
   disconnect(id: string) {
     this.electronService.closeVncSession(id);
+    let rfb = this.vncMap.get(id);
+    rfb?.disconnect();
+    this.vncMap.delete(id);
   }
 }
