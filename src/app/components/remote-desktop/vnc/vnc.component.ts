@@ -1,4 +1,13 @@
-import {AfterViewInit, Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  Input,
+  OnChanges,
+  OnDestroy,
+  SimpleChanges,
+  ViewChild
+} from '@angular/core';
 import {NgxSpinnerService} from 'ngx-spinner';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {Session} from '../../../domain/session/Session';
@@ -11,7 +20,7 @@ import {Session} from '../../../domain/session/Session';
   templateUrl: './vnc.component.html',
   styleUrl: './vnc.component.css'
 })
-export class VncComponent implements AfterViewInit, OnChanges {
+export class VncComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   @Input() session!: Session;
   private isViewInitialized = false;
@@ -36,12 +45,16 @@ export class VncComponent implements AfterViewInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['vnc'] && this.isViewInitialized) {
+    if (changes['session'] && this.isViewInitialized) {
       this.connect();
     }
   }
   connect() {
     this.session.open(this.vncContainer);
+  }
+
+  ngOnDestroy() {
+    this.disconnect();
   }
 
   disconnect() {
