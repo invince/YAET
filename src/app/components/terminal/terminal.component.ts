@@ -11,7 +11,7 @@ import {
 import {ElectronService} from '../../services/electron.service';
 import {NgTerminal, NgTerminalModule} from 'ng-terminal';
 import {Terminal} from '@xterm/xterm';
-import {TabInstance} from '../../domain/TabInstance';
+import {Session} from '../../domain/session/Session';
 
 @Component({
   selector: 'app-terminal',
@@ -22,14 +22,14 @@ import {TabInstance} from '../../domain/TabInstance';
   encapsulation: ViewEncapsulation.None
 })
 export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
-  @Input() tab!: TabInstance;
+  @Input() session!: Session;
   @ViewChild('term', {static: false}) terminal!: NgTerminal;
   private isViewInitialized = false;
 
   private xtermUnderlying : Terminal | undefined;
 
   constructor(
-    private electronService: ElectronService,
+    private electron: ElectronService,
   ) {
   }
 
@@ -50,13 +50,13 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     this.initTab();
     // Listen to output from Electron and display in xterm
-    this.electronService.onTerminalOutput(this.tab.id, (data) => {
+    this.electron.onTerminalOutput(this.session.id, (data) => {
       this.terminal.write(data.data);
     });
 
     // Send user input back to Electron main process
     this.terminal.onData().subscribe(data => {
-      this.electronService.sendTerminalInput(this.tab.id, data);
+      this.electron.sendTerminalInput(this.session.id, data);
     });
     this.isViewInitialized = true;
   }
@@ -68,18 +68,18 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   initTab() {
-    if (!this.tab) {
+    if (!this.session) {
       throw new Error("Invalid tab");
     }
 
     this.xtermUnderlying?.clear();
 
     // Set up data listeners and communication with the Electron main process
-    this.electronService.openTerminalSession(this.tab);
+    this.session.open();
 
   }
 
   ngOnDestroy() {
-    this.electronService.closeTerminalSession(this.tab);
+    this.session.close();
   }
 }

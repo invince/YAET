@@ -121,32 +121,4 @@ export class ProfileService {
     await this.save();
   }
 
-
-  openSessionWithoutTab(profile: Profile) {
-    if (profile) {
-      switch (profile.profileType) {
-        case ProfileType.RDP_REMOTE_DESKTOP:
-          if (!profile.rdpProfile || !profile.rdpProfile.host) {
-            this._snackBar.open('Invalid Rdp Config', 'OK', {
-              duration: 3000,
-              panelClass: [ 'error-snackbar']
-            });
-            return;
-          }
-          this.electron.openRdpSession(profile.rdpProfile);
-          break;
-        case ProfileType.CUSTOM:
-          if (!profile.customProfile || !profile.customProfile.execPath) {
-            this._snackBar.open('Invalid Custom Profile', 'OK', {
-              duration: 3000,
-              panelClass: [ 'error-snackbar']
-            });
-            return;
-          }
-          this.electron.openCustomSession(profile.customProfile);
-          break;
-      }
-    }
-  }
-
 }

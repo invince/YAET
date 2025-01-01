@@ -1,6 +1,5 @@
 import {Injectable} from '@angular/core';
 import {IpcRenderer } from 'electron';
-import {TabInstance} from '../domain/TabInstance';
 import {
   CLOUD_DOWNLOAD,
   CLOUD_RELOAD,
@@ -41,6 +40,7 @@ import {TabService} from './tab.service';
 import {RdpProfile} from '../domain/profile/RdpProfile';
 import {CustomProfile} from '../domain/profile/CustomProfile';
 import {SSHProfile} from '../domain/profile/SSHProfile';
+import {Session} from '../domain/session/Session';
 
 
 @Injectable({
@@ -91,8 +91,8 @@ export class ElectronService {
       this.ipc.on(CLIPBOARD_PASTE, (event, data) => {
         let used = false;
         let tabSelected = this.tabService.getSelectedTab();
-        if (tabSelected && [ProfileType.VNC_REMOTE_DESKTOP].includes(tabSelected.tabType)) {
-          let callback = this.clipboardCallbackMap.get(tabSelected.tabType);
+        if (tabSelected && [ProfileType.VNC_REMOTE_DESKTOP].includes(tabSelected.session.profileType)) {
+          let callback = this.clipboardCallbackMap.get(tabSelected.session.profileType);
           if (callback && callback(tabSelected.id, data)) {
             used = true;
           }
@@ -131,43 +131,42 @@ export class ElectronService {
     });
   }
 
-  openTerminalSession(tab: TabInstance) {
+  openTerminalSession(session: Session) {
     if (this.ipc) {
-      switch (tab.tabType) {
-        case ProfileType.LOCAL_TERMINAL: this.openLocalTerminalSession(tab); break;
-        case ProfileType.SSH_TERMINAL: this.openSSHTerminalSession(tab); break;
+      switch (session.profileType) {
+        case ProfileType.LOCAL_TERMINAL: this.openLocalTerminalSession(session); break;
+        case ProfileType.SSH_TERMINAL: this.openSSHTerminalSession(session); break;
 
 
       }
     }
   }
-  closeTerminalSession(tab: TabInstance) {
+  closeTerminalSession(session: Session) {
     if (this.ipc) {
-      switch (tab.tabType) {
+      switch (session.profileType) {
         case ProfileType.LOCAL_TERMINAL:
-          this.ipc.send(SESSION_CLOSE_LOCAL_TERMINAL, {terminalId: tab.id});
+          this.ipc.send(SESSION_CLOSE_LOCAL_TERMINAL, {terminalId: session.id});
           break;
         case ProfileType.SSH_TERMINAL:
-          this.ipc.send(SESSION_CLOSE_SSH_TERMINAL, {terminalId: tab.id});
+          this.ipc.send(SESSION_CLOSE_SSH_TERMINAL, {terminalId: session.id});
           break;
       }
     }
   }
 
-  private openLocalTerminalSession(tab: TabInstance) {
-    if (!tab.profile) {
-      tab.profile = new Profile();
+  private openLocalTerminalSession(session: Session) {
+    if (!session.profile) {
+      session.profile = new Profile();
     }
-    if (!tab.profile.localTerminal) {
-      tab.profile.localTerminal = new LocalTerminalProfile();
+    if (!session.profile.localTerminal) {
+      session.profile.localTerminal = new LocalTerminalProfile();
     }
-    let localProfile: LocalTerminalProfile = tab.profile.localTerminal;
-    this.ipc.send(SESSION_OPEN_LOCAL_TERMINAL, {terminalId: tab.id, terminalExec: localProfile.execPath});
-    this.tabService.connected(tab.id);
+    let localProfile: LocalTerminalProfile = session.profile.localTerminal;
+    this.ipc.send(SESSION_OPEN_LOCAL_TERMINAL, {terminalId: session.id, terminalExec: localProfile.execPath});
   }
 
-  private openSSHTerminalSession(tab: TabInstance) {
-    if (!tab.profile || !tab.profile.sshProfile) {
+  private openSSHTerminalSession(session: Session) {
+    if (!session.profile || !session.profile.sshProfile) {
       console.error("Invalid configuration");
       return;
     }
@@ -177,7 +176,7 @@ export class ElectronService {
       keepaliveInterval: 15000,      // Send keepalive packets every 15 seconds.
       keepaliveCountMax: 5,          // Disconnect after 5 failed keepalive packets.
     };
-    let sshProfile = tab.profile.sshProfile;
+    let sshProfile = session.profile.sshProfile;
     sshConfig.host = sshProfile.host;
     sshConfig.port = sshProfile.port;
     if (sshProfile.authType == AuthType.LOGIN) {
@@ -209,7 +208,7 @@ export class ElectronService {
         }
       }
     }
-    let data: {[key: string]: any;} = {terminalId: tab.id, config: sshConfig};
+    let data: {[key: string]: any;} = {terminalId: session.id, config: sshConfig};
     if (sshProfile.initPath) {
       data['initPath'] = sshProfile.initPath;
     }
@@ -217,7 +216,6 @@ export class ElectronService {
       data['initCmd'] = sshProfile.initCmd;
     }
     this.ipc.send(SESSION_OPEN_SSH_TERMINAL, data);
-    this.tabService.connected(tab.id);
   }
 
 

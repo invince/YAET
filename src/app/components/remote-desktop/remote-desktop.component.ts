@@ -1,9 +1,6 @@
-import {Component, Input, ViewChild} from '@angular/core';
-import {TabInstance} from '../../domain/TabInstance';
-import {NgTerminal} from 'ng-terminal';
+import {Component, Input} from '@angular/core';
 import {VncComponent} from "./vnc/vnc.component";
-import {VncProfile} from '../../domain/profile/VncProfile';
-import {Profile} from '../../domain/profile/Profile';
+import {Session} from '../../domain/session/Session';
 
 @Component({
   selector: 'app-remote-desktop',
@@ -15,7 +12,7 @@ import {Profile} from '../../domain/profile/Profile';
   styleUrl: './remote-desktop.component.css'
 })
 export class RemoteDesktopComponent {
-  @Input() tab!: TabInstance;
+  @Input() session!: Session;
 
 
   constructor() {

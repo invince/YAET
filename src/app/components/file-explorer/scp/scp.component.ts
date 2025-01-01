@@ -1,9 +1,8 @@
-import {AfterViewInit, Component, Input, OnInit} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {FileManagerAllModule, FileManagerModule} from '@syncfusion/ej2-angular-filemanager';
-import {TabInstance} from '../../../domain/TabInstance';
 import {ScpService} from '../../../services/scp.service';
-import {AuthType} from '../../../domain/Secret';
 import {TabService} from '../../../services/tab.service';
+import {Session} from '../../../domain/session/Session';
 
 
 @Component({
@@ -16,9 +15,9 @@ import {TabService} from '../../../services/tab.service';
   templateUrl: './scp.component.html',
   styleUrl: './scp.component.css'
 })
-export class ScpComponent implements OnInit{
+export class ScpComponent implements OnInit, OnDestroy{
 
-  @Input() tab!: TabInstance;
+  @Input() session!: Session;
 
   path:string = '/';
 
@@ -38,20 +37,22 @@ export class ScpComponent implements OnInit{
   }
   ngOnInit(): void {
 
-    this.scpService.connect(this.tab.id, this.tab.profile.sshProfile).then(
-      () => this.tabService.connected(this.tab.id)
-    );
+   this.session.open();
 
-    if (this.tab.profile.sshProfile?.initPath) {
-      this.path = this.tab.profile.sshProfile.initPath;
+    if (this.session.profile.sshProfile?.initPath) {
+      this.path = this.session.profile.sshProfile.initPath;
     }
 
 
     this.ajaxSettings = {
-      url: 'http://localhost:3000/api/v1/scp/' + this.tab.id, // Custom backend API
-      uploadUrl: 'http://localhost:3000/api/v1/scp/upload/' + this.tab.id , // Custom upload endpoint
-      downloadUrl: 'http://localhost:3000/api/v1/scp/download/' + this.tab.id, // Custom download endpoint
+      url: 'http://localhost:3000/api/v1/scp/' + this.session.id, // Custom backend API
+      uploadUrl: 'http://localhost:3000/api/v1/scp/upload/' + this.session.id , // Custom upload endpoint
+      downloadUrl: 'http://localhost:3000/api/v1/scp/download/' + this.session.id, // Custom download endpoint
     }
+  }
+
+  ngOnDestroy(): void {
+    this.session.close();
   }
 
 }

@@ -46,13 +46,13 @@
             <ng-container>
               @switch(tab.category) {
                 @case('TERMINAL') {
-                  <app-terminal [tab]="tab"></app-terminal>
+                  <app-terminal [session]="tab.session"></app-terminal>
                 }
                 @case('REMOTE_DESKTOP') {
-                  <app-remote-desktop [tab]="tab"></app-remote-desktop>
+                  <app-remote-desktop [session]="tab.session"></app-remote-desktop>
                 }
                 @case('FILE_EXPLORER') {
-                  <app-file-explorer [tab]="tab"></app-file-explorer>
+                  <app-file-explorer [session]="tab.session"></app-file-explorer>
                 }
               }
             </ng-container>

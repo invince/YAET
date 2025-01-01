@@ -1,9 +1,7 @@
-import {AfterViewInit, Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from '@angular/core';
-import {VncService} from '../../../services/vnc.service';
-import {TabInstance} from '../../../domain/TabInstance';
+import {AfterViewInit, Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild} from '@angular/core';
 import {NgxSpinnerService} from 'ngx-spinner';
 import {MatSnackBar} from '@angular/material/snack-bar';
-import {TabService} from '../../../services/tab.service';
+import {Session} from '../../../domain/session/Session';
 
 
 @Component({
@@ -15,16 +13,14 @@ import {TabService} from '../../../services/tab.service';
 })
 export class VncComponent implements AfterViewInit, OnChanges {
 
-  @Input() tab!: TabInstance;
+  @Input() session!: Session;
   private isViewInitialized = false;
 
   status: string = 'disconnected';
 
   constructor(
-    public vncService: VncService,
     private spinner: NgxSpinnerService,
     private _snackBar: MatSnackBar,
-    private tabService: TabService,
   ) {}
 
 
@@ -45,27 +41,11 @@ export class VncComponent implements AfterViewInit, OnChanges {
     }
   }
   connect() {
-    this.spinner.show();
-    this.vncService.connect(this.tab?.id, this.tab?.profile?.vncProfile, this.vncContainer)
-      .then(
-        () => {
-          this.spinner.hide();
-          this.tabService.connected(this.tab.id);
-        }
-      ).catch(
-        err => {
-          this.spinner.hide();
-          this._snackBar.open('ERROR: ' + err,'ok', {
-            duration: 3000,
-            panelClass: [ 'error-snackbar']
-          });
-        }
-      );
+    this.session.open(this.vncContainer);
   }
 
   disconnect() {
-    this.vncService.disconnect(this.tab?.id);
-    this.tabService.disconnected(this.tab.id);
+    this.session.close();
   }
 
   showRealSize() {
