@@ -88,21 +88,24 @@ app.on('ready', () => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
 
-    terminalMap.forEach((value) => {
-      switch (value.type) {
+    terminalMap.forEach((term) => {
+      switch (term.type) {
         case 'local':
-          value.process?.removeAllListeners();
-          value.process?.kill() ;
+          term.process?.removeAllListeners();
+          term.process?.kill() ;
           break;
         case 'ssh':
-          value.process?.end() ;
+          term.process?.end() ;
           break;
 
       }
     });
 
-    vncMap.forEach((value) => {
+    vncMap.forEach((vncClient) => {
       // value?.end();
+      if (vncClient) {
+        vncClient.close(); // WebSocket server for this vnc client closed
+      }
     });
 
     app.quit();
