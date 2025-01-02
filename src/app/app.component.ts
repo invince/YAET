@@ -16,7 +16,7 @@ import {SettingService} from './services/setting.service';
 import {ProfileService} from './services/profile.service';
 import {RemoteDesktopComponent} from './components/remote-desktop/remote-desktop.component';
 import {FileExplorerComponent} from './components/file-explorer/file-explorer.component';
-import {SecuresMenuComponent} from './components/menu/secures-menu/secures-menu.component';
+import {SecretsMenuComponent} from './components/menu/secrets-menu/secrets-menu.component';
 import {SecretService} from './services/secret.service';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {ProfilesMenuComponent} from './components/menu/profiles-menu/profiles-menu.component';
@@ -54,7 +54,7 @@ import {SessionService} from './services/session.service';
       SettingMenuComponent,
       RemoteDesktopComponent,
       FileExplorerComponent,
-      SecuresMenuComponent,
+      SecretsMenuComponent,
       ProfilesMenuComponent,
       QuickconnectMenuComponent,
       CloudComponent,

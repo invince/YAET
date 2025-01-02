@@ -73,8 +73,8 @@
             (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-profiles-menu>
         }
         @case(MENU_SECURE) {
-          <app-secures-menu [@slideInOut]="'in'"
-            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-secures-menu>
+          <app-secrets-menu [@slideInOut]="'in'"
+            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-secrets-menu>
         }
         @case(MENU_CLOUD) {
           <app-cloud-menu [@slideInOut]="'in'"
