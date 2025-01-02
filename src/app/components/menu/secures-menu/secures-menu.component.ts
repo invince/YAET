@@ -21,7 +21,6 @@ import {ConfirmationComponent} from '../../confirmation/confirmation.component';
 import {MatDialog} from '@angular/material/dialog';
 import {ModalControllerService} from '../../../services/modal-controller.service';
 import {MenuConsts} from '../../../domain/MenuConsts';
-import {Profile} from '../../../domain/profile/Profile';
 
 @Component({
   selector: 'app-secures-menu',
