@@ -52,6 +52,10 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
     this.refreshForm(value);
   }
 
+  override afterFormInitialization() { // we cannot relay only on setter, because 1st set it before ngOnInit
+    this.refreshForm(this._secret);
+  }
+
   constructor(
     private fb: FormBuilder,
     private secretStorageService: SecretStorageService,
@@ -88,8 +92,8 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
 
   secretNameShouldBeUnique(secretStorageService: SecretStorageService) { // NOTE: inside validatorFn, we cannot use inject thing
     return (group: FormGroup) => {
-      let name = group.get('name')?.value;
-      if (name && secretStorageService.data.secrets?.find(one => one.name == name)) {
+      let name = group.get("name")?.value;
+      if (name && secretStorageService.data.secrets?.find(one => one.name === name && one.id !== this._secret?.id)) {
         return {duplicateSecret: true};
       }
       return null;
