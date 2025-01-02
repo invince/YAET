@@ -55,6 +55,8 @@ export class Profiles {
 
   revision: number;
 
+  public version: string = '';
+
   profiles: Profile[];
 
   constructor() {

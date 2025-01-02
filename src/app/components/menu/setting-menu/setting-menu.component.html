@@ -11,6 +11,7 @@
       <mat-tab-group [(selectedIndex)]="currentTabIndex">
         <mat-tab label="General">
           <div class="setting-form" [formGroup]="generalForm">
+            <mat-label>App Version: <b>{{version}}</b></mat-label>
             <div>
               <mat-label>Set Master Key</mat-label>
               <button mat-button class="mat-primary" (click)="openMasterKeyModal()">

@@ -59,7 +59,7 @@ app.on('ready', () => {
   if (isDev) {
     mainWindow.loadURL(`http://localhost:4200`);
   } else {
-    // mainWindow.setMenu(null); // Disable the menu bar in production
+    mainWindow.setMenu(null); // Disable the menu bar in production
     mainWindow.loadFile(path.join(__dirname, '../dist/yet-another-electron-term/browser/index.html'));
     autoUpdater.checkForUpdatesAndNotify();
   }
