@@ -20,6 +20,7 @@ import {SecretService} from '../../../services/secret.service';
 import {SettingService} from '../../../services/setting.service';
 import {ProfileService} from '../../../services/profile.service';
 import {NgxSpinnerService} from 'ngx-spinner';
+import _ from 'lodash';
 
 @Component({
   selector: 'app-cloud-menu',
@@ -98,6 +99,8 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
       },
       {validators: [this.secretOrPasswordMatchValidator]}
     );
+
+    this.allSelected = _.isEqual(cloudSettings.items, this.SYNC_ITEMS);
   }
 
   toggleAll(event: any) {

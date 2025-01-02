@@ -24,6 +24,10 @@ export class SecretService {
     electron.onLoadedEvent(SECRETS_LOADED, data => {
       this.apply(data);
     });
+
+    masterKeyService.masterkeyUpdateEvent$.subscribe(one => {
+      this.save();
+    });
   }
 
   apply(data: any) {

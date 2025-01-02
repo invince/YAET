@@ -1,6 +1,8 @@
 import {Injectable, OnDestroy} from '@angular/core';
 import {ElectronService} from './electron.service';
 import CryptoJS from 'crypto-js';
+import {Subject} from 'rxjs';
+import {Profile} from '../domain/profile/Profile';
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +15,9 @@ export class MasterKeyService implements OnDestroy{
 
   private _hasMasterKey?: boolean;
   private readonly intervalId: NodeJS.Timeout;
+
+  private masterkeyUpdateEventSubject = new Subject<string>();
+  masterkeyUpdateEvent$ = this.masterkeyUpdateEventSubject.asObservable();
 
   constructor(private electron: ElectronService) {
 
@@ -64,6 +69,7 @@ export class MasterKeyService implements OnDestroy{
   saveMasterKey(masterKey: string) {
     this.electron.setPassword(MasterKeyService.service, MasterKeyService.account, masterKey).then(r => {
       this.refreshHasMasterKey();
+      this.masterkeyUpdateEventSubject.next('update');
     });
   }
 
