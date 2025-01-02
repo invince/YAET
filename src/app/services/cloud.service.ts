@@ -7,7 +7,7 @@ import {CloudResponse} from '../domain/setting/CloudResponse';
 import {SettingService} from './setting.service';
 import {ProfileService} from './profile.service';
 import {SecretService} from './secret.service';
-
+import { version } from '../../../package.json';
 
 @Injectable({
   providedIn: 'root'
@@ -60,6 +60,7 @@ export class CloudService {
       return;
     }
     this._cloud = cloud;
+    this._cloud.version = version;
     this.masterKeyService.encrypt(this._cloud).then(
       encrypted => {
         if (encrypted) {

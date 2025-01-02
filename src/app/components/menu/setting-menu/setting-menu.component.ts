@@ -26,6 +26,7 @@ import {MatDivider} from "@angular/material/divider";
 import {GeneralSettings} from '../../../domain/setting/GeneralSettings';
 import {NgxSpinnerService} from 'ngx-spinner';
 import {MatCheckbox} from '@angular/material/checkbox';
+import { version } from '../../../../../package.json';
 
 @Component({
   selector: 'app-setting-menu',
@@ -76,6 +77,8 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   TAG_FORM_TAB_INDEX = 3;
   LOCAL_TERM_FORM_TAB_INDEX = 4;
 
+  version ='';
+
   constructor(
     private fb: FormBuilder,
     private settingService: SettingService,
@@ -87,6 +90,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     private spinner: NgxSpinnerService
   ) {
     super();
+    this.version = version;
   }
 
 
@@ -239,7 +243,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       }
       this.uiForm.get('uiProfileLabelLength')?.setValue(value.ui.profileLabelLength);
       this.uiForm.get('uiSecretLabelLength')?.setValue(value.ui.secretLabelLength);
-      this.uiForm.get('uiSecretLabelLengthInDropDown')?.setValue(value.ui.uiSecretLabelLengthInDropDown);
+      this.uiForm.get('uiSecretLabelLengthInDropDown')?.setValue(value.ui.secretLabelLengthInDropDown);
       this.uiForm.get('profileSideNavType')?.setValue(value.ui.profileSideNavType);
     }
 

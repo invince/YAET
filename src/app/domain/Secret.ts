@@ -20,6 +20,8 @@ export class Secrets {
 
   revision: number;
 
+  public version: string = '';
+
   secrets: Secret[];
 
   constructor() {

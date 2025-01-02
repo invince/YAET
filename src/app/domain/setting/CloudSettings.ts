@@ -8,5 +8,7 @@ export class CloudSettings {
   public login: string = '';
   public password: string = '';
   public secretId!: string;
+
+  public version: string = '';
 }
 
