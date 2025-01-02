@@ -1,7 +1,7 @@
 const path = require("path");
 const fs = require("fs");
 
-const {app, globalShortcut, BrowserWindow, Tray} = require('electron');
+const {app, globalShortcut, BrowserWindow, Tray, dialog} = require('electron');
 const {createMenu} = require('./ui/menu');
 const {initConfigFilesIpcHandler} = require('./ipc/configFiles');
 const {initTerminalIpcHandler} = require('./ipc/terminal');
@@ -17,7 +17,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require("express");
 const {IPty} = require("node-pty");
-
+const { autoUpdater } = require('electron-updater');
 
 const expressApp = express(); // we define the express backend here, because maybe multiple module needs create custom backend
 expressApp.use(bodyParser.urlencoded({ extended: true })); // to accept application/x-www-form-urlencoded
@@ -58,6 +58,7 @@ app.on('ready', () => {
   } else {
     mainWindow.setMenu(null); // Disable the menu bar in production
     mainWindow.loadFile(path.join(__dirname, '../dist/yet-another-electron-term/browser/index.html'));
+    autoUpdater.checkForUpdatesAndNotify();
   }
 
   if (!fs.existsSync(APP_CONFIG_PATH)) {
@@ -82,6 +83,8 @@ app.on('ready', () => {
   initScpSftpHandler(scpMap, expressApp);
   initClipboard(mainWindow);
   initCustomHandler();
+
+
 
 });
 
@@ -125,3 +128,27 @@ process.on('uncaughtException', (error) => {
   });
 });
 
+autoUpdater.on('update-available', () => {
+  dialog.showMessageBox({
+    type: 'info',
+    title: 'Update Available',
+    message: 'A new version is available and will be downloaded.',
+  });
+});
+
+autoUpdater.on('update-downloaded', () => {
+  dialog.showMessageBox({
+    type: 'info',
+    title: 'Update Ready',
+    message: 'A new version has been downloaded. Restart to install?',
+    buttons: ['Restart', 'Later'],
+  }).then((result) => {
+    if (result.response === 0) {
+      autoUpdater.quitAndInstall();
+    }
+  });
+});
+
+autoUpdater.on('error', (error) => {
+  console.error('Error during update:', error);
+});
