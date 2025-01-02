@@ -3,8 +3,7 @@ const SftpClient = require('ssh2-sftp-client');
 const multer = require('multer');
 const upload = multer();
 const path = require('path');
-const archiver = require('archiver');
-
+const yazl = require('yazl');
 function initScpSftpHandler(scpMap, expressApp) {
 
   ipcMain.handle('session.fe.scp.register', async (event, {id, config}) => {
@@ -210,10 +209,11 @@ function initScpSftpHandler(scpMap, expressApp) {
 
       } else if (names.length > 1) {
 
-        const archive = archiver('zip', { zlib: { level: 9 } });
         res.setHeader('Content-Disposition', 'attachment; filename="download.zip"');
         res.setHeader('Content-Type', 'application/zip');
-        archive.pipe(res);
+
+        // Create a new ZIP file instance
+        const zipfile = new yazl.ZipFile();
 
         for (const name of names) {
           const fullPath = `${path}${name}`;
@@ -222,16 +222,20 @@ function initScpSftpHandler(scpMap, expressApp) {
             // Fetch the file as a buffer from the server
             const buffer = await sftp.get(fullPath);
 
-            // Add the file to the ZIP archive
-            archive.append(buffer, { name });
+            // Add the buffer to the ZIP file
+            zipfile.addBuffer(buffer, name);
           } catch (fileError) {
             console.error(`Error fetching file ${fullPath}:`, fileError.message);
           }
         }
 
+        // Finalize the ZIP and pipe it to the response
+        zipfile.outputStream.pipe(res).on('close', () => {
+          console.log('ZIP file successfully sent.');
+        });
+        zipfile.end();
+
         await sftp.end();
-        // Finalize the ZIP archive
-        await archive.finalize();
       }
 
     } catch (error) {
