@@ -128,12 +128,21 @@ process.on('uncaughtException', (error) => {
   });
 });
 
-autoUpdater.on('update-available', () => {
-  dialog.showMessageBox({
-    type: 'info',
-    title: 'Update Available',
-    message: 'A new version is available and will be downloaded.',
-  });
+autoUpdater.on('update-available', (info) => {
+  dialog
+    .showMessageBox({
+      type: 'info',
+      title: 'Update Available',
+      message: `A new version (${info.version}) is available. Do you want to download it now?`,
+      buttons: ['Yes', 'No'],
+    })
+    .then((response) => {
+      if (response.response === 0) { // 'Yes' button clicked
+        autoUpdater.downloadUpdate();
+      } else {
+        console.log('User declined the update.');
+      }
+    });
 });
 
 autoUpdater.on('update-downloaded', () => {
