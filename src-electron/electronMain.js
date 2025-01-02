@@ -34,6 +34,9 @@ let mainWindow;
 let terminalMap = new Map();
 let vncMap = new Map();
 let scpMap = new Map();
+const log = require("electron-log")
+log.transports.file.level = "debug"
+autoUpdater.logger = log
 app.on('ready', () => {
 
   const isDev = process.env.NODE_ENV === 'development';
