@@ -1,9 +1,19 @@
-import {Component, Input, ViewChild, AfterViewInit, ViewEncapsulation, OnChanges, SimpleChanges} from '@angular/core';
+import {
+  Component,
+  Input,
+  ViewChild,
+  AfterViewInit,
+  ViewEncapsulation,
+  OnChanges,
+  SimpleChanges,
+  OnDestroy, ElementRef
+} from '@angular/core';
 import {ElectronService} from '../../services/electron.service';
 import {NgTerminal, NgTerminalModule} from 'ng-terminal';
 import {Terminal} from '@xterm/xterm';
-import {TabInstance} from '../../domain/TabInstance';
-import {TabService} from '../../services/tab.service';
+import {Session} from '../../domain/session/Session';
+import { FitAddon } from '@xterm/addon-fit';
+import { WebLinksAddon } from '@xterm/addon-web-links';
 
 @Component({
   selector: 'app-terminal',
@@ -13,15 +23,16 @@ import {TabService} from '../../services/tab.service';
   standalone: true,
   encapsulation: ViewEncapsulation.None
 })
-export class TerminalComponent implements AfterViewInit, OnChanges {
-  @Input() tab!: TabInstance;
+export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
+  @Input() session!: Session;
   @ViewChild('term', {static: false}) terminal!: NgTerminal;
+  @ViewChild('termContainer', {static: false}) termContainer!: ElementRef;
   private isViewInitialized = false;
 
   private xtermUnderlying : Terminal | undefined;
 
   constructor(
-    private electronService: ElectronService,
+    private electron: ElectronService,
   ) {
   }
 
@@ -30,7 +41,8 @@ export class TerminalComponent implements AfterViewInit, OnChanges {
     // Open terminal in the container
     this.xtermUnderlying = this.terminal.underlying;
     if (this.xtermUnderlying) {
-      // this.xtermUnderlying.loadAddon(new WebLinksAddon());
+      this.xtermUnderlying.loadAddon(new WebLinksAddon());
+      this.xtermUnderlying.loadAddon(new FitAddon());
       this.terminal.setXtermOptions({
         fontFamily: '"Cascadia Code", Menlo, monospace',
         // theme: {
@@ -38,36 +50,62 @@ export class TerminalComponent implements AfterViewInit, OnChanges {
         // },
         cursorBlink: true
       });
+
+      //  ctrl + shift + c for copy when selecting data, default otherwise
+      this.xtermUnderlying.attachCustomKeyEventHandler((arg) => {
+        if (arg.ctrlKey && arg.shiftKey && arg.code === "KeyC" && arg.type === "keydown") {
+          const selection = this.xtermUnderlying?.getSelection();
+          if (selection) {
+            navigator.clipboard.writeText(selection);
+            return false;
+          }
+        }
+        return true;
+      });
+
+      // right click for paste. NOTE: ctrl + v should work natively
+      this.termContainer.nativeElement.addEventListener('contextmenu', (event: MouseEvent) => {
+        event.preventDefault(); // Prevent the default context menu
+        navigator.clipboard.readText()
+          .then(text => {
+            this.electron.sendTerminalInput(this.session.id, text);
+          })
+      });
+
     }
 
     this.initTab();
     // Listen to output from Electron and display in xterm
-    this.electronService.onTerminalOutput(this.tab.id, (data) => {
+    this.electron.onTerminalOutput(this.session.id, (data) => {
       this.terminal.write(data.data);
     });
 
     // Send user input back to Electron main process
     this.terminal.onData().subscribe(data => {
-      this.electronService.sendTerminalInput(this.tab.id, data);
+      this.electron.sendTerminalInput(this.session.id, data);
     });
     this.isViewInitialized = true;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['tab'] && this.isViewInitialized) {
+    if (changes['session'] && this.isViewInitialized) {
       this.initTab();
     }
   }
 
   initTab() {
-    if (!this.tab) {
+    if (!this.session) {
       throw new Error("Invalid tab");
     }
 
     this.xtermUnderlying?.clear();
 
     // Set up data listeners and communication with the Electron main process
-    this.electronService.openTerminalSession(this.tab);
+    this.session.open();
 
+  }
+
+  ngOnDestroy() {
+    this.session.close();
   }
 }

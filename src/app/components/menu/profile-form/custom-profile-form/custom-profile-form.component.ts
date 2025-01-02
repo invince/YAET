@@ -5,12 +5,11 @@ import {
   FormGroup,
   FormsModule, NG_VALIDATORS,
   NG_VALUE_ACCESSOR,
-  NgControl,
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
 import {MatSelectChange, MatSelectModule} from '@angular/material/select';
-import {MatRadioModule} from '@angular/material/radio';
+import {MatRadioChange, MatRadioModule} from '@angular/material/radio';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatIcon} from '@angular/material/icon';
@@ -23,6 +22,11 @@ import {SecretService} from '../../../../services/secret.service';
 import {SettingStorageService} from '../../../../services/setting-storage.service';
 import {CustomProfile} from '../../../../domain/profile/CustomProfile';
 import {CdkTextareaAutosize} from '@angular/cdk/text-field';
+import {
+  FormFieldWithPrecondition,
+  ModelFieldWithPrecondition,
+  ModelFormController
+} from '../../../../utils/ModelFormController';
 
 @Component({
   selector: 'app-custom-profile-form',
@@ -59,6 +63,8 @@ import {CdkTextareaAutosize} from '@angular/cdk/text-field';
 export class CustomProfileFormComponent extends ChildFormAsFormControl(MenuComponent)  {
   AUTH_OPTIONS = AuthType;
 
+  private modelFormController : ModelFormController<CustomProfile>;
+
   constructor(
 
     private injector: Injector, // we shall inject ngControl after constructor, it cannot coexist with NG_VALUE_ACCESSOR, this creates circular dependency
@@ -68,54 +74,80 @@ export class CustomProfileFormComponent extends ChildFormAsFormControl(MenuCompo
     public settingStorage: SettingStorageService,
   ) {
     super();
+
+    let mappings = new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>();
+
+    mappings.set('execPath' , {name: 'customExecPath', formControlOption:  ['', [Validators.required]]});
+    mappings.set('authType' , {name: 'authType', formControlOption:  ['', [Validators.required]]});
+    mappings.set({name: 'login', precondition: form => this.form.get('authType')?.value  == 'login'}    , 'login');
+    mappings.set({name: 'password', precondition: form => this.form.get('authType')?.value  == 'login'} , 'password');
+    mappings.set({name: 'password', precondition: form => false } , 'confirmPassword'); // we don't set model.password via confirmPassword control
+    mappings.set({name: 'secretId', precondition: form => this.form.get('authType')?.value  == 'secret' } , 'secretId');
+
+
+    this.modelFormController = new ModelFormController<CustomProfile>(mappings);
   }
 
   onInitForm(): FormGroup {
-    return  this.fb.group(
-      {
-        customExecPath:       ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
-
-      },
-      {validators: [this.secretOrPasswordMatchValidator]}
-    );
+    return this.modelFormController.onInitForm(this.fb, {validators: [this.secretOrPasswordMatchValidator]});
   }
 
 
   secretOrPasswordMatchValidator(group: FormGroup) {
-    // let authType = group.get('authType')?.value;
-    // if (authType == 'login') {
-    //   group.get('password')?.addValidators(Validators.required);
-    //   group.get('confirmPassword')?.addValidators(Validators.required);
-    //   group.get('secretId')?.removeValidators(Validators.required);
-    //   const password = group.get('password')?.value;
-    //   const confirmPassword = group.get('confirmPassword')?.value;
-    //   return password === confirmPassword ? null : { passwordMismatch: true };
-    // } else if (authType == 'secret') {
-    //   group.get('password')?.removeValidators(Validators.required);
-    //   group.get('confirmPassword')?.removeValidators(Validators.required);
-    //   group.get('secretId')?.addValidators(Validators.required);
-    //   return group.get('secretId')?.value ? null : {secretRequired: true};
-    // } else {
-    //
-    //   return {authTypeRequired: true};
-    // }
-    return null;
+    let authType = group.get('authType')?.value;
+    if (authType ==  AuthType.LOGIN) {
+      group.get('login')?.addValidators(Validators.required);
+      group.get('password')?.addValidators(Validators.required);
+      group.get('confirmPassword')?.addValidators(Validators.required);
+      group.get('secretId')?.removeValidators(Validators.required);
+      const password = group.get('password')?.value;
+      const confirmPassword = group.get('confirmPassword')?.value;
+      if (!password) {
+        return {passwordRequired: true};
+      }
+      return password === confirmPassword ? null : { passwordMismatch: true };
+    } else if (authType ==  AuthType.SECRET) {
+      group.get('login')?.removeValidators(Validators.required);
+      group.get('password')?.removeValidators(Validators.required);
+      group.get('confirmPassword')?.removeValidators(Validators.required);
+      group.get('secretId')?.addValidators(Validators.required);
+      return group.get('secretId')?.value ? null : {secretRequired: true};
+    } else if (authType == AuthType.NA) {
+      group.get('login')?.removeValidators(Validators.required);
+      group.get('password')?.removeValidators(Validators.required);
+      group.get('confirmPassword')?.removeValidators(Validators.required);
+      group.get('secretId')?.removeValidators(Validators.required);
+      return {};
+    }
+    return {};
   }
 
+  onSelectSecret($event: MatSelectChange) {
+    // this.form.get('password')?.setValue(null);
+    // this.form.get('confirmPassword')?.setValue(null);
+  }
 
   override refreshForm(custom: any) {
     if (this.form) {
-      this.form.reset();
-
-      this.form.get('customExecPath')?.setValue(custom?.execPath);
-
-      this.onSubmit(); // reset dirty and invalid status
+      this.modelFormController.refreshForm(custom, this.form);
     }
   }
 
   override formToModel(): CustomProfile {
-    let custom = new CustomProfile();
-    custom.execPath = this.form.get('customExecPath')?.value;
-    return custom;
+    return this.modelFormController.formToModel(new CustomProfile(), this.form);
+  }
+
+  onSelectAuthType($event: MatRadioChange) {
+    let authType = $event.value;
+    if (authType ==  AuthType.LOGIN) {
+      this.form.get('secretId')?.setValue(null);
+    } else if (authType ==  AuthType.SECRET) {
+      this.form.get('password')?.setValue(null);
+      this.form.get('confirmPassword')?.setValue(null);
+    } else if (authType == AuthType.NA) {
+      this.form.get('password')?.setValue(null);
+      this.form.get('confirmPassword')?.setValue(null);
+      this.form.get('secretId')?.setValue(null);
+    }
   }
 }

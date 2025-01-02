@@ -1,32 +1,32 @@
-import {Profile, ProfileCategory, ProfileType} from './profile/Profile';
+import {ProfileCategory} from './profile/Profile';
+import {Session} from './session/Session';
 
 export class TabInstance {
 
   readonly id: string; // uuid
 
   public name!: string;
-  readonly tabType: ProfileType;
   readonly category: ProfileCategory;
 
   public connected: boolean = false;
 
-  profile: Profile;
+
+  session: Session;
 
 
-  constructor(id: string, category: ProfileCategory, type: ProfileType, profile: Profile) {
-    this.id = id;
-    this.tabType = type;
+  constructor(category: ProfileCategory, session: Session) {
+    this.session = session;
+    this.id = session.id;
     this.category = category;
-    this.profile = profile;
-    this.name = this.profile?.name;
+    this.name = this.session.profile?.name;
     if (!this.name) {
-      this.name = type;
+      this.name = this.session.profileType;
     }
   }
 
 
   clone() {
-    let tab = new TabInstance(this.id, this.category, this.tabType, this.profile);
+    let tab = new TabInstance(this.category, this.session);
     tab.name = this.name;
     return tab;
   }

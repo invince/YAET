@@ -16,7 +16,6 @@ import {SettingService} from './services/setting.service';
 import {ProfileService} from './services/profile.service';
 import {RemoteDesktopComponent} from './components/remote-desktop/remote-desktop.component';
 import {FileExplorerComponent} from './components/file-explorer/file-explorer.component';
-import {v4 as uuidv4} from 'uuid';
 import {SecuresMenuComponent} from './components/menu/secures-menu/secures-menu.component';
 import {SecretService} from './services/secret.service';
 import {MatSnackBar} from '@angular/material/snack-bar';
@@ -31,8 +30,8 @@ import {CloudComponent} from './components/menu/cloud/cloud.component';
 import {CloudService} from './services/cloud.service';
 import {NgxSpinnerModule} from 'ngx-spinner';
 import {TabService} from './services/tab.service';
-import {ElectronService} from './services/electron.service';
 import {MenuConsts} from './domain/MenuConsts';
+import {SessionService} from './services/session.service';
 
 @Component({
   selector: 'app-root',
@@ -82,11 +81,11 @@ export class AppComponent implements OnInit, OnDestroy{
     private settingService: SettingService,
     private profileService: ProfileService,
     private secretService: SecretService,
+    private sessionService: SessionService,
     private masterKeyService: MasterKeyService,
     private cloudService: CloudService,
 
     public tabService: TabService,
-    public electronService: ElectronService,
 
     public modalControl: ModalControllerService,
 
@@ -97,19 +96,19 @@ export class AppComponent implements OnInit, OnDestroy{
   ngOnInit() {
     this.subscriptions.push(
       this.profileService.connectionEvent$.subscribe(
-        connection => {
-          if (!connection) {
+        profile => {
+          if (!profile) {
             this._snackBar.open('Empty Connection found', 'OK', {
               duration: 3000
             });
             return;
           }
           this.modalControl.closeModal([this.MENU_PROFILE, this.MENU_ADD ]);
-          if (Profile.requireOpenNewTab(connection)) {
-            this.tabService.addTab(new TabInstance(uuidv4(), connection.category, connection.profileType, connection)); // Adds a new terminal identifier
+          if (Profile.requireOpenNewTab(profile)) {
+            this.tabService.addTab(new TabInstance(profile.category, this.sessionService.create(profile, profile.profileType))); // Adds a new terminal identifier
             this.tabService.currentTabIndex = this.tabService.tabs.length - 1;
           } else {
-            this.openSessionWithoutTab(connection);
+            this.sessionService.openSessionWithoutTab(profile);
           }
         }
       )
@@ -144,36 +143,12 @@ export class AppComponent implements OnInit, OnDestroy{
 
   addLocalTerminal() {
     this.modalControl.closeModal();
-    this.tabService.addTab(new TabInstance(uuidv4(), ProfileCategory.TERMINAL, ProfileType.LOCAL_TERMINAL, this.settingService.createLocalTerminalProfile())); // Adds a new terminal identifier
+    this.tabService.addTab(new TabInstance( ProfileCategory.TERMINAL,
+      this.sessionService.create(this.settingService.createLocalTerminalProfile(),ProfileType.LOCAL_TERMINAL))); // Adds a new terminal identifier
     this.tabService.currentTabIndex = this.tabService.tabs.length - 1;
   }
 
-  openSessionWithoutTab(profile: Profile) {
-    if (profile) {
-      switch (profile.profileType) {
-        case ProfileType.RDP_REMOTE_DESKTOP:
-          if (!profile.rdpProfile || !profile.rdpProfile.host) {
-            this._snackBar.open('Invalid Rdp Config', 'OK', {
-              duration: 3000,
-              panelClass: [ 'error-snackbar']
-            });
-            return;
-          }
-          this.electronService.openRdpSession(profile.rdpProfile);
-          break;
-        case ProfileType.CUSTOM:
-          if (!profile.customProfile || !profile.customProfile.execPath) {
-            this._snackBar.open('Invalid Custom Profile', 'OK', {
-              duration: 3000,
-              panelClass: [ 'error-snackbar']
-            });
-            return;
-          }
-          this.electronService.openCustomSession(profile.customProfile);
-          break;
-      }
-    }
-  }
+
 
   addMenu() {
     this.toggleMenu(this.MENU_ADD);

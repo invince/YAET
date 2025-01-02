@@ -1,6 +1,5 @@
 import {Injectable} from '@angular/core';
 import {IpcRenderer } from 'electron';
-import {TabInstance} from '../domain/TabInstance';
 import {
   CLOUD_DOWNLOAD,
   CLOUD_RELOAD,
@@ -25,7 +24,9 @@ import {
   SESSION_OPEN_VNC,
   SESSION_DISCONNECT_VNC,
   CLIPBOARD_PASTE,
-  TRIGGER_NATIVE_CLIPBOARD_PASTE, SESSION_OPEN_CUSTOM
+  TRIGGER_NATIVE_CLIPBOARD_PASTE,
+  SESSION_OPEN_CUSTOM,
+  SESSION_SCP_REGISTER, SESSION_CLOSE_LOCAL_TERMINAL, SESSION_CLOSE_SSH_TERMINAL
 } from '../domain/electronConstant';
 import {LocalTerminalProfile} from '../domain/profile/LocalTerminalProfile';
 import {Profile, ProfileType} from '../domain/profile/Profile';
@@ -37,8 +38,9 @@ import {CloudResponse} from '../domain/setting/CloudResponse';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {TabService} from './tab.service';
 import {RdpProfile} from '../domain/profile/RdpProfile';
-import {BehaviorSubject} from 'rxjs';
 import {CustomProfile} from '../domain/profile/CustomProfile';
+import {SSHProfile} from '../domain/profile/SSHProfile';
+import {Session} from '../domain/session/Session';
 
 
 @Injectable({
@@ -89,8 +91,8 @@ export class ElectronService {
       this.ipc.on(CLIPBOARD_PASTE, (event, data) => {
         let used = false;
         let tabSelected = this.tabService.getSelectedTab();
-        if (tabSelected && [ProfileType.VNC_REMOTE_DESKTOP].includes(tabSelected.tabType)) {
-          let callback = this.clipboardCallbackMap.get(tabSelected.tabType);
+        if (tabSelected && [ProfileType.VNC_REMOTE_DESKTOP].includes(tabSelected.session.profileType)) {
+          let callback = this.clipboardCallbackMap.get(tabSelected.session.profileType);
           if (callback && callback(tabSelected.id, data)) {
             used = true;
           }
@@ -129,31 +131,42 @@ export class ElectronService {
     });
   }
 
-  openTerminalSession(tab: TabInstance) {
+  openTerminalSession(session: Session) {
     if (this.ipc) {
-      switch (tab.tabType) {
-        case ProfileType.LOCAL_TERMINAL: this.openLocalTerminalSession(tab); break;
-        case ProfileType.SSH_TERMINAL: this.openSSHTerminalSession(tab); break;
+      switch (session.profileType) {
+        case ProfileType.LOCAL_TERMINAL: this.openLocalTerminalSession(session); break;
+        case ProfileType.SSH_TERMINAL: this.openSSHTerminalSession(session); break;
 
 
       }
     }
   }
-
-  private openLocalTerminalSession(tab: TabInstance) {
-    if (!tab.profile) {
-      tab.profile = new Profile();
+  closeTerminalSession(session: Session) {
+    if (this.ipc) {
+      switch (session.profileType) {
+        case ProfileType.LOCAL_TERMINAL:
+          this.ipc.send(SESSION_CLOSE_LOCAL_TERMINAL, {terminalId: session.id});
+          break;
+        case ProfileType.SSH_TERMINAL:
+          this.ipc.send(SESSION_CLOSE_SSH_TERMINAL, {terminalId: session.id});
+          break;
+      }
     }
-    if (!tab.profile.localTerminal) {
-      tab.profile.localTerminal = new LocalTerminalProfile();
-    }
-    let localProfile: LocalTerminalProfile = tab.profile.localTerminal;
-    this.ipc.send(SESSION_OPEN_LOCAL_TERMINAL, {terminalId: tab.id, terminalExec: localProfile.execPath});
-    this.tabService.connected(tab.id);
   }
 
-  private openSSHTerminalSession(tab: TabInstance) {
-    if (!tab.profile || !tab.profile.sshTerminalProfile) {
+  private openLocalTerminalSession(session: Session) {
+    if (!session.profile) {
+      session.profile = new Profile();
+    }
+    if (!session.profile.localTerminal) {
+      session.profile.localTerminal = new LocalTerminalProfile();
+    }
+    let localProfile: LocalTerminalProfile = session.profile.localTerminal;
+    this.ipc.send(SESSION_OPEN_LOCAL_TERMINAL, {terminalId: session.id, terminalExec: localProfile.execPath});
+  }
+
+  private openSSHTerminalSession(session: Session) {
+    if (!session.profile || !session.profile.sshProfile) {
       console.error("Invalid configuration");
       return;
     }
@@ -163,7 +176,7 @@ export class ElectronService {
       keepaliveInterval: 15000,      // Send keepalive packets every 15 seconds.
       keepaliveCountMax: 5,          // Disconnect after 5 failed keepalive packets.
     };
-    let sshProfile = tab.profile.sshTerminalProfile;
+    let sshProfile = session.profile.sshProfile;
     sshConfig.host = sshProfile.host;
     sshConfig.port = sshProfile.port;
     if (sshProfile.authType == AuthType.LOGIN) {
@@ -195,8 +208,14 @@ export class ElectronService {
         }
       }
     }
-    this.ipc.send(SESSION_OPEN_SSH_TERMINAL, {terminalId: tab.id, config: sshConfig});
-    this.tabService.connected(tab.id);
+    let data: {[key: string]: any;} = {terminalId: session.id, config: sshConfig};
+    if (sshProfile.initPath) {
+      data['initPath'] = sshProfile.initPath;
+    }
+    if (sshProfile.initCmd) {
+      data['initCmd'] = sshProfile.initCmd;
+    }
+    this.ipc.send(SESSION_OPEN_SSH_TERMINAL, data);
   }
 
 
@@ -227,7 +246,36 @@ export class ElectronService {
 
   openCustomSession(customProfile: CustomProfile) {
     if (this.ipc) {
-      this.ipc.send(SESSION_OPEN_CUSTOM, { command: customProfile.execPath });
+      let cmd = customProfile.execPath;
+      if (!cmd) {
+        return;
+      }
+      if (cmd.includes('$login') || cmd.includes('$password')) {
+        if(customProfile.authType == AuthType.SECRET) {
+          let secret = this.secretStorage.findById(customProfile.secretId);
+          if (!secret) {
+            console.error("Invalid secret " + customProfile.secretId);
+            return;
+          }
+          switch (secret.secretType) {
+            case SecretType.LOGIN_PASSWORD: {
+              customProfile.login = secret.login;
+              customProfile.password = secret.password;
+              break;
+            }
+
+            case SecretType.PASSWORD_ONLY: {
+              customProfile.password = secret.password;
+              break;
+            }
+          }
+        }
+
+        cmd = cmd.replaceAll('$login', customProfile.login);
+        cmd = cmd.replaceAll('$password', customProfile.password);
+      }
+
+      this.ipc.send(SESSION_OPEN_CUSTOM, { command: cmd });
     }
   }
 
@@ -254,6 +302,50 @@ export class ElectronService {
     }
   }
 
+  async registerScpSession(id: string, sshProfile: SSHProfile) {
+    if (!id || !sshProfile) {
+      console.error("Invalid configuration");
+      return;
+    }
+    let sshConfig: any = {
+      readyTimeout: 30000,           // Wait up to 30 seconds for the connection.
+      keepaliveInterval: 15000,      // Send keepalive packets every 15 seconds.
+      keepaliveCountMax: 5,          // Disconnect after 5 failed keepalive packets.
+    };
+
+    sshConfig.host = sshProfile.host;
+    sshConfig.port = sshProfile.port;
+    if (sshProfile.authType == AuthType.LOGIN) {
+      sshConfig.username = sshProfile.login;
+      sshConfig.password = sshProfile.password;
+    } else if (sshProfile.authType == AuthType.SECRET) {
+      let secret = this.secretStorage.findById(sshProfile.secretId);
+      if (!secret) {
+        console.error("Invalid secret " + sshProfile.secretId);
+        return;
+      }
+      switch (secret.secretType) {
+        case SecretType.LOGIN_PASSWORD: {
+          sshConfig.username = secret.login;
+          sshConfig.password = secret.password;
+          break;
+        }
+        case SecretType.SSH_KEY: {
+          sshConfig.username = secret.login;
+          sshConfig.privateKey = secret.key.replace(/\\n/g, '\n');
+          if (secret.passphrase) {
+            sshConfig.passphrase = secret.passphrase;
+          }
+          break;
+        }
+        case SecretType.PASSWORD_ONLY: {
+          // todo
+          break;
+        }
+      }
+    }
+    await this.ipc.invoke(SESSION_SCP_REGISTER, {id: id, config: sshConfig});
+  }
 
 //#endregion "Sessions"
 

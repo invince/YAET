@@ -34,7 +34,7 @@
               <mat-chip-row
                   class="tag-chip"
                   [removable]="true"
-                  (removed)="remove(tag)"
+                  (removed)="removeTag(tag)"
                   [style.background]="tag.color"
                   [attr.aria-description]="'press enter to edit ' + tag.name"
                   [value]="tag"
@@ -106,6 +106,9 @@
           @case('SSH_TERMINAL') {
             <app-ssh-profile-form formControlName="sshProfileForm"></app-ssh-profile-form>
           }
+          @case('SCP_FILE_EXPLORER') {
+            <app-ssh-profile-form formControlName="sshProfileForm" [type]="'scp'"></app-ssh-profile-form>
+          }
 
           @case('RDP_REMOTE_DESKTOP') {
             <app-rdp-profile-form formControlName="rdpProfileForm"></app-rdp-profile-form>
@@ -135,7 +138,8 @@
       <button mat-raised-button color="warn" (click)="onDelete()">Delete</button>
     }
     @if (!profile.isNew && buttons.includes('clone')) {
-    <button mat-raised-button color="warn" (click)="onClone()">Clone</button>
+    <button mat-raised-button color="warn" (click)="onClone()"
+        [disabled]="form.invalid">Clone</button>
     }
     @if (masterKeyService.hasMasterKey && buttons.includes('save')) {
       <button mat-raised-button class="mat-primary" (click)="onSave()"

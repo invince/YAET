@@ -9,6 +9,12 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatSelectChange, MatSelectModule} from '@angular/material/select';
 import {MenuComponent} from '../../menu.component';
 import {IsAChildForm} from '../../../enhanced-form-mixin';
+import {
+  FormFieldWithPrecondition,
+  ModelFieldWithPrecondition,
+  ModelFormController
+} from '../../../../utils/ModelFormController';
+import {SecretStorageService} from '../../../../services/secret-storage.service';
 
 @Component({
   selector: 'app-secret-form',
@@ -35,7 +41,7 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
 
   SECRET_TYPE_OPTIONS = SecretType;
 
-
+  private modelFormController : ModelFormController<Secret>;
   get secret(): Secret {
     return this._secret;
   }
@@ -46,24 +52,27 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
     this.refreshForm(value);
   }
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private secretStorageService: SecretStorageService,
+
+  ) {
     super();
+
+    let mappings = new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>();
+    mappings.set('name' , {name: 'name', formControlOption:  ['', [Validators.required, Validators.minLength(3)]]});
+    mappings.set('secretType' , {name: 'secretType', formControlOption:  ['', [Validators.required]]});
+    mappings.set({name: 'login', precondition: form => [SecretType.SSH_KEY, SecretType.LOGIN_PASSWORD].includes(this.form.get('secretType')?.value)}  , 'login');
+    mappings.set({name: 'password', precondition: form => [SecretType.PASSWORD_ONLY, SecretType.LOGIN_PASSWORD].includes(this.form.get('secretType')?.value) }  , 'password');
+    mappings.set({name: 'password', precondition: form => false } , 'confirmPassword'); // we don't set model.password via confirmPassword control
+    mappings.set({name: 'key', precondition: form => this.form.get('secretType')?.value  == SecretType.SSH_KEY } , 'key');
+    mappings.set({name: 'passphrase', precondition: form => this.form.get('secretType')?.value  == SecretType.SSH_KEY } , 'passphrase');
+
+    this.modelFormController = new ModelFormController<Secret>(mappings);
   }
 
   onInitForm(): FormGroup {
-    return  this.fb.group(
-      {
-        name: [this._secret.name, [Validators.required, Validators.minLength(3)]], // we shall avoid use ngModel and formControl at same time
-        secretType: [this._secret.secretType, Validators.required],
-        login: [this._secret.login],
-        password: [this._secret.password],
-        confirmPassword: [this._secret.password],
-        key: [this._secret.key],
-        passphrase: [this._secret.passphrase],
-
-      },
-      {validators: [this.checkCurrentSecret, this.passwordMatchValidator]}
-    );
+    return this.modelFormController.onInitForm(this.fb, {validators: [this.secretNameShouldBeUnique(this.secretStorageService), this.checkCurrentSecret, this.passwordMatchValidator]});
 
   }
 
@@ -77,7 +86,17 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
     return null;
   }
 
-  checkCurrentSecret(group: FormGroup) {
+  secretNameShouldBeUnique(secretStorageService: SecretStorageService) { // NOTE: inside validatorFn, we cannot use inject thing
+    return (group: FormGroup) => {
+      let name = group.get('name')?.value;
+      if (name && secretStorageService.data.secrets?.find(one => one.name == name)) {
+        return {duplicateSecret: true};
+      }
+      return null;
+    }
+  }
+
+    checkCurrentSecret(group: FormGroup) {
     if (!group.dirty) {
       return null;
     }
@@ -159,16 +178,7 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
 
   override refreshForm(value: any) {
     if (this.form) {
-      this.form.reset();
-
-      let currentSecret = this.secret;
-      this.form.get('name')?.setValue(currentSecret.name);
-      this.form.get('secretType')?.setValue(currentSecret.secretType);
-      this.form.get('login')?.setValue(currentSecret.login);
-      this.form.get('password')?.setValue(currentSecret.password);
-      this.form.get('confirmPassword')?.setValue(currentSecret.password);
-      this.form.get('key')?.setValue(currentSecret.key);
-      this.form.get('passphrase')?.setValue(currentSecret.passphrase);
+      this.modelFormController.refreshForm(this._secret, this.form);
     }
   }
 
@@ -176,13 +186,7 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
     if (!this._secret) {
       this._secret = new Secret();
     }
-    this._secret.name        = this.form.get('name')?.value;
-    this._secret.secretType  = this.form.get('secretType')?.value;
-    this._secret.login       = this.form.get('login')?.value;
-    this._secret.password    = this.form.get('password')?.value;
-    this._secret.key         = this.form.get('key')?.value;
-    this._secret.passphrase   = this.form.get('passphrase')?.value;
-    return this._secret;
+    return this.modelFormController.formToModel(this._secret, this.form);
   }
 
 }

@@ -1,6 +1,6 @@
 import {LocalTerminalProfile} from './LocalTerminalProfile';
 import {v4 as uuidv4} from 'uuid';
-import {SSHTerminalProfile} from './SSHTerminalProfile';
+import {SSHProfile} from './SSHProfile';
 import {Secret} from '../Secret';
 import {RdpProfile} from './RdpProfile';
 import {VncProfile} from './VncProfile';
@@ -18,8 +18,6 @@ export enum ProfileType {
   SSH_TERMINAL = 'SSH_TERMINAL',
   TELNET_TERMINAL = 'TELNET_TERMINAL',
 
-  // REAL_VNC_REMOTE_DESKTOP = 'REAL_VNC_REMOTE_DESKTOP',
-  // TIGHT_VNC_REMOTE_DESKTOP = 'TIGHT_VNC_REMOTE_DESKTOP',
   VNC_REMOTE_DESKTOP = 'VNC_REMOTE_DESKTOP',
   RDP_REMOTE_DESKTOP = 'RDP_REMOTE_DESKTOP',
   SCP_FILE_EXPLORER = 'SCP_FILE_EXPLORER',
@@ -93,12 +91,13 @@ export class Profile {
   readonly id: string = uuidv4(); // uuid
   public name: string = '';
 
+  public icon: string = '';
   public comment:string = '';
 
   public category!: ProfileCategory;
   public profileType!: ProfileType;
   public localTerminal!: LocalTerminalProfile;
-  public sshTerminalProfile!: SSHTerminalProfile;
+  public sshProfile!: SSHProfile;
   public rdpProfile!: RdpProfile;
   public vncProfile!: VncProfile;
   public customProfile!: CustomProfile;
@@ -111,7 +110,7 @@ export class Profile {
 
   constructor() {
     this.localTerminal = new LocalTerminalProfile();
-    this.sshTerminalProfile = new SSHTerminalProfile();
+    this.sshProfile = new SSHProfile();
     this.rdpProfile = new RdpProfile();
     this.vncProfile = new VncProfile();
     this.customProfile = new CustomProfile();
@@ -121,10 +120,11 @@ export class Profile {
     let cloned = new Profile();
 
     cloned.name = base.name;
+    cloned.icon = base.icon;
     cloned.category = base.category;
     cloned.profileType = base.profileType;
     cloned.localTerminal = base.localTerminal;
-    cloned.sshTerminalProfile = base.sshTerminalProfile;
+    cloned.sshProfile = base.sshProfile;
     cloned.vncProfile = base.vncProfile;
     cloned.customProfile = base.customProfile;
     cloned.group = base.group;

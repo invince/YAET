@@ -19,7 +19,7 @@ import {MatChipInputEvent, MatChipsModule} from '@angular/material/chips';
 import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
 import {Tag} from '../../../domain/Tag';
-import {SSHTerminalProfile} from '../../../domain/profile/SSHTerminalProfile';
+import {SSHProfile} from '../../../domain/profile/SSHProfile';
 import {CdkTextareaAutosize} from '@angular/cdk/text-field';
 import {RdpProfileFormComponent} from './rdp-profile-form/rdp-profile-form.component';
 import {RdpProfile} from '../../../domain/profile/RdpProfile';
@@ -118,7 +118,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
         group:                  [],
         tags:                   [[]],
         profileType:            [this._profile.profileType, Validators.required],
-        sshProfileForm:         [this._profile.sshTerminalProfile],
+        sshProfileForm:         [this._profile.sshProfile],
         rdpProfileForm:         [this._profile.rdpProfile],
         vncProfileForm:         [this._profile.vncProfile],
         customProfileForm:      [this._profile.customProfile],
@@ -148,7 +148,8 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     // this.profile.profileType = $event;
     switch($event.value) {
       case ProfileType.SSH_TERMINAL:
-        this.form.get('sshProfileForm')?.setValue(new SSHTerminalProfile());
+      case ProfileType.SCP_FILE_EXPLORER:
+        this.form.get('sshProfileForm')?.setValue(new SSHProfile());
         break;
 
       case ProfileType.RDP_REMOTE_DESKTOP:
@@ -194,7 +195,8 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       } else if (profile?.profileType) {
         switch (profile.profileType) {
           case ProfileType.SSH_TERMINAL:
-            this.updateFormValue('sshProfileForm', profile?.sshTerminalProfile);
+          case ProfileType.SCP_FILE_EXPLORER:
+            this.updateFormValue('sshProfileForm', profile?.sshProfile);
             break;
           case ProfileType.RDP_REMOTE_DESKTOP:
             this.updateFormValue('rdpProfileForm', profile?.rdpProfile);
@@ -226,7 +228,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       this._profile.profileType = this.form.get('profileType')?.value;
     }
 
-    this._profile.sshTerminalProfile = this.sshChild?.formToModel();
+    this._profile.sshProfile = this.sshChild?.formToModel();
     this._profile.rdpProfile = this.rdpChild?.formToModel();
     this._profile.vncProfile = this.vncChild?.formToModel();
     this._profile.customProfile = this.customChild?.formToModel();
@@ -306,12 +308,13 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     this.groupColor = $event.value.color;
   }
 
-  remove(tag: Tag) {
+  removeTag(tag: Tag) {
     if (!tag) {
       return;
     }
     const currentTags = this.form.get('tags')?.value || [];
     this.form.get('tags')?.setValue(currentTags.filter((one: Tag) => one.id != tag.id));
+    this.form.get('tags')?.markAsDirty(); // force to dirty
     this.form.get('tags')?.updateValueAndValidity();
   }
 

@@ -24,6 +24,8 @@ import {NestedTreeControl} from '@angular/cdk/tree';
 import {SideNavType} from '../../../domain/setting/UISettings';
 import {MatDialog} from '@angular/material/dialog';
 import {ConfirmationComponent} from '../../confirmation/confirmation.component';
+import {ModalControllerService} from '../../../services/modal-controller.service';
+import {MenuConsts} from '../../../domain/MenuConsts';
 
 @Component({
   selector: 'app-profiles-menu',
@@ -74,7 +76,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     public settingStorage: SettingStorageService,
     private settingService: SettingService,
     private _snackBar: MatSnackBar,
-
+    private modalControl: ModalControllerService,
     private keywordPipe: FilterKeywordPipe,
 
     private cdr: ChangeDetectorRef,
@@ -91,6 +93,11 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   }
 
   ngOnInit(): void {
+    this.subscription = this.modalControl.modalCloseEvent.subscribe(one => {
+      if (one && one.includes(MenuConsts.MENU_PROFILE)) {
+        this.modalControl.closeModal();
+      }
+    });
     if (!this.profileService.isLoaded) {
       let message = 'Profiles not loaded, we\'ll reload it, please close Profile menu and reopen';
       if (!this.settingService.isLoaded) {
@@ -104,16 +111,16 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     }
 
     this.profilesCopy = this.profileService.profiles;
-
+    this.profilesCopy.profiles = this.profilesCopy.profiles.sort((a: Profile, b: Profile) => a.name.localeCompare(b.name));
     this.sideNavType = this.settingStorage.settings.ui.profileSideNavType;
     this.refreshForm();
   }
 
   addTab() {
-    this.doAddTab(new Profile());
+    this.doAddTabOfProfile(new Profile());
   }
 
-  doAddTab(newProfile: Profile) {
+  doAddTabOfProfile(newProfile: Profile) {
     this.profilesCopy.profiles.push(newProfile);
     this.selectedProfileId = newProfile.id;// Focus on the newly added tab
     this.selectedProfile = newProfile;
@@ -129,7 +136,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
 
   onCloneOne($event: Profile) {
     // we'll add a new tab, and copy all the fields of $event
-    this.doAddTab(Profile.clone($event));
+    this.doAddTabOfProfile(Profile.clone($event));
   }
 
   onTabChange(profile: Profile) {

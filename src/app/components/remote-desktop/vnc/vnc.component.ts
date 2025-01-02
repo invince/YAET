@@ -1,8 +1,16 @@
-import {AfterViewInit, Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from '@angular/core';
-import {VncService} from '../../../services/vnc.service';
-import {TabInstance} from '../../../domain/TabInstance';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  Input,
+  OnChanges,
+  OnDestroy,
+  SimpleChanges,
+  ViewChild
+} from '@angular/core';
 import {NgxSpinnerService} from 'ngx-spinner';
 import {MatSnackBar} from '@angular/material/snack-bar';
+import {Session} from '../../../domain/session/Session';
 
 
 @Component({
@@ -12,18 +20,16 @@ import {MatSnackBar} from '@angular/material/snack-bar';
   templateUrl: './vnc.component.html',
   styleUrl: './vnc.component.css'
 })
-export class VncComponent implements AfterViewInit, OnChanges {
+export class VncComponent implements AfterViewInit, OnChanges, OnDestroy {
 
-  @Input() tab!: TabInstance;
+  @Input() session!: Session;
   private isViewInitialized = false;
 
   status: string = 'disconnected';
 
   constructor(
-    public vncService: VncService,
     private spinner: NgxSpinnerService,
     private _snackBar: MatSnackBar,
-
   ) {}
 
 
@@ -39,28 +45,20 @@ export class VncComponent implements AfterViewInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['vnc'] && this.isViewInitialized) {
+    if (changes['session'] && this.isViewInitialized) {
       this.connect();
     }
   }
   connect() {
-    this.spinner.show();
-    this.vncService.connect(this.tab?.id, this.tab?.profile?.vncProfile, this.vncContainer)
-      .then(
-        () => this.spinner.hide()
-      ).catch(
-        err => {
-          this.spinner.hide();
-          this._snackBar.open('ERROR: ' + err,'ok', {
-            duration: 3000,
-            panelClass: [ 'error-snackbar']
-          });
-        }
-      );
+    this.session.open(this.vncContainer);
+  }
+
+  ngOnDestroy() {
+    this.disconnect();
   }
 
   disconnect() {
-    this.vncService.disconnect(this.tab?.id);
+    this.session.close();
   }
 
   showRealSize() {

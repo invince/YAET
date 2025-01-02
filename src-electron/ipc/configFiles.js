@@ -1,15 +1,15 @@
 const { ipcMain } = require('electron');
 const path = require("path");
-const {load, save, CONFIG_FOLDER, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, updateManifest }= require("../common");
+const {load, save, APP_CONFIG_PATH, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, updateManifest }= require("../common");
 function initConfigFilesIpcHandler(mainWindow) {
 
   ipcMain.on('settings.reload', (event, obj) => {
     console.log("reloading...");
-    load(path.join(CONFIG_FOLDER, SETTINGS_JSON), "settings.loaded", false, mainWindow);
+    load(SETTINGS_JSON, "settings.loaded", false, mainWindow);
   });
 
   ipcMain.on('settings.save', (event, obj) => {
-    save(path.join(CONFIG_FOLDER, SETTINGS_JSON), obj.data, false)
+    save(SETTINGS_JSON, obj.data, false)
       .then(() => {
         console.log('Setting saved successfully!');
         updateManifest('setting.json');
@@ -20,12 +20,12 @@ function initConfigFilesIpcHandler(mainWindow) {
 
   ipcMain.on('profiles.reload', (event, obj) => {
     console.log("reloading...");
-    load(path.join(CONFIG_FOLDER, PROFILES_JSON), "profiles.loaded", false, mainWindow);
+    load(PROFILES_JSON, "profiles.loaded", false, mainWindow);
   });
 
 
   ipcMain.on('profiles.save', (event, obj) => {
-    save(path.join(CONFIG_FOLDER, PROFILES_JSON), obj.data, false)
+    save(PROFILES_JSON, obj.data, false)
       .then(() => {
         console.log('Profiles saved successfully!');
         updateManifest('profile.json');
@@ -35,11 +35,11 @@ function initConfigFilesIpcHandler(mainWindow) {
 
   ipcMain.on('secrets.reload', (event, obj) => {
     console.log("reloading...");
-    load(path.join(CONFIG_FOLDER, SECRETS_JSON), "secrets.loaded", true, mainWindow);
+    load( SECRETS_JSON, "secrets.loaded", true, mainWindow);
   });
 
   ipcMain.on('secrets.save', (event, obj) => {
-    save(path.join(CONFIG_FOLDER, SECRETS_JSON), obj.data, true)
+    save(SECRETS_JSON, obj.data, true)
       .then(() => {
         console.log('Secrets saved successfully!');
         updateManifest('secrets.json');
@@ -49,11 +49,11 @@ function initConfigFilesIpcHandler(mainWindow) {
 
   ipcMain.on('cloud.reload', (event, obj) => {
     console.log("reloading...")
-    load(path.join(CONFIG_FOLDER, CLOUD_JSON), "cloud.loaded", true, mainWindow);
+    load(CLOUD_JSON, "cloud.loaded", true, mainWindow);
   });
 
   ipcMain.on('cloud.save', (event, obj) => {
-    save(path.join(CONFIG_FOLDER, CLOUD_JSON), obj.data, true)
+    save(CLOUD_JSON, obj.data, true)
       .then(() => {
         console.log('Cloud saved successfully!');
         updateManifest('cloud.json');

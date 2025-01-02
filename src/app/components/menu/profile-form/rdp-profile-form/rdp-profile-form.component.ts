@@ -16,6 +16,11 @@ import {ChildFormAsFormControl} from '../../../enhanced-form-mixin';
 import {MenuComponent} from '../../menu.component';
 import {RdpProfile} from '../../../../domain/profile/RdpProfile';
 import {MatSlideToggle} from '@angular/material/slide-toggle';
+import {
+  FormFieldWithPrecondition,
+  ModelFieldWithPrecondition,
+  ModelFormController
+} from '../../../../utils/ModelFormController';
 
 @Component({
   selector: 'app-rdp-profile-form',
@@ -48,35 +53,32 @@ import {MatSlideToggle} from '@angular/material/slide-toggle';
 })
 export class RdpProfileFormComponent extends ChildFormAsFormControl(MenuComponent)  {
 
+  private modelFormController : ModelFormController<RdpProfile>;
   constructor(
     private fb: FormBuilder,
     ) {
     super();
+
+    let mappings = new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>();
+
+    mappings.set('host' ,       {name: 'host', formControlOption:  ['', [Validators.required]]});
+    mappings.set('fullScreen' , {name: 'fullScreen', formControlOption:  ['', [Validators.required]]});
+    mappings.set('asAdmin' ,    {name: 'asAdmin', formControlOption:  ['', [Validators.required]]});
+
+    this.modelFormController = new ModelFormController<RdpProfile>(mappings);
   }
 
   onInitForm(): FormGroup {
-    return this.fb.group(
-      {
-        host: ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time;
-        fullScreen: ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time;
-        asAdmin: ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time;
-      });
+    return this.modelFormController.onInitForm(this.fb);
   }
 
   formToModel(): any {
-    let rdpProfile = new RdpProfile();
-    rdpProfile.host = this.form.get('host')?.value;
-    rdpProfile.fullScreen = this.form.get('fullScreen')?.value;
-    rdpProfile.asAdmin = this.form.get('asAdmin')?.value;
-    return rdpProfile;
+    return this.modelFormController.formToModel(new RdpProfile(), this.form);
   }
 
   refreshForm(rdpProfile: any): void {
     if (this.form) {
-      this.form.reset();
-
-      this.form.get('host')?.setValue(rdpProfile?.host);
-      this.onSubmit(); // reset dirty and invalid status
+      return this.modelFormController.refreshForm(rdpProfile, this.form);
     }
   }
 

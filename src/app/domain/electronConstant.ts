@@ -6,7 +6,9 @@ export const TRIGGER_NATIVE_CLIPBOARD_PASTE = 'trigger-native-clipboard-paste';
 
 //#region "Sessions"
 export const SESSION_OPEN_LOCAL_TERMINAL = 'session.open.terminal.local';
+export const SESSION_CLOSE_LOCAL_TERMINAL = 'session.close.terminal.local';
 export const SESSION_OPEN_SSH_TERMINAL = 'session.open.terminal.ssh';
+export const SESSION_CLOSE_SSH_TERMINAL = 'session.close.terminal.ssh';
 export const SESSION_OPEN_RDP = 'session.open.rd.rdp';
 export const SESSION_DISCONNECT_SSH = 'session.disconnect.terminal.ssh';
 export const TERMINAL_INPUT = 'terminal.input';
@@ -16,6 +18,7 @@ export const SESSION_DISCONNECT_VNC = 'session.disconnect.rd.vnc';
 
 
 export const SESSION_OPEN_CUSTOM = 'session.open.custom';
+export const SESSION_SCP_REGISTER= 'session.fe.scp.register';
 
 //#endregion "Sessions"
 

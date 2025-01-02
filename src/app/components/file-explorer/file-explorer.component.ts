@@ -1,14 +1,16 @@
-import {Component, Input, ViewChild} from '@angular/core';
-import {TabInstance} from '../../domain/TabInstance';
-import {NgTerminal} from 'ng-terminal';
+import {Component, Input} from '@angular/core';
+import {ScpComponent} from "./scp/scp.component";
+import {Session} from '../../domain/session/Session';
 
 @Component({
   selector: 'app-file-explorer',
   standalone: true,
-  imports: [],
+    imports: [
+        ScpComponent
+    ],
   templateUrl: './file-explorer.component.html',
   styleUrl: './file-explorer.component.css'
 })
 export class FileExplorerComponent {
-  @Input() tab!: TabInstance;
+  @Input() session!: Session;
 }

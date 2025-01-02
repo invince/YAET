@@ -11,9 +11,18 @@ function initTerminalIpcHandler(terminalMap) {
     return terminalExec;
   }
 
+  ipcMain.on('session.close.terminal.local', (event, data) => {
+    const id = data.terminalId;
+    let terminal = terminalMap.get(id)?.process;
+    terminal.kill();
+    terminalMap.delete(id);
+    console.log('Local Terminal ' + id + ' closed');
+  });
+
   ipcMain.on('session.open.terminal.local', (event, data) => {
 
     const id = data.terminalId; // cf ElectronService
+    console.log('Local Terminal ' + id + ' ready');
     let shell = validate(data.terminalExec);
     const ptyProcess = pty.spawn(shell, [], {
       name: 'xterm-color',
@@ -21,11 +30,22 @@ function initTerminalIpcHandler(terminalMap) {
       rows: 30,
       cwd: process.env.HOME,
       env: process.env,
+      /* ISSUE 108, useConpty false to avoid Error: read EPIPE on close
+         ref: https://github.com/microsoft/node-pty/issues/512
+              https://github.com/vercel/hyper/issues/6961
+      */
+      useConpty: false
     });
-    ptyProcess.on('data', (data) => {
+
+    ptyProcess.onData((data) => {
       event.sender.send('terminal.output',
         {id: id, data: data.toString()}
       );
+    });
+
+    ptyProcess.on('error', (err) => {
+      // there is a strange error when we do kill, ptyProcess continue receiving an \n, add onError can prevent error popup
+      console.error(`Error in terminal ${id}:`, err);
     });
 
     terminalMap.set(id,
@@ -50,6 +70,13 @@ function initTerminalIpcHandler(terminalMap) {
     }
   });
 
+  ipcMain.on('session.close.terminal.ssh', (event, data) => {
+    const id = data.terminalId;
+    terminalMap.get(id)?.process.end();
+    terminalMap.delete(id);
+    console.log('SSH connection ' + id + ' closed');
+  });
+
   ipcMain.on('session.open.terminal.ssh', (event, data) => {
     const conn = new Client();
     const sshConfig = data.config;
@@ -59,7 +86,6 @@ function initTerminalIpcHandler(terminalMap) {
       console.log('DEBUG:', info);
     };
 
-    console.log(sshConfig);
     conn.on('ready', () => {
       console.log('SSH connection ready for id:', id);
       conn.shell((err, stream) => {
@@ -68,6 +94,16 @@ function initTerminalIpcHandler(terminalMap) {
           return;
         }
         console.log('Shell started for id:', id);
+
+        if (data.initPath) {
+          const initPath = data.initPath;
+          stream.write(`cd ${initPath}\n`);
+        }
+
+        if (data.initCmd) {
+          const initCmd = data.initCmd;
+          stream.write(`${initCmd}\n`);
+        }
 
         stream.on('data', (data) => {
           event.sender.send('terminal.output',
@@ -97,13 +133,14 @@ function initTerminalIpcHandler(terminalMap) {
     // Handle end event
     conn.on('end', () => {
       console.log('SSH connection ended for id:', id);
-      event.sender.send('session.disconnect.terminal.ssh', { id: id });
     });
 
     // Handle close event
     conn.on('close', (hadError) => {
-      console.log(`SSH connection closed for id: ${id}, hadError: ${hadError}`);
-      event.sender.send('session.disconnect.terminal.ssh', { id: id });
+      if (hadError) {
+        console.log(`SSH connection closed for id: ${id}, hadError: ${hadError}`);
+        event.sender.send('session.disconnect.terminal.ssh', { id: id });
+      }
     });
   });
 

@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
-import {Profile, Profiles} from '../domain/profile/Profile';
+import {Profile, Profiles, ProfileType} from '../domain/profile/Profile';
 import {ElectronService} from './electron.service';
 import {PROFILES_LOADED} from '../domain/electronConstant';
 import {Subject} from 'rxjs';
 import {MasterKeyService} from './master-key.service';
 import {Tag} from '../domain/Tag';
 import {Group} from '../domain/Group';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
 @Injectable({
   providedIn: 'root'
@@ -25,6 +26,8 @@ export class ProfileService {
   constructor(
     private electron: ElectronService,
     private masterKeyService: MasterKeyService,
+
+    private _snackBar: MatSnackBar,
 
   ) {
     electron.onLoadedEvent(PROFILES_LOADED, data => this.apply(data));
@@ -64,6 +67,24 @@ export class ProfileService {
     this._profiles = profiles;
     for (let one of this._profiles.profiles) {
       one.isNew = false;
+
+      switch (one.profileType) {
+        case ProfileType.LOCAL_TERMINAL:
+        case ProfileType.SSH_TERMINAL:
+        case ProfileType.TELNET_TERMINAL:
+          one.icon = 'terminal'; break;
+
+        case ProfileType.VNC_REMOTE_DESKTOP:
+        case ProfileType.RDP_REMOTE_DESKTOP:
+          one.icon = 'computer'; break;
+
+        case ProfileType.SCP_FILE_EXPLORER:
+        case ProfileType.SFTP_FILE_EXPLORER:
+          one.icon = 'folder'; break;
+        case ProfileType.CUSTOM:
+          one.icon = 'star'; break;
+      }
+
     }
     this._profiles.revision = Date.now();
     this.masterKeyService.encrypt(this._profiles).then(
@@ -99,6 +120,5 @@ export class ProfileService {
     }
     await this.save();
   }
-
 
 }
