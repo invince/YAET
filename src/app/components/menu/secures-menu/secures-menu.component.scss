@@ -8,31 +8,62 @@
   width: 100%;
 }
 
+// Sidenav Container
 .sidenav-container {
   height: 100%;
 }
 
 .sidenav {
-  width: 200px; /* Adjust the width as needed */
-}
-
-.sidenav-item {
+  width: 200px; // Adjust the width as needed
   display: flex;
-  align-items: start;
-  justify-content: space-between;
-  height: 40px;
-}
+  flex-direction: column;
+  height: 100%; // Ensure it fills the parent container
 
-.sidenav-add button {
-  width: 100%;
-  text-align: left;
-}
+  // Filter Section
+  .sidenav-filter {
+    flex-shrink: 0; // Avoid shrinking
+  }
 
-.sidenav-item button {
-  width: 100%;
-  text-align: left;
-  justify-content: start;
-  padding-left: 20px;
+  // Add Button Section
+  .sidenav-add {
+    flex-shrink: 0; // Avoid shrinking
+
+    button {
+      width: 100%;
+      text-align: left;
+    }
+  }
+
+  // Type Bar Section
+  .sidenav-bottom-bar {
+    margin-top: auto; // Push this element to the bottom
+    display: flex;
+    justify-content: space-around; // Distribute buttons evenly
+    padding: 8px 0;
+    border-top: 1px solid #ccc; // Optional: Add a top border for separation
+  }
+
+  // Sidenav Content
+  .sidenav-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  // Sidenav Item
+  .sidenav-item {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    height: 40px;
+
+    button {
+      width: 100%;
+      text-align: left;
+      justify-content: start;
+      padding-left: 20px;
+    }
+  }
 }
 
 .mat-sidenav-content {
@@ -53,4 +84,5 @@ app-secret-form {
 .modal-content {
   padding: 0;
 }
+
 
