@@ -26,6 +26,7 @@ import {MatDialog} from '@angular/material/dialog';
 import {ConfirmationComponent} from '../../confirmation/confirmation.component';
 import {ModalControllerService} from '../../../services/modal-controller.service';
 import {MenuConsts} from '../../../domain/MenuConsts';
+import {Tag} from '../../../domain/Tag';
 
 @Component({
   selector: 'app-profiles-menu',
@@ -209,6 +210,12 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     return this.selectedProfile?.isNew;
   }
 
+  public tagsColor(profile: Profile): string[] {
+    return profile.tags.map(one => this.settingService.findTagById(one))
+      .filter((one): one is Tag => !!one)// filter undefined
+      .map(tag => tag.color);
+  }
+
 
   keywordsProviders: ((profile: Profile) => string | string[])[] = [
     (profile: Profile) => profile.name,
@@ -227,7 +234,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     (profile: Profile) => {
       if (profile.tags) {
         return profile.tags.map(one => this.settingService.findTagById(one))
-          .filter(one => one !== undefined)
+          .filter((one): one is Tag => !!one)// filter undefined
           .map(one => one.name);
       }
       return [];
