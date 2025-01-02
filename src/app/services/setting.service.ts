@@ -9,9 +9,6 @@ import {SettingStorageService} from './setting-storage.service';
 import {Tag} from '../domain/Tag';
 import {ProfileService} from './profile.service';
 import {Group} from '../domain/Group';
-import {UISettings} from '../domain/setting/UISettings';
-import {GeneralSettings} from '../domain/setting/GeneralSettings';
-import {CloudSettings} from '../domain/setting/CloudSettings';
 
 @Injectable({
   providedIn: 'root'

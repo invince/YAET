@@ -23,6 +23,9 @@ export class CloudService {
     private masterKeyService: MasterKeyService,
     ) {
     electron.onLoadedEvent(CLOUD_LOADED, data => this.apply(data));
+    masterKeyService.masterkeyUpdateEvent$.subscribe(one => {
+      this.save();
+    });
   }
 
   private apply(data: any) {
@@ -52,7 +55,7 @@ export class CloudService {
   }
 
 
-  async save(cloud: CloudSettings) {
+  async save(cloud: CloudSettings = this._cloud) {
     if (!cloud) {
       return;
     }

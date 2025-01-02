@@ -31,6 +31,10 @@ export class ProfileService {
 
   ) {
     electron.onLoadedEvent(PROFILES_LOADED, data => this.apply(data));
+
+    masterKeyService.masterkeyUpdateEvent$.subscribe(one => {
+      this.save();
+    });
   }
 
   private apply(data: any) {
