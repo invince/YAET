@@ -58,7 +58,7 @@
                         {{ treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}
                         </mat-icon>
                       </button>
-                      <div class="group-name" matTreeNodeToggle >{{ displayProfileTabLabel(node) }}</div>
+                      <div class="group-name" matTreeNodeToggle [style]="'color:' + node.group.color" >{{ displayProfileTabLabel(node) }}</div>
                     </div>
                       <!-- There is inline padding applied to this div using styles.
                         This padding value depends on the mat-icon-button width.  -->
