@@ -11,11 +11,18 @@
     "start": "concurrently \"npm run ng:serve\" \"npm run electron:dev\"",
     "ng:serve": "ng serve",
     "electron:dev": "wait-on http://localhost:4200 && cross-env NODE_ENV=development electron .",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "build:release": "npm run clean && ng build --base-href ./ && cross-env NODE_ENV=production  electron-builder --publish always",
+    "release": "npm version patch && npm run build:release"
   },
   "build": {
     "appId": "io.github.invince",
     "productName": "YetAnotherElectronTerm",
+    "publish": {
+      "provider": "github",
+      "owner": "invince",
+      "repo": "YAET"
+    },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
@@ -90,6 +97,7 @@
     "electron-builder": "^25.1.8",
     "electron-packager": "^17.1.2",
     "electron-rebuild": "^3.2.9",
+    "electron-updater": "^6.3.9",
     "jasmine-core": "~5.2.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
