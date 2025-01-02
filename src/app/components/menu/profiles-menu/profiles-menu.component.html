@@ -48,13 +48,18 @@
                           }
                               {{ displayProfileTabLabel(node) }}
                     </div>
-                  </mat-nested-tree-node>
+                    <div class="tag-prefix" >
+                      @for(color of tagsColor(node.profile); track color) {
+                        <span class="color-dot" [style.background]= "color"></span>
+                      }
+                    </div>
+            </mat-nested-tree-node>
 
-                  <!-- Expandable Node -->
-                  <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild" >
-                    <div class="tree-parent-node">
-                      <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'Toggle ' + node.name">
-                        <mat-icon class="mat-icon-rtl-mirror">
+            <!-- Expandable Node -->
+            <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild" >
+              <div class="tree-parent-node">
+                <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'Toggle ' + node.name">
+                  <mat-icon class="mat-icon-rtl-mirror">
                         {{ treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}
                         </mat-icon>
                       </button>

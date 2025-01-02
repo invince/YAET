@@ -99,6 +99,8 @@
   }
 }
 
+
+
 // Group Name
 .group-name {
   cursor: pointer;
@@ -118,4 +120,19 @@
 // Mat Sidenav Content
 .mat-sidenav-content {
   width: 700px;
+}
+
+.tag-prefix {
+  display: flex; /* or inline-flex if it's within a text flow */
+  gap: 1px; /* Adjust spacing between dots */
+  align-items: center; /* Align dots vertically if needed */
+}
+
+.color-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin-left: 2px;
+  display: inline-block;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
 }
