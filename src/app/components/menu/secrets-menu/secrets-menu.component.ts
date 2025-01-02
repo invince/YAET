@@ -21,10 +21,9 @@ import {ConfirmationComponent} from '../../confirmation/confirmation.component';
 import {MatDialog} from '@angular/material/dialog';
 import {ModalControllerService} from '../../../services/modal-controller.service';
 import {MenuConsts} from '../../../domain/MenuConsts';
-import {Profile} from '../../../domain/profile/Profile';
 
 @Component({
-  selector: 'app-secures-menu',
+  selector: 'app-secrets-menu',
   standalone: true,
   imports: [
     CommonModule,
@@ -42,11 +41,11 @@ import {Profile} from '../../../domain/profile/Profile';
 
     FilterKeywordPipe,
   ],
-  templateUrl: './secures-menu.component.html',
-  styleUrl: './secures-menu.component.scss',
+  templateUrl: './secrets-menu.component.html',
+  styleUrl: './secrets-menu.component.scss',
   providers: [FilterKeywordPipe]
 })
-export class SecuresMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
+export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
 
   selectedId!: string | undefined;
   selectedSecret!: Secret | undefined;
