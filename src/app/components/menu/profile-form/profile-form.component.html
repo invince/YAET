@@ -19,7 +19,7 @@
 
       <mat-form-field class="field" >
         <mat-label>Group</mat-label>
-        <mat-select formControlName="group" (selectionChange)="onSelectGroup($event)"  [style.background]="groupColor">
+        <mat-select formControlName="group" (selectionChange)="onSelectGroup($event)"  [style.color]="groupColor">
           <mat-option></mat-option>
           @for ( oneGroup of settingStorage.settings.groups ; track oneGroup.id) {
             <mat-option [value]="oneGroup" [style.background]="oneGroup.color" >{{ oneGroup.name}}</mat-option>
