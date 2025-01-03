@@ -1,31 +1,26 @@
 # yetAnotherElectronTerm
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.11.
+This project is based on angular + electron to create a remote connection tool supporting SSH RDP SCP VNC
+## Prerequisites
+  - Node
+  - angular cli
+  - to compile module used in electron code: ```npm install --global --production windows-build-tools```
+   
+## Before you start
+  - open a admin terminal (because we'll create some symbolic link, you need admin right for the 1st time) run first ```npm run build```
 
-## Development server
+## Local DEV
+  - ```npm run start``` to do local dev
+  - or ```npm run ng:serve``` and ```npm run electron:dev``` separately
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## Package the installer
+  - ```npm run build```
 
-## Code scaffolding
+## Release
+  - ```npm run release```
+  - this will increment the version, package the installer, push to github (so auto updater can check the latest version)
+  - NOTE: you still need push code your self
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
-
-## Build
-
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
-
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
-
-
-## Electron build
-Each time you did a `npm intall`, you need also run `electron-rebuild`
+## NOTE:
+  - code is pushed to self-hosted gitea
+  - the release is pushed to github
