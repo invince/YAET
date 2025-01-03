@@ -26,7 +26,7 @@ import {MatDivider} from "@angular/material/divider";
 import {GeneralSettings} from '../../../domain/setting/GeneralSettings';
 import {NgxSpinnerService} from 'ngx-spinner';
 import {MatCheckbox} from '@angular/material/checkbox';
-import { version } from '../../../../../package.json';
+import packageJson from '../../../../../package.json';
 
 @Component({
   selector: 'app-setting-menu',
@@ -47,10 +47,8 @@ import { version } from '../../../../../package.json';
     MatInput,
     MatButton,
     MatSuffix,
-    MatChip,
     TagsFormComponent,
     GroupsFormComponent,
-    MatDivider,
     MatCheckbox,
   ],
   templateUrl: './setting-menu.component.html',
@@ -90,7 +88,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     private spinner: NgxSpinnerService
   ) {
     super();
-    this.version = version;
+    this.version = packageJson.version;
   }
 
 
