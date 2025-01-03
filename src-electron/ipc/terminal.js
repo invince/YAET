@@ -81,6 +81,9 @@ function initTerminalIpcHandler(terminalMap) {
     const conn = new Client();
     const sshConfig = data.config;
     const id = data.terminalId;
+    const shellOptions = {
+      term: 'xterm-256color'
+    };
 
     sshConfig.debug = (info) => {
       console.log('DEBUG:', info);
@@ -88,7 +91,7 @@ function initTerminalIpcHandler(terminalMap) {
 
     conn.on('ready', () => {
       console.log('SSH connection ready for id:', id);
-      conn.shell((err, stream) => {
+      conn.shell(shellOptions, (err, stream) => {
         if (err) {
           console.error('Error starting shell:', err);
           return;
