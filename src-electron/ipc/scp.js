@@ -306,7 +306,7 @@ function initScpSftpHandler(scpMap, expressApp) {
 
 
 // Start API
-  expressApp.listen(3000, () => console.log('API listening on port 3000'));
+  expressApp.listen(13012, () => console.log('API listening on port 13012'));
 }
 
 module.exports = {initScpSftpHandler};
