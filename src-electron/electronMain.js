@@ -1,42 +1,32 @@
 const path = require("path");
 const fs = require("fs");
+const {IPty} = require("node-pty");
+const {app, globalShortcut, BrowserWindow, Tray} = require('electron');
 
-const {app, globalShortcut, BrowserWindow, Tray, dialog} = require('electron');
 const {createMenu} = require('./ui/menu');
+const {SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON, APP_CONFIG_PATH} = require("./common");
 const {initConfigFilesIpcHandler} = require('./ipc/configFiles');
 const {initTerminalIpcHandler} = require('./ipc/terminal');
 const {initCloudIpcHandler} = require('./ipc/cloud');
 const {initSecurityIpcHandler} = require('./ipc/security');
 const {initRdpHandler} = require('./ipc/rdp');
 const {initClipboard} = require('./ipc/clipboard');
-const {SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON, APP_CONFIG_PATH} = require("./common");
 const {initVncHandler} = require("./ipc/vnc");
 const {initCustomHandler} = require("./ipc/custom");
 const {initScpSftpHandler} = require("./ipc/scp");
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require("express");
-const {IPty} = require("node-pty");
-const { autoUpdater } = require('electron-updater');
-
-const expressApp = express(); // we define the express backend here, because maybe multiple module needs create custom backend
-expressApp.use(bodyParser.urlencoded({ extended: true })); // to accept application/x-www-form-urlencoded
-expressApp.use(express.json());
-expressApp.use(  cors({
-  origin: 'http://localhost:4200', // Allow Angular dev server
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
-  credentials: true, // If you need to send cookies or authentication
-}));
+const {initAutoUpdater} = require("./ipc/autoUpdater");
+const {initBackend} = require("./ipc/backend");
 
 let tray;
+let expressApp;
 let mainWindow;
 let terminalMap = new Map();
 let vncMap = new Map();
 let scpMap = new Map();
 const log = require("electron-log")
+
 log.transports.file.level = "debug"
-autoUpdater.logger = log
+
 app.on('ready', () => {
 
   const isDev = process.env.NODE_ENV === 'development';
@@ -61,7 +51,6 @@ app.on('ready', () => {
   } else {
     mainWindow.setMenu(null); // Disable the menu bar in production
     mainWindow.loadFile(path.join(__dirname, '../dist/yet-another-electron-term/browser/index.html'));
-    autoUpdater.checkForUpdatesAndNotify();
   }
 
   if (!fs.existsSync(APP_CONFIG_PATH)) {
@@ -77,6 +66,9 @@ app.on('ready', () => {
   });
 
   // createMenu();
+
+  expressApp = initBackend();
+
   initConfigFilesIpcHandler(mainWindow);
   initTerminalIpcHandler(terminalMap);
   initCloudIpcHandler();
@@ -86,9 +78,7 @@ app.on('ready', () => {
   initScpSftpHandler(scpMap, expressApp);
   initClipboard(mainWindow);
   initCustomHandler();
-
-
-
+  initAutoUpdater(log);
 });
 
 app.on('window-all-closed', () => {
@@ -131,36 +121,4 @@ process.on('uncaughtException', (error) => {
   });
 });
 
-autoUpdater.on('update-available', (info) => {
-  dialog
-    .showMessageBox({
-      type: 'info',
-      title: 'Update Available',
-      message: `A new version (${info.version}) is available. Do you want to download it now?`,
-      buttons: ['Yes', 'No'],
-    })
-    .then((response) => {
-      if (response.response === 0) { // 'Yes' button clicked
-        autoUpdater.downloadUpdate();
-      } else {
-        console.log('User declined the update.');
-      }
-    });
-});
 
-autoUpdater.on('update-downloaded', () => {
-  dialog.showMessageBox({
-    type: 'info',
-    title: 'Update Ready',
-    message: 'A new version has been downloaded. Restart to install?',
-    buttons: ['Restart', 'Later'],
-  }).then((result) => {
-    if (result.response === 0) {
-      autoUpdater.quitAndInstall();
-    }
-  });
-});
-
-autoUpdater.on('error', (error) => {
-  console.error('Error during update:', error);
-});
