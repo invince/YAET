@@ -13,7 +13,7 @@
     "electron:dev": "wait-on http://localhost:4200 && cross-env NODE_ENV=development electron .",
     "postinstall": "patch-package",
     "build:release": "npm run clean && patch-package && ng build --base-href ./ && cross-env NODE_ENV=production  electron-builder --publish always",
-    "release": "npm version patch && npm run build:release"
+    "release": "npm run build:release && npm version patch"
   },
   "build": {
     "appId": "io.github.invince",
