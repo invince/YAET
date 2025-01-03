@@ -32,8 +32,7 @@ export class ScpComponent implements OnInit, OnDestroy{
   public toolbarSettings = {
     visible: true, // Show toolbar
   };
-  constructor(private scpService: ScpService,
-              private tabService: TabService) {
+  constructor(private scpService: ScpService) {
   }
   ngOnInit(): void {
 
@@ -44,11 +43,7 @@ export class ScpComponent implements OnInit, OnDestroy{
     }
 
 
-    this.ajaxSettings = {
-      url: 'http://localhost:3000/api/v1/scp/' + this.session.id, // Custom backend API
-      uploadUrl: 'http://localhost:3000/api/v1/scp/upload/' + this.session.id , // Custom upload endpoint
-      downloadUrl: 'http://localhost:3000/api/v1/scp/download/' + this.session.id, // Custom download endpoint
-    }
+    this.ajaxSettings = this.scpService.setup(this.session);
   }
 
   ngOnDestroy(): void {
