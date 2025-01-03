@@ -5,14 +5,14 @@
   "scripts": {
     "ng": "ng",
     "clean": "rimraf dist",
-    "build": "npm run clean && ng build --base-href ./ && cross-env NODE_ENV=production  electron-builder",
+    "build": "npm run clean && patch-package && ng build --base-href ./ && cross-env NODE_ENV=production  electron-builder",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "start": "concurrently \"npm run ng:serve\" \"npm run electron:dev\"",
     "ng:serve": "ng serve",
     "electron:dev": "wait-on http://localhost:4200 && cross-env NODE_ENV=development electron .",
     "postinstall": "patch-package",
-    "build:release": "npm run clean && ng build --base-href ./ && cross-env NODE_ENV=production  electron-builder --publish always",
+    "build:release": "npm run clean && patch-package && ng build --base-href ./ && cross-env NODE_ENV=production  electron-builder --publish always",
     "release": "npm version patch && npm run build:release"
   },
   "build": {

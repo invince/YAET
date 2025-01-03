@@ -1,3 +1,16 @@
+diff --git a/node_modules/@syncfusion/ej2-filemanager/dist/es6/ej2-filemanager.es5.js b/node_modules/@syncfusion/ej2-filemanager/dist/es6/ej2-filemanager.es5.js
+index 04d5711..17d214f 100644
+--- a/node_modules/@syncfusion/ej2-filemanager/dist/es6/ej2-filemanager.es5.js
++++ b/node_modules/@syncfusion/ej2-filemanager/dist/es6/ej2-filemanager.es5.js
+@@ -3284,7 +3284,7 @@ function performReadOperation(parent, result, fn, data, event, operation, target
+                 parent.hasId = !isNullOrUndefined(getValue('id', root));
+             }
+             if (event === 'finalize-end') {
+-                generatePath(parent);
++                // generatePath(parent);  // [FIXME INVINCE]: if path set, then wrong path is calculated
+             }
+         }
+     }
 diff --git a/node_modules/@syncfusion/ej2-filemanager/src/file-manager/common/operations.js b/node_modules/@syncfusion/ej2-filemanager/src/file-manager/common/operations.js
 index d1f7aa1..f89c720 100644
 --- a/node_modules/@syncfusion/ej2-filemanager/src/file-manager/common/operations.js
