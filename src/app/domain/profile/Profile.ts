@@ -21,21 +21,18 @@ export enum ProfileType {
   VNC_REMOTE_DESKTOP = 'VNC_REMOTE_DESKTOP',
   RDP_REMOTE_DESKTOP = 'RDP_REMOTE_DESKTOP',
   SCP_FILE_EXPLORER = 'SCP_FILE_EXPLORER',
-  SFTP_FILE_EXPLORER = 'SFTP_FILE_EXPLORER',
+  SMB_FILE_EXPLORER = 'SMB_FILE_EXPLORER',
 
   CUSTOM = 'CUSTOM',
 }
 
 export const ProfileCategoryTypeMap = new Map<ProfileCategory, any>([
   [ProfileCategory.TERMINAL, [
-    // ProfileType.LOCAL_TERMINAL,
     ProfileType.SSH_TERMINAL,
     ProfileType.TELNET_TERMINAL,
   ]],
 
   [ProfileCategory.REMOTE_DESKTOP, [
-    // ProfileType.REAL_VNC_REMOTE_DESKTOP,
-    // ProfileType.TIGHT_VNC_REMOTE_DESKTOP,
     ProfileType.VNC_REMOTE_DESKTOP,
     ProfileType.RDP_REMOTE_DESKTOP,
   ]],
@@ -43,7 +40,7 @@ export const ProfileCategoryTypeMap = new Map<ProfileCategory, any>([
 
   [ProfileCategory.FILE_EXPLORER, [
     ProfileType.SCP_FILE_EXPLORER,
-    ProfileType.SFTP_FILE_EXPLORER,
+    // ProfileType.SMB_FILE_EXPLORER,
   ]],
 
   [ProfileCategory.CUSTOM, [

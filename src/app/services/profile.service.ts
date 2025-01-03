@@ -85,7 +85,7 @@ export class ProfileService {
           one.icon = 'computer'; break;
 
         case ProfileType.SCP_FILE_EXPLORER:
-        case ProfileType.SFTP_FILE_EXPLORER:
+        case ProfileType.SMB_FILE_EXPLORER:
           one.icon = 'folder'; break;
         case ProfileType.CUSTOM:
           one.icon = 'star'; break;
