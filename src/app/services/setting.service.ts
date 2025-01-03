@@ -9,6 +9,7 @@ import {SettingStorageService} from './setting-storage.service';
 import {Tag} from '../domain/Tag';
 import {ProfileService} from './profile.service';
 import {Group} from '../domain/Group';
+import { version } from '../../../package.json';
 
 @Injectable({
   providedIn: 'root'
@@ -58,6 +59,7 @@ export class SettingService {
       this.settingStorage.settings = settings;
     }
     this.settingStorage.settings.isNew = false;
+    this.settingStorage.settings.version = version;
     this.settingStorage.settings.revision = Date.now();
     this.electron.saveSetting(this.settingStorage.settings);
   }

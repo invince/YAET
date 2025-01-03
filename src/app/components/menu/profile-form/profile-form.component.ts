@@ -109,6 +109,11 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     this.refreshForm(value);
   }
 
+  override afterFormInitialization() { // we cannot relay only on setter, because 1st set it before ngOnInit
+    this.refreshForm(this.profile);
+  }
+
+
   onInitForm(): FormGroup {
     let form =  this.fb.group(
       {
@@ -237,9 +242,6 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     return this._profile;
   }
 
-  override afterFormInitialization() {
-    this.refreshForm(this.profile);
-  }
 
 
 

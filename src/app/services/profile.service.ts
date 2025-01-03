@@ -7,6 +7,7 @@ import {MasterKeyService} from './master-key.service';
 import {Tag} from '../domain/Tag';
 import {Group} from '../domain/Group';
 import {MatSnackBar} from '@angular/material/snack-bar';
+import { version } from '../../../package.json';
 
 @Injectable({
   providedIn: 'root'
@@ -69,6 +70,7 @@ export class ProfileService {
       profiles = new Profiles();
     }
     this._profiles = profiles;
+    this._profiles.version = version;
     for (let one of this._profiles.profiles) {
       one.isNew = false;
 

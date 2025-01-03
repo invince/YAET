@@ -15,6 +15,8 @@ export class MySettings {
 
   public isNew: boolean = true;
 
+  public version: string = '';
+
   constructor() {
     this.general = new GeneralSettings();
     this.localTerminal = new LocalTerminalProfile();

@@ -5,7 +5,7 @@ import {SECRETS_LOADED} from '../domain/electronConstant';
 import {MasterKeyService} from './master-key.service';
 import {SecretStorageService} from './secret-storage.service';
 import {SettingStorageService} from './setting-storage.service';
-
+import { version } from '../../../package.json';
 @Injectable({
   providedIn: 'root'
 })
@@ -55,6 +55,7 @@ export class SecretService {
       secrets = new Secrets();
     }
     this.secretStorage.data = secrets;
+    this.secretStorage.data.version = version;
     for (let one of this.secretStorage.data.secrets) {
       one.isNew = false;
     }
