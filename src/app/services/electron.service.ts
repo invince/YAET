@@ -175,6 +175,7 @@ export class ElectronService {
       readyTimeout: 30000,           // Wait up to 30 seconds for the connection.
       keepaliveInterval: 15000,      // Send keepalive packets every 15 seconds.
       keepaliveCountMax: 5,          // Disconnect after 5 failed keepalive packets.
+
     };
     let sshProfile = session.profile.sshProfile;
     sshConfig.host = sshProfile.host;
