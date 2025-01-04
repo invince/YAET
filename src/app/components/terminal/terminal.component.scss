@@ -1,12 +1,20 @@
 .terminal-container {
-  display: block; /* Or flex if required */
+  display: flex;
+  flex-direction: column;
   height: calc(100vh - 48px);   /* Full height of the parent container */
   width: 100%;    /* Optional, full width if required */
+  overflow: hidden;
+
+  .terminal {
+    overflow: hidden;
+    height: calc(100vh - 48px - 10px);   /* Full height of the parent container */
+    background: black;
+  }
+
+  .terminal-footer{
+    margin-top: auto; // Push this element to the bottom
+    display: flex;
+    height: 10px;
+    background: black;
+  }
 }
-
-
-.terminal-outer {
-  padding-right: 0;
-
-}
-
