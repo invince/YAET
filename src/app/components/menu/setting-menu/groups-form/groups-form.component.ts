@@ -54,8 +54,8 @@ export class GroupsFormComponent implements OnInit{
     if (!this.settingStorage.settings) {
       this.settingStorage.settings = new MySettings();
     }
-    if (!this.settingStorage.settings.general.groups) {
-      this.settingStorage.settings.general.groups = [];
+    if (!this.settingStorage.settings.groups) {
+      this.settingStorage.settings.groups = [];
     }
 
     this.dataSource.data = this.createGroupDataSource();
@@ -67,7 +67,7 @@ export class GroupsFormComponent implements OnInit{
 
   createGroupDataSource(): GroupNode[] {
     return GroupNode.map2DataSource(
-      this.settingStorage.settings.general.groups,
+      this.settingStorage.settings.groups,
       this.profileService.profiles.profiles,
       true,
       false,

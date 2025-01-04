@@ -263,7 +263,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
 
   createGroupDataSource(): GroupNode[] {
     return GroupNode.map2DataSource(
-      this.settingStorage.settings.general.groups,
+      this.settingStorage.settings.groups,
       this.keywordPipe.transform(this.profilesCopy.profiles, this.keywordsProviders, this.filter),
       false,
       true);

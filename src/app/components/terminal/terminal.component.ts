@@ -14,6 +14,7 @@ import {Terminal} from '@xterm/xterm';
 import {Session} from '../../domain/session/Session';
 import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
+import { WebglAddon } from '@xterm/addon-webgl';
 import {Subscription} from 'rxjs';
 
 @Component({
@@ -32,7 +33,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   private xtermUnderlying : Terminal | undefined;
   subscriptions: Subscription[] = [];
-
+  private webglAddon = new WebglAddon();
 
   constructor(
     private electron: ElectronService,
@@ -46,6 +47,10 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     if (this.xtermUnderlying) {
       this.xtermUnderlying.loadAddon(new WebLinksAddon());
       this.xtermUnderlying.loadAddon(new FitAddon());
+      this.webglAddon.onContextLoss(e => {
+        this.webglAddon.dispose();
+      });
+      this.xtermUnderlying.loadAddon(this.webglAddon);
       this.terminal.setXtermOptions({
         fontFamily: '"Cascadia Code", Menlo, monospace',
         // theme: {

@@ -103,12 +103,12 @@ export class SettingService {
   }
 
   findGroupById(id: string): Group | undefined {
-    return this.settingStorage.settings.general.groups
+    return this.settingStorage.settings.groups
       .find(one => one.id == id)
   }
 
   findTagById(id: string): Tag | undefined {
-    return this.settingStorage.settings.general.tags
+    return this.settingStorage.settings.tags
       .find(one => one.id == id)
   }
 
@@ -116,12 +116,12 @@ export class SettingService {
     if (!value) {
       return true; // exclude invalid case
     }
-    return this.settingStorage.settings.general.groups
+    return this.settingStorage.settings.groups
       .find(one => one.id != excludeId && one.name == value);
   }
 
   addGroup(value: string) {
-    this.settingStorage.settings.general.groups.push(new Group(value));
+    this.settingStorage.settings.groups.push(new Group(value));
     this.save();
   }
 
@@ -130,7 +130,7 @@ export class SettingService {
     if (!value || !group) {
       return;
     }
-    this.settingStorage.settings.general.groups
+    this.settingStorage.settings.groups
       .forEach(one => {
         if (one.id == group.id) {
           one.name = value;
@@ -142,7 +142,7 @@ export class SettingService {
   async removeGroup(group: Group) {
     if (group) {
       await this.profileService.removeGroup(group);
-      this.settingStorage.settings.general.groups = this.settingStorage.settings.general.groups.filter(one => one.id != group.id);
+      this.settingStorage.settings.groups = this.settingStorage.settings.groups.filter(one => one.id != group.id);
     }
     this.save();
   }
@@ -151,12 +151,12 @@ export class SettingService {
     if (!value) {
       return true; // exclude invalid case
     }
-    return this.settingStorage.settings.general.tags
+    return this.settingStorage.settings.tags
       .find(one => one.id != excludeId && one.name == value);
   }
 
   addTag(value: string) {
-    this.settingStorage.settings.general.tags.push(new Tag(value));
+    this.settingStorage.settings.tags.push(new Tag(value));
     this.save();
   }
 
@@ -165,7 +165,7 @@ export class SettingService {
     if (!value || !tag) {
       return;
     }
-    this.settingStorage.settings.general.tags
+    this.settingStorage.settings.tags
       .forEach(one => {
         if (one.id == tag.id) {
           one.name = value;
@@ -178,7 +178,7 @@ export class SettingService {
     if (!value || !tag) {
       return;
     }
-    this.settingStorage.settings.general.tags
+    this.settingStorage.settings.tags
       .forEach(one => {
         if (one.id == tag.id) {
           one.color = value;
@@ -190,7 +190,7 @@ export class SettingService {
   async removeTag(tag: Tag) {
     if (tag) {
       await this.profileService.removeTag(tag);
-      this.settingStorage.settings.general.tags = this.settingStorage.settings.general.tags.filter(one => one.id != tag.id);
+      this.settingStorage.settings.tags = this.settingStorage.settings.tags.filter(one => one.id != tag.id);
     }
     this.save();
   }
@@ -199,7 +199,7 @@ export class SettingService {
     if (!color || !group) {
       return;
     }
-    this.settingStorage.settings.general.groups
+    this.settingStorage.settings.groups
       .forEach(one => {
         if (one.id == group.id) {
           one.color = color;
