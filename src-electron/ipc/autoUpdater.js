@@ -3,6 +3,8 @@ const {dialog} = require("electron");
 
 function initAutoUpdater(log) {
 
+  console.log("AutoUpdate active");
+
   autoUpdater.logger = log;
 
   const isDev = process.env.NODE_ENV === 'development';

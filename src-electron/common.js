@@ -15,31 +15,38 @@ const MANIFEST_JSON = 'manifest.json';
 
 
 function load(jsonFileName, loadedEvent, isRaw, mainWindow) {
-  try {
-    const settingsPath = path.join(APP_CONFIG_PATH, jsonFileName); // same folder as exe
-    console.log(settingsPath);
-    if (fs.existsSync(settingsPath)){
-      fs.readFile(settingsPath, 'utf-8', (err, data) => {
-        if (!err) {
-          const settings = isRaw ? data : JSON.parse(data);
-          console.debug(jsonFileName + " loaded, event sent");
-          mainWindow.webContents.send(loadedEvent, settings);
-        }
-      });
-    } else {
-      hasConfig(jsonFileName).then(
-        has => {
-          if (!has) {
-            mainWindow.webContents.send(loadedEvent, undefined);
+  return new Promise((resolve, reject) => {
+    try {
+      const settingsPath = path.join(APP_CONFIG_PATH, jsonFileName); // same folder as exe
+      console.log(settingsPath);
+      if (fs.existsSync(settingsPath)){
+        return fs.readFile(settingsPath, 'utf-8', (err, data) => {
+          if (!err) {
+            const settings = isRaw ? data : JSON.parse(data);
+            mainWindow.webContents.send(loadedEvent, settings);
+            resolve(settings);
+          } else {
+            reject(err);
           }
-        }
-      );
-    }
+        });
+      } else {
+        hasConfig(jsonFileName).then(
+          has => {
+            if (!has) {
+              mainWindow.webContents.send(loadedEvent, undefined);
+              resolve(undefined);
+            } else {
+              reject({error: 'Failed to load settings.'});
+            }
+          }
+        );
+      }
 
-  } catch (err) {
-    console.error('Error reading ' + jsonFileName, err);
-    return null;
-  }
+    } catch (err) {
+      console.error('Error reading ' + jsonFileName, err);
+      reject(err);
+    }
+  });
 }
 
 function save(jsonFileName, data, isRaw) {

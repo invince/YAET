@@ -23,6 +23,7 @@ let mainWindow;
 let terminalMap = new Map();
 let vncMap = new Map();
 let scpMap = new Map();
+
 const log = require("electron-log")
 
 log.transports.file.level = "debug"
@@ -59,10 +60,23 @@ app.on('ready', () => {
 
   // Ensure `load` runs on every page reload
   mainWindow.webContents.on('did-finish-load', () => {
-    load(SETTINGS_JSON, "settings.loaded", false, mainWindow);
-    load(PROFILES_JSON, "profiles.loaded", false, mainWindow);
-    load(SECRETS_JSON, "secrets.loaded", true, mainWindow);
-    load(CLOUD_JSON, "cloud.loaded", true, mainWindow);
+    load(SETTINGS_JSON, "settings.loaded", false, mainWindow)
+      .then(settings => {
+        const autoUpdate = settings.general?.autoUpdate;
+        if (autoUpdate) {
+          initAutoUpdater(log);
+        }
+      })
+      .catch(console.error);
+    load(PROFILES_JSON, "profiles.loaded", false, mainWindow)
+      .then(r =>  console.debug(PROFILES_JSON + " loaded, event sent"))
+      .catch(console.error);
+    load(SECRETS_JSON, "secrets.loaded", true, mainWindow)
+      .then(r =>  console.debug(SECRETS_JSON + " loaded, event sent"))
+      .catch(console.error);
+    load(CLOUD_JSON, "cloud.loaded", true, mainWindow)
+      .then(r =>  console.debug(CLOUD_JSON + " loaded, event sent"))
+      .catch(console.error);
   });
 
   // createMenu();
@@ -78,7 +92,6 @@ app.on('ready', () => {
   initScpSftpHandler(scpMap, expressApp);
   initClipboard(mainWindow);
   initCustomHandler();
-  initAutoUpdater(log);
 });
 
 app.on('window-all-closed', () => {
