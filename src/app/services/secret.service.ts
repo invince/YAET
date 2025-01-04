@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core';
+import {Injectable, OnDestroy} from '@angular/core';
 import {Secret, Secrets} from '../domain/Secret';
 import {ElectronService} from './electron.service';
 import {SECRETS_LOADED} from '../domain/electronConstant';
@@ -6,15 +6,17 @@ import {MasterKeyService} from './master-key.service';
 import {SecretStorageService} from './secret-storage.service';
 import {SettingStorageService} from './setting-storage.service';
 import packageJson from '../../../package.json';
+import {Subscription} from 'rxjs';
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class SecretService {
+export class SecretService implements OnDestroy{
 
   static CLOUD_OPTION = 'Secret';
   private _loaded: boolean = false;
+  private subscriptions: Subscription[] =[];
 
   constructor(
     private electron: ElectronService,
@@ -27,9 +29,9 @@ export class SecretService {
       this.apply(data);
     });
 
-    masterKeyService.masterkeyUpdateEvent$.subscribe(one => {
+    this.subscriptions.push(masterKeyService.masterkeyUpdateEvent$.subscribe(one => {
       this.save();
-    });
+    }));
   }
 
   apply(data: any) {
@@ -95,6 +97,12 @@ export class SecretService {
       label += loginPart + '/***';
     }
     return label;
+  }
+
+  ngOnDestroy(): void {
+    if (this.subscriptions) {
+      this.subscriptions.forEach(one => one.unsubscribe());
+    }
   }
 
 }

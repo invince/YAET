@@ -49,7 +49,7 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
 
   selectedId!: string | undefined;
   selectedSecret!: Secret | undefined;
-  subscription!: Subscription;
+  subscriptions: Subscription[] = [];
   filter!: string;
 
   secretsCopy!: Secrets;
@@ -75,17 +75,18 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
     super();
   }
   ngOnDestroy(): void {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
+    if (this.subscriptions) {
+      this.subscriptions.forEach(one => one.unsubscribe());
     }
   }
 
+
   ngOnInit(): void {
-    this.subscription = this.modalControl.modalCloseEvent.subscribe(one => {
+    this.subscriptions.push(this.modalControl.modalCloseEvent.subscribe(one => {
       if (one && one.includes(MenuConsts.MENU_SECURE)) {
         this.modalControl.closeModal();
       }
-    });
+    }));
     if (!this.secretService.isLoaded) {
       this._snackBar.open('Secure not loaded, we\'ll reload it, please close secure menu and reopen', 'OK', {
         duration: 3000
@@ -133,7 +134,7 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
       data: { message: 'Do you want to delete this profile: ' + $event.name + '?' },
     });
 
-    dialogRef.afterClosed().subscribe(async (result) => {
+    this.subscriptions.push(dialogRef.afterClosed().subscribe(async (result) => {
       if (result) {
         this.secretsCopy.delete($event);
         await this.commitChange();
@@ -141,7 +142,7 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
         this.selectedSecret = undefined;
         // this.refreshSecretForm();
       }
-    });
+    }));
   }
 
   async onSaveOne($event: Secret) {

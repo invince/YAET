@@ -8,10 +8,8 @@ import {Profile, Profiles} from '../../../domain/profile/Profile';
 import {CommonModule} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatOption} from '@angular/material/autocomplete';
 import {MatInput} from '@angular/material/input';
 import {MatButtonModule} from '@angular/material/button';
-import {MatSelect} from '@angular/material/select';
 import {ProfileFormComponent} from '../profile-form/profile-form.component';
 import {HasChildForm} from '../../enhanced-form-mixin';
 import {SettingStorageService} from '../../../services/setting-storage.service';
@@ -58,7 +56,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
 
   profilesCopy!: Profiles;
 
-  subscription!: Subscription;
+  subscriptions: Subscription[] = []
   filter!: string;
 
   sideNavType!: string;
@@ -86,17 +84,17 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   }
 
   ngOnDestroy(): void {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
+    if (this.subscriptions) {
+      this.subscriptions.forEach(one => one.unsubscribe());
     }
   }
 
   ngOnInit(): void {
-    this.subscription = this.modalControl.modalCloseEvent.subscribe(one => {
+    this.subscriptions.push(this.modalControl.modalCloseEvent.subscribe(one => {
       if (one && one.includes(MenuConsts.MENU_PROFILE)) {
         this.modalControl.closeModal();
       }
-    });
+    }));
     if (!this.profileService.isLoaded) {
       let message = 'Profiles not loaded, we\'ll reload it, please close Profile menu and reopen';
       if (!this.settingService.isLoaded) {
@@ -167,7 +165,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
       data: { message: 'Do you want to delete this profile: ' + $event.name + '?' },
     });
 
-    dialogRef.afterClosed().subscribe(async (result) => {
+    this.subscriptions.push(dialogRef.afterClosed().subscribe(async (result) => {
       if (result) {
         this.profilesCopy.delete($event);
         await this.commitChange();
@@ -175,7 +173,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
         this.selectedProfile = undefined;
         this.refreshForm();
       }
-    });
+    }));
   }
 
   async onSaveOne($event: Profile) {

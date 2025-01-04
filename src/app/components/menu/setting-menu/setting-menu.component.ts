@@ -71,7 +71,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   SIDE_NAV_TYPE_OPTIONS = SideNavType;
 
   settingsCopy!: MySettings;
-  private subscription!: Subscription;
+  private subscriptions: Subscription[] =[];
   currentTabIndex: number = 0;
 
   GENERAL_FORM_TAB_INDEX = 0;
@@ -104,14 +104,14 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       data: { message: 'Delete master key, if you continue, all existing secrets will be invalid. Do you want continue ?' },
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
+    this.subscriptions.push(dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.masterKeyService.deleteMasterKey();
         this._snackBar.open('Master Key Deleted', 'OK', {
           duration: 3000
         });
       }
-    });
+    }));
   }
 
   ngOnInit() {
@@ -132,13 +132,11 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
     this.refreshForm(this.settingsCopy);
 
-    this.subscription =  this.settingService.settingLoadedEvent.subscribe(() => {
+    this.subscriptions.push(this.settingService.settingLoadedEvent.subscribe(() => {
       this.settingsCopy = this.settingStorage.settings;
       this.refreshForm(this.settingsCopy);
       this.cdr.detectChanges(); // mat select doesn't detect well change from event subscription
-    })
-
-
+    }));
 
   }
 
@@ -188,9 +186,12 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     );
   }
 
-  ngOnDestroy() {
-    this.subscription.unsubscribe(); // Clean up the subscription
+  ngOnDestroy(): void {
+    if (this.subscriptions) {
+      this.subscriptions.forEach(one => one.unsubscribe());
+    }
   }
+
 
 
 
@@ -255,9 +256,9 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       data: {}
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    this.subscriptions.push(dialogRef.afterClosed().subscribe(result => {
       console.log('The dialog was closed');
-    });
+    }));
   }
 
 

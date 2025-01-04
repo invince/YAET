@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import {Injectable, OnDestroy} from '@angular/core';
 import {CloudSettings} from '../domain/setting/CloudSettings';
 import {ElectronService} from './electron.service';
 import {MasterKeyService} from './master-key.service';
@@ -8,25 +8,35 @@ import {SettingService} from './setting.service';
 import {ProfileService} from './profile.service';
 import {SecretService} from './secret.service';
 import packageJson from '../../../package.json';
+import {Subscription} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
-export class CloudService {
+export class CloudService implements OnDestroy {
 
   static OPTIONS = [SettingService.CLOUD_OPTION, ProfileService.CLOUD_OPTION, SecretService.CLOUD_OPTION];
 
   private _cloud!: CloudSettings;
   private _loaded: boolean = false;
+  subscriptions: Subscription[] = []
+
   constructor(
     private electron: ElectronService,
     private masterKeyService: MasterKeyService,
     ) {
     electron.onLoadedEvent(CLOUD_LOADED, data => this.apply(data));
-    masterKeyService.masterkeyUpdateEvent$.subscribe(one => {
+    this.subscriptions.push(masterKeyService.masterkeyUpdateEvent$.subscribe(one => {
       this.save();
-    });
+    }));
   }
+
+  ngOnDestroy(): void {
+    if (this.subscriptions) {
+      this.subscriptions.forEach(one => one.unsubscribe());
+    }
+  }
+
 
   private apply(data: any) {
     if (!data) {
