@@ -12,6 +12,7 @@ This project is based on angular + electron to create a remote connection tool s
 ## Local DEV
   - ```npm run start``` to do local dev
   - or ```npm run ng:serve``` and ```npm run electron:dev``` separately
+  - If you install some modules used by electron, you need run ```electron-rebuild```
 
 ## Package the installer
   - ```npm run build```
