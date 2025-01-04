@@ -32,15 +32,13 @@ import {NgxSpinnerModule} from 'ngx-spinner';
 import {TabService} from './services/tab.service';
 import {MenuConsts} from './domain/MenuConsts';
 import {SessionService} from './services/session.service';
+import {SettingStorageService} from './services/setting-storage.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
     imports: [
-      RouterOutlet,
       TerminalComponent,
-      MenuComponent,
-
       MatSidenavModule,
       MatTabsModule,
       MatButtonModule,
@@ -50,7 +48,6 @@ import {SessionService} from './services/session.service';
 
       CommonModule,
 
-      ProfileFormComponent,
       SettingMenuComponent,
       RemoteDesktopComponent,
       FileExplorerComponent,
@@ -75,10 +72,15 @@ export class AppComponent implements OnInit, OnDestroy{
 
   title = 'yetAnotherElectronTerm';
 
-  subscriptions: Subscription[] = []
+  subscriptions: Subscription[] = [];
+
+  settingInitialized = false;
+
+
 
   constructor(
     private settingService: SettingService,
+    private settingStorage: SettingStorageService,
     private profileService: ProfileService,
     private secretService: SecretService,
     private sessionService: SessionService,
@@ -112,14 +114,28 @@ export class AppComponent implements OnInit, OnDestroy{
           }
         }
       )
-    )
+    );
+
+    this.subscriptions.push(
+      this.settingService.settingLoadedEvent.subscribe(
+        evt => {
+          if (!this.settingInitialized &&
+            this.settingStorage.settings.terminal?.localTerminal?.defaultOpen ) {
+            this.addLocalTerminal();
+          }
+
+          this.settingInitialized = true;
+        }
+      )
+    );
+
   }
 
   ngOnDestroy() {
     this.subscriptions.forEach(one => one.unsubscribe());
   }
 
-  initialized() {
+  allSettingLoaded() {
     return this.settingService.isLoaded
             && this.profileService.isLoaded
             && this.secretService.isLoaded
