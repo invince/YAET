@@ -16,7 +16,7 @@ export class MySettings {
 
   public terminal: TerminalSettings;
   public fileExplorer: FileExplorerSettings;
-  public remoteDesk: RemoteDesktopSettings;
+  public remoteDesktop: RemoteDesktopSettings;
 
   public isNew: boolean = true;
 
@@ -28,7 +28,7 @@ export class MySettings {
     this.ui = new UISettings();
     this.terminal = new TerminalSettings();
     this.fileExplorer = new FileExplorerSettings();
-    this.remoteDesk = new RemoteDesktopSettings();
+    this.remoteDesktop = new RemoteDesktopSettings();
     this.groups = [];
     this.tags = [];
   }

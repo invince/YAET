@@ -115,6 +115,16 @@
             <mat-checkbox formControlName="vncClipboardCompatibleMode" required>
               Enable Vnc Clipboard Compatible Mode
             </mat-checkbox>
+
+            <mat-form-field class="field" >
+              <mat-label>Vnc Quality</mat-label>
+              <input matInput type="number" formControlName="vncQuality" required/>
+            </mat-form-field>
+
+            <mat-form-field class="field" >
+              <mat-label>Vnc Compression Level</mat-label>
+              <input matInput type="number" formControlName="vncCompressionLevel" required/>
+            </mat-form-field>
           </div>
         </mat-tab>
       </mat-tab-group>
