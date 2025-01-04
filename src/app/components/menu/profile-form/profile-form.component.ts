@@ -340,7 +340,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     const currentFilter = inputValue.toLowerCase();
     const selected = this.form.get('tags')?.value;
 
-    let excludeAlreadySelected = this.settingStorage.settings.general.tags;
+    let excludeAlreadySelected = this.settingStorage.settings.tags;
     if (selected) {
       const selectedId = selected.map((one: Tag) => one.id);
       excludeAlreadySelected = excludeAlreadySelected.filter(one => !selectedId.includes(one.id));

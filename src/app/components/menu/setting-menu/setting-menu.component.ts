@@ -28,7 +28,7 @@ import packageJson from '../../../../../package.json';
 import {RemoteDesktopSettings} from '../../../domain/setting/RemoteDesktopSettings';
 import {TerminalSettings} from '../../../domain/setting/TerminalSettings';
 import {FileExplorerSettings} from '../../../domain/setting/FileExplorerSettings';
-import {MatAccordion, MatExpansionModule} from '@angular/material/expansion';
+import {MatExpansionModule} from '@angular/material/expansion';
 
 @Component({
   selector: 'app-setting-menu',
