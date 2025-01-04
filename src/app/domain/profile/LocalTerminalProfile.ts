@@ -11,4 +11,5 @@ export class LocalTerminalProfile {
   public type!: LocalTerminalType
   public execPath!: string;
 
+  public defaultOpen: boolean = false;
 }

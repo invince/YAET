@@ -2,7 +2,7 @@
   <mat-form-field class="tag-chip-list">
     <mat-label>Tags Management</mat-label>
     <mat-chip-grid #chipGrid aria-label="Enter Tags">
-      @for (tag of settingStorage.settings.tags; let i = $index; track tag.id) {
+      @for (tag of settingStorage.settings.general.tags; let i = $index; track tag.id) {
       <mat-chip-row
           class="tag-chip"
           [removable]="true"

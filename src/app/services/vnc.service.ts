@@ -34,7 +34,7 @@ export class VncService {
         let rfb = this.vncMap.get(id);
         if (rfb) {
           rfb.clipboardPasteFrom(text);
-          if (this.settingStorage.settings?.general?.vncClipboardCompatibleMode) {
+          if (this.settingStorage.settings?.remoteDesk?.vncClipboardCompatibleMode) {
             rfb.sendKey(this.XK_Control_L, "ControlLeft", true);
             rfb.sendKey(this.XK_Shift_L, "ShiftLeft", true);
             rfb.sendKey(this.XK_V, "v");

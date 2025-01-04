@@ -49,8 +49,8 @@ export class TagsFormComponent implements OnInit{
     if (!this.settingStorage.settings) {
       this.settingStorage.settings = new MySettings();
     }
-    if (!this.settingStorage.settings.tags) {
-      this.settingStorage.settings.tags = [];
+    if (!this.settingStorage.settings.general.tags) {
+      this.settingStorage.settings.general.tags = [];
     }
   }
 
