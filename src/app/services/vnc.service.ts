@@ -6,7 +6,7 @@ import {SecretStorageService} from './secret-storage.service';
 import {ElectronService} from './electron.service';
 import RFB from '@novnc/novnc/lib/rfb';
 import {Subject} from 'rxjs';
-import {Profile, ProfileType} from '../domain/profile/Profile';
+import {ProfileType} from '../domain/profile/Profile';
 import {SettingStorageService} from './setting-storage.service';
 
 
@@ -34,7 +34,7 @@ export class VncService {
         let rfb = this.vncMap.get(id);
         if (rfb) {
           rfb.clipboardPasteFrom(text);
-          if (this.settingStorage.settings?.remoteDesk?.vncClipboardCompatibleMode) {
+          if (this.settingStorage.settings?.remoteDesktop?.vncClipboardCompatibleMode) {
             rfb.sendKey(this.XK_Control_L, "ControlLeft", true);
             rfb.sendKey(this.XK_Shift_L, "ShiftLeft", true);
             rfb.sendKey(this.XK_V, "v");
@@ -78,8 +78,10 @@ export class VncService {
         websocketPort => {
           const rfb = new RFB(vncCanvas.nativeElement, `ws://localhost:${websocketPort}`, {
             // @ts-ignore
-            credentials: {password: vncProfile.password}
+            credentials: {password: vncProfile.password},
           });
+          rfb.qualityLevel = this.settingStorage.settings.remoteDesktop?.vncQuality || 9;
+          rfb.compressionLevel = this.settingStorage.settings.remoteDesktop?.vncCompressionLevel || 0;
           rfb.viewOnly = false; // Set to true if you want a read-only connection
           rfb.clipViewport = true; // Clip the remote session to the viewport
           rfb.scaleViewport = true; // Scale the remote desktop to fit the container

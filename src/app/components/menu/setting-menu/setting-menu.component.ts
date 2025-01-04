@@ -159,6 +159,8 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     return this.fb.group(
       {
         vncClipboardCompatibleMode:     [''],
+        vncCompressionLevel:      ['', [Validators.required, Validators.min(0), Validators.max(9)]],
+        vncQuality:               ['', [Validators.required,  Validators.min(1), Validators.max(9)]],
       },
       {validators: []}
     );
@@ -209,7 +211,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       await this.commitChange();
     }
     if (this.currentTabIndex == this.REMOTE_DESKTOP_FORM_TAB_INDEX && this.remoteDesktopForm.valid) {
-      this.settingsCopy.remoteDesk = this.remoteDesktopFormToModel();
+      this.settingsCopy.remoteDesktop = this.remoteDesktopFormToModel();
       await this.commitChange();
     }
 
@@ -293,6 +295,8 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
         value.remoteDesktop = new RemoteDesktopSettings();
       }
       this.remoteDesktopForm.get('vncClipboardCompatibleMode')?.setValue(value.remoteDesktop.vncClipboardCompatibleMode);
+      this.remoteDesktopForm.get('vncQuality')?.setValue(value.remoteDesktop.vncQuality);
+      this.remoteDesktopForm.get('vncCompressionLevel')?.setValue(value.remoteDesktop.vncCompressionLevel);
     }
 
     if (this.terminalForm) {
@@ -337,6 +341,8 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   private remoteDesktopFormToModel() {
     let vnc = new RemoteDesktopSettings();
     vnc.vncClipboardCompatibleMode = this.remoteDesktopForm.get('vncClipboardCompatibleMode')?.value;
+    vnc.vncCompressionLevel = this.remoteDesktopForm.get('vncCompressionLevel')?.value;
+    vnc.vncQuality = this.remoteDesktopForm.get('vncQuality')?.value;
 
     return vnc;
   }

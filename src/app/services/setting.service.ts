@@ -70,7 +70,7 @@ export class SettingService {
   validate(_settings: MySettings) {
     if (_settings) {
       this.validateTerminalSettings(_settings.terminal);
-      this.validateRemoteDesktopSettings(_settings.remoteDesk);
+      this.validateRemoteDesktopSettings(_settings.remoteDesktop);
       this.validateFileExplorerSettings(_settings.fileExplorer);
     }
   }

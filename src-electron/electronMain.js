@@ -43,9 +43,11 @@ app.on('ready', () => {
       nodeIntegration: true,
       contextIsolation: false,
       enableRemoteModule: true,
+      enableBlinkFeatures: 'Accelerated2dCanvas',
       // preload: path.join(__dirname, 'preload.js'), // FIXME: preload need contextIsolation, but xterm.js won't work with that
     },
   });
+
 
   if (isDev) {
     mainWindow.loadURL(`http://localhost:4200`);

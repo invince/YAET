@@ -8,8 +8,6 @@ import {
   SimpleChanges,
   ViewChild
 } from '@angular/core';
-import {NgxSpinnerService} from 'ngx-spinner';
-import {MatSnackBar} from '@angular/material/snack-bar';
 import {Session} from '../../../domain/session/Session';
 
 
@@ -28,8 +26,6 @@ export class VncComponent implements AfterViewInit, OnChanges, OnDestroy {
   status: string = 'disconnected';
 
   constructor(
-    private spinner: NgxSpinnerService,
-    private _snackBar: MatSnackBar,
   ) {}
 
 
