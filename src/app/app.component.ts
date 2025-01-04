@@ -167,9 +167,9 @@ export class AppComponent implements OnInit, OnDestroy{
         duration: 3000
       });
 
-      snackBarRef.onAction().subscribe(() => {
+      this.subscriptions.push(snackBarRef.onAction().subscribe(() => {
         this.openMasterKeyModal();
-      });
+      }));
     }
   }
 
@@ -179,9 +179,9 @@ export class AppComponent implements OnInit, OnDestroy{
       data: {}
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    this.subscriptions.push(dialogRef.afterClosed().subscribe(result => {
       console.log('The dialog was closed');
-    });
+    }));
   }
 
   profileMenu() {

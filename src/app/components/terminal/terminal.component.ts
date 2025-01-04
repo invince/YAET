@@ -14,6 +14,7 @@ import {Terminal} from '@xterm/xterm';
 import {Session} from '../../domain/session/Session';
 import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-terminal',
@@ -30,6 +31,8 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   private isViewInitialized = false;
 
   private xtermUnderlying : Terminal | undefined;
+  subscriptions: Subscription[] = [];
+
 
   constructor(
     private electron: ElectronService,
@@ -81,9 +84,9 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     });
 
     // Send user input back to Electron main process
-    this.terminal.onData().subscribe(data => {
+    this.subscriptions.push(this.terminal.onData().subscribe(data => {
       this.electron.sendTerminalInput(this.session.id, data);
-    });
+    }));
     this.isViewInitialized = true;
   }
 
@@ -107,5 +110,8 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   ngOnDestroy() {
     this.session.close();
+    if (this.subscriptions) {
+      this.subscriptions.forEach(one => one.unsubscribe());
+    }
   }
 }

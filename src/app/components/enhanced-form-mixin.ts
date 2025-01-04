@@ -48,7 +48,7 @@ export function IsAChildForm<TBase extends Constructor>(Base: TBase) {
     @Output() invalidStateChange = new EventEmitter<boolean>();
     private lastInvalidState?: boolean = undefined;
 
-    private subscriptions: Subscription[] = [];
+    protected subscriptions: Subscription[] = [];
 
     abstract onInitForm(): FormGroup;
 
@@ -58,7 +58,7 @@ export function IsAChildForm<TBase extends Constructor>(Base: TBase) {
     ngOnInit(): void {
       this.form = this.onInitForm();
       this.afterFormInitialization();
-      const subscription = this.form.valueChanges.subscribe(() => {
+      this.subscriptions.push(this.form.valueChanges.subscribe(() => {
         const isDirty = this.form.dirty;
         if (isDirty !== this.lastDirtyState) {
           this.lastDirtyState = isDirty;
@@ -70,8 +70,7 @@ export function IsAChildForm<TBase extends Constructor>(Base: TBase) {
           this.lastInvalidState = invalid;
           this.invalidStateChange.emit(invalid);
         }
-      });
-      this.subscriptions.push(subscription);
+      }));
     }
 
     ngOnDestroy(): void {

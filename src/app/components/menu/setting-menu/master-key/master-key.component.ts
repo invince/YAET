@@ -1,4 +1,4 @@
-import {Component, Inject, OnInit} from '@angular/core';
+import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {
   MAT_DIALOG_DATA, MatDialog,
   MatDialogModule,
@@ -11,6 +11,7 @@ import {CommonModule} from '@angular/common';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ConfirmationComponent} from '../../../confirmation/confirmation.component';
 import {MasterKeyService} from '../../../../services/master-key.service';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-master-key',
@@ -28,8 +29,9 @@ import {MasterKeyService} from '../../../../services/master-key.service';
   templateUrl: './master-key.component.html',
   styleUrl: './master-key.component.css'
 })
-export class MasterKeyComponent implements OnInit{
+export class MasterKeyComponent implements OnInit, OnDestroy{
   resetPasswordForm: FormGroup;
+  private subscriptions: Subscription[] =[];
 
   constructor(
     public masterKeyService: MasterKeyService,
@@ -115,12 +117,19 @@ export class MasterKeyComponent implements OnInit{
       },
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
+    this.subscriptions.push(dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.doSubmit();
         this.dialogRef.close();
       }
-    });
+    }));
   }
+
+  ngOnDestroy(): void {
+    if (this.subscriptions) {
+      this.subscriptions.forEach(one => one.unsubscribe());
+    }
+  }
+
 
 }

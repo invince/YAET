@@ -1,8 +1,8 @@
-import { Injectable } from '@angular/core';
+import {Injectable, OnDestroy} from '@angular/core';
 import {Profile, Profiles, ProfileType} from '../domain/profile/Profile';
 import {ElectronService} from './electron.service';
 import {PROFILES_LOADED} from '../domain/electronConstant';
-import {Subject} from 'rxjs';
+import {Subject, Subscription} from 'rxjs';
 import {MasterKeyService} from './master-key.service';
 import {Tag} from '../domain/Tag';
 import {Group} from '../domain/Group';
@@ -12,12 +12,13 @@ import packageJson from '../../../package.json';
 @Injectable({
   providedIn: 'root'
 })
-export class ProfileService {
+export class ProfileService implements OnDestroy{
 
   static CLOUD_OPTION = 'Profile';
   private _profiles!: Profiles;
 
   private _loaded: boolean = false;
+  private subscriptions: Subscription[] =[];
 
   private connectionEventSubject = new Subject<Profile>();
   connectionEvent$ = this.connectionEventSubject.asObservable();
@@ -33,9 +34,9 @@ export class ProfileService {
   ) {
     electron.onLoadedEvent(PROFILES_LOADED, data => this.apply(data));
 
-    masterKeyService.masterkeyUpdateEvent$.subscribe(one => {
+    this.subscriptions.push(masterKeyService.masterkeyUpdateEvent$.subscribe(one => {
       this.save();
-    });
+    }));
   }
 
   private apply(data: any) {
@@ -125,6 +126,12 @@ export class ProfileService {
       }
     }
     await this.save();
+  }
+
+  ngOnDestroy(): void {
+    if (this.subscriptions) {
+      this.subscriptions.forEach(one => one.unsubscribe());
+    }
   }
 
 }
