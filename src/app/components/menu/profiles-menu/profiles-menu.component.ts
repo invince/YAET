@@ -41,11 +41,9 @@ import {Tag} from '../../../domain/Tag';
     MatButtonModule,
     MatTreeModule,
 
-    MatOption,
     MatInput,
     MatIcon,
 
-    MatSelect,
     ProfileFormComponent,
     FilterKeywordPipe,
   ],
@@ -267,7 +265,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
 
   createGroupDataSource(): GroupNode[] {
     return GroupNode.map2DataSource(
-      this.settingStorage.settings.groups,
+      this.settingStorage.settings.general.groups,
       this.keywordPipe.transform(this.profilesCopy.profiles, this.keywordsProviders, this.filter),
       false,
       true);

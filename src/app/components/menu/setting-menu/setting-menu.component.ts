@@ -19,19 +19,24 @@ import {MatSnackBar} from '@angular/material/snack-bar';
 import {MasterKeyService} from '../../../services/master-key.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';
 import {SideNavType, UISettings} from '../../../domain/setting/UISettings';
-import {MatChip} from '@angular/material/chips';
 import {TagsFormComponent} from './tags-form/tags-form.component';
 import {GroupsFormComponent} from './groups-form/groups-form.component';
-import {MatDivider} from "@angular/material/divider";
 import {GeneralSettings} from '../../../domain/setting/GeneralSettings';
 import {NgxSpinnerService} from 'ngx-spinner';
 import {MatCheckbox} from '@angular/material/checkbox';
 import packageJson from '../../../../../package.json';
+import {RemoteDesktopSettings} from '../../../domain/setting/RemoteDesktopSettings';
+import {TerminalSettings} from '../../../domain/setting/TerminalSettings';
+import {FileExplorerSettings} from '../../../domain/setting/FileExplorerSettings';
+import {MatAccordion, MatExpansionModule} from '@angular/material/expansion';
 
 @Component({
   selector: 'app-setting-menu',
   standalone: true,
   imports: [
+    TagsFormComponent,
+    GroupsFormComponent,
+
     FormsModule,
     ReactiveFormsModule,
     CommonModule,
@@ -47,19 +52,19 @@ import packageJson from '../../../../../package.json';
     MatInput,
     MatButton,
     MatSuffix,
-    TagsFormComponent,
-    GroupsFormComponent,
     MatCheckbox,
+    MatExpansionModule
   ],
   templateUrl: './setting-menu.component.html',
   styleUrl: './setting-menu.component.css'
 })
 export class SettingMenuComponent extends MenuComponent implements OnInit, OnDestroy {
 
-  localTermForm!: FormGroup;
-  uiForm!: FormGroup;
-
   generalForm!: FormGroup;
+  uiForm!: FormGroup;
+  terminalForm!: FormGroup;
+  remoteDesktopForm!: FormGroup;
+  fileExplorerForm!: FormGroup;
 
   LOCAL_TERM_OPTIONS = LocalTerminalType;
 
@@ -71,9 +76,10 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
   GENERAL_FORM_TAB_INDEX = 0;
   UI_FORM_TAB_INDEX = 1;
-  GROUP_FORM_TAB_INDEX = 2;
-  TAG_FORM_TAB_INDEX = 3;
-  LOCAL_TERM_FORM_TAB_INDEX = 4;
+  GROUP_TAG_FORM_TAB_INDEX = 2;
+  TERM_FORM_TAB_INDEX = 3;
+  REMOTE_DESKTOP_FORM_TAB_INDEX = 4;
+  FILE_EXPLORER_FORM_TAB_INDEX = 5;
 
   version ='';
 
@@ -116,10 +122,13 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       this.settingService.reload();
     }
 
-    this.uiForm = this.initUiForm();
-    this.localTermForm = this.initLocalTermForm();
-    this.generalForm = this.initGeneralForm();
     this.settingsCopy = this.settingStorage.settings;
+
+    this.generalForm = this.initGeneralForm();
+    this.uiForm = this.initUiForm();
+    this.terminalForm = this.initTerminalForm();
+    this.remoteDesktopForm = this.initRemoteDesktopForm();
+    this.fileExplorerForm = this.initFileExplorerForm();
 
     this.refreshForm(this.settingsCopy);
 
@@ -134,6 +143,21 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
   private initGeneralForm() {
+    return this.fb.group(
+      {
+        autoUpdate:     [''],
+      },
+      {validators: []}
+    );
+  }
+
+  private initFileExplorerForm() {
+    return this.fb.group({
+
+    });
+  }
+
+  private initRemoteDesktopForm() {
     return this.fb.group(
       {
         vncClipboardCompatibleMode:     [''],
@@ -153,11 +177,12 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       {validators: []}
     );
   }
-  private initLocalTermForm() {
+  private initTerminalForm() {
     return this.fb.group(
       {
         localTerminalType:        ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
         localTerminalExecPath:    ['', Validators.required],
+        defaultOpen:              [''],
       },
       {validators: []}
     );
@@ -178,8 +203,17 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       this.settingsCopy.ui = this.uiFormToModel();
       await this.commitChange();
     }
-    if (this.currentTabIndex == this.LOCAL_TERM_FORM_TAB_INDEX && this.localTermForm.valid) {
-      this.settingsCopy.localTerminal = this.localTermFormToModel();
+    if (this.currentTabIndex == this.TERM_FORM_TAB_INDEX && this.terminalForm.valid) {
+      this.settingsCopy.terminal = this.termFormToModel();
+      await this.commitChange();
+    }
+    if (this.currentTabIndex == this.REMOTE_DESKTOP_FORM_TAB_INDEX && this.remoteDesktopForm.valid) {
+      this.settingsCopy.remoteDesk = this.remoteDesktopFormToModel();
+      await this.commitChange();
+    }
+
+    if (this.currentTabIndex == this.FILE_EXPLORER_FORM_TAB_INDEX && this.fileExplorerForm.valid) {
+      this.settingsCopy.fileExplorer = this.fileExplorerFormToModel();
       await this.commitChange();
     }
   }
@@ -191,18 +225,21 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     if (this.currentTabIndex == this.UI_FORM_TAB_INDEX) {
       return this.uiForm.valid;
     }
-    if (this.currentTabIndex == this.LOCAL_TERM_FORM_TAB_INDEX) {
-      return this.localTermForm.valid;
+    if (this.currentTabIndex == this.TERM_FORM_TAB_INDEX) {
+      return this.terminalForm.valid;
+    }
+    if (this.currentTabIndex == this.REMOTE_DESKTOP_FORM_TAB_INDEX) {
+      return this.remoteDesktopForm.valid;
     }
     return false;
   }
 
 
   onSelectLocalTerminalType($event: any) {
-    let localTerminalSetting = new LocalTerminalProfile();
-    localTerminalSetting.type = $event.value;
-    this.settingService.validateLocalTerminalSettings(localTerminalSetting);
-    this.localTermForm.get('localTerminalExecPath')?.setValue(localTerminalSetting.execPath);
+    let terminalSettings = new TerminalSettings();
+    terminalSettings.localTerminal.type = $event.value;
+    this.settingService.validateTerminalSettings(terminalSettings);
+    this.terminalForm.get('localTerminalExecPath')?.setValue(terminalSettings.localTerminal.execPath);
   }
 
   reload() {
@@ -231,7 +268,10 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
     if(this.generalForm) {
       this.generalForm.reset();
-      this.generalForm.get('vncClipboardCompatibleMode')?.setValue(value.general.vncClipboardCompatibleMode);
+      if (!value.general) {
+        value.general = new GeneralSettings();
+      }
+      this.generalForm.get('autoUpdate')?.setValue(value.general.autoUpdate);
     }
 
     if (this.uiForm) {
@@ -245,18 +285,31 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       this.uiForm.get('profileSideNavType')?.setValue(value.ui.profileSideNavType);
     }
 
-    if (this.localTermForm) {
-      this.localTermForm.reset();
-      if (!value.localTerminal) {
-        value.localTerminal = new LocalTerminalProfile();
+
+    if(this.remoteDesktopForm) {
+      this.remoteDesktopForm.reset();
+      if (!value.remoteDesktop) {
+        value.remoteDesktop = new RemoteDesktopSettings();
       }
-      this.localTermForm.get('localTerminalType')?.setValue(value.localTerminal.type);
-      this.localTermForm.get('localTerminalExecPath')?.setValue(value.localTerminal.execPath);
+      this.remoteDesktopForm.get('vncClipboardCompatibleMode')?.setValue(value.remoteDesktop.vncClipboardCompatibleMode);
+    }
+
+    if (this.terminalForm) {
+      this.terminalForm.reset();
+      if (!value.terminal) {
+        value.terminal = new TerminalSettings();
+      }
+      if (!value.terminal.localTerminal) {
+        value.terminal.localTerminal = new LocalTerminalProfile();
+      }
+      this.terminalForm.get('localTerminalType')?.setValue(value.terminal.localTerminal.type);
+      this.terminalForm.get('localTerminalExecPath')?.setValue(value.terminal.localTerminal.execPath);
+      this.terminalForm.get('defaultOpen')?.setValue(value.terminal.localTerminal.defaultOpen);
     }
   }
 
   shouldDisableSave() {
-    return [this.GROUP_FORM_TAB_INDEX, this.TAG_FORM_TAB_INDEX].includes(this.currentTabIndex);
+    return [this.GROUP_TAG_FORM_TAB_INDEX].includes(this.currentTabIndex);
   }
 
 
@@ -275,21 +328,34 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
   private generalFormToModel() {
     let general = new GeneralSettings();
-
-    general.vncClipboardCompatibleMode = this.generalForm.get('vncClipboardCompatibleMode')?.value;
+    general.autoUpdate = this.generalForm.get('autoUpdate')?.value;
 
     return general;
   }
 
-  private localTermFormToModel() {
-    let localTerminal = new LocalTerminalProfile();
-    localTerminal.type = this.localTermForm.get('localTerminalType')?.value;
-    localTerminal.execPath = this.localTermForm.get('localTerminalExecPath')?.value;
-    return localTerminal;
+  private remoteDesktopFormToModel() {
+    let vnc = new RemoteDesktopSettings();
+    vnc.vncClipboardCompatibleMode = this.remoteDesktopForm.get('vncClipboardCompatibleMode')?.value;
+
+    return vnc;
+  }
+
+  private termFormToModel() {
+    let terminal = new TerminalSettings();
+    terminal.localTerminal.type = this.terminalForm.get('localTerminalType')?.value;
+    terminal.localTerminal.execPath = this.terminalForm.get('localTerminalExecPath')?.value;
+    terminal.localTerminal.defaultOpen = this.terminalForm.get('defaultOpen')?.value;
+    return terminal;
+  }
+
+  private fileExplorerFormToModel() {
+    let fileExplorer = new FileExplorerSettings();
+    return fileExplorer;
   }
 
   async commitChange() {
     await this.settingService.save(this.settingsCopy);
   }
+
 
 }

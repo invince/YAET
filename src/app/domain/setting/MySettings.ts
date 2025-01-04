@@ -1,29 +1,31 @@
-import {LocalTerminalProfile} from '../profile/LocalTerminalProfile';
 import {UISettings} from './UISettings';
-import {Tag} from '../Tag';
-import {Group} from '../Group';
 import {GeneralSettings} from './GeneralSettings';
+import {RemoteDesktopSettings} from './RemoteDesktopSettings';
+import {FileExplorerSettings} from './FileExplorerSettings';
+import {TerminalSettings} from './TerminalSettings';
 
 export class MySettings {
 
   revision: number;
   public general!: GeneralSettings;
   public ui!: UISettings;
-  public groups: Group[];
-  public tags: Tag[];
-  public localTerminal!: LocalTerminalProfile;
+
+
+  public terminal: TerminalSettings;
+  public fileExplorer: FileExplorerSettings;
+  public remoteDesk: RemoteDesktopSettings;
 
   public isNew: boolean = true;
 
   public version: string = '';
 
   constructor() {
-    this.general = new GeneralSettings();
-    this.localTerminal = new LocalTerminalProfile();
-    this.ui = new UISettings();
-    this.groups = [];
-    this.tags = [];
     this.revision = Date.now();
+    this.general = new GeneralSettings();
+    this.ui = new UISettings();
+    this.terminal = new TerminalSettings();
+    this.fileExplorer = new FileExplorerSettings();
+    this.remoteDesk = new RemoteDesktopSettings();
   }
 
 }

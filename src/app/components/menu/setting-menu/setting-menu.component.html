@@ -12,6 +12,9 @@
         <mat-tab label="General">
           <div class="setting-form" [formGroup]="generalForm">
             <mat-label>App Version: <b>{{version}}</b></mat-label>
+            <mat-checkbox formControlName="autoUpdate" required>
+              Auto update application
+            </mat-checkbox>
             <div>
               <mat-label>Set Master Key</mat-label>
               <button mat-button class="mat-primary" (click)="openMasterKeyModal()">
@@ -24,10 +27,6 @@
                 </button>
               }
             </div>
-
-            <mat-checkbox formControlName="vncClipboardCompatibleMode">
-              Enable Vnc Clipboard Compatible Mode
-            </mat-checkbox>
 
           </div>
         </mat-tab>
@@ -60,18 +59,31 @@
             </mat-form-field>
           </div>
         </mat-tab>
-        <mat-tab label="Group">
+        <mat-tab label="Group / Tag">
           <div class="setting-form">
-            <app-groups-form></app-groups-form>
+            <mat-accordion class="example-headers-align" multi>
+              <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                  <mat-panel-title> Tag Management </mat-panel-title>
+                </mat-expansion-panel-header>
+                <app-tags-form></app-tags-form>
+              </mat-expansion-panel>
+              <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                  <mat-panel-title> Group Management </mat-panel-title>
+                </mat-expansion-panel-header>
+                <app-groups-form></app-groups-form>
+              </mat-expansion-panel>
+            </mat-accordion>
+
+
           </div>
         </mat-tab>
-        <mat-tab label="Tag">
-          <div class="setting-form">
-            <app-tags-form></app-tags-form>
-          </div>
-        </mat-tab>
-        <mat-tab label="Local Terminal">
-          <div class="setting-form"  [formGroup]="localTermForm">
+        <mat-tab label="Terminal">
+          <div class="setting-form"  [formGroup]="terminalForm">
+            <mat-checkbox formControlName="defaultOpen" required>
+              Open a local terminal at startup
+            </mat-checkbox>
             <mat-form-field class="field">
               <mat-label>Terminal Type</mat-label>
               <mat-select formControlName="localTerminalType"
@@ -83,19 +95,26 @@
                 }
               </mat-select>
             </mat-form-field>
-            <mat-form-field class="field" [class.cdk-visually-hidden]= "localTermForm.get('localTerminalType')?.value != 'custom'">
+            <mat-form-field class="field" [class.cdk-visually-hidden]= "terminalForm.get('localTerminalType')?.value != 'custom'">
               <mat-label>Exec Path</mat-label>
               <input matInput type="text" formControlName="localTerminalExecPath"/>
-              @if (localTermForm.get('localTerminalExecPath')?.value) {
+              @if (terminalForm.get('localTerminalExecPath')?.value) {
               <button
                 matSuffix
                 mat-icon-button
                 aria-label="Clear"
-                (click)="clear(localTermForm, 'localTerminalExecPath')">
+                (click)="clear(terminalForm, 'localTerminalExecPath')">
                 <mat-icon>close</mat-icon>
               </button>
               }
             </mat-form-field>
+          </div>
+        </mat-tab>
+        <mat-tab label="Remote Desktop">
+          <div class="setting-form" [formGroup]="remoteDesktopForm">
+            <mat-checkbox formControlName="vncClipboardCompatibleMode" required>
+              Enable Vnc Clipboard Compatible Mode
+            </mat-checkbox>
           </div>
         </mat-tab>
       </mat-tab-group>

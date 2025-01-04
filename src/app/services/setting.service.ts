@@ -3,13 +3,16 @@ import {MySettings} from '../domain/setting/MySettings';
 import {Profile} from '../domain/profile/Profile';
 import {ElectronService} from './electron.service';
 import {SETTINGS_LOADED} from '../domain/electronConstant';
-import {LocalTerminalProfile, LocalTerminalType} from '../domain/profile/LocalTerminalProfile';
+import {LocalTerminalType} from '../domain/profile/LocalTerminalProfile';
 import {Subject} from 'rxjs';
 import {SettingStorageService} from './setting-storage.service';
 import {Tag} from '../domain/Tag';
 import {ProfileService} from './profile.service';
 import {Group} from '../domain/Group';
 import packageJson from '../../../package.json';
+import {RemoteDesktopSettings} from '../domain/setting/RemoteDesktopSettings';
+import {FileExplorerSettings} from '../domain/setting/FileExplorerSettings';
+import {TerminalSettings} from '../domain/setting/TerminalSettings';
 
 @Injectable({
   providedIn: 'root'
@@ -50,7 +53,7 @@ export class SettingService {
 
   createLocalTerminalProfile() : Profile {
     let profile = new Profile();
-    profile.localTerminal = this.settingStorage.settings.localTerminal;
+    profile.localTerminal = this.settingStorage.settings.terminal.localTerminal;
     return profile;
   }
 
@@ -66,20 +69,30 @@ export class SettingService {
 
   validate(_settings: MySettings) {
     if (_settings) {
-      this.validateLocalTerminalSettings(_settings.localTerminal);
+      this.validateTerminalSettings(_settings.terminal);
+      this.validateRemoteDesktopSettings(_settings.remoteDesk);
+      this.validateFileExplorerSettings(_settings.fileExplorer);
     }
   }
 
-  validateLocalTerminalSettings(localTerminalSetting: LocalTerminalProfile) {
-    if (localTerminalSetting) {
-      if (!localTerminalSetting.type) {
-        localTerminalSetting.type = LocalTerminalType.CMD;
+  private validateFileExplorerSettings(fileExplorer: FileExplorerSettings) {
+
+  }
+
+  private validateRemoteDesktopSettings(remoteDesk: RemoteDesktopSettings) {
+
+  }
+
+  validateTerminalSettings(terminalSettings: TerminalSettings) {
+    if (terminalSettings.localTerminal) {
+      if (!terminalSettings.localTerminal.type) {
+        terminalSettings.localTerminal.type = LocalTerminalType.CMD;
       }
-      switch (localTerminalSetting.type) {
-        case LocalTerminalType.CMD: localTerminalSetting.execPath = 'cmd.exe'; break;
-        case LocalTerminalType.POWERSHELL: localTerminalSetting.execPath = 'powershell.exe'; break;
-        case LocalTerminalType.BASH: localTerminalSetting.execPath = 'bash'; break;
-        case LocalTerminalType.CUSTOM: localTerminalSetting.execPath = ''; break;
+      switch (terminalSettings.localTerminal.type) {
+        case LocalTerminalType.CMD: terminalSettings.localTerminal.execPath = 'cmd.exe'; break;
+        case LocalTerminalType.POWERSHELL: terminalSettings.localTerminal.execPath = 'powershell.exe'; break;
+        case LocalTerminalType.BASH: terminalSettings.localTerminal.execPath = 'bash'; break;
+        case LocalTerminalType.CUSTOM: terminalSettings.localTerminal.execPath = ''; break;
       }
     }
   }
@@ -90,12 +103,12 @@ export class SettingService {
   }
 
   findGroupById(id: string): Group | undefined {
-    return this.settingStorage.settings.groups
+    return this.settingStorage.settings.general.groups
       .find(one => one.id == id)
   }
 
   findTagById(id: string): Tag | undefined {
-    return this.settingStorage.settings.tags
+    return this.settingStorage.settings.general.tags
       .find(one => one.id == id)
   }
 
@@ -103,12 +116,12 @@ export class SettingService {
     if (!value) {
       return true; // exclude invalid case
     }
-    return this.settingStorage.settings.groups
+    return this.settingStorage.settings.general.groups
       .find(one => one.id != excludeId && one.name == value);
   }
 
   addGroup(value: string) {
-    this.settingStorage.settings.groups.push(new Group(value));
+    this.settingStorage.settings.general.groups.push(new Group(value));
     this.save();
   }
 
@@ -117,7 +130,7 @@ export class SettingService {
     if (!value || !group) {
       return;
     }
-    this.settingStorage.settings.groups
+    this.settingStorage.settings.general.groups
       .forEach(one => {
         if (one.id == group.id) {
           one.name = value;
@@ -129,7 +142,7 @@ export class SettingService {
   async removeGroup(group: Group) {
     if (group) {
       await this.profileService.removeGroup(group);
-      this.settingStorage.settings.groups = this.settingStorage.settings.groups.filter(one => one.id != group.id);
+      this.settingStorage.settings.general.groups = this.settingStorage.settings.general.groups.filter(one => one.id != group.id);
     }
     this.save();
   }
@@ -138,12 +151,12 @@ export class SettingService {
     if (!value) {
       return true; // exclude invalid case
     }
-    return this.settingStorage.settings.tags
+    return this.settingStorage.settings.general.tags
       .find(one => one.id != excludeId && one.name == value);
   }
 
   addTag(value: string) {
-    this.settingStorage.settings.tags.push(new Tag(value));
+    this.settingStorage.settings.general.tags.push(new Tag(value));
     this.save();
   }
 
@@ -152,7 +165,7 @@ export class SettingService {
     if (!value || !tag) {
       return;
     }
-    this.settingStorage.settings.tags
+    this.settingStorage.settings.general.tags
       .forEach(one => {
         if (one.id == tag.id) {
           one.name = value;
@@ -165,7 +178,7 @@ export class SettingService {
     if (!value || !tag) {
       return;
     }
-    this.settingStorage.settings.tags
+    this.settingStorage.settings.general.tags
       .forEach(one => {
         if (one.id == tag.id) {
           one.color = value;
@@ -177,7 +190,7 @@ export class SettingService {
   async removeTag(tag: Tag) {
     if (tag) {
       await this.profileService.removeTag(tag);
-      this.settingStorage.settings.tags = this.settingStorage.settings.tags.filter(one => one.id != tag.id);
+      this.settingStorage.settings.general.tags = this.settingStorage.settings.general.tags.filter(one => one.id != tag.id);
     }
     this.save();
   }
@@ -186,7 +199,7 @@ export class SettingService {
     if (!color || !group) {
       return;
     }
-    this.settingStorage.settings.groups
+    this.settingStorage.settings.general.groups
       .forEach(one => {
         if (one.id == group.id) {
           one.color = color;
@@ -194,6 +207,7 @@ export class SettingService {
       });
     this.save();
   }
+
 
 
 }
