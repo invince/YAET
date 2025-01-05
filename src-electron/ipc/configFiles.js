@@ -13,7 +13,7 @@ function initConfigFilesIpcHandler(log, mainWindow) {
     save(log, SETTINGS_JSON, obj.data, false)
       .then(() => {
         log.info('Setting saved successfully!');
-        updateManifest('setting.json');
+        updateManifest(log,'setting.json');
       })
       .catch((error) => log.error('Error saving file:', error));
   });
@@ -31,7 +31,7 @@ function initConfigFilesIpcHandler(log, mainWindow) {
     save(log, PROFILES_JSON, obj.data, false)
       .then(() => {
         log.info('Profiles saved successfully!');
-        updateManifest('profile.json');
+        updateManifest(log,'profile.json');
       })
       .catch((error) => log.error('Error saving file:', error));
   });
@@ -47,7 +47,7 @@ function initConfigFilesIpcHandler(log, mainWindow) {
     save(log, SECRETS_JSON, obj.data, true)
       .then(() => {
         log.info('Secrets saved successfully!');
-        updateManifest('secrets.json');
+        updateManifest(log,'secrets.json');
       })
       .catch((error) => log.error('Error saving file:', error));
   });
@@ -63,7 +63,7 @@ function initConfigFilesIpcHandler(log, mainWindow) {
     save(log, CLOUD_JSON, obj.data, true)
       .then(() => {
         log.info('Cloud saved successfully!');
-        updateManifest('cloud.json');
+        updateManifest(log,'cloud.json');
       })
       .catch((error) => log.error('Error saving file:', error));
   });

@@ -10,5 +10,6 @@ export class CloudSettings {
   public secretId!: string;
 
   public version: string = '';
+  public compatibleVersion: string = '';
 }
 

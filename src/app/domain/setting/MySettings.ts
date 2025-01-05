@@ -21,6 +21,7 @@ export class MySettings {
   public isNew: boolean = true;
 
   public version: string = '';
+  public compatibleVersion: string = '';
 
   constructor() {
     this.revision = Date.now();

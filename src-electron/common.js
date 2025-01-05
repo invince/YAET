@@ -30,7 +30,7 @@ function load(log, mainWindow, jsonFileName, loadedEvent, isRaw) {
           }
         });
       } else {
-        hasConfig(jsonFileName).then(
+        hasConfig(log, jsonFileName).then(
           has => {
             if (!has) {
               mainWindow.webContents.send(loadedEvent, undefined);
@@ -148,5 +148,5 @@ function hasConfig(log, configToCheck) {
 
 module.exports = {load, save,
   BACKUP_FOLDER, GIT_FOLDER, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON,
-  updateManifest, hasConfig, APP_CONFIG_PATH
+  updateManifest, APP_CONFIG_PATH
 };
