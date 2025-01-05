@@ -82,7 +82,7 @@ app.on('ready', () => {
   mainWindow.webContents.on('did-finish-load', () => {
     load(log, mainWindow, SETTINGS_JSON, "settings.loaded", false)
       .then(settings => {
-        const autoUpdate = settings.general?.autoUpdate;
+        const autoUpdate = settings?.general?.autoUpdate;
         if (autoUpdate) {
           initAutoUpdater(log);
         }

@@ -5,11 +5,11 @@ import {MatIcon} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatSelectModule} from '@angular/material/select';
-import {MatInput} from '@angular/material/input';
 import {MenuComponent} from '../menu.component';
 import {ProfileFormComponent} from "../profile-form/profile-form.component";
 import {Profile, Profiles} from '../../../domain/profile/Profile';
 import {ProfileService} from '../../../services/profile.service';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-quickconnect-menu',
@@ -24,8 +24,6 @@ import {ProfileService} from '../../../services/profile.service';
       MatSelectModule,
 
       MatIcon,
-      KeyValuePipe,
-      MatInput,
       ProfileFormComponent,
 
     ],
@@ -36,7 +34,10 @@ export class QuickconnectMenuComponent extends MenuComponent  implements OnInit 
 
   profile: Profile = new Profile();
   profilesCopy!: Profiles;
-  constructor(private profileService: ProfileService) {
+  constructor(
+    private profileService: ProfileService,
+    private _snackBar: MatSnackBar,
+  ) {
     super();
   }
 
@@ -47,6 +48,9 @@ export class QuickconnectMenuComponent extends MenuComponent  implements OnInit 
   async onSaveOne($event: Profile) {
     this.profilesCopy.update($event);
     await this.profileService.save(this.profilesCopy);
+    this._snackBar.open(`New profile ${$event.name} saved`, 'OK', {
+      duration: 3000
+    });
     this.close();
     // this.refreshSecretForm();
   }

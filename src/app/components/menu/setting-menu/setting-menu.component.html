@@ -81,7 +81,7 @@
         </mat-tab>
         <mat-tab label="Terminal">
           <div class="setting-form"  [formGroup]="terminalForm">
-            <mat-checkbox formControlName="defaultOpen" required>
+            <mat-checkbox formControlName="defaultOpen">
               Open a local terminal at startup
             </mat-checkbox>
             <mat-form-field class="field">
@@ -112,7 +112,7 @@
         </mat-tab>
         <mat-tab label="Remote Desktop">
           <div class="setting-form" [formGroup]="remoteDesktopForm">
-            <mat-checkbox formControlName="vncClipboardCompatibleMode" required>
+            <mat-checkbox formControlName="vncClipboardCompatibleMode">
               Enable Vnc Clipboard Compatible Mode
             </mat-checkbox>
 
