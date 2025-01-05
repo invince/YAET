@@ -2,6 +2,18 @@
 - start app without any setting files
 - start app with setting files
 - multiple message can be displayed one by one (for ex, when you change master key and re-encrypt all settings)
+- dev mode has menu
+- prod mode no menu
+
+## Package
+- local dev mode ok
+  - either run npm run ng:serve + npm run electron:dev
+  - or run npm run start
+- package script ok
+  - can create local installer
+- release script ok
+  - can push installer to github for autoupdate check
+  - increment package json version
 
 ## Auto Update
 - if dev mode, no auto update should happen
@@ -90,14 +102,45 @@
 - delete
   - associate profile set cleared
 
-
 # Cloud menu
 - form validation ok
-- 
+- upload ok
+- download ok
 
+# Terminal
 
-# Local Terminal
+## Local Terminal
 - (Settings) if default open option checked, then a local terminal should start at startup
 - (Settings) if default open option not checked, then a local terminal should not start at startup
 - cmd powershell work in terminal
 - (Settings) be able to switch between cmd, powershell for local terminal
+
+## SSH
+- connection ok
+- color ok
+- cmd works
+- vi works
+- scrollbar works
+- clipboard works (ctrl shift c for copy, ctrl v or mouse right click for paste)
+- init path ok
+- init command ok
+- resize ok
+
+# Remote Desktop
+
+## Rdp
+- open mstsc
+
+## VNC
+- connection ok
+- copy paste text ok
+- resize ok
+
+# Remote File explorer
+
+## SCP
+- all ok, use a third party lib
+- init path pb fixed via patch-package
+
+# Custom
+- custom command can start, for ex for realvnc
