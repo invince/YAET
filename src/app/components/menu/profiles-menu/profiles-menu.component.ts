@@ -2,7 +2,6 @@ import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angul
 import {MatIcon} from "@angular/material/icon";
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {MenuComponent} from '../menu.component';
-import {MatSnackBar} from '@angular/material/snack-bar';
 import {ProfileService} from '../../../services/profile.service';
 import {Profile, Profiles} from '../../../domain/profile/Profile';
 import {CommonModule} from '@angular/common';
@@ -25,6 +24,7 @@ import {ConfirmationComponent} from '../../confirmation/confirmation.component';
 import {ModalControllerService} from '../../../services/modal-controller.service';
 import {MenuConsts} from '../../../domain/MenuConsts';
 import {Tag} from '../../../domain/Tag';
+import {NotificationService} from '../../../services/notification.service';
 
 @Component({
   selector: 'app-profiles-menu',
@@ -72,7 +72,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     public profileService: ProfileService,
     public settingStorage: SettingStorageService,
     private settingService: SettingService,
-    private _snackBar: MatSnackBar,
+    private notification: NotificationService,
     private modalControl: ModalControllerService,
     private keywordPipe: FilterKeywordPipe,
 
@@ -102,9 +102,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
         this.settingService.reload();
       }
       this.profileService.reload();
-      this._snackBar.open(message, 'OK', {
-        duration: 3000
-      });
+      this.notification.info(message);
     }
 
     this.profilesCopy = this.profileService.profiles;
@@ -146,9 +144,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     }
     if (this.selectedProfileId &&
       (this.lastChildFormInvalidState || this.lastChildFormDirtyState)) {
-      this._snackBar.open('Please finish current form', 'Ok', {
-        duration: 3000
-      });
+      this.notification.info('Please finish current form');
       return;
     }
     this.selectedProfile = profile;

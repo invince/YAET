@@ -1,9 +1,11 @@
 import {Injectable, OnDestroy} from '@angular/core';
 import {ElectronService} from './electron.service';
 import CryptoJS from 'crypto-js';
-import {Subject} from 'rxjs';
+import {Subject, Subscription} from 'rxjs';
 import {Profile} from '../domain/profile/Profile';
 import {LogService} from './log.service';
+import {MatDialog} from '@angular/material/dialog';
+import {ConfirmationComponent} from '../components/confirmation/confirmation.component';
 
 @Injectable({
   providedIn: 'root'
@@ -17,12 +19,15 @@ export class MasterKeyService implements OnDestroy{
   private _hasMasterKey?: boolean;
   private readonly intervalId: NodeJS.Timeout;
 
-  private masterkeyUpdateEventSubject = new Subject<string>();
-  masterkeyUpdateEvent$ = this.masterkeyUpdateEventSubject.asObservable();
+  private subscriptions: Subscription[] = [];
+
+  private updateEventSubject = new Subject<string>();
+  updateEvent$ = this.updateEventSubject.asObservable();
 
   constructor(
     private log: LogService,
-    private electron: ElectronService
+    private electron: ElectronService,
+    private dialog: MatDialog,
   ) {
 
     this.refreshHasMasterKey();
@@ -33,6 +38,7 @@ export class MasterKeyService implements OnDestroy{
   // This will be called when the service is destroyed
   ngOnDestroy(): void {
     clearInterval(this.intervalId); // Clean up resources
+    this.subscriptions.forEach(one => one.unsubscribe());
   }
 
   private refreshHasMasterKey() {
@@ -70,10 +76,21 @@ export class MasterKeyService implements OnDestroy{
     return masterKey === key;
   }
 
-  saveMasterKey(masterKey: string) {
+  saveMasterKey(masterKey: string, suggestReencrypt: boolean = false) {
     this.electron.setPassword(MasterKeyService.service, MasterKeyService.account, masterKey).then(r => {
       this.refreshHasMasterKey();
-      this.masterkeyUpdateEventSubject.next('update');
+      if (suggestReencrypt) {
+        const dialogRef = this.dialog.open(ConfirmationComponent, {
+          width: '300px',
+          data: { message: 'Master Key changed, do you want re-encrypt settings?' },
+        });
+        this.subscriptions.push(dialogRef.afterClosed().subscribe(result => {
+          if (result) {
+            this.log.debug('Start re-encrypt');
+            this.updateEventSubject.next('reencrypt');
+          }
+        }));
+      }
     });
   }
 
@@ -98,5 +115,9 @@ export class MasterKeyService implements OnDestroy{
       this.log.info("No master key defined");
       return null;
     }
+  }
+
+  invalidSettings() {
+    this.updateEventSubject.next('invalid');
   }
 }

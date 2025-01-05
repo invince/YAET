@@ -10,6 +10,7 @@ import {Subscription} from 'rxjs';
 import {LogService} from './log.service';
 import {Compatibility} from '../../main';
 import {compareVersions} from '../utils/Utils';
+import {NotificationService} from './notification.service';
 
 
 @Injectable({
@@ -27,14 +28,23 @@ export class SecretService implements OnDestroy{
 
     private secretStorage: SecretStorageService,
     private settingStorage: SettingStorageService,
-    private masterKeyService: MasterKeyService
+    private masterKeyService: MasterKeyService,
+    private notification: NotificationService,
   ) {
     electron.onLoadedEvent(SECRETS_LOADED, data => {
       this.apply(data);
     });
 
-    this.subscriptions.push(masterKeyService.masterkeyUpdateEvent$.subscribe(one => {
-      this.save();
+    this.subscriptions.push(masterKeyService.updateEvent$.subscribe(event => {
+      if(event === 'invalid') {
+        this.secretStorage.data = new Secrets();
+        this.save();
+        this.notification.info('Secrets cleared');
+      } else {
+        this.save();
+        this.notification.info('Secrets re-encrypted');
+      }
+
     }));
   }
 
@@ -50,7 +60,9 @@ export class SecretService implements OnDestroy{
           if (dataObj) {
             if (dataObj.compatibleVersion) {
               if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
-                this.log.warn("Your application is not compatible with saved settings, please update your app. For instance, empty secrets applied");
+                let msg = "Your application is not compatible with saved settings, please update your app. For instance, empty secrets applied";
+                this.log.warn(msg);
+                this.notification.info(msg);
                 dataObj = new Secrets();
               }
             }
@@ -71,9 +83,9 @@ export class SecretService implements OnDestroy{
     if (!secrets) {
       secrets = new Secrets();
     }
+    secrets.version = packageJson.version;
+    secrets.compatibleVersion = Compatibility.secrets;
     this.secretStorage.data = secrets;
-    this.secretStorage.data.version = packageJson.version;
-    this.secretStorage.data.compatibleVersion = Compatibility.secrets;
     for (let one of this.secretStorage.data.secrets) {
       one.isNew = false;
     }

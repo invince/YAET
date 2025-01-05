@@ -6,7 +6,7 @@ import {MatIcon} from '@angular/material/icon';
 import {MatInput} from '@angular/material/input';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatSelectChange, MatSelectModule} from '@angular/material/select';
-import {AuthType, Secret, SecretType} from '../../../domain/Secret';
+import {AuthType, SecretType} from '../../../domain/Secret';
 import {CloudSettings} from '../../../domain/setting/CloudSettings';
 import {MatButtonModule} from '@angular/material/button';
 import {SecretStorageService} from '../../../services/secret-storage.service';
@@ -15,12 +15,12 @@ import {MasterKeyService} from '../../../services/master-key.service';
 import {CommonModule} from '@angular/common';
 import {MatListModule} from '@angular/material/list';
 import {MatCheckbox} from '@angular/material/checkbox';
-import {MatSnackBar} from '@angular/material/snack-bar';
 import {SecretService} from '../../../services/secret.service';
 import {SettingService} from '../../../services/setting.service';
 import {ProfileService} from '../../../services/profile.service';
 import {NgxSpinnerService} from 'ngx-spinner';
 import _ from 'lodash';
+import {NotificationService} from '../../../services/notification.service';
 
 @Component({
   selector: 'app-cloud-menu',
@@ -65,7 +65,7 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
     private settingService: SettingService,
     private profileService: ProfileService,
     private cloudService: CloudService,
-    private _snackBar: MatSnackBar,
+    private notification: NotificationService,
 
     private spinner: NgxSpinnerService
   ) {
@@ -78,9 +78,7 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     if (!this.cloudService.isLoaded ) {
-      this._snackBar.open('Cloud Setting not loaded, we\'ll reload it, please close Cloud menu and reopen', 'OK', {
-        duration: 3000
-      });
+      this.notification.info('Cloud Setting not loaded, we\'ll reload it, please close Cloud menu and reopen');
       this.cloudService.reload();
     }
 
@@ -164,15 +162,9 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
             this.spinner.hide();
             if (response) {
               if (response.succeed) {
-                this._snackBar.open('Uploaded', 'Ok', {
-                  duration: 3000
-                });
-
+                this.notification.info('Uploaded');
               } else {
-                this._snackBar.open('Error Occurred: ' + response.ko, 'Ok', {
-                  duration: 3000,
-                  panelClass: [ 'error-snackbar']
-                });
+                this.notification.error('Error Occurred: ' + response.ko);
                 this.processing = false;
               }
             }
@@ -193,9 +185,7 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
             this.spinner.hide();
             if (response) {
               if (response.succeed) {
-                this._snackBar.open('Downloaded', 'Ok', {
-                  duration: 3000
-                });
+                this.notification.info('Downloaded');
                 for (const item of cloud.items) {
                   if (item.toLowerCase() == SettingService.CLOUD_OPTION.toLowerCase()) {
                     this.settingService.reload();
@@ -209,10 +199,7 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
                 }
                 this.processing = false;
               } else {
-                this._snackBar.open('Error Occurred: ' + response.ko, 'Ok', {
-                  duration: 3000,
-                  panelClass: [ 'error-snackbar']
-                });
+                this.notification.error('Error Occurred: ' + response.ko);
                 this.processing = false;
               }
             }

@@ -74,6 +74,10 @@ function save(log, jsonFileName, data, isRaw) {
 
 function updateManifest(log, newConfigSaved) {
   try {
+    if (!newConfigSaved) {
+      log.warn('Error writing JSON file:', newConfigSaved);
+    }
+
     const manifestFile = path.join(APP_CONFIG_PATH, MANIFEST_JSON); // same folder as exe
     if (!fs.existsSync(manifestFile)) {
       const manifest = {};

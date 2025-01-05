@@ -12,6 +12,7 @@ import {Subscription} from 'rxjs';
 import {Compatibility} from '../../main';
 import {LogService} from './log.service';
 import {compareVersions} from '../utils/Utils';
+import {NotificationService} from './notification.service';
 
 @Injectable({
   providedIn: 'root'
@@ -28,10 +29,18 @@ export class CloudService implements OnDestroy {
     private log: LogService,
     private electron: ElectronService,
     private masterKeyService: MasterKeyService,
+    private notification: NotificationService,
     ) {
     electron.onLoadedEvent(CLOUD_LOADED, data => this.apply(data));
-    this.subscriptions.push(masterKeyService.masterkeyUpdateEvent$.subscribe(one => {
-      this.save();
+    this.subscriptions.push(masterKeyService.updateEvent$.subscribe(event => {
+      if(event === 'invalid') {
+        this._cloud = new CloudSettings();
+        this.save();
+        this.notification.info('Cloud Settings cleared');
+      } else {
+        this.save();
+        this.notification.info('Cloud Settings re-encrypted');
+      }
     }));
   }
 
@@ -54,7 +63,9 @@ export class CloudService implements OnDestroy {
           if (dataObj) {
             if (dataObj.compatibleVersion) {
               if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
-                this.log.warn("Your application is not compatible with saved settings, please update your app. For instance, we'll use default cloud settings");
+                let msg = "Your application is not compatible with saved settings, please update your app. For instance, we'll use default cloud settings";
+                this.log.warn(msg);
+                this.notification.info(msg);
                 dataObj = new CloudSettings();
               }
             }
@@ -85,7 +96,7 @@ export class CloudService implements OnDestroy {
     }
     this._cloud = cloud;
     this._cloud.version = packageJson.version;
-    this._cloud.version = Compatibility.cloud;
+    this._cloud.compatibleVersion = Compatibility.cloud;
     this.masterKeyService.encrypt(this._cloud).then(
       encrypted => {
         if (encrypted) {

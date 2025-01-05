@@ -11,7 +11,6 @@ import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} fr
 import {SshProfileFormComponent} from './ssh-profile-form/ssh-profile-form.component';
 import {ProfileService} from '../../../services/profile.service';
 import {IsAChildForm} from '../../enhanced-form-mixin';
-import {MatSnackBar} from '@angular/material/snack-bar';
 import {MasterKeyService} from '../../../services/master-key.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';
 import {SettingService} from '../../../services/setting.service';
@@ -28,6 +27,7 @@ import {VncProfile} from '../../../domain/profile/VncProfile';
 import {CustomProfileFormComponent} from './custom-profile-form/custom-profile-form.component';
 import {CustomProfile} from '../../../domain/profile/CustomProfile';
 import {LogService} from '../../../services/log.service';
+import {NotificationService} from '../../../services/notification.service';
 
 @Component({
   selector: 'app-profile-form',
@@ -90,15 +90,13 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     public settingStorage: SettingStorageService, // in html
     private settingService: SettingService,
 
-    private _snackBar: MatSnackBar,
+    private notification: NotificationService,
     private cdr: ChangeDetectorRef,
   ) {
     super();
 
     if (!this.profileService.isLoaded ) {
-      this._snackBar.open('Profiles not loaded, we\'ll reload it, please close setting menu and reopen', 'OK', {
-        duration: 3000
-      });
+      this.notification.info('Profiles not loaded, we\'ll reload it, please close setting menu and reopen');
       this.profileService.reload();
     }
   }

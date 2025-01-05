@@ -6,12 +6,11 @@ import {Subject, Subscription} from 'rxjs';
 import {MasterKeyService} from './master-key.service';
 import {Tag} from '../domain/Tag';
 import {Group} from '../domain/Group';
-import {MatSnackBar} from '@angular/material/snack-bar';
 import packageJson from '../../../package.json';
-import {Secrets} from '../domain/Secret';
 import {LogService} from './log.service';
 import {Compatibility} from '../../main';
 import {compareVersions} from '../utils/Utils';
+import {NotificationService} from './notification.service';
 
 @Injectable({
   providedIn: 'root'
@@ -34,13 +33,20 @@ export class ProfileService implements OnDestroy{
     private electron: ElectronService,
     private masterKeyService: MasterKeyService,
 
-    private _snackBar: MatSnackBar,
+    private notification: NotificationService,
 
   ) {
     electron.onLoadedEvent(PROFILES_LOADED, data => this.apply(data));
 
-    this.subscriptions.push(masterKeyService.masterkeyUpdateEvent$.subscribe(one => {
-      this.save();
+    this.subscriptions.push(masterKeyService.updateEvent$.subscribe(event => {
+      if(event === 'invalid') {
+        this._profiles = new Profiles();
+        this.save();
+        this.notification.info('Profiles cleared');
+      } else {
+        this.save();
+        this.notification.info('Profiles re-encrypted');
+      }
     }));
   }
 
@@ -56,7 +62,9 @@ export class ProfileService implements OnDestroy{
           if (dataObj) {
             if (dataObj.compatibleVersion) {
               if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
-                this.log.warn("Your application is not compatible with saved settings, please update your app. For instance, empty secrets applied");
+                let msg = "Your application is not compatible with saved settings, please update your app. For instance, empty profiles applied";
+                this.log.warn(msg);
+                this.notification.info(msg);
                 dataObj = new Profiles();
               }
             }
@@ -72,10 +80,14 @@ export class ProfileService implements OnDestroy{
     return this._loaded;
   }
 
+  // NOTE: if you add any field on Profiles, you need copy it here
   get profiles(): Profiles {
     let result = new Profiles(); // to avoid if this._profiles is deserialized we don't have fn on it
     if (this._profiles) {
       result.profiles = [...this._profiles.profiles]; // copy the elements
+      result.revision = this._profiles.revision;
+      result.version = this._profiles.version;
+      result.compatibleVersion = this._profiles.compatibleVersion;
     }
     return result;
   }

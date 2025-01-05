@@ -15,7 +15,6 @@ import {Subscription} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
 import {MasterKeyComponent} from './master-key/master-key.component';
 import {ConfirmationComponent} from '../../confirmation/confirmation.component';
-import {MatSnackBar} from '@angular/material/snack-bar';
 import {MasterKeyService} from '../../../services/master-key.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';
 import {SideNavType, UISettings} from '../../../domain/setting/UISettings';
@@ -30,6 +29,7 @@ import {TerminalSettings} from '../../../domain/setting/TerminalSettings';
 import {FileExplorerSettings} from '../../../domain/setting/FileExplorerSettings';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {LogService} from '../../../services/log.service';
+import {NotificationService} from '../../../services/notification.service';
 
 @Component({
   selector: 'app-setting-menu',
@@ -92,7 +92,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     public masterKeyService: MasterKeyService,
     private cdr: ChangeDetectorRef,
     public dialog: MatDialog,
-    private _snackBar: MatSnackBar,
+    private notification: NotificationService,
     private spinner: NgxSpinnerService
   ) {
     super();
@@ -109,18 +109,14 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     this.subscriptions.push(dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.masterKeyService.deleteMasterKey();
-        this._snackBar.open('Master Key Deleted', 'OK', {
-          duration: 3000
-        });
+        this.notification.info('Master Key Deleted');
       }
     }));
   }
 
   ngOnInit() {
     if (!this.settingService.isLoaded ) {
-      this._snackBar.open('Settings not loaded, we\'ll reload it, please close setting menu and reopen', 'OK', {
-        duration: 3000
-      });
+      this.notification.info('Settings not loaded, we\'ll reload it, please close setting menu and reopen');
       this.settingService.reload();
     }
 
