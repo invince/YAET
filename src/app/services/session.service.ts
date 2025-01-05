@@ -7,10 +7,10 @@ import {TabService} from './tab.service';
 import {LocalTerminalSession} from '../domain/session/LocalTerminalSession';
 import {VncSession} from '../domain/session/VncSession';
 import {NgxSpinnerService} from 'ngx-spinner';
-import {MatSnackBar} from '@angular/material/snack-bar';
 import {VncService} from './vnc.service';
 import {ScpSession} from '../domain/session/ScpSession';
 import {ScpService} from './scp.service';
+import {NotificationService} from './notification.service';
 
 @Injectable({
   providedIn: 'root'
@@ -24,7 +24,7 @@ export class SessionService {
 
     private scpService: ScpService,
     private spinner: NgxSpinnerService,
-    private _snackBar: MatSnackBar,
+    private notification: NotificationService,
   ) { }
 
 
@@ -35,7 +35,7 @@ export class SessionService {
       case ProfileType.SSH_TERMINAL:
         return new SSHSession(profile, profileType, this.tabService, this.electron);
       case ProfileType.VNC_REMOTE_DESKTOP:
-        return new VncSession(profile, profileType, this.tabService, this.vncService, this.spinner, this._snackBar);
+        return new VncSession(profile, profileType, this.tabService, this.vncService, this.spinner, this.notification);
 
       case ProfileType.SCP_FILE_EXPLORER:
         return new ScpSession(profile, profileType, this.tabService, this.scpService);
@@ -50,20 +50,14 @@ export class SessionService {
       switch (profile.profileType) {
         case ProfileType.RDP_REMOTE_DESKTOP:
           if (!profile.rdpProfile || !profile.rdpProfile.host) {
-            this._snackBar.open('Invalid Rdp Config', 'OK', {
-              duration: 3000,
-              panelClass: [ 'error-snackbar']
-            });
+            this.notification.error('Invalid Rdp Config');
             return;
           }
           this.electron.openRdpSession(profile.rdpProfile);
           break;
         case ProfileType.CUSTOM:
           if (!profile.customProfile || !profile.customProfile.execPath) {
-            this._snackBar.open('Invalid Custom Profile', 'OK', {
-              duration: 3000,
-              panelClass: [ 'error-snackbar']
-            });
+            this.notification.error('Invalid Custom Profile');
             return;
           }
           this.electron.openCustomSession(profile.customProfile);

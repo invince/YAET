@@ -1,11 +1,10 @@
 import {Session} from './Session';
 import {Profile, ProfileType} from '../profile/Profile';
-import {ElectronService} from '../../services/electron.service';
 import {TabService} from '../../services/tab.service';
 import {VncService} from '../../services/vnc.service';
 import {ElementRef} from '@angular/core';
 import {NgxSpinnerService} from 'ngx-spinner';
-import {MatSnackBar} from '@angular/material/snack-bar';
+import {NotificationService} from '../../services/notification.service';
 
 export class VncSession extends Session {
 
@@ -13,7 +12,7 @@ export class VncSession extends Session {
               tabService: TabService,
               private vncService: VncService,
               private spinner: NgxSpinnerService,
-              private _snackBar: MatSnackBar,
+              private notification: NotificationService,
   ) {
     super(profile, profileType, tabService);
   }
@@ -35,10 +34,7 @@ export class VncSession extends Session {
       ).catch(
       err => {
         this.spinner.hide();
-        this._snackBar.open('ERROR: ' + err,'ok', {
-          duration: 3000,
-          panelClass: [ 'error-snackbar']
-        });
+        this.notification.error('ERROR: ' + err.message);
       }
     );
     super.open();

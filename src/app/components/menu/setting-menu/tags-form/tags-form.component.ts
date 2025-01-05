@@ -10,11 +10,10 @@ import {SettingStorageService} from '../../../../services/setting-storage.servic
 import {SettingService} from '../../../../services/setting.service';
 import {MySettings} from '../../../../domain/setting/MySettings';
 import {COMMA, ENTER} from '@angular/cdk/keycodes';
-import {ProfileService} from '../../../../services/profile.service';
-import {MatSnackBar} from '@angular/material/snack-bar';
 import {Tag} from '../../../../domain/Tag';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';
+import {NotificationService} from '../../../../services/notification.service';
 
 @Component({
   selector: 'app-tags-form',
@@ -38,10 +37,7 @@ export class TagsFormComponent implements OnInit{
   constructor(
     private settingService: SettingService,
     public settingStorage: SettingStorageService,
-
-    public profileService: ProfileService,
-
-    private _snackBar: MatSnackBar,
+    private notification: NotificationService,
   ) {
   }
 
@@ -61,9 +57,7 @@ export class TagsFormComponent implements OnInit{
       if (!this.settingService.existTag(value)) {
         this.settingService.addTag(value);
       } else {
-        this._snackBar.open('Cannot add duplicate tag', 'Ok', {
-          duration: 3000
-        });
+        this.notification.error('Cannot add duplicate tag');
       }
     }
 
@@ -86,9 +80,7 @@ export class TagsFormComponent implements OnInit{
     if (!this.settingService.existTag(value, tag.id)) {
       this.settingService.updateTag(tag, value);
     } else {
-      this._snackBar.open('Already have this value', 'Ok', {
-        duration: 3000
-      });
+      this.notification.error('Already have this tag:' + value);
     }
   }
 

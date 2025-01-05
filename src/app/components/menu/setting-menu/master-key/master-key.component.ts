@@ -88,18 +88,19 @@ export class MasterKeyComponent implements OnInit, OnDestroy{
           this.openConfirmationDialog();
         } else {
           this.doSubmit();
+          this.dialogRef.close();
         }
       } else {
-        this.doSubmit();
+        this.doSubmit(false);
+        this.dialogRef.close();
       }
-      this.dialogRef.close();
     }
   }
 
-  doSubmit() {
+  doSubmit(suggestReencrypt = true) {
     let newPassword = this.resetPasswordForm.get("newPassword");
     if (newPassword) {
-      this.masterKeyService.saveMasterKey(newPassword.value);
+      this.masterKeyService.saveMasterKey(newPassword.value, suggestReencrypt);
     }
   }
 
@@ -112,14 +113,15 @@ export class MasterKeyComponent implements OnInit, OnDestroy{
     const dialogRef = this.dialog.open(ConfirmationComponent, {
       width: '300px',
       data: {
-        message: 'Old password doesn\'t match, if you continue, all existing secrets will be invalid. Do you want continue ?',
+        message: 'Old password is incorrect, if you continue, all existing secrets will be invalid. Do you want continue ?',
         okBtnLabel: 'Force Continue'
       },
     });
 
     this.subscriptions.push(dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.doSubmit();
+        this.doSubmit(false);
+        this.masterKeyService.invalidSettings();
         this.dialogRef.close();
       }
     }));

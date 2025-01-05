@@ -2,7 +2,6 @@ import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
 import {SettingService} from '../../../../services/setting.service';
 import {SettingStorageService} from '../../../../services/setting-storage.service';
 import {ProfileService} from '../../../../services/profile.service';
-import {MatSnackBar} from '@angular/material/snack-bar';
 import {MySettings} from '../../../../domain/setting/MySettings';
 import {MatChipEditedEvent, MatChipsModule} from '@angular/material/chips';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -14,6 +13,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {GroupNode} from '../../../../domain/GroupNode';
 import {NestedTreeControl} from '@angular/cdk/tree';
+import {NotificationService} from '../../../../services/notification.service';
 
 @Component({
   selector: 'app-groups-form',
@@ -35,8 +35,6 @@ import {NestedTreeControl} from '@angular/cdk/tree';
 })
 export class GroupsFormComponent implements OnInit{
 
-  childrenAccessor = (node: GroupNode) => node.children ?? [];
-  // dataSource: GroupNode[] = [];
   dataSource = new MatTreeNestedDataSource<GroupNode>();
   newGroupName: string = '';
   treeControl = new NestedTreeControl<GroupNode>(node => node.children);
@@ -46,7 +44,7 @@ export class GroupsFormComponent implements OnInit{
 
     public profileService: ProfileService,
 
-    private _snackBar: MatSnackBar,
+    private notification: NotificationService,
   ) {
   }
 
@@ -92,9 +90,7 @@ export class GroupsFormComponent implements OnInit{
         this.dataSource.data = this.createGroupDataSource();
 
       } else {
-        this._snackBar.open('Already have this value', 'Ok', {
-          duration: 3000
-        });
+        this.notification.error(`Empty name is not allowed for a group, your change weill be aborted`);
       }
     }
   }
@@ -102,9 +98,7 @@ export class GroupsFormComponent implements OnInit{
   async update(node: GroupNode, event: MatChipEditedEvent) {
     const updateName = event.value.trim();
     if (!node.group) {
-      this._snackBar.open('Invalid group, your change will be abort', 'Ok', {
-        duration: 3000
-      });
+      this.notification.error('Invalid group, your change will be abort');
       node.name = node.oldName;
       return
     }
@@ -119,9 +113,7 @@ export class GroupsFormComponent implements OnInit{
       this.settingService.updateGroup(node.group, updateName);
       this.dataSource.data = this.createGroupDataSource();
     } else {
-      this._snackBar.open('Already have this value, your change weill be aborted', 'Ok', {
-        duration: 3000
-      });
+      this.notification.error(`Already have this ${updateName}, your change weill be aborted`);
       node.name = node.oldName;
     }
   }

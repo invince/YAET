@@ -35,13 +35,13 @@ import {AuthType, SecretType} from '../domain/Secret';
 import {SecretStorageService} from './secret-storage.service';
 import {CloudSettings} from '../domain/setting/CloudSettings';
 import {CloudResponse} from '../domain/setting/CloudResponse';
-import {MatSnackBar} from '@angular/material/snack-bar';
 import {TabService} from './tab.service';
 import {RdpProfile} from '../domain/profile/RdpProfile';
 import {CustomProfile} from '../domain/profile/CustomProfile';
 import {SSHProfile} from '../domain/profile/SSHProfile';
 import {Session} from '../domain/session/Session';
 import {Log} from '../domain/Log';
+import {NotificationService} from './notification.service';
 
 
 @Injectable({
@@ -54,7 +54,7 @@ export class ElectronService {
 
   constructor(
     private secretStorage: SecretStorageService,
-    private _snackBar: MatSnackBar,
+    private notification: NotificationService,
 
     private tabService: TabService,
   ) {
@@ -78,10 +78,7 @@ export class ElectronService {
   private initCommonListener() {
     this.ipc.on(ERROR, (event, data) => {
       this.log({level: 'error:', message:  data});
-      this._snackBar.open('ERROR: ' + data.error,'ok', {
-        duration: 3000,
-        panelClass: [ 'error-snackbar']
-      });
+      this.notification.error('ERROR: ' + data.error);
       return;
     });
 
@@ -129,10 +126,7 @@ export class ElectronService {
 
     this.ipc.on(SESSION_DISCONNECT_SSH, (event, data) => {
       this.log({level: 'info', message: 'SSH Disconnected:' + data.id});
-      this._snackBar.open('SSH Disconnected, you can try reconnect later','ok', {
-        duration: 3000,
-        panelClass: [ 'error-snackbar']
-      });
+      this.notification.error('SSH Disconnected, you can try reconnect later');
       this.tabService.disconnected(data.id);
       // Handle disconnection logic
     });

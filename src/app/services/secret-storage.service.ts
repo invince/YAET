@@ -14,10 +14,15 @@ export class SecretStorageService {
     this._data = data;
   }
 
+
+  // NOTE: if you add any field on Secrets, you need copy it here
   get data(): Secrets {
-    let result = new Secrets(); // to avoid if this._profiles is deserialized we don't have fn on it
+    let result = new Secrets(); // to avoid if this._data is deserialized we don't have fn on it
     if (this._data) {
       result.secrets = [...this._data.secrets]; // copy elements
+      result.version = this._data.version;
+      result.compatibleVersion = this._data.compatibleVersion;
+      result.revision = this._data.revision;
     }
     return result;
   }

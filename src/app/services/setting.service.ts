@@ -16,6 +16,7 @@ import {TerminalSettings} from '../domain/setting/TerminalSettings';
 import {LogService} from './log.service';
 import {Compatibility} from '../../main';
 import {compareVersions} from '../utils/Utils';
+import {NotificationService} from './notification.service';
 
 
 @Injectable({
@@ -35,6 +36,7 @@ export class SettingService {
     private electron: ElectronService,
     private settingStorage: SettingStorageService,
     private profileService: ProfileService,
+    private notification: NotificationService,
     ) {
     electron.onLoadedEvent(SETTINGS_LOADED, data => this.apply(data));
   }
@@ -51,7 +53,9 @@ export class SettingService {
       if (dataObj) {
         if (dataObj.compatibleVersion) {
           if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
-            this.log.warn("Your application is not compatible with saved settings, please update your app. For instance, we'll use default settings");
+            let msg = "Your application is not compatible with saved settings, please update your app. For instance, we'll use default settings";
+            this.log.warn(msg);
+            this.notification.info(msg);
             dataObj = new MySettings();
           }
         }
@@ -80,12 +84,13 @@ export class SettingService {
 
   save(settings: MySettings | undefined = undefined) {
     if (settings) {
+      settings.isNew = false;
+      settings.version = packageJson.version;
+      settings.compatibleVersion = Compatibility.settings;
+      settings.revision = Date.now();
+
       this.settingStorage.settings = settings;
     }
-    this.settingStorage.settings.isNew = false;
-    this.settingStorage.settings.version = packageJson.version;
-    this.settingStorage.settings.compatibleVersion = Compatibility.settings;
-    this.settingStorage.settings.revision = Date.now();
     this.electron.saveSetting(this.settingStorage.settings);
   }
 

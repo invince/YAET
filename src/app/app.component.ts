@@ -18,7 +18,6 @@ import {RemoteDesktopComponent} from './components/remote-desktop/remote-desktop
 import {FileExplorerComponent} from './components/file-explorer/file-explorer.component';
 import {SecretsMenuComponent} from './components/menu/secrets-menu/secrets-menu.component';
 import {SecretService} from './services/secret.service';
-import {MatSnackBar} from '@angular/material/snack-bar';
 import {ProfilesMenuComponent} from './components/menu/profiles-menu/profiles-menu.component';
 import {QuickconnectMenuComponent} from "./components/menu/quickconnect-menu/quickconnect-menu.component";
 import {MasterKeyComponent} from './components/menu/setting-menu/master-key/master-key.component';
@@ -34,6 +33,7 @@ import {MenuConsts} from './domain/MenuConsts';
 import {SessionService} from './services/session.service';
 import {SettingStorageService} from './services/setting-storage.service';
 import {LogService} from './services/log.service';
+import {NotificationService} from './services/notification.service';
 
 @Component({
   selector: 'app-root',
@@ -93,7 +93,7 @@ export class AppComponent implements OnInit, OnDestroy{
 
     public modalControl: ModalControllerService,
 
-    private _snackBar: MatSnackBar,
+    private notification: NotificationService,
     public dialog: MatDialog,
   ) {}
 
@@ -102,9 +102,7 @@ export class AppComponent implements OnInit, OnDestroy{
       this.profileService.connectionEvent$.subscribe(
         profile => {
           if (!profile) {
-            this._snackBar.open('Empty Connection found', 'OK', {
-              duration: 3000
-            });
+            this.notification.error('Empty Connection found');
             return;
           }
           this.modalControl.closeModal([this.MENU_PROFILE, this.MENU_ADD ]);
@@ -181,13 +179,9 @@ export class AppComponent implements OnInit, OnDestroy{
     if (this.masterKeyService.hasMasterKey) {
       callback();
     } else {
-      const snackBarRef = this._snackBar.open('Please define Master key in Settings first', 'Set it', {
-        duration: 3000
-      });
-
-      this.subscriptions.push(snackBarRef.onAction().subscribe(() => {
+      this.notification.info('Please define Master key in Settings first', 'Set it', () => {
         this.openMasterKeyModal();
-      }));
+      });
     }
   }
 

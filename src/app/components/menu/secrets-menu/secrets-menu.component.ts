@@ -10,7 +10,6 @@ import {Secret, Secrets} from '../../../domain/Secret';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatSelectModule} from '@angular/material/select';
-import {MatSnackBar} from '@angular/material/snack-bar';
 import {SecretFormComponent} from './secret-form/secret-form.component';
 import {HasChildForm} from '../../enhanced-form-mixin';
 import {SecretStorageService} from '../../../services/secret-storage.service';
@@ -21,6 +20,7 @@ import {ConfirmationComponent} from '../../confirmation/confirmation.component';
 import {MatDialog} from '@angular/material/dialog';
 import {ModalControllerService} from '../../../services/modal-controller.service';
 import {MenuConsts} from '../../../domain/MenuConsts';
+import {NotificationService} from '../../../services/notification.service';
 
 @Component({
   selector: 'app-secrets-menu',
@@ -66,8 +66,7 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
 
     private settingStorage: SettingStorageService,
 
-    private _snackBar: MatSnackBar,
-    private keywordPipe: FilterKeywordPipe,
+    private notification: NotificationService,
     private dialog: MatDialog,
 
     private modalControl: ModalControllerService,
@@ -88,9 +87,7 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
       }
     }));
     if (!this.secretService.isLoaded) {
-      this._snackBar.open('Secure not loaded, we\'ll reload it, please close secure menu and reopen', 'OK', {
-        duration: 3000
-      });
+      this.notification.info('Secure not loaded, we\'ll reload it, please close secure menu and reopen');
       this.secretService.reload();
     }
 
@@ -118,9 +115,7 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
     }
     if (this.selectedId &&
         (this.lastChildFormInvalidState || this.lastChildFormDirtyState)) {
-      this._snackBar.open('Please finish current form', 'Ok', {
-        duration: 3000
-      });
+      this.notification.info('Please finish current form');
       return;
     }
     this.selectedId = secret.id;
