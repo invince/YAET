@@ -165,8 +165,8 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
                 this.notification.info('Uploaded');
               } else {
                 this.notification.error('Error Occurred: ' + response.ko);
-                this.processing = false;
               }
+              this.processing = false;
             }
           });
         }
@@ -197,11 +197,10 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
                     this.secretService.reload();
                   }
                 }
-                this.processing = false;
               } else {
                 this.notification.error('Error Occurred: ' + response.ko);
-                this.processing = false;
               }
+              this.processing = false;
             }
           })
         });
