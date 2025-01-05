@@ -123,11 +123,12 @@
   width: 700px;
 }
 
-.tag-prefix {
+.tag-suffix {
   display: flex; /* or inline-flex if it's within a text flow */
   gap: 1px; /* Adjust spacing between dots */
   align-items: center; /* Align dots vertically if needed */
 }
+
 
 .color-dot {
   width: 5px;

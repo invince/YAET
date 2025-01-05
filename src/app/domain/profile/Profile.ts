@@ -126,6 +126,7 @@ export class Profile {
     cloned.localTerminal = base.localTerminal;
     cloned.sshProfile = base.sshProfile;
     cloned.vncProfile = base.vncProfile;
+    cloned.rdpProfile = base.rdpProfile;
     cloned.customProfile = base.customProfile;
     cloned.group = base.group;
     cloned.tags = base.tags;
@@ -138,5 +139,33 @@ export class Profile {
       .includes(profile.profileType);
   }
 
+  static useSecret(profile: Profile, secret: Secret) {
+    if (profile && secret) {
+      switch (profile.profileType) {
+        case ProfileType.SCP_FILE_EXPLORER:
+        case ProfileType.SSH_TERMINAL: return profile.sshProfile.secretId == secret.id;
+
+        case ProfileType.VNC_REMOTE_DESKTOP: return profile.vncProfile.secretId == secret.id;
+        case ProfileType.CUSTOM: return profile.customProfile.secretId == secret.id;
+      }
+    }
+    return false;
+  }
+
+
+  static clearSecret(profile: Profile, secret: Secret) {
+    if (profile && secret) {
+      switch (profile.profileType) {
+        case ProfileType.SCP_FILE_EXPLORER:
+        case ProfileType.SSH_TERMINAL:
+          profile.sshProfile.secretId = ''; break;
+
+        case ProfileType.VNC_REMOTE_DESKTOP:
+          profile.vncProfile.secretId = ''; break;
+        case ProfileType.CUSTOM:
+          profile.customProfile.secretId = ''; break;
+      }
+    }
+  }
 
 }

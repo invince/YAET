@@ -33,7 +33,7 @@ export class FilterKeywordPipe implements PipeTransform {
 
       // Check if any keyword matches the filter
       return allKeywords.some(keyword =>
-        keyword.toLowerCase().includes(lowercasedKeyword)
+        keyword && keyword.toLowerCase().includes(lowercasedKeyword)
       );
     });
   }

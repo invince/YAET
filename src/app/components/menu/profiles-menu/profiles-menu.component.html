@@ -48,7 +48,7 @@
                           }
                               {{ displayProfileTabLabel(node) }}
                     </div>
-                    <div class="tag-prefix" >
+                    <div class="tag-suffix" >
                       @for(color of tagsColor(node.profile); track color) {
                         <span class="color-dot" [style.background]= "color"></span>
                       }
@@ -88,7 +88,11 @@
                     <mat-icon>{{profile.icon}}</mat-icon>
                     }
                     {{ displayProfileTabLabel(profile) }}
+                      @for(color of tagsColor(profile); track color) {
+                        <span class="color-dot" [style.background]= "color"></span>
+                      }
                   </button>
+
                 </div>
                 }
               }

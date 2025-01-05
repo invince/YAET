@@ -11,6 +11,7 @@ import {LogService} from './log.service';
 import {Compatibility} from '../../main';
 import {compareVersions} from '../utils/Utils';
 import {NotificationService} from './notification.service';
+import {Secret} from '../domain/Secret';
 
 @Injectable({
   providedIn: 'root'
@@ -161,4 +162,13 @@ export class ProfileService implements OnDestroy{
     }
   }
 
+  isSecretUsed(secret: Secret) {
+    return this._profiles.profiles.find(one => Profile.useSecret(one, secret));
+  }
+
+  clearSecret(secret: Secret) {
+    this._profiles.profiles.filter(one => Profile.useSecret(one, secret))
+      .forEach(one => Profile.clearSecret(one, secret));
+    this.save();
+  }
 }

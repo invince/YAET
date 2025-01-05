@@ -58,10 +58,10 @@ function save(log, jsonFileName, data, isRaw) {
       // Write the JSON string to the specified file
       fs.writeFile(settingsPath, jsonString, 'utf8', (err) => {
         if (err) {
-          log.error('Error writing JSON file:', err);
+          log.error(`Error writing JSON ${jsonFileName}:`, err);
           reject(err);
         } else {
-          log.info('JSON file written successfully.');
+          log.info(`JSON ${jsonFileName} written successfully.`);
           resolve();
         }
       });
@@ -75,7 +75,7 @@ function save(log, jsonFileName, data, isRaw) {
 function updateManifest(log, newConfigSaved) {
   try {
     if (!newConfigSaved) {
-      log.warn('Error writing JSON file:', newConfigSaved);
+      log.warn('Empty name to update into manifest');
     }
 
     const manifestFile = path.join(APP_CONFIG_PATH, MANIFEST_JSON); // same folder as exe
@@ -84,9 +84,9 @@ function updateManifest(log, newConfigSaved) {
       manifest.data = [newConfigSaved];
       fs.writeFile(manifestFile, JSON.stringify(manifest, null, 2), 'utf8', (err) => {
         if (err) {
-          log.error('Error writing JSON file:', err);
+          log.error(`Error writing JSON ${MANIFEST_JSON}:`, err);
         } else {
-          log.info('JSON file written successfully.');
+          log.info(`JSON: ${MANIFEST_JSON}  written successfully.`);
         }
       });
     } else {
@@ -102,9 +102,9 @@ function updateManifest(log, newConfigSaved) {
 
           fs.writeFile(manifestFile, JSON.stringify(manifest, null, 2), 'utf8', (err) => {
             if (err) {
-              log.error('Error writing JSON file:', err);
+              log.error(`Error writing JSON ${MANIFEST_JSON}:`, err);
             } else {
-              log.info('JSON file written successfully.');
+              log.info(`JSON ${MANIFEST_JSON} written successfully.`);
             }
           });
         }
@@ -123,9 +123,9 @@ function hasConfig(log, configToCheck) {
         const manifest = {};
         fs.writeFile(manifestFile, JSON.stringify(manifest, null, 2), 'utf8', (err) => {
           if (err) {
-            log.error('Error writing JSON file:', err);
+            log.error(`Error writing JSON ${MANIFEST_JSON}:`, err);
           } else {
-            log.info('JSON file written successfully.');
+            log.info(`JSON ${MANIFEST_JSON} written successfully.`);
           }
         });
 

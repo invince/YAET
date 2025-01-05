@@ -296,19 +296,10 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
 
 
   addTag($event: MatChipInputEvent) {
-    // const value = ($event.value || '').trim();
-    //
-    // // Add our fruit
-    // if (value) {
-    //   this.fruits.update(fruits => [...fruits, value]);
-    // }
-    //
-    // // Clear the input value
-    // this.currentFruit.set('');
   }
 
   onSelectGroup($event: MatSelectChange) {
-    this.groupColor = $event.value.color;
+    this.groupColor = $event?.value?.color;
   }
 
   removeTag(tag: Tag) {
