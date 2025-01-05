@@ -13,6 +13,10 @@ import packageJson from '../../../package.json';
 import {RemoteDesktopSettings} from '../domain/setting/RemoteDesktopSettings';
 import {FileExplorerSettings} from '../domain/setting/FileExplorerSettings';
 import {TerminalSettings} from '../domain/setting/TerminalSettings';
+import {LogService} from './log.service';
+import {Compatibility} from '../../main';
+import {compareVersions} from '../utils/Utils';
+
 
 @Injectable({
   providedIn: 'root'
@@ -27,6 +31,7 @@ export class SettingService {
   private _loaded: boolean = false;
 
   constructor(
+    private log: LogService,
     private electron: ElectronService,
     private settingStorage: SettingStorageService,
     private profileService: ProfileService,
@@ -36,11 +41,27 @@ export class SettingService {
 
   private apply(data: any) {
     if (data) {
+      let dataObj: any;
       if (typeof data === "string") {
-        this.settingStorage.settings = JSON.parse(data);
+        dataObj = JSON.parse(data);
       } else {
-        this.settingStorage.settings = data;
+        dataObj = data;
       }
+
+      if (dataObj) {
+        if (dataObj.compatibleVersion) {
+          if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
+            this.log.warn("Your application is not compatible with saved settings, please update your app. For instance, we'll use default settings");
+            dataObj = new MySettings();
+          }
+        }
+
+        this.settingStorage.settings = dataObj;
+      } else {
+        this.settingStorage.settings = new MySettings();
+      }
+
+
       this.validate(this.settingStorage.settings);
     }
     this._loaded = true;
@@ -63,6 +84,7 @@ export class SettingService {
     }
     this.settingStorage.settings.isNew = false;
     this.settingStorage.settings.version = packageJson.version;
+    this.settingStorage.settings.compatibleVersion = Compatibility.settings;
     this.settingStorage.settings.revision = Date.now();
     this.electron.saveSetting(this.settingStorage.settings);
   }

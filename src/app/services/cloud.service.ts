@@ -9,6 +9,9 @@ import {ProfileService} from './profile.service';
 import {SecretService} from './secret.service';
 import packageJson from '../../../package.json';
 import {Subscription} from 'rxjs';
+import {Compatibility} from '../../main';
+import {LogService} from './log.service';
+import {compareVersions} from '../utils/Utils';
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +25,7 @@ export class CloudService implements OnDestroy {
   subscriptions: Subscription[] = []
 
   constructor(
+    private log: LogService,
     private electron: ElectronService,
     private masterKeyService: MasterKeyService,
     ) {
@@ -46,7 +50,17 @@ export class CloudService implements OnDestroy {
     this.masterKeyService.decrypt2String(data).then(
       decrypted => {
         if (decrypted) {
-          this._cloud =  JSON.parse(decrypted);
+          let dataObj = JSON.parse(decrypted);
+          if (dataObj) {
+            if (dataObj.compatibleVersion) {
+              if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
+                this.log.warn("Your application is not compatible with saved settings, please update your app. For instance, we'll use default cloud settings");
+                dataObj = new CloudSettings();
+              }
+            }
+          }
+
+          this._cloud =  dataObj;
           this._loaded = true;
         }
       }
@@ -71,6 +85,7 @@ export class CloudService implements OnDestroy {
     }
     this._cloud = cloud;
     this._cloud.version = packageJson.version;
+    this._cloud.version = Compatibility.cloud;
     this.masterKeyService.encrypt(this._cloud).then(
       encrypted => {
         if (encrypted) {

@@ -21,6 +21,7 @@ export class Secrets {
   revision: number;
 
   public version: string = '';
+  public compatibleVersion: string = '';
 
   secrets: Secret[];
 

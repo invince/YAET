@@ -8,6 +8,10 @@ import {Tag} from '../domain/Tag';
 import {Group} from '../domain/Group';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import packageJson from '../../../package.json';
+import {Secrets} from '../domain/Secret';
+import {LogService} from './log.service';
+import {Compatibility} from '../../main';
+import {compareVersions} from '../utils/Utils';
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +30,7 @@ export class ProfileService implements OnDestroy{
 
 
   constructor(
+    private log: LogService,
     private electron: ElectronService,
     private masterKeyService: MasterKeyService,
 
@@ -47,7 +52,16 @@ export class ProfileService implements OnDestroy{
     this.masterKeyService.decrypt2String(data).then(
       decrypted => {
         if (decrypted) {
-          this._profiles =  JSON.parse(decrypted);
+          let dataObj = JSON.parse(decrypted);
+          if (dataObj) {
+            if (dataObj.compatibleVersion) {
+              if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
+                this.log.warn("Your application is not compatible with saved settings, please update your app. For instance, empty secrets applied");
+                dataObj = new Profiles();
+              }
+            }
+          }
+          this._profiles =  dataObj;
           this._loaded = true;
         }
       }
@@ -72,6 +86,7 @@ export class ProfileService implements OnDestroy{
     }
     this._profiles = profiles;
     this._profiles.version = packageJson.version;
+    this._profiles.compatibleVersion = Compatibility.profiles;
     for (let one of this._profiles.profiles) {
       one.isNew = false;
 

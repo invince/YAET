@@ -7,6 +7,9 @@ import {SecretStorageService} from './secret-storage.service';
 import {SettingStorageService} from './setting-storage.service';
 import packageJson from '../../../package.json';
 import {Subscription} from 'rxjs';
+import {LogService} from './log.service';
+import {Compatibility} from '../../main';
+import {compareVersions} from '../utils/Utils';
 
 
 @Injectable({
@@ -19,6 +22,7 @@ export class SecretService implements OnDestroy{
   private subscriptions: Subscription[] =[];
 
   constructor(
+    private log: LogService,
     private electron: ElectronService,
 
     private secretStorage: SecretStorageService,
@@ -42,7 +46,16 @@ export class SecretService implements OnDestroy{
     this.masterKeyService.decrypt2String(data).then(
       decrypted => {
         if (decrypted) {
-          this.secretStorage.data =  JSON.parse(decrypted);
+          let dataObj = JSON.parse(decrypted);
+          if (dataObj) {
+            if (dataObj.compatibleVersion) {
+              if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
+                this.log.warn("Your application is not compatible with saved settings, please update your app. For instance, empty secrets applied");
+                dataObj = new Secrets();
+              }
+            }
+          }
+          this.secretStorage.data =  dataObj;
           this._loaded = true;
         }
       }
@@ -60,6 +73,7 @@ export class SecretService implements OnDestroy{
     }
     this.secretStorage.data = secrets;
     this.secretStorage.data.version = packageJson.version;
+    this.secretStorage.data.compatibleVersion = Compatibility.secrets;
     for (let one of this.secretStorage.data.secrets) {
       one.isNew = false;
     }

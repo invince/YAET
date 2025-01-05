@@ -53,6 +53,7 @@ export class Profiles {
   revision: number;
 
   public version: string = '';
+  public compatibleVersion: string = '';
 
   profiles: Profile[];
 
