@@ -21,6 +21,7 @@ import {MatDialog} from '@angular/material/dialog';
 import {ModalControllerService} from '../../../services/modal-controller.service';
 import {MenuConsts} from '../../../domain/MenuConsts';
 import {NotificationService} from '../../../services/notification.service';
+import {ProfileService} from '../../../services/profile.service';
 
 @Component({
   selector: 'app-secrets-menu',
@@ -64,6 +65,7 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
     public secretService: SecretService,
     public secretStorageService: SecretStorageService,
 
+    private profileService: ProfileService,
     private settingStorage: SettingStorageService,
 
     private notification: NotificationService,
@@ -124,20 +126,40 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
   }
 
   async onDelete($event: Secret) {
-    const dialogRef = this.dialog.open(ConfirmationComponent, {
-      width: '300px',
-      data: { message: 'Do you want to delete this profile: ' + $event.name + '?' },
-    });
 
-    this.subscriptions.push(dialogRef.afterClosed().subscribe(async (result) => {
-      if (result) {
-        this.secretsCopy.delete($event);
-        await this.commitChange();
-        this.selectedId = undefined;
-        this.selectedSecret = undefined;
-        // this.refreshSecretForm();
-      }
-    }));
+    if (this.profileService.isSecretUsed($event)) {
+      const dialogRef = this.dialog.open(ConfirmationComponent, {
+        width: '300px',
+        data: { message: 'This secret is still used by some profiles. Do you want to delete this secret: ' + $event.name + '?' },
+      });
+
+      this.subscriptions.push(dialogRef.afterClosed().subscribe(async (result) => {
+        if (result) {
+
+          this.profileService.clearSecret($event);
+          this.secretsCopy.delete($event);
+          await this.commitChange();
+          this.selectedId = undefined;
+          this.selectedSecret = undefined;
+          // this.refreshSecretForm();
+        }
+      }));
+    } else {
+      const dialogRef = this.dialog.open(ConfirmationComponent, {
+        width: '300px',
+        data: { message: 'Do you want to delete this secret: ' + $event.name + '?' },
+      });
+
+      this.subscriptions.push(dialogRef.afterClosed().subscribe(async (result) => {
+        if (result) {
+          this.secretsCopy.delete($event);
+          await this.commitChange();
+          this.selectedId = undefined;
+          this.selectedSecret = undefined;
+          // this.refreshSecretForm();
+        }
+      }));
+    }
   }
 
   async onSaveOne($event: Secret) {
