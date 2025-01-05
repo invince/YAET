@@ -26,7 +26,7 @@ import {
   CLIPBOARD_PASTE,
   TRIGGER_NATIVE_CLIPBOARD_PASTE,
   SESSION_OPEN_CUSTOM,
-  SESSION_SCP_REGISTER, SESSION_CLOSE_LOCAL_TERMINAL, SESSION_CLOSE_SSH_TERMINAL
+  SESSION_SCP_REGISTER, SESSION_CLOSE_LOCAL_TERMINAL, SESSION_CLOSE_SSH_TERMINAL, LOG
 } from '../domain/electronConstant';
 import {LocalTerminalProfile} from '../domain/profile/LocalTerminalProfile';
 import {Profile, ProfileType} from '../domain/profile/Profile';
@@ -41,6 +41,7 @@ import {RdpProfile} from '../domain/profile/RdpProfile';
 import {CustomProfile} from '../domain/profile/CustomProfile';
 import {SSHProfile} from '../domain/profile/SSHProfile';
 import {Session} from '../domain/session/Session';
+import {Log} from '../domain/Log';
 
 
 @Injectable({
@@ -76,7 +77,7 @@ export class ElectronService {
   }
   private initCommonListener() {
     this.ipc.on(ERROR, (event, data) => {
-      console.error('Error:', data);
+      this.log({level: 'error:', message:  data});
       this._snackBar.open('ERROR: ' + data.error,'ok', {
         duration: 3000,
         panelClass: [ 'error-snackbar']
@@ -109,6 +110,12 @@ export class ElectronService {
   public subscribeClipboard (profileType: ProfileType, callback : (id: string, text: string)=> boolean) {
     this.clipboardCallbackMap.set(profileType, callback);
   }
+
+  log(log: Log) {
+    if (this.ipc) {
+      this.ipc.send(LOG, log);
+    }
+  }
 //#endregion "Common"
 
 //#region "Sessions"
@@ -121,7 +128,7 @@ export class ElectronService {
     });
 
     this.ipc.on(SESSION_DISCONNECT_SSH, (event, data) => {
-      console.log('SSH Disconnected:', data.id);
+      this.log({level: 'info', message: 'SSH Disconnected:' + data.id});
       this._snackBar.open('SSH Disconnected, you can try reconnect later','ok', {
         duration: 3000,
         panelClass: [ 'error-snackbar']
@@ -167,7 +174,7 @@ export class ElectronService {
 
   private openSSHTerminalSession(session: Session) {
     if (!session.profile || !session.profile.sshProfile) {
-      console.error("Invalid configuration");
+      this.log({level: 'error', message : "Invalid configuration"});
       return;
     }
 
@@ -186,7 +193,7 @@ export class ElectronService {
     } else if (sshProfile.authType == AuthType.SECRET) {
       let secret = this.secretStorage.findById(sshProfile.secretId);
       if (!secret) {
-        console.error("Invalid secret " + sshProfile.secretId);
+        this.log({level: 'error', message : "Invalid secret " + sshProfile.secretId});
         return;
       }
       switch (secret.secretType) {
@@ -255,7 +262,7 @@ export class ElectronService {
         if(customProfile.authType == AuthType.SECRET) {
           let secret = this.secretStorage.findById(customProfile.secretId);
           if (!secret) {
-            console.error("Invalid secret " + customProfile.secretId);
+            this.log({level: 'error', message : "Invalid secret " + customProfile.secretId});
             return;
           }
           switch (secret.secretType) {
@@ -305,7 +312,7 @@ export class ElectronService {
 
   async registerScpSession(id: string, sshProfile: SSHProfile) {
     if (!id || !sshProfile) {
-      console.error("Invalid configuration");
+      this.log({level: 'error', message : "Invalid configuration"});
       return;
     }
     let sshConfig: any = {
@@ -322,7 +329,7 @@ export class ElectronService {
     } else if (sshProfile.authType == AuthType.SECRET) {
       let secret = this.secretStorage.findById(sshProfile.secretId);
       if (!secret) {
-        console.error("Invalid secret " + sshProfile.secretId);
+        this.log({level: 'error', message : "Invalid secret " + sshProfile.secretId});
         return;
       }
       switch (secret.secretType) {
@@ -437,7 +444,7 @@ export class ElectronService {
 
       let cloud = this.prepareCloudSettings(cloudSettings);
       if (!cloud) {
-        console.error("Invalid Cloud Settings");
+        this.log({level: 'error', message : "Invalid Cloud Settings"});
         return undefined;
       }
 
@@ -451,7 +458,7 @@ export class ElectronService {
 
       let cloud = this.prepareCloudSettings(cloudSettings);
       if (!cloud) {
-        console.error("Invalid Cloud Settings");
+        this.log({level: 'error', message : "Invalid Cloud Settings"});
         return undefined;
       }
       return  await this.ipc.invoke(CLOUD_UPLOAD, {data: cloud});
@@ -463,7 +470,7 @@ export class ElectronService {
     if (cloudSettings.authType == AuthType.SECRET) {
       let secret = this.secretStorage.findById(cloudSettings.secretId);
       if (!secret) {
-        console.error("Invalid secret " + cloudSettings.secretId);
+        this.log({level: 'error', message : "Invalid secret " + cloudSettings.secretId});
         return undefined;
       }
       switch (secret.secretType) {

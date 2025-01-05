@@ -1,8 +1,8 @@
 const { ipcMain } = require('electron');
 const pty = require("node-pty");
 const {Client} = require("ssh2");
-const fs = require("fs");
-function initTerminalIpcHandler(terminalMap) {
+
+function initTerminalIpcHandler(log, terminalMap) {
 
   function validate(terminalExec) {
     if (!terminalExec) {
@@ -16,13 +16,13 @@ function initTerminalIpcHandler(terminalMap) {
     let terminal = terminalMap.get(id)?.process;
     terminal.kill();
     terminalMap.delete(id);
-    console.log('Local Terminal ' + id + ' closed');
+    log.info('Local Terminal ' + id + ' closed');
   });
 
   ipcMain.on('session.open.terminal.local', (event, data) => {
 
     const id = data.terminalId; // cf ElectronService
-    console.log('Local Terminal ' + id + ' ready');
+    log.info('Local Terminal ' + id + ' ready');
     let shell = validate(data.terminalExec);
     const ptyProcess = pty.spawn(shell, [], {
       name: 'xterm-color',
@@ -45,7 +45,7 @@ function initTerminalIpcHandler(terminalMap) {
 
     ptyProcess.on('error', (err) => {
       // there is a strange error when we do kill, ptyProcess continue receiving an \n, add onError can prevent error popup
-      console.error(`Error in terminal ${id}:`, err);
+      log.error(`Error in terminal ${id}:`, err);
     });
 
     terminalMap.set(id,
@@ -61,12 +61,12 @@ function initTerminalIpcHandler(terminalMap) {
     const id = data.terminalId; // cf terminal.component.ts
     const input = data.input;
     const terminalCallback = terminalMap.get(id)?.callback;
-    console.log('Terminal id to find ' + id);
+    log.info('Terminal id to find ' + id);
     if (terminalCallback) {
-      console.log('Terminal found. Sending input.');
+      log.info('Terminal found. Sending input.');
       terminalCallback(input); // Send input to the correct terminal
     } else {
-      console.log('Terminal not found for id:', id);
+      log.info('Terminal not found for id:', id);
     }
   });
 
@@ -74,7 +74,7 @@ function initTerminalIpcHandler(terminalMap) {
     const id = data.terminalId;
     terminalMap.get(id)?.process.end();
     terminalMap.delete(id);
-    console.log('SSH connection ' + id + ' closed');
+    log.info('SSH connection ' + id + ' closed');
   });
 
   ipcMain.on('session.open.terminal.ssh', (event, data) => {
@@ -86,17 +86,17 @@ function initTerminalIpcHandler(terminalMap) {
     };
 
     sshConfig.debug = (info) => {
-      console.log('DEBUG:', info);
+      log.info('DEBUG:', info);
     };
 
     conn.on('ready', () => {
-      console.log('SSH connection ready for id:', id);
+      log.info('SSH connection ready for id:', id);
       conn.shell(shellOptions, (err, stream) => {
         if (err) {
-          console.error('Error starting shell:', err);
+          log.error('Error starting shell:', err);
           return;
         }
-        console.log('Shell started for id:', id);
+        log.info('Shell started for id:', id);
 
         if (data.initPath) {
           const initPath = data.initPath;
@@ -125,7 +125,7 @@ function initTerminalIpcHandler(terminalMap) {
 
     // Handle connection errors
     conn.on('error', (err) => {
-      console.error('SSH connection error for id:', id, err);
+      log.error('SSH connection error for id:', id, err);
       event.sender.send('error', {
         category: 'ssh',
         id: id,
@@ -135,13 +135,13 @@ function initTerminalIpcHandler(terminalMap) {
 
     // Handle end event
     conn.on('end', () => {
-      console.log('SSH connection ended for id:', id);
+      log.info('SSH connection ended for id:', id);
     });
 
     // Handle close event
     conn.on('close', (hadError) => {
       if (hadError) {
-        console.log(`SSH connection closed for id: ${id}, hadError: ${hadError}`);
+        log.info(`SSH connection closed for id: ${id}, hadError: ${hadError}`);
         event.sender.send('session.disconnect.terminal.ssh', { id: id });
       }
     });

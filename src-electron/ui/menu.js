@@ -1,6 +1,6 @@
 const { Menu } = require('electron');
 
-function createMenu() {
+function createMenu(log) {
   const template = [
     {
       label: 'File',

@@ -8,6 +8,7 @@ import RFB from '@novnc/novnc/lib/rfb';
 import {Subject} from 'rxjs';
 import {ProfileType} from '../domain/profile/Profile';
 import {SettingStorageService} from './setting-storage.service';
+import {LogService} from './log.service';
 
 
 // we use ws to proxy to the vnc server
@@ -25,6 +26,7 @@ export class VncService {
   clipboardEvent$ = this.clipboardEventSubject.asObservable();
 
   constructor(
+    private log: LogService,
     private settingStorage: SettingStorageService,
     private secretStorage: SecretStorageService,
     private electronService: ElectronService,
@@ -58,7 +60,7 @@ export class VncService {
       if (vncProfile.authType == AuthType.SECRET) {
         let secret = this.secretStorage.findById(vncProfile.secretId);
         if (!secret) {
-          console.error("Invalid secret " + vncProfile.secretId);
+          this.log.error("Invalid secret " + vncProfile.secretId);
           reject(new Error('Invalid secret profile'));
           return;
         }
@@ -93,7 +95,7 @@ export class VncService {
 
           rfb.addEventListener('clipboard', async (event: any) => {
             const serverClipboardText = event.detail.text;
-            console.log('Received clipboard data:', serverClipboardText);
+            this.log.info('Received clipboard data:' + serverClipboardText);
             await navigator.clipboard.writeText(serverClipboardText); // Sync with browser clipboard
           });
           this.vncMap.set(id, rfb);

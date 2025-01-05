@@ -3,6 +3,7 @@ import {ElectronService} from './electron.service';
 import CryptoJS from 'crypto-js';
 import {Subject} from 'rxjs';
 import {Profile} from '../domain/profile/Profile';
+import {LogService} from './log.service';
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +20,10 @@ export class MasterKeyService implements OnDestroy{
   private masterkeyUpdateEventSubject = new Subject<string>();
   masterkeyUpdateEvent$ = this.masterkeyUpdateEventSubject.asObservable();
 
-  constructor(private electron: ElectronService) {
+  constructor(
+    private log: LogService,
+    private electron: ElectronService
+  ) {
 
     this.refreshHasMasterKey();
     this.intervalId = setInterval(()=> this.refreshHasMasterKey(), 30 * 1000)
@@ -74,31 +78,25 @@ export class MasterKeyService implements OnDestroy{
   }
 
 
-  encrypt(obj: any) {
-    return this.getMasterKey().then(
-      masterKey => {
-        if (masterKey) {
-          const json = JSON.stringify(obj, null, 2);
-          return CryptoJS.AES.encrypt(json, masterKey).toString();
-        } else {
-          console.log("Unable to load master key")
-          return null;
-        }
-      }
-    )
+  async encrypt(obj: any) {
+    const masterKey = await this.getMasterKey();
+    if (masterKey) {
+      const json = JSON.stringify(obj, null, 2);
+      return CryptoJS.AES.encrypt(json, masterKey).toString();
+    } else {
+      this.log.info("Unable to load master key");
+      return null;
+    }
   }
 
-  decrypt2String(encrypted: string) {
-    return this.getMasterKey().then(
-      masterKey => {
-        if (masterKey) {
-          const bytes = CryptoJS.AES.decrypt(encrypted, masterKey);
-          return bytes.toString(CryptoJS.enc.Utf8);
-        } else {
-          console.error("No master key defined");
-          return null;
-        }
-      }
-    )
+  async decrypt2String(encrypted: string) {
+    const masterKey = await this.getMasterKey();
+    if (masterKey) {
+      const bytes = CryptoJS.AES.decrypt(encrypted, masterKey);
+      return bytes.toString(CryptoJS.enc.Utf8);
+    } else {
+      this.log.info("No master key defined");
+      return null;
+    }
   }
 }

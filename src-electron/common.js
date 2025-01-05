@@ -14,11 +14,11 @@ const MANIFEST_JSON = 'manifest.json';
 
 
 
-function load(jsonFileName, loadedEvent, isRaw, mainWindow) {
+function load(log, mainWindow, jsonFileName, loadedEvent, isRaw) {
   return new Promise((resolve, reject) => {
     try {
       const settingsPath = path.join(APP_CONFIG_PATH, jsonFileName); // same folder as exe
-      console.log(settingsPath);
+      log.info(settingsPath);
       if (fs.existsSync(settingsPath)){
         return fs.readFile(settingsPath, 'utf-8', (err, data) => {
           if (!err) {
@@ -43,13 +43,13 @@ function load(jsonFileName, loadedEvent, isRaw, mainWindow) {
       }
 
     } catch (err) {
-      console.error('Error reading ' + jsonFileName, err);
+      log.error('Error reading ' + jsonFileName, err);
       reject(err);
     }
   });
 }
 
-function save(jsonFileName, data, isRaw) {
+function save(log, jsonFileName, data, isRaw) {
   return new Promise((resolve, reject) => {
     try {
       const settingsPath = path.join(APP_CONFIG_PATH, jsonFileName); // same folder as exe
@@ -58,21 +58,21 @@ function save(jsonFileName, data, isRaw) {
       // Write the JSON string to the specified file
       fs.writeFile(settingsPath, jsonString, 'utf8', (err) => {
         if (err) {
-          console.error('Error writing JSON file:', err);
+          log.error('Error writing JSON file:', err);
           reject(err);
         } else {
-          console.log('JSON file written successfully.');
+          log.info('JSON file written successfully.');
           resolve();
         }
       });
     } catch (error) {
-      console.error('Error serializing content:', error);
+      log.error('Error serializing content:', error);
       reject(error);
     }
   });
 }
 
-function updateManifest(newConfigSaved) {
+function updateManifest(log, newConfigSaved) {
   try {
     const manifestFile = path.join(APP_CONFIG_PATH, MANIFEST_JSON); // same folder as exe
     if (!fs.existsSync(manifestFile)) {
@@ -80,9 +80,9 @@ function updateManifest(newConfigSaved) {
       manifest.data = [newConfigSaved];
       fs.writeFile(manifestFile, JSON.stringify(manifest, null, 2), 'utf8', (err) => {
         if (err) {
-          console.error('Error writing JSON file:', err);
+          log.error('Error writing JSON file:', err);
         } else {
-          console.log('JSON file written successfully.');
+          log.info('JSON file written successfully.');
         }
       });
     } else {
@@ -98,30 +98,30 @@ function updateManifest(newConfigSaved) {
 
           fs.writeFile(manifestFile, JSON.stringify(manifest, null, 2), 'utf8', (err) => {
             if (err) {
-              console.error('Error writing JSON file:', err);
+              log.error('Error writing JSON file:', err);
             } else {
-              console.log('JSON file written successfully.');
+              log.info('JSON file written successfully.');
             }
           });
         }
       });
     }
   } catch (err) {
-    console.error('Error reading manifest.json', err);
+    log.error('Error reading manifest.json', err);
   }
 }
 
-function hasConfig(configToCheck) {
+function hasConfig(log, configToCheck) {
   return new Promise((resolve, reject) => {
+    const manifestFile = path.join(APP_CONFIG_PATH, MANIFEST_JSON); // same folder as exe
     try {
-      const manifestFile = path.join(APP_CONFIG_PATH, MANIFEST_JSON); // same folder as exe
       if (!fs.existsSync(manifestFile)) {
         const manifest = {};
         fs.writeFile(manifestFile, JSON.stringify(manifest, null, 2), 'utf8', (err) => {
           if (err) {
-            console.error('Error writing JSON file:', err);
+            log.error('Error writing JSON file:', err);
           } else {
-            console.log('JSON file written successfully.');
+            log.info('JSON file written successfully.');
           }
         });
 
@@ -139,7 +139,7 @@ function hasConfig(configToCheck) {
         });
       }
     } catch (err) {
-      console.error('Error reading ' + jsonFileName, err);
+      log.error('Error reading ' + manifestFile, err);
     }
     resolve(false);
   });

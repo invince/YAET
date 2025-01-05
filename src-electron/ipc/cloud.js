@@ -1,9 +1,10 @@
 const { ipcMain } = require('electron');
 const path = require("path");
-const {SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, GIT_FOLDER, APP_CONFIG_PATH, BACKUP_FOLDER}= require("../common");
+const {SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, GIT_FOLDER, APP_CONFIG_PATH, BACKUP_FOLDER}= require("../common");
 const {promises: fsPromise} = require("fs");
 const simpleGit = require("simple-git");
-function initCloudIpcHandler() {
+
+function initCloudIpcHandler(log) {
 
   ipcMain.handle('cloud.upload', async (event, data) => {
 
@@ -14,7 +15,7 @@ function initCloudIpcHandler() {
     }
 
     if (!data || !data.data) {
-      console.error("no cloud setting found");
+      log.error("no cloud setting found");
       response.ko.push("no cloud setting found");
       return response;
     }
@@ -33,16 +34,16 @@ function initCloudIpcHandler() {
       let jsonFiles = getJsonFilesForCloud(cloudSettings.items);
 
       // Step 1: Delete existing Git folder
-      console.log('Deleting existing Git folder...');
+      log.info('Deleting existing Git folder...');
       await fsPromise.rm(gitAbsDir, {recursive: true, force: true});
 
       // Step 2: Clone the Git repository
-      console.log('Cloning repository...');
+      log.info('Cloning repository...');
       const git = simpleGit();
       await git.clone(gitRepoUrl, gitAbsDir);
 
       // Step 3: Synchronize JSON files
-      console.log('Synchronizing JSON files...');
+      log.info('Synchronizing JSON files...');
       const filesInRepo = await fsPromise.readdir(gitAbsDir); // Get current files in the repo
       const fileToPush = jsonFiles.map(filePath => path.basename(filePath));
       // Delete files in the repo that are not in fileToPush
@@ -51,7 +52,7 @@ function initCloudIpcHandler() {
           const filePathToDelete = path.join(gitAbsDir, file);
           await fsPromise.rm(filePathToDelete, {recursive: true, force: true});
           response.ok.push('-' + file);
-          console.log(`Deleted: ${file}`);
+          log.info(`Deleted: ${file}`);
         }
       }
       // Replace or add files from fileToPush
@@ -62,10 +63,10 @@ function initCloudIpcHandler() {
         await fsPromise.copyFile(jsonFilePath, destinationFilePath);
 
         response.ok.push('+' + fileName);
-        console.log(`Added or updated: ${fileName}`);
+        log.info(`Added or updated: ${fileName}`);
       }
       // Step 4: Commit and Push the Changes
-      console.log('Committing and pushing changes...');
+      log.info('Committing and pushing changes...');
       await git.cwd(gitAbsDir); // Change working directory to the Git folder
       await git.add('.'); // Stage all changes
       await git.commit('Sync JSON files'); // Commit the changes
@@ -73,9 +74,9 @@ function initCloudIpcHandler() {
 
       response.ok.push('pushed');
 
-      console.log('Successfully synchronized JSON files to the repository.');
+      log.info('Successfully synchronized JSON files to the repository.');
     } catch(error) {
-      console.error('Error during operation:', error.message);
+      log.error('Error during operation:', error.message);
       response.ko.push(error.message);
       return response;
     }
@@ -93,7 +94,7 @@ function initCloudIpcHandler() {
     }
 
     if (!data || !data.data) {
-      console.error("no cloud setting found");
+      log.error("no cloud setting found");
       response.ko.push("no cloud setting found");
       return response;
     }
@@ -113,7 +114,7 @@ function initCloudIpcHandler() {
 
     try {
       // Step 1: Backup JSON files
-      console.log('Backing up JSON files...');
+      log.info('Backing up JSON files...');
       await fsPromise.rm(backupAbsDir, {recursive: true, force: true});
       await fsPromise.mkdir(backupAbsDir, {recursive: true});
 
@@ -123,10 +124,10 @@ function initCloudIpcHandler() {
 
         try {
           await fsPromise.copyFile(file, backupFilePath);
-          console.log(`Backed up: ${fileName}`);
+          log.info(`Backed up: ${fileName}`);
         } catch (err) {
           if (err.code === 'ENOENT') {
-            console.warn(`File not found (skipping): ${fileName}`);
+            log.warn(`File not found (skipping): ${fileName}`);
           } else {
             throw err;
           }
@@ -134,16 +135,16 @@ function initCloudIpcHandler() {
       }
 
       // Step 2: Delete existing Git folder
-      console.log('Deleting existing Git folder...');
+      log.info('Deleting existing Git folder...');
       await fsPromise.rm(gitAbsDir, {recursive: true, force: true});
 
       // Step 3: Clone the repository
-      console.log('Cloning repository...');
+      log.info('Cloning repository...');
       const git = simpleGit();
       await git.clone(gitRepoUrl, gitAbsDir);
 
       // Step 4: Replace JSON files in the Git folder
-      console.log('Replacing JSON files ...');
+      log.info('Replacing JSON files ...');
       for (const file of jsonFiles) {
         const fileName = path.basename(file);
         const gitFilePath = path.join(gitAbsDir, fileName);
@@ -155,19 +156,19 @@ function initCloudIpcHandler() {
           // Replace the file
           await fsPromise.copyFile(gitFilePath, file);
           response.ok.push('<->' + fileName);
-          console.log(`Replaced in Git repo: ${fileName}`);
+          log.info(`Replaced in Git repo: ${fileName}`);
         } catch (err) {
           if (err.code === 'ENOENT') {
-            console.warn(`File not found in Git repo (skipping): ${fileName}`);
+            log.warn(`File not found in Git repo (skipping): ${fileName}`);
           } else {
             throw err;
           }
         }
       }
 
-      console.log('Operation completed successfully.');
+      log.info('Operation completed successfully.');
     } catch (error) {
-      console.error('Error:', error.message);
+      log.error('Error:', error.message);
       response.ko.push(error.message);
       return response;
     }

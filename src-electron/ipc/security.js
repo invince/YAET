@@ -1,9 +1,10 @@
 const {ipcMain} = require('electron');
 const keytar = require("keytar");
 
-function initSecurityIpcHandler() {
+function initSecurityIpcHandler(log) {
 
   ipcMain.handle('masterkey.save', async (event, service, account, password) => {
+    log.info("master key saving...");
     return keytar.setPassword(service, account, password);
   });
 
@@ -12,7 +13,7 @@ function initSecurityIpcHandler() {
   });
 
   ipcMain.handle('masterkey.delete', async (event, service, account) => {
-    console.log("master key deleting...");
+    log.info("master key deleting...");
     return keytar.deletePassword(service, account);
   });
 
