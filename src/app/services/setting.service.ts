@@ -113,8 +113,8 @@ export class SettingService {
       switch (terminalSettings.localTerminal.type) {
         case LocalTerminalType.CMD: terminalSettings.localTerminal.execPath = 'cmd.exe'; break;
         case LocalTerminalType.POWERSHELL: terminalSettings.localTerminal.execPath = 'powershell.exe'; break;
-        case LocalTerminalType.BASH: terminalSettings.localTerminal.execPath = 'bash'; break;
-        case LocalTerminalType.CUSTOM: terminalSettings.localTerminal.execPath = ''; break;
+        // case LocalTerminalType.BASH: terminalSettings.localTerminal.execPath = 'bash'; break;
+        // case LocalTerminalType.CUSTOM: terminalSettings.localTerminal.execPath = ''; break;
       }
     }
   }

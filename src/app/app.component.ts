@@ -169,7 +169,7 @@ export class AppComponent implements OnInit, OnDestroy{
 
 
   addMenu() {
-    this.toggleMenu(this.MENU_ADD);
+    this.requireMasterKey(() => this.toggleMenu( this.MENU_ADD));
   }
 
 
