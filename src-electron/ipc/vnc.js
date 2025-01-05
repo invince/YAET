@@ -6,7 +6,7 @@ const net = require('net');
 
 
 // for vnc, we create a websocket proxy to vnc server, than use noVnc to connect it
-function initVncHandler(vncMap) {
+function initVncHandler(log, vncMap) {
 
   // Handle VNC Connection
   ipcMain.handle('session.open.rd.vnc', async (event, {id, host, port}) => {
@@ -19,13 +19,13 @@ function initVncHandler(vncMap) {
     const wss = new WebSocket.Server({port: proxyPort});
 
     wss.on('connection', (ws) => {
-      console.log('New WebSocket connection');
+      log.info('New WebSocket connection');
 
-      console.log(`Connect to VNC server ${host}:${port}`);
+      log.info(`Connect to VNC server ${host}:${port}`);
 
       // Connect to the VNC server
       const vncSocket = net.createConnection(port, host,() => {
-        console.log(`Connected to VNC server`);
+        log.info(`Connected to VNC server`);
         event.sender.send('session.connect.rd.vnc', { id: id});
       });
 
@@ -45,21 +45,21 @@ function initVncHandler(vncMap) {
 
       // Handle WebSocket close
       ws.on('close', () => {
-        console.log('WebSocket connection closed');
+        log.info('WebSocket connection closed');
         event.sender.send('session.disconnect.rd.vnc', { id: id});
         vncSocket.end();
       });
 
       // Handle VNC socket close
       vncSocket.on('close', () => {
-        console.log('VNC connection closed');
+        log.info('VNC connection closed');
         event.sender.send('session.disconnect.rd.vnc', { id: id});
         ws.close();
       });
 
       // Handle errors
       vncSocket.on('error', (err) => {
-        console.error('VNC socket error:', err.message);
+        log.error('VNC socket error:', err.message);
         event.sender.send('error', {
           category: 'vnc',
           id: id,
@@ -69,7 +69,7 @@ function initVncHandler(vncMap) {
       });
 
       ws.on('error', (err) => {
-        console.error('WebSocket error:', err.message);
+        log.error('WebSocket error:', err.message);
         event.sender.send('error', {
           category: 'vnc',
           id: id,
@@ -79,7 +79,7 @@ function initVncHandler(vncMap) {
       });
     });
 
-    console.log(`WebSocket proxy is running on ws://localhost:${proxyPort}`);
+    log.info(`WebSocket proxy is running on ws://localhost:${proxyPort}`);
 
     vncMap.set(id, wss);
 
@@ -92,7 +92,7 @@ function initVncHandler(vncMap) {
       let vncClient = vncMap.get(id);
       if (vncClient) {
         vncClient.close(() => {
-          console.log(`WebSocket server for ID: ${id} closed`);
+          log.info(`WebSocket server for ID: ${id} closed`);
         });
         vncMap.delete(id);
       }

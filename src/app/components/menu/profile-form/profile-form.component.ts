@@ -27,6 +27,7 @@ import {VncProfileFormComponent} from './vnc-profile-form/vnc-profile-form.compo
 import {VncProfile} from '../../../domain/profile/VncProfile';
 import {CustomProfileFormComponent} from './custom-profile-form/custom-profile-form.component';
 import {CustomProfile} from '../../../domain/profile/CustomProfile';
+import {LogService} from '../../../services/log.service';
 
 @Component({
   selector: 'app-profile-form',
@@ -81,6 +82,8 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   @ViewChild(CustomProfileFormComponent) customChild!: CustomProfileFormComponent;
 
   constructor(
+    private log: LogService,
+
     private fb: FormBuilder,
     private profileService: ProfileService,
     public masterKeyService: MasterKeyService, // in html
@@ -322,7 +325,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
 
   selectTag($event: MatAutocompleteSelectedEvent) {
     const selectedTag = $event.option.value;
-    console.log('Selected Tag:', selectedTag); // Debug log
+    this.log.debug('Selected Tag:' + selectedTag);
 
     const currentTags = this.form.get('tags')?.value || [];
     this.form.get('tags')?.setValue([...currentTags, selectedTag]);

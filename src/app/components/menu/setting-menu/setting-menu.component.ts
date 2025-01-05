@@ -29,6 +29,7 @@ import {RemoteDesktopSettings} from '../../../domain/setting/RemoteDesktopSettin
 import {TerminalSettings} from '../../../domain/setting/TerminalSettings';
 import {FileExplorerSettings} from '../../../domain/setting/FileExplorerSettings';
 import {MatExpansionModule} from '@angular/material/expansion';
+import {LogService} from '../../../services/log.service';
 
 @Component({
   selector: 'app-setting-menu',
@@ -84,6 +85,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   version ='';
 
   constructor(
+    private log: LogService,
     private fb: FormBuilder,
     private settingService: SettingService,
     private settingStorage: SettingStorageService,
@@ -259,7 +261,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     });
 
     this.subscriptions.push(dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed');
+      this.log.debug('Master Key modal was closed');
     }));
   }
 

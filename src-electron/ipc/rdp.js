@@ -1,12 +1,14 @@
 const { ipcMain } = require('electron');
 const { exec } = require('child_process');
-function initRdpHandler() {
+
+function initRdpHandler(log) {
 
   ipcMain.on('session.open.rd.rdp', (event, { hostname, options }) => {
     launchMSTSC(hostname, options);
   });
 
   function launchMSTSC(hostname, options = {}) {
+    log.info('Starting mstsc...');
     // Construct the mstsc command
     let command = `mstsc /v:${hostname}`;
 
@@ -17,13 +19,13 @@ function initRdpHandler() {
     // Execute MSTSC
     exec(command, (error, stdout, stderr) => {
       if (error) {
-        console.error(`Error launching MSTSC: ${error.message}`);
+        log.error(`Error launching MSTSC: ${error.message}`);
         return;
       }
       if (stderr) {
-        console.error(`MSTSC Error: ${stderr}`);
+        log.error(`MSTSC Error: ${stderr}`);
       }
-      console.log(`MSTSC Output: ${stdout}`);
+      log.info(`MSTSC Output: ${stdout}`);
     });
   }
 

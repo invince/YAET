@@ -3,7 +3,7 @@ const {dialog} = require("electron");
 
 function initAutoUpdater(log) {
 
-  console.log("AutoUpdate active");
+  log.info("AutoUpdate is active");
 
   autoUpdater.logger = log;
 
@@ -25,7 +25,7 @@ function initAutoUpdater(log) {
         if (response.response === 0) { // 'Yes' button clicked
           autoUpdater.downloadUpdate();
         } else {
-          console.log('User declined the update.');
+          log.info('User declined the update.');
         }
       });
   });
@@ -44,7 +44,7 @@ function initAutoUpdater(log) {
   });
 
   autoUpdater.on('error', (error) => {
-    console.error('Error during update:', error);
+    log.error('Error during update:', error);
   });
 }
 

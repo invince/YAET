@@ -4,7 +4,8 @@ const multer = require('multer');
 const upload = multer();
 const path = require('path');
 const yazl = require('yazl');
-function initScpSftpHandler(scpMap, expressApp) {
+
+function initScpSftpHandler(log, scpMap, expressApp) {
 
   ipcMain.handle('session.fe.scp.register', async (event, {id, config}) => {
     scpMap.set(id, config);
@@ -141,7 +142,7 @@ function initScpSftpHandler(scpMap, expressApp) {
 
       await sftp.end();
     } catch (error) {
-      console.error('Error listing files:', error);
+      log.error('Error listing files:', error);
       res.status(500).send({ error: {code: 500, message: error} });
     }
   });
@@ -153,11 +154,11 @@ function initScpSftpHandler(scpMap, expressApp) {
     const configId = req.params['id'];
     const config = scpMap.get(configId);
     if (!config) {
-      console.error('Error connection config not found');
+      log.error('Error connection config not found');
       res.status(400).send({ error: {code: 400, message: 'Error connection config not found'} });
     }
     if (!req.file) {
-      console.error('Error: No file uploaded');
+      log.error('Error: No file uploaded');
       res.status(400).send({ error: {code: 400, message: 'No file uploaded'} });
     }
 
@@ -176,7 +177,7 @@ function initScpSftpHandler(scpMap, expressApp) {
       // End the SFTP connection
       await sftp.end();
     } catch (error) {
-      console.error('Error uploading file:', error);
+      log.error('Error uploading file:', error);
       res.status(400).send({ error: {code: 400, message: 'Error uploading file:' + error} });
     }
   });
@@ -190,7 +191,7 @@ function initScpSftpHandler(scpMap, expressApp) {
     const configId = req.params['id'];
     const config = scpMap.get(configId);
     if (!config) {
-      console.error('Error connection config not found');
+      log.error('Error connection config not found');
       res.status(400).send({ error: {code: 400, message: 'Error connection config not found'} });
     }
     try {
@@ -225,13 +226,13 @@ function initScpSftpHandler(scpMap, expressApp) {
             // Add the buffer to the ZIP file
             zipfile.addBuffer(buffer, name);
           } catch (fileError) {
-            console.error(`Error fetching file ${fullPath}:`, fileError.message);
+            log.error(`Error fetching file ${fullPath}:`, fileError.message);
           }
         }
 
         // Finalize the ZIP and pipe it to the response
         zipfile.outputStream.pipe(res).on('close', () => {
-          console.log('ZIP file successfully sent.');
+          log.info('ZIP file successfully sent.');
         });
         zipfile.end();
 
@@ -239,7 +240,7 @@ function initScpSftpHandler(scpMap, expressApp) {
       }
 
     } catch (error) {
-      console.error('Error downloading file:', error);
+      log.error('Error downloading file:', error);
       res.status(400).send({ error: {code: 400, message: 'Error download file:' + error} });
     }
   });
@@ -306,7 +307,7 @@ function initScpSftpHandler(scpMap, expressApp) {
 
 
 // Start API
-  expressApp.listen(13012, () => console.log('API listening on port 13012'));
+  expressApp.listen(13012, () => log.info('API listening on port 13012'));
 }
 
 module.exports = {initScpSftpHandler};

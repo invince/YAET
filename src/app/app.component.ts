@@ -33,6 +33,7 @@ import {TabService} from './services/tab.service';
 import {MenuConsts} from './domain/MenuConsts';
 import {SessionService} from './services/session.service';
 import {SettingStorageService} from './services/setting-storage.service';
+import {LogService} from './services/log.service';
 
 @Component({
   selector: 'app-root',
@@ -79,6 +80,8 @@ export class AppComponent implements OnInit, OnDestroy{
 
 
   constructor(
+    private log: LogService,
+
     private settingService: SettingService,
     private settingStorage: SettingStorageService,
     private profileService: ProfileService,
@@ -86,7 +89,6 @@ export class AppComponent implements OnInit, OnDestroy{
     private sessionService: SessionService,
     private masterKeyService: MasterKeyService,
     private cloudService: CloudService,
-
     public tabService: TabService,
 
     public modalControl: ModalControllerService,
@@ -196,7 +198,7 @@ export class AppComponent implements OnInit, OnDestroy{
     });
 
     this.subscriptions.push(dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed');
+      this.log.debug('Master key modal closed');
     }));
   }
 

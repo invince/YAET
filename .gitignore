@@ -48,3 +48,5 @@ cloud.json
 manifest.json
 
 config/git
+
+src-electron/logs

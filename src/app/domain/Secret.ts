@@ -40,6 +40,7 @@ export class Secrets {
       }
     }
   }
+
   delete(secret: Secret) {
     if (!secret) {
       return;

@@ -1,7 +1,6 @@
 const path = require("path");
 const fs = require("fs");
-const {IPty} = require("node-pty");
-const {app, globalShortcut, BrowserWindow, Tray} = require('electron');
+const {app, globalShortcut, BrowserWindow, Tray, ipcMain} = require('electron');
 
 const {createMenu} = require('./ui/menu');
 const {SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON, APP_CONFIG_PATH} = require("./common");
@@ -25,10 +24,26 @@ let vncMap = new Map();
 let scpMap = new Map();
 
 const log = require("electron-log")
-
+const logPath = `${__dirname}/logs/main.log`;
+console.log(logPath);
+log.transports.file.resolvePathFn = () => logPath;
 log.transports.file.level = "debug"
 
+ipcMain.on('log', (event, {level, message}) => {
+  message = '[Frontend] ' + message;
+  switch (level) {
+    case 'info': log.info(message); break;
+    case 'debug': log.debug(message); break;
+    case 'trace': log.debug(message); break;
+    case 'warn': log.warn(message); break;
+    case 'error': log.error(message); break;
+    default: log.info(message); break;
+  }
+});
+
 app.on('ready', () => {
+
+  log.info("Starting yaet app");
 
   const isDev = process.env.NODE_ENV === 'development';
 
@@ -50,10 +65,13 @@ app.on('ready', () => {
 
 
   if (isDev) {
-    mainWindow.loadURL(`http://localhost:4200`);
+    log.info("We use Dev Mode");
+    mainWindow.loadURL(`http://localhost:4200`)
+      .then(r => log.log("Frontend loaded"));
   } else {
     mainWindow.setMenu(null); // Disable the menu bar in production
-    mainWindow.loadFile(path.join(__dirname, '../dist/yet-another-electron-term/browser/index.html'));
+    mainWindow.loadFile(path.join(__dirname, '../dist/yet-another-electron-term/browser/index.html'))
+      .then(r => log.log("Frontend loaded"));
   }
 
   if (!fs.existsSync(APP_CONFIG_PATH)) {
@@ -62,38 +80,38 @@ app.on('ready', () => {
 
   // Ensure `load` runs on every page reload
   mainWindow.webContents.on('did-finish-load', () => {
-    load(SETTINGS_JSON, "settings.loaded", false, mainWindow)
+    load(log, mainWindow, SETTINGS_JSON, "settings.loaded", false)
       .then(settings => {
         const autoUpdate = settings.general?.autoUpdate;
         if (autoUpdate) {
           initAutoUpdater(log);
         }
       })
-      .catch(console.error);
-    load(PROFILES_JSON, "profiles.loaded", false, mainWindow)
-      .then(r =>  console.debug(PROFILES_JSON + " loaded, event sent"))
-      .catch(console.error);
-    load(SECRETS_JSON, "secrets.loaded", true, mainWindow)
-      .then(r =>  console.debug(SECRETS_JSON + " loaded, event sent"))
-      .catch(console.error);
-    load(CLOUD_JSON, "cloud.loaded", true, mainWindow)
-      .then(r =>  console.debug(CLOUD_JSON + " loaded, event sent"))
-      .catch(console.error);
+      .catch(log.error);
+    load(log, mainWindow,  PROFILES_JSON, "profiles.loaded", false)
+      .then(r =>  log.info(PROFILES_JSON + " loaded, event sent"))
+      .catch(log.error);
+    load(log, mainWindow, SECRETS_JSON, "secrets.loaded", true)
+      .then(r =>  log.info(SECRETS_JSON + " loaded, event sent"))
+      .catch(log.error);
+    load(log, mainWindow, CLOUD_JSON, "cloud.loaded", true)
+      .then(r =>  log.info(CLOUD_JSON + " loaded, event sent"))
+      .catch(log.error);
   });
 
-  // createMenu();
+  // createMenu(log);
 
-  expressApp = initBackend();
+  expressApp = initBackend(log);
 
-  initConfigFilesIpcHandler(mainWindow);
-  initTerminalIpcHandler(terminalMap);
-  initCloudIpcHandler();
-  initSecurityIpcHandler();
-  initRdpHandler();
-  initVncHandler(vncMap);
-  initScpSftpHandler(scpMap, expressApp);
-  initClipboard(mainWindow);
-  initCustomHandler();
+  initConfigFilesIpcHandler(log, mainWindow);
+  initTerminalIpcHandler(log, terminalMap);
+  initCloudIpcHandler(log);
+  initSecurityIpcHandler(log);
+  initRdpHandler(log);
+  initVncHandler(log, vncMap);
+  initScpSftpHandler(log, scpMap, expressApp);
+  initClipboard(log, mainWindow);
+  initCustomHandler(log);
 });
 
 app.on('window-all-closed', () => {
@@ -128,12 +146,14 @@ app.on('will-quit', () => {
 });
 
 process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
+  log.error('Uncaught Exception:', error);
 
   mainWindow.webContents.send('error', {
     category: 'exception',
     error: `Uncaught Exception: ${error.message}`
   });
 });
+
+
 
 
