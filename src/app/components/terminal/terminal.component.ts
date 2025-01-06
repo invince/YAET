@@ -74,10 +74,15 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
       // right click for paste. NOTE: ctrl + v should work natively
       this.termContainer.nativeElement.addEventListener('contextmenu', (event: MouseEvent) => {
         event.preventDefault(); // Prevent the default context menu
-        navigator.clipboard.readText()
-          .then(text => {
-            this.electron.sendTerminalInput(this.session.id, text);
-          })
+        const selection = this.xtermUnderlying?.getSelection();
+        if (selection) {
+          navigator.clipboard.writeText(selection);
+        } else {
+          navigator.clipboard.readText()
+            .then(text => {
+              this.electron.sendTerminalInput(this.session.id, text);
+            })
+        }
       });
 
     }
