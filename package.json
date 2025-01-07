@@ -25,7 +25,10 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "uninstallerIcon": "src-electron/assets/icons/uninstall-icon.ico",
+      "warningsAsErrors": false,
+      "include": "src-electron/custom-uninstall.nsh"
     },
     "files": [
       "dist/",
