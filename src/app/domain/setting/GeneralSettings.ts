@@ -4,10 +4,8 @@ export class GeneralSettings {
 
   autoUpdate: boolean = true;
 
-  proxyUrl: string = '';
   proxyAuthType?: AuthType;
-  proxyLogin: string = '';
-  proxyPassword: string = '';
+  proxyUrl: string = '';
   proxyNoProxy: string = '';
   proxySecretId: string = '';
 }

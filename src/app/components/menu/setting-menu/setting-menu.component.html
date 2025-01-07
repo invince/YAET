@@ -48,6 +48,19 @@
                       </button>
                     }
                   </mat-form-field>
+                  <mat-form-field class="field">
+                    <mat-label>No Proxy Urls</mat-label>
+                    <input matInput type="text" formControlName="proxyNoProxy"/>
+                    @if (generalForm.get('proxyNoProxy')?.value) {
+                      <button
+                        matSuffix
+                        mat-icon-button
+                        aria-label="Clear"
+                        (click)="clear(generalForm, 'proxyNoProxy')">
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    }
+                  </mat-form-field>
 
                   <mat-radio-group class="field" aria-label="Auth Type" formControlName="proxyAuthType">
                     @for (oneType of AUTH_OPTIONS | keyvalue : unordered; track oneType.value) {
@@ -56,33 +69,10 @@
                   </mat-radio-group>
 
                   @switch (generalForm.get('proxyAuthType')?.value) {
-                    @case (AUTH_OPTIONS.LOGIN) {
-                      <mat-form-field class="field">
-                        <mat-label>Proxy Login</mat-label>
-                        <input matInput type="text" formControlName="proxyLogin"
-                               [required]="generalForm.get('proxyAuthType')?.value === AUTH_OPTIONS.LOGIN" />
-                        @if (generalForm.get('proxyLogin')?.value) {
-                          <button
-                            matSuffix
-                            mat-icon-button
-                            aria-label="Clear"
-                            (click)="clear(generalForm,'proxyLogin')">
-                            <mat-icon>close</mat-icon>
-                          </button>
-                        }
-                      </mat-form-field>
-
-                      <mat-form-field class="field">
-                        <mat-label>Password</mat-label>
-                        <input matInput type="password" formControlName="proxyPassword"
-                               [required]="generalForm.get('proxyAuthType')?.value === AUTH_OPTIONS.LOGIN" />
-                      </mat-form-field>
-
-                    }
-                    @case (AUTH_OPTIONS.SECRET) {
+                    @case ('secret') {
                       <mat-form-field class="field">
                         <mat-label>Secret</mat-label>
-                        <mat-select formControlName="proxySecretId" [required]="generalForm.get('proxyAuthType')?.value === AUTH_OPTIONS.SECRET">
+                        <mat-select formControlName="proxySecretId" [required]="generalForm.get('proxyAuthType')?.value === 'secret'">
                           @for (oneSecret of filterSecret(); track oneSecret.id) {
                             <mat-option [value]="oneSecret.id">
                               {{ secretService.displaySecretOptionName(oneSecret) }}

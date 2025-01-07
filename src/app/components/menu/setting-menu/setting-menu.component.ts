@@ -71,7 +71,7 @@ import {SecretService} from '../../../services/secret.service';
   styleUrl: './setting-menu.component.css'
 })
 export class SettingMenuComponent extends MenuComponent implements OnInit, OnDestroy {
-  protected readonly AUTH_OPTIONS = AuthType;
+  protected readonly AUTH_OPTIONS = [  AuthType.NA,  AuthType.SECRET];
 
   generalForm!: FormGroup;
   uiForm!: FormGroup;
@@ -124,8 +124,6 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
         ['autoUpdate', 'autoUpdate'],
         ['proxyUrl', 'proxyUrl'],
         ['proxyAuthType', 'proxyAuthType'],
-        ['proxyLogin', 'proxyLogin'],
-        ['proxyPassword', 'proxyPassword'],
         ['proxySecretId', 'proxySecretId'],
         ['proxyNoProxy', 'proxyNoProxy'],
       ])

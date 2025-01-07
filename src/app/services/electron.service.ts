@@ -26,7 +26,7 @@ import {
   CLIPBOARD_PASTE,
   TRIGGER_NATIVE_CLIPBOARD_PASTE,
   SESSION_OPEN_CUSTOM,
-  SESSION_SCP_REGISTER, SESSION_CLOSE_LOCAL_TERMINAL, SESSION_CLOSE_SSH_TERMINAL, LOG
+  SESSION_SCP_REGISTER, SESSION_CLOSE_LOCAL_TERMINAL, SESSION_CLOSE_SSH_TERMINAL, LOG, PROXY
 } from '../domain/electronConstant';
 import {LocalTerminalProfile} from '../domain/profile/LocalTerminalProfile';
 import {Profile, ProfileType} from '../domain/profile/Profile';
@@ -42,6 +42,7 @@ import {SSHProfile} from '../domain/profile/SSHProfile';
 import {Session} from '../domain/session/Session';
 import {Log} from '../domain/Log';
 import {NotificationService} from './notification.service';
+import {GeneralSettings} from '../domain/setting/GeneralSettings';
 
 
 @Injectable({
@@ -113,6 +114,33 @@ export class ElectronService {
       this.ipc.send(LOG, log);
     }
   }
+
+  updateProxy(general: GeneralSettings) {
+    if (this.ipc) {
+      let data: any = {};
+      data.proxyUrl = general.proxyUrl;
+      data.noProxy = general.proxyNoProxy;
+      if (general.proxyAuthType == AuthType.SECRET) {
+        let secret = this.secretStorage.findById(general.proxySecretId);
+        if (!secret) {
+          this.log({level: 'error', message : "Invalid secret " + general.proxySecretId});
+          return undefined;
+        }
+        switch (secret.secretType) {
+          case SecretType.LOGIN_PASSWORD: {
+            data.login = secret.login;
+            data.password = secret.password;
+            break;
+          }
+        }
+      }
+
+
+      this.ipc.send(PROXY, data);
+    }
+  }
+
+
 //#endregion "Common"
 
 //#region "Sessions"

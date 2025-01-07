@@ -11,7 +11,7 @@ const {initSecurityIpcHandler} = require('./ipc/security');
 const {initRdpHandler} = require('./ipc/rdp');
 const {initClipboard} = require('./ipc/clipboard');
 const {initVncHandler} = require("./ipc/vnc");
-const {initCustomHandler} = require("./ipc/custom");
+const {initCustomSessionHandler} = require("./ipc/custom");
 const {initScpSftpHandler} = require("./ipc/scp");
 const {initAutoUpdater} = require("./ipc/autoUpdater");
 const {initBackend} = require("./ipc/backend");
@@ -24,6 +24,7 @@ let vncMap = new Map();
 let scpMap = new Map();
 
 const log = require("electron-log")
+const {initProxy} = require("./ipc/proxy");
 const logPath = `${__dirname}/logs/main.log`;
 console.log(logPath);
 log.transports.file.resolvePathFn = () => logPath;
@@ -111,7 +112,9 @@ app.on('ready', () => {
   initVncHandler(log, vncMap);
   initScpSftpHandler(log, scpMap, expressApp);
   initClipboard(log, mainWindow);
-  initCustomHandler(log);
+  initCustomSessionHandler(log);
+
+  initProxy(log);
 });
 
 app.on('window-all-closed', () => {

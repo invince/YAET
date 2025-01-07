@@ -1,7 +1,7 @@
 const { ipcMain } = require('electron');
 const { exec } = require('child_process');
 
-function initCustomHandler(log) {
+function initCustomSessionHandler(log) {
 
   ipcMain.on('session.open.custom', (event, { command }) => {
     log.info('Launching custom command');
@@ -20,4 +20,4 @@ function initCustomHandler(log) {
 
 }
 
-module.exports = {initCustomHandler};
+module.exports = {initCustomSessionHandler};
