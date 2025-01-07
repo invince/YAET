@@ -39,7 +39,7 @@ export class ModelFormController<Model> {
     }
   }
 
-  formToModel(model: Model, form: FormGroup): Model {
+  formToModel(newCreatedModel: Model, form: FormGroup): Model {
     this.mappings.forEach((formField: string | FormFieldWithPrecondition, modelField: string | ModelFieldWithPrecondition) => {
       let modelFieldName = typeof modelField === 'string' ? modelField : modelField.name;
       let modelFieldPrecondition = typeof modelField === 'string' ?  ()=> true : modelField.precondition || (()=> true);
@@ -49,11 +49,11 @@ export class ModelFormController<Model> {
       if (modelFieldPrecondition(form)) {
         const formControl = form.get(formFieldName);
         if (formControl) {
-          model[modelFieldName as keyof Model] = formControl.value;
+          newCreatedModel[modelFieldName as keyof Model] = formControl.value;
         }
       }
     });
-    return model;
+    return newCreatedModel;
   }
 
   refreshForm(model: Model, form: FormGroup) {

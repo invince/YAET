@@ -30,6 +30,11 @@ import {FileExplorerSettings} from '../../../domain/setting/FileExplorerSettings
 import {MatExpansionModule} from '@angular/material/expansion';
 import {LogService} from '../../../services/log.service';
 import {NotificationService} from '../../../services/notification.service';
+import {
+  FormFieldWithPrecondition,
+  ModelFieldWithPrecondition,
+  ModelFormController
+} from '../../../utils/ModelFormController';
 
 @Component({
   selector: 'app-setting-menu',
@@ -84,6 +89,12 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
   version ='';
 
+  private mfcGeneral                  : ModelFormController<GeneralSettings>;
+  private mfcUI                       : ModelFormController<UISettings>;
+  private mfcRemoteDesktop            : ModelFormController<RemoteDesktopSettings>;
+  private mfcLocalTerminal             : ModelFormController<LocalTerminalProfile>;
+  private mfcFileExplorer             : ModelFormController<FileExplorerSettings>;
+
   constructor(
     private log: LogService,
     private fb: FormBuilder,
@@ -97,6 +108,47 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   ) {
     super();
     this.version = packageJson.version;
+
+
+    this.mfcGeneral = new ModelFormController<GeneralSettings>(
+      new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>([
+        ['autoUpdate', 'autoUpdate'],
+        ['proxyUrl', 'proxyUrl'],
+        ['proxyLogin', 'proxyLogin'],
+        ['proxyPassword', 'proxyPassword'],
+        ['proxyNoProxy', 'proxyNoProxy'],
+      ])
+    );
+
+    this.mfcUI = new ModelFormController<UISettings>(
+      new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>([
+        ['profileLabelLength',          { name: 'uiProfileLabelLength', formControlOption:  ['', Validators.required]}],
+        ['profileSideNavType',          { name: 'profileSideNavType', formControlOption:  ['', Validators.required]}],
+        ['secretLabelLength',           { name: 'uiSecretLabelLength', formControlOption:  ['', Validators.required]}],
+        ['secretLabelLengthInDropDown', { name: 'uiSecretLabelLengthInDropDown', formControlOption:  ['', Validators.required]}],
+      ])
+    );
+
+    this.mfcRemoteDesktop = new ModelFormController<RemoteDesktopSettings>(
+      new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>([
+        ['vncClipboardCompatibleMode',     'vncClipboardCompatibleMode'],
+        ['vncCompressionLevel',            { name: 'vncCompressionLevel', formControlOption:  ['', [Validators.required, Validators.min(0), Validators.max(9)]]}],
+        ['vncQuality',                     { name: 'vncQuality', formControlOption:  ['', [Validators.required,  Validators.min(1), Validators.max(9)]]}],
+      ])
+    );
+
+
+    this.mfcLocalTerminal = new ModelFormController<LocalTerminalProfile>(
+      new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>([
+        ['type',         { name: 'localTerminalType', formControlOption:  ['', Validators.required]}],
+        ['execPath',     { name: 'localTerminalExecPath', formControlOption:  ['', Validators.required]}],
+        ['defaultOpen',  'defaultOpen'],
+      ])
+    );
+
+    this.mfcFileExplorer = new ModelFormController<FileExplorerSettings>(
+      new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>()
+    );
   }
 
 
@@ -139,51 +191,23 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
   private initGeneralForm() {
-    return this.fb.group(
-      {
-        autoUpdate:     [''],
-      },
-      {validators: []}
-    );
+    return this.mfcGeneral.onInitForm(this.fb);
   }
 
   private initFileExplorerForm() {
-    return this.fb.group({
-
-    });
+    return this.mfcFileExplorer.onInitForm(this.fb);
   }
 
   private initRemoteDesktopForm() {
-    return this.fb.group(
-      {
-        vncClipboardCompatibleMode:     [''],
-        vncCompressionLevel:      ['', [Validators.required, Validators.min(0), Validators.max(9)]],
-        vncQuality:               ['', [Validators.required,  Validators.min(1), Validators.max(9)]],
-      },
-      {validators: []}
-    );
+    return this.mfcRemoteDesktop.onInitForm(this.fb);
   }
 
   private initUiForm() {
-    return this.fb.group(
-      {
-        uiProfileLabelLength:     ['', Validators.required],
-        profileSideNavType:       ['', Validators.required],
-        uiSecretLabelLength:      ['', Validators.required],
-        uiSecretLabelLengthInDropDown:      ['', Validators.required],
-      },
-      {validators: []}
-    );
+    return this.mfcUI.onInitForm(this.fb);
   }
+
   private initTerminalForm() {
-    return this.fb.group(
-      {
-        localTerminalType:        ['', [Validators.required]], // we shall avoid use ngModel and formControl at same time
-        localTerminalExecPath:    ['', Validators.required],
-        defaultOpen:              [''],
-      },
-      {validators: []}
-    );
+    return this.mfcLocalTerminal.onInitForm(this.fb);
   }
 
   ngOnDestroy(): void {
@@ -268,11 +292,10 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     }
 
     if(this.generalForm) {
-      this.generalForm.reset();
       if (!value.general) {
         value.general = new GeneralSettings();
       }
-      this.generalForm.get('autoUpdate')?.setValue(value.general.autoUpdate);
+      this.mfcGeneral.refreshForm(value.general, this.generalForm);
     }
 
     if (this.uiForm) {
@@ -280,21 +303,15 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       if (!value.ui) {
         value.ui = new UISettings();
       }
-      this.uiForm.get('uiProfileLabelLength')?.setValue(value.ui.profileLabelLength);
-      this.uiForm.get('uiSecretLabelLength')?.setValue(value.ui.secretLabelLength);
-      this.uiForm.get('uiSecretLabelLengthInDropDown')?.setValue(value.ui.secretLabelLengthInDropDown);
-      this.uiForm.get('profileSideNavType')?.setValue(value.ui.profileSideNavType);
+      this.mfcUI.refreshForm(value.ui, this.uiForm);
     }
 
 
     if(this.remoteDesktopForm) {
-      this.remoteDesktopForm.reset();
       if (!value.remoteDesktop) {
         value.remoteDesktop = new RemoteDesktopSettings();
       }
-      this.remoteDesktopForm.get('vncClipboardCompatibleMode')?.setValue(value.remoteDesktop.vncClipboardCompatibleMode);
-      this.remoteDesktopForm.get('vncQuality')?.setValue(value.remoteDesktop.vncQuality);
-      this.remoteDesktopForm.get('vncCompressionLevel')?.setValue(value.remoteDesktop.vncCompressionLevel);
+      this.mfcRemoteDesktop.refreshForm(value.remoteDesktop, this.remoteDesktopForm);
     }
 
     if (this.terminalForm) {
@@ -305,9 +322,15 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       if (!value.terminal.localTerminal) {
         value.terminal.localTerminal = new LocalTerminalProfile();
       }
-      this.terminalForm.get('localTerminalType')?.setValue(value.terminal.localTerminal.type);
-      this.terminalForm.get('localTerminalExecPath')?.setValue(value.terminal.localTerminal.execPath);
-      this.terminalForm.get('defaultOpen')?.setValue(value.terminal.localTerminal.defaultOpen);
+      this.mfcLocalTerminal.refreshForm(value.terminal.localTerminal, this.terminalForm);
+    }
+
+    if(this.fileExplorerForm) {
+      this.fileExplorerForm.reset();
+      if (!value.fileExplorer) {
+        value.fileExplorer = new FileExplorerSettings();
+      }
+      this.mfcFileExplorer.refreshForm(value.fileExplorer, this.fileExplorerForm);
     }
   }
 
@@ -317,45 +340,25 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
 
   private uiFormToModel() {
-    let ui = new UISettings();
-    if (!ui) {
-      ui = new UISettings();
-    }
-    ui.profileLabelLength = this.uiForm.get('uiProfileLabelLength')?.value;
-    ui.profileSideNavType = this.uiForm.get('profileSideNavType')?.value;
-    ui.secretLabelLength = this.uiForm.get('uiSecretLabelLength')?.value;
-    ui.secretLabelLengthInDropDown = this.uiForm.get('uiSecretLabelLengthInDropDown')?.value;
-
-    return ui;
+    return this.mfcUI.formToModel(new UISettings(), this.uiForm);
   }
 
   private generalFormToModel() {
-    let general = new GeneralSettings();
-    general.autoUpdate = this.generalForm.get('autoUpdate')?.value;
-
-    return general;
+    return this.mfcGeneral.formToModel( new GeneralSettings(), this.generalForm);
   }
 
   private remoteDesktopFormToModel() {
-    let vnc = new RemoteDesktopSettings();
-    vnc.vncClipboardCompatibleMode = this.remoteDesktopForm.get('vncClipboardCompatibleMode')?.value;
-    vnc.vncCompressionLevel = this.remoteDesktopForm.get('vncCompressionLevel')?.value;
-    vnc.vncQuality = this.remoteDesktopForm.get('vncQuality')?.value;
-
-    return vnc;
+    return this.mfcRemoteDesktop.formToModel(new RemoteDesktopSettings(), this.remoteDesktopForm);
   }
 
   private termFormToModel() {
-    let terminal = new TerminalSettings();
-    terminal.localTerminal.type = this.terminalForm.get('localTerminalType')?.value;
-    terminal.localTerminal.execPath = this.terminalForm.get('localTerminalExecPath')?.value;
-    terminal.localTerminal.defaultOpen = this.terminalForm.get('defaultOpen')?.value;
-    return terminal;
+    let term = new TerminalSettings();
+    term.localTerminal =  this.mfcLocalTerminal.formToModel(new LocalTerminalProfile(), this.terminalForm);
+    return term;
   }
 
   private fileExplorerFormToModel() {
-    let fileExplorer = new FileExplorerSettings();
-    return fileExplorer;
+    return this.mfcFileExplorer.formToModel(new FileExplorerSettings(), this.fileExplorerForm);
   }
 
   async commitChange() {
