@@ -92,7 +92,6 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
         authType: [cloudSettings.authType, [Validators.required]], // we shall avoid use ngModel and formControl at same time
         login: [cloudSettings.login],
         password: [cloudSettings.password],
-        confirmPassword: [cloudSettings.password],
         secretId: [cloudSettings.secretId],
       },
       {validators: [this.secretOrPasswordMatchValidator]}
@@ -116,14 +115,10 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
     let authType = group.get('authType')?.value;
     if (authType == 'login') {
       group.get('password')?.addValidators(Validators.required);
-      group.get('confirmPassword')?.addValidators(Validators.required);
       group.get('secretId')?.removeValidators(Validators.required);
-      const password = group.get('password')?.value;
-      const confirmPassword = group.get('confirmPassword')?.value;
-      return password === confirmPassword ? null : {passwordMismatch: true};
+      return group.get('password')?.value ? null : {passwordRequired: true};
     } else if (authType == 'secret') {
       group.get('password')?.removeValidators(Validators.required);
-      group.get('confirmPassword')?.removeValidators(Validators.required);
       group.get('secretId')?.addValidators(Validators.required);
       return group.get('secretId')?.value ? null : {secretRequired: true};
     } else {
@@ -134,7 +129,6 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
 
   onSelectSecret($event: MatSelectChange) {
     this.form.get('password')?.setValue(null);
-    this.form.get('confirmPassword')?.setValue(null);
   }
 
   formToModel(): CloudSettings {
@@ -145,7 +139,10 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
     if (cloud.authType == 'login') {
       cloud.login = this.form.get('login')?.value;
       cloud.password = this.form.get('password')?.value;
+      cloud.secretId = '';
     } else if (cloud.authType == 'secret') {
+      cloud.login = '';
+      cloud.password = '';
       cloud.secretId = this.form.get('secretId')?.value;
     }
     return cloud;

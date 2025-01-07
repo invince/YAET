@@ -28,6 +28,84 @@
               }
             </div>
 
+            <mat-accordion multi>
+
+              <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                  <mat-panel-title> Proxy </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="setting-form">
+                  <mat-form-field class="field">
+                    <mat-label>Proxy Url</mat-label>
+                    <input matInput type="text" formControlName="proxyUrl"/>
+                    @if (generalForm.get('proxyUrl')?.value) {
+                      <button
+                        matSuffix
+                        mat-icon-button
+                        aria-label="Clear"
+                        (click)="clear(generalForm, 'proxyUrl')">
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    }
+                  </mat-form-field>
+
+                  <mat-radio-group class="field" aria-label="Auth Type" formControlName="proxyAuthType">
+                    @for (oneType of AUTH_OPTIONS | keyvalue : unordered; track oneType.value) {
+                      <mat-radio-button [value]="oneType.value">{{ oneType.value }}</mat-radio-button>
+                    }
+                  </mat-radio-group>
+
+                  @switch (generalForm.get('proxyAuthType')?.value) {
+                    @case (AUTH_OPTIONS.LOGIN) {
+                      <mat-form-field class="field">
+                        <mat-label>Proxy Login</mat-label>
+                        <input matInput type="text" formControlName="proxyLogin"
+                               [required]="generalForm.get('proxyAuthType')?.value === AUTH_OPTIONS.LOGIN" />
+                        @if (generalForm.get('proxyLogin')?.value) {
+                          <button
+                            matSuffix
+                            mat-icon-button
+                            aria-label="Clear"
+                            (click)="clear(generalForm,'proxyLogin')">
+                            <mat-icon>close</mat-icon>
+                          </button>
+                        }
+                      </mat-form-field>
+
+                      <mat-form-field class="field">
+                        <mat-label>Password</mat-label>
+                        <input matInput type="password" formControlName="proxyPassword"
+                               [required]="generalForm.get('proxyAuthType')?.value === AUTH_OPTIONS.LOGIN" />
+                      </mat-form-field>
+
+                    }
+                    @case (AUTH_OPTIONS.SECRET) {
+                      <mat-form-field class="field">
+                        <mat-label>Secret</mat-label>
+                        <mat-select formControlName="proxySecretId" [required]="generalForm.get('proxyAuthType')?.value === AUTH_OPTIONS.SECRET">
+                          @for (oneSecret of filterSecret(); track oneSecret.id) {
+                            <mat-option [value]="oneSecret.id">
+                              {{ secretService.displaySecretOptionName(oneSecret) }}
+                            </mat-option>
+                          }
+                        </mat-select>
+                        @if (generalForm.get('proxySecretId')?.value) {
+                          <button
+                            matSuffix
+                            mat-icon-button
+                            aria-label="Clear"
+                            (click)="clear(generalForm,'proxySecretId')">
+                            <mat-icon>close</mat-icon>
+                          </button>
+                        }
+                      </mat-form-field>
+                    }
+                  }
+                </div>
+              </mat-expansion-panel>
+
+            </mat-accordion>
+
           </div>
         </mat-tab>
         <mat-tab label="UI">
@@ -61,7 +139,7 @@
         </mat-tab>
         <mat-tab label="Group / Tag">
           <div class="setting-form">
-            <mat-accordion class="example-headers-align" multi>
+            <mat-accordion multi>
               <mat-expansion-panel>
                 <mat-expansion-panel-header>
                   <mat-panel-title> Tag Management </mat-panel-title>

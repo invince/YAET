@@ -35,6 +35,10 @@ import {
   ModelFieldWithPrecondition,
   ModelFormController
 } from '../../../utils/ModelFormController';
+import {AuthType, SecretType} from '../../../domain/Secret';
+import {MatRadioButton, MatRadioGroup} from '@angular/material/radio';
+import {SecretStorageService} from '../../../services/secret-storage.service';
+import {SecretService} from '../../../services/secret.service';
 
 @Component({
   selector: 'app-setting-menu',
@@ -59,12 +63,15 @@ import {
     MatButton,
     MatSuffix,
     MatCheckbox,
-    MatExpansionModule
+    MatExpansionModule,
+    MatRadioButton,
+    MatRadioGroup
   ],
   templateUrl: './setting-menu.component.html',
   styleUrl: './setting-menu.component.css'
 })
 export class SettingMenuComponent extends MenuComponent implements OnInit, OnDestroy {
+  protected readonly AUTH_OPTIONS = AuthType;
 
   generalForm!: FormGroup;
   uiForm!: FormGroup;
@@ -100,6 +107,8 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     private fb: FormBuilder,
     private settingService: SettingService,
     private settingStorage: SettingStorageService,
+    private secretStorageService: SecretStorageService,
+    public secretService: SecretService,
     public masterKeyService: MasterKeyService,
     private cdr: ChangeDetectorRef,
     public dialog: MatDialog,
@@ -114,8 +123,10 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>([
         ['autoUpdate', 'autoUpdate'],
         ['proxyUrl', 'proxyUrl'],
+        ['proxyAuthType', 'proxyAuthType'],
         ['proxyLogin', 'proxyLogin'],
         ['proxyPassword', 'proxyPassword'],
+        ['proxySecretId', 'proxySecretId'],
         ['proxyNoProxy', 'proxyNoProxy'],
       ])
     );
@@ -365,5 +376,8 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     await this.settingService.save(this.settingsCopy);
   }
 
+  filterSecret() {
+    return this.secretStorageService.data.secrets?.filter(one => one.secretType == SecretType.LOGIN_PASSWORD);
+  }
 
 }
