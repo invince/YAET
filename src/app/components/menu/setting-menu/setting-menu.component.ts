@@ -20,7 +20,7 @@ import {SettingStorageService} from '../../../services/setting-storage.service';
 import {SideNavType, UISettings} from '../../../domain/setting/UISettings';
 import {TagsFormComponent} from './tags-form/tags-form.component';
 import {GroupsFormComponent} from './groups-form/groups-form.component';
-import {GeneralSettings} from '../../../domain/setting/GeneralSettings';
+import {GeneralSettings, ProxyType} from '../../../domain/setting/GeneralSettings';
 import {NgxSpinnerService} from 'ngx-spinner';
 import {MatCheckbox} from '@angular/material/checkbox';
 import packageJson from '../../../../../package.json';
@@ -71,7 +71,8 @@ import {SecretService} from '../../../services/secret.service';
   styleUrl: './setting-menu.component.css'
 })
 export class SettingMenuComponent extends MenuComponent implements OnInit, OnDestroy {
-  protected readonly AUTH_OPTIONS = [  AuthType.NA,  AuthType.SECRET];
+  protected readonly PROXY_AUTH_OPTIONS = [  AuthType.NA,  AuthType.SECRET];
+  protected readonly PROXY_TYPE = ProxyType;
 
   generalForm!: FormGroup;
   uiForm!: FormGroup;
@@ -123,6 +124,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>([
         ['autoUpdate', 'autoUpdate'],
         ['proxyUrl', 'proxyUrl'],
+        ['proxyType', 'proxyType'],
         ['proxyAuthType', 'proxyAuthType'],
         ['proxySecretId', 'proxySecretId'],
         ['proxyNoProxy', 'proxyNoProxy'],

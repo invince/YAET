@@ -2,7 +2,7 @@ const {ipcMain, session} = require('electron');
 
 function initProxy(log) {
 
-  ipcMain.on('proxy.set', async (event, {proxyUrl, noProxy, login, password}) => {
+  ipcMain.on('proxy.set', async (event, {proxyUrl, proxyType, noProxy, login, password}) => {
     if (proxyUrl) {
       if (login && password) {
         let loginU = encodeURIComponent(login);

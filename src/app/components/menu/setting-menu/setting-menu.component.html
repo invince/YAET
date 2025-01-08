@@ -35,6 +35,12 @@
                   <mat-panel-title> Proxy </mat-panel-title>
                 </mat-expansion-panel-header>
                 <div class="setting-form">
+                  <mat-radio-group class="field" aria-label="Proxy Type" formControlName="proxyType">
+                    @for (oneType of PROXY_TYPE | keyvalue : unordered; track oneType.value) {
+                      <mat-radio-button [value]="oneType.value">{{ oneType.value }}</mat-radio-button>
+                    }
+                  </mat-radio-group>
+
                   <mat-form-field class="field">
                     <mat-label>Proxy Url</mat-label>
                     <input matInput type="text" formControlName="proxyUrl"/>
@@ -63,7 +69,7 @@
                   </mat-form-field>
 
                   <mat-radio-group class="field" aria-label="Auth Type" formControlName="proxyAuthType">
-                    @for (oneType of AUTH_OPTIONS | keyvalue : unordered; track oneType.value) {
+                    @for (oneType of PROXY_AUTH_OPTIONS | keyvalue : unordered; track oneType.value) {
                       <mat-radio-button [value]="oneType.value">{{ oneType.value }}</mat-radio-button>
                     }
                   </mat-radio-group>

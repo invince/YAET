@@ -119,6 +119,7 @@ export class ElectronService {
     if (this.ipc) {
       let data: any = {};
       data.proxyUrl = general.proxyUrl;
+      data.proxyType = general.proxyType;
       data.noProxy = general.proxyNoProxy;
       if (general.proxyAuthType == AuthType.SECRET) {
         let secret = this.secretStorage.findById(general.proxySecretId);
