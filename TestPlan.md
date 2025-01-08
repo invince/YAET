@@ -101,6 +101,11 @@
   - duplicate check ok
 - delete
   - associate profile set cleared
+- icon ok
+- icon ok in dropdown of
+  - cloud settings
+  - ssh/scp profile settings
+  - vnc profile settings
 
 # Cloud menu
 - form validation ok

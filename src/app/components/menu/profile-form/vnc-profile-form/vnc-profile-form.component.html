@@ -44,6 +44,9 @@
         <mat-select (selectionChange)="onSelectSecret($event)" formControlName="secretId">
           @for (oneSecret of secretStorageService.data.secrets; track oneSecret.id) {
           <mat-option [value]="oneSecret.id">
+            @if (oneSecret.icon) {
+              <mat-icon>{{oneSecret.icon}}</mat-icon>
+            }
             {{ secretService.displaySecretOptionName(oneSecret) }}
           </mat-option>
           }

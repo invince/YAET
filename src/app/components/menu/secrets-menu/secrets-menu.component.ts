@@ -137,7 +137,7 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
         if (result) {
 
           this.profileService.clearSecret($event);
-          this.secretsCopy.delete($event);
+          this.secretService.deleteOne($event);
           await this.commitChange();
           this.selectedId = undefined;
           this.selectedSecret = undefined;
@@ -152,7 +152,7 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
 
       this.subscriptions.push(dialogRef.afterClosed().subscribe(async (result) => {
         if (result) {
-          this.secretsCopy.delete($event);
+          this.secretService.deleteOne($event);
           await this.commitChange();
           this.selectedId = undefined;
           this.selectedSecret = undefined;
@@ -163,7 +163,7 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
   }
 
   async onSaveOne($event: Secret) {
-    this.secretsCopy.update($event);
+    this.secretService.updateOne($event);
     await this.commitChange();
     // this.refreshSecretForm();
   }
@@ -192,6 +192,6 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
   }
 
   async commitChange() {
-    await this.secretService.save(this.secretsCopy);
+    await this.secretService.saveAll(this.secretsCopy);
   }
 }

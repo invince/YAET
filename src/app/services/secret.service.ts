@@ -1,5 +1,5 @@
 import {Injectable, OnDestroy} from '@angular/core';
-import {Secret, Secrets} from '../domain/Secret';
+import {Secret, Secrets, SecretType} from '../domain/Secret';
 import {ElectronService} from './electron.service';
 import {SECRETS_LOADED} from '../domain/electronConstant';
 import {MasterKeyService} from './master-key.service';
@@ -11,6 +11,7 @@ import {LogService} from './log.service';
 import {Compatibility} from '../../main';
 import {compareVersions} from '../utils/Utils';
 import {NotificationService} from './notification.service';
+import {ProfileType} from '../domain/profile/Profile';
 
 
 @Injectable({
@@ -38,10 +39,10 @@ export class SecretService implements OnDestroy{
     this.subscriptions.push(masterKeyService.updateEvent$.subscribe(event => {
       if(event === 'invalid') {
         this.secretStorage.data = new Secrets();
-        this.save();
+        this.saveAll();
         this.notification.info('Secrets cleared');
       } else {
-        this.save();
+        this.saveAll();
         this.notification.info('Secrets re-encrypted');
       }
 
@@ -78,8 +79,38 @@ export class SecretService implements OnDestroy{
     return this._loaded;
   }
 
+  deleteOne(secretToDelete: Secret) {
+    if (!secretToDelete) {
+      return;
+    }
+    if (!this.secretStorage.data) {
+      this.secretStorage.data = new Secrets();
+    }
+    if (!this.secretStorage.data.secrets) {
+      this.secretStorage.data.secrets = [];
+    }
+    this.secretStorage.data.secrets  = this.secretStorage.data.secrets .filter(one => one.id != secretToDelete.id);
+  }
 
-  async save(secrets: Secrets = this.secretStorage.data) {
+  updateOne(secretToUpdate: Secret) {
+    if (secretToUpdate) {
+      if (!this.secretStorage.data) {
+        this.secretStorage.data = new Secrets();
+      }
+      if (!this.secretStorage.data.secrets) {
+        this.secretStorage.data.secrets = [];
+      }
+      let index = this.secretStorage.data.secrets.findIndex(one => one.id == secretToUpdate.id);
+      if (index >= 0) {
+        this.secretStorage.data.secrets[index] = secretToUpdate;
+      } else {
+        console.warn("Secret not found, we'll add new secret");
+        this.secretStorage.data.secrets.push(secretToUpdate);
+      }
+    }
+  }
+
+  async saveAll(secrets: Secrets = this.secretStorage.data) {
     if (!secrets) {
       secrets = new Secrets();
     }
@@ -88,6 +119,14 @@ export class SecretService implements OnDestroy{
     this.secretStorage.data = secrets;
     for (let one of this.secretStorage.data.secrets) {
       one.isNew = false;
+      switch (one.secretType) {
+        case SecretType.PASSWORD_ONLY:
+          one.icon = 'password'; break;
+        case SecretType.LOGIN_PASSWORD:
+          one.icon = 'face'; break;
+        case SecretType.SSH_KEY:
+          one.icon = 'key'; break;
+      }
     }
 
     this.secretStorage.data.revision = Date.now();
@@ -130,5 +169,7 @@ export class SecretService implements OnDestroy{
       this.subscriptions.forEach(one => one.unsubscribe());
     }
   }
+
+
 
 }
