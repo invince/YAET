@@ -11,7 +11,7 @@ import packageJson from '../../../package.json';
 import {Subscription} from 'rxjs';
 import {Compatibility} from '../../main';
 import {LogService} from './log.service';
-import {compareVersions} from '../utils/Utils';
+import {compareVersions} from '../utils/VersionUtils';
 import {NotificationService} from './notification.service';
 
 @Injectable({

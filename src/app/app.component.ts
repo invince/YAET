@@ -20,7 +20,7 @@ import {SecretsMenuComponent} from './components/menu/secrets-menu/secrets-menu.
 import {SecretService} from './services/secret.service';
 import {ProfilesMenuComponent} from './components/menu/profiles-menu/profiles-menu.component';
 import {QuickconnectMenuComponent} from "./components/menu/quickconnect-menu/quickconnect-menu.component";
-import {MasterKeyComponent} from './components/menu/setting-menu/master-key/master-key.component';
+import {MasterKeyComponent} from './components/dialog/master-key/master-key.component';
 import {MatDialog} from '@angular/material/dialog';
 import {MasterKeyService} from './services/master-key.service';
 import {Subscription} from 'rxjs';

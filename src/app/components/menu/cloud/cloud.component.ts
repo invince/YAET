@@ -21,6 +21,10 @@ import {ProfileService} from '../../../services/profile.service';
 import {NgxSpinnerService} from 'ngx-spinner';
 import _ from 'lodash';
 import {NotificationService} from '../../../services/notification.service';
+import {MasterKeyComponent} from '../../dialog/master-key/master-key.component';
+import {MatDialog} from '@angular/material/dialog';
+import {SecretFormComponent} from '../secrets-menu/secret-form/secret-form.component';
+import {SecretQuickFormComponent} from '../../dialog/secret-quick-form/secret-quick-form.component';
 
 @Component({
   selector: 'app-cloud-menu',
@@ -67,7 +71,8 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
     private cloudService: CloudService,
     private notification: NotificationService,
 
-    private spinner: NgxSpinnerService
+    private spinner: NgxSpinnerService,
+    public dialog: MatDialog,
   ) {
       super();
   }
@@ -210,5 +215,14 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
 
   filterSecret() {
     return this.secretStorageService.data.secrets?.filter(one => one.secretType == SecretType.LOGIN_PASSWORD);
+  }
+
+  quickCreateSecret() {
+    this.dialog.open(SecretQuickFormComponent, {
+      width: '650px',
+      data: {
+        secretTypes: [SecretType.LOGIN_PASSWORD]
+      }
+    });
   }
 }

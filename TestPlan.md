@@ -88,7 +88,7 @@
 - delete ok
 
 
-# Secrets menu
+# Secrets module
 - add
   - pass only
   - login pass
@@ -106,6 +106,13 @@
   - cloud settings
   - ssh/scp profile settings
   - vnc profile settings
+- in cloud drop down of secret, click add new opens a quick secret creation page with only login password type
+- in ssh/scp drop down of secret, click add new opens a quick secret creation page with all type
+- in vnc drop down of secret, click add new opens a quick secret creation page with only password only type
+  - new secret creation has same validator
+  - new secret can be created
+  - after creation, it appears in the dropdown
+  - if only one possible secretType option, that one will be selected by default
 
 # Cloud menu
 - form validation ok

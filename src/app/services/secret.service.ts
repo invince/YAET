@@ -9,7 +9,7 @@ import packageJson from '../../../package.json';
 import {Subscription} from 'rxjs';
 import {LogService} from './log.service';
 import {Compatibility} from '../../main';
-import {compareVersions} from '../utils/Utils';
+import {compareVersions} from '../utils/VersionUtils';
 import {NotificationService} from './notification.service';
 import {ProfileType} from '../domain/profile/Profile';
 

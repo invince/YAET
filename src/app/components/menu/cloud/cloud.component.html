@@ -74,6 +74,10 @@
             <mat-form-field class="field" required>
               <mat-label>Secret</mat-label>
               <mat-select (selectionChange)="onSelectSecret($event)" formControlName="secretId">
+                <mat-option (click)="quickCreateSecret()">
+                  <mat-icon>add</mat-icon>
+                  Add New...
+                </mat-option>
                 @for (oneSecret of filterSecret(); track oneSecret.id) {
                 <mat-option [value]="oneSecret.id">
                   @if (oneSecret.icon) {

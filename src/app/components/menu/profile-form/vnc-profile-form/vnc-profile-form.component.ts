@@ -17,7 +17,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatIcon} from '@angular/material/icon';
 import {MatIconButton} from '@angular/material/button';
-import {AuthType} from '../../../../domain/Secret';
+import {AuthType, SecretType} from '../../../../domain/Secret';
 import {SecretStorageService} from '../../../../services/secret-storage.service';
 import {SettingStorageService} from '../../../../services/setting-storage.service';
 import {SecretService} from '../../../../services/secret.service';
@@ -27,6 +27,8 @@ import {
   ModelFieldWithPrecondition,
   ModelFormController
 } from '../../../../utils/ModelFormController';
+import {SecretQuickFormComponent} from '../../../dialog/secret-quick-form/secret-quick-form.component';
+import {MatDialog} from '@angular/material/dialog';
 
 @Component({
   selector: 'app-vnc-profile-form',
@@ -68,6 +70,7 @@ export class VncProfileFormComponent extends ChildFormAsFormControl(MenuComponen
     public secretStorageService: SecretStorageService, // in html
     public secretService: SecretService, // in html
     public settingStorage: SettingStorageService,
+    public dialog: MatDialog,
   ) {
     super();
 
@@ -141,5 +144,19 @@ export class VncProfileFormComponent extends ChildFormAsFormControl(MenuComponen
       this.form.get('confirmPassword')?.setValue(null);
       this.form.get('secretId')?.setValue(null);
     }
+  }
+
+  quickCreateSecret() {
+    this.dialog.open(SecretQuickFormComponent, {
+      width: '650px',
+      data: {
+        secretTypes: [ SecretType.PASSWORD_ONLY]
+      }
+    });
+  }
+
+  filterSecret() {
+    return this.secretStorageService.data.secrets?.filter(one => one.secretType == SecretType.PASSWORD_ONLY);
+
   }
 }

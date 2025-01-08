@@ -13,7 +13,7 @@ import {
   Validators
 } from '@angular/forms';
 import {CommonModule} from '@angular/common';
-import {AuthType, Secret} from '../../../../domain/Secret';
+import {AuthType, Secret, SecretType} from '../../../../domain/Secret';
 import {MenuComponent} from '../../menu.component';
 import {MatIconButton} from '@angular/material/button';
 import {MatSelectChange, MatSelectModule} from '@angular/material/select';
@@ -29,6 +29,8 @@ import {
   ModelFormController
 } from '../../../../utils/ModelFormController';
 import {VncProfile} from '../../../../domain/profile/VncProfile';
+import {SecretQuickFormComponent} from '../../../dialog/secret-quick-form/secret-quick-form.component';
+import {MatDialog} from '@angular/material/dialog';
 
 @Component({
   selector: 'app-ssh-profile-form',
@@ -74,6 +76,8 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
 
     public secretService: SecretService, // in html
     public settingStorage: SettingStorageService,
+
+    public dialog: MatDialog,
   ) {
     super();
 
@@ -130,5 +134,14 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
 
   override formToModel(): SSHProfile {
     return this.modelFormController.formToModel(new SSHProfile(), this.form);
+  }
+
+  quickCreateSecret() {
+    this.dialog.open(SecretQuickFormComponent, {
+      width: '650px',
+      data: {
+        secretTypes: [SecretType.LOGIN_PASSWORD, SecretType.PASSWORD_ONLY, SecretType.SSH_KEY]
+      }
+    });
   }
 }

@@ -9,7 +9,7 @@ import {Group} from '../domain/Group';
 import packageJson from '../../../package.json';
 import {LogService} from './log.service';
 import {Compatibility} from '../../main';
-import {compareVersions} from '../utils/Utils';
+import {compareVersions} from '../utils/VersionUtils';
 import {NotificationService} from './notification.service';
 import {Secret} from '../domain/Secret';
 

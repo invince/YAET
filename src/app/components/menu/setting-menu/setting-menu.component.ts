@@ -13,7 +13,7 @@ import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} fr
 import {MatInput} from '@angular/material/input';
 import {Subscription} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
-import {MasterKeyComponent} from './master-key/master-key.component';
+import {MasterKeyComponent} from '../../dialog/master-key/master-key.component';
 import {ConfirmationComponent} from '../../confirmation/confirmation.component';
 import {MasterKeyService} from '../../../services/master-key.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';
