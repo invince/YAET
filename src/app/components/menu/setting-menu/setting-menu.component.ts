@@ -20,7 +20,7 @@ import {SettingStorageService} from '../../../services/setting-storage.service';
 import {SideNavType, UISettings} from '../../../domain/setting/UISettings';
 import {TagsFormComponent} from './tags-form/tags-form.component';
 import {GroupsFormComponent} from './groups-form/groups-form.component';
-import {GeneralSettings, ProxyType} from '../../../domain/setting/GeneralSettings';
+import {GeneralSettings} from '../../../domain/setting/GeneralSettings';
 import {NgxSpinnerService} from 'ngx-spinner';
 import {MatCheckbox} from '@angular/material/checkbox';
 import packageJson from '../../../../../package.json';
@@ -35,8 +35,7 @@ import {
   ModelFieldWithPrecondition,
   ModelFormController
 } from '../../../utils/ModelFormController';
-import {AuthType, SecretType} from '../../../domain/Secret';
-import {MatRadioButton, MatRadioGroup} from '@angular/material/radio';
+import {SecretType} from '../../../domain/Secret';
 import {SecretStorageService} from '../../../services/secret-storage.service';
 import {SecretService} from '../../../services/secret.service';
 
@@ -64,15 +63,11 @@ import {SecretService} from '../../../services/secret.service';
     MatSuffix,
     MatCheckbox,
     MatExpansionModule,
-    MatRadioButton,
-    MatRadioGroup
   ],
   templateUrl: './setting-menu.component.html',
   styleUrl: './setting-menu.component.css'
 })
 export class SettingMenuComponent extends MenuComponent implements OnInit, OnDestroy {
-  protected readonly PROXY_AUTH_OPTIONS = [  AuthType.NA,  AuthType.SECRET];
-  protected readonly PROXY_TYPE = ProxyType;
 
   generalForm!: FormGroup;
   uiForm!: FormGroup;
@@ -123,11 +118,6 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     this.mfcGeneral = new ModelFormController<GeneralSettings>(
       new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>([
         ['autoUpdate', 'autoUpdate'],
-        ['proxyUrl', 'proxyUrl'],
-        ['proxyType', 'proxyType'],
-        ['proxyAuthType', 'proxyAuthType'],
-        ['proxySecretId', 'proxySecretId'],
-        ['proxyNoProxy', 'proxyNoProxy'],
       ])
     );
 

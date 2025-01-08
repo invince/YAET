@@ -61,9 +61,6 @@ export class SettingService {
         }
 
         this.settingStorage.settings = dataObj;
-        if (this.settingStorage.settings.general.proxyUrl) {
-          this.electron.updateProxy(this.settingStorage.settings.general);
-        }
       } else {
         this.settingStorage.settings = new MySettings();
       }
@@ -93,9 +90,6 @@ export class SettingService {
       settings.revision = Date.now();
 
       this.settingStorage.settings = settings;
-
-      this.electron.updateProxy(settings.general);
-
     }
     this.electron.saveSetting(this.settingStorage.settings);
   }

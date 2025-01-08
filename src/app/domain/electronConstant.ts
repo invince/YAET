@@ -3,7 +3,6 @@ export const ERROR = 'error';
 export const CLIPBOARD_PASTE = 'clipboard-paste';
 export const TRIGGER_NATIVE_CLIPBOARD_PASTE = 'trigger-native-clipboard-paste';
 export const LOG = 'log';
-export const PROXY = 'proxy.set';
 //#endregion "Common"
 
 //#region "Sessions"

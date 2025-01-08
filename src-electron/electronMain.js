@@ -24,7 +24,6 @@ let vncMap = new Map();
 let scpMap = new Map();
 
 const log = require("electron-log")
-const {initProxy} = require("./ipc/proxy");
 const logPath = `${__dirname}/logs/main.log`;
 console.log(logPath);
 log.transports.file.resolvePathFn = () => logPath;
@@ -114,7 +113,7 @@ app.on('ready', () => {
   initClipboard(log, mainWindow);
   initCustomSessionHandler(log);
 
-  initProxy(log);
+
 });
 
 app.on('window-all-closed', () => {
