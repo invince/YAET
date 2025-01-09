@@ -11,7 +11,6 @@ import {LogService} from './log.service';
 import {Compatibility} from '../../main';
 import {compareVersions} from '../utils/VersionUtils';
 import {NotificationService} from './notification.service';
-import {ProfileType} from '../domain/profile/Profile';
 
 
 @Injectable({

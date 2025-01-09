@@ -4,6 +4,8 @@ import { AppComponent } from './app/app.component';
 
 import { registerLicense } from '@syncfusion/ej2-base';
 
+import config from '../config/config.json';
+
 export class Compatibility {
 
   static settings = '1.0.0';
@@ -13,7 +15,7 @@ export class Compatibility {
 }
 
 // Registering Syncfusion license key
-registerLicense('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+registerLicense(config.scfLK);
 
 bootstrapApplication(AppComponent, appConfig)
   .catch((err) => console.error(err));
