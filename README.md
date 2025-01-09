@@ -26,9 +26,9 @@ This project is based on angular + electron to create a remote connection tool s
 - NOTE: also the pushed release is a pre-release, you need approve it
 
 # Log:
-on Linux: ~/.config/{app name}/logs/main.log
-on macOS: ~/Library/Logs/{app name}/main.log
-on Windows: %USERPROFILE%\AppData\Roaming\{app name}\logs\main.log
+- on Linux: ~/.config/{app name}/logs/main.log
+- on macOS: ~/Library/Logs/{app name}/main.log
+- on Windows: %USERPROFILE%\AppData\Roaming\{app name}\logs\main.log
 
 
 
