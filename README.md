@@ -24,6 +24,7 @@ This project is based on angular + electron to create a remote connection tool s
 - this will increment the version, package the installer, push to github (so auto updater can check the latest version)
 - NOTE: you still need push code your self
 - NOTE: also the pushed release is a pre-release, you need approve it
+- released package please cf https://github.com/invince/YAET-RELEASE
 
 # Log:
 - on Linux: ~/.config/{app name}/logs/main.log
