@@ -88,7 +88,7 @@
             <mat-icon>add</mat-icon>
             Add New...
           </mat-option>
-          @for (oneSecret of secretStorageService.data.secrets; track oneSecret.id) {
+          @for (oneSecret of secretStorageService.dataCopy.secrets; track oneSecret.id) {
           <mat-option [value]="oneSecret.id">
             @if (oneSecret.icon) {
               <mat-icon>{{oneSecret.icon}}</mat-icon>

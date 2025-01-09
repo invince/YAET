@@ -367,7 +367,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
   filterSecret() {
-    return this.secretStorageService.data.secrets?.filter(one => one.secretType == SecretType.LOGIN_PASSWORD);
+    return this.secretStorageService.filter(one => one.secretType == SecretType.LOGIN_PASSWORD);
   }
 
 }

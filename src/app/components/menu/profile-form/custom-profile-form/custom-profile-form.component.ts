@@ -1,9 +1,10 @@
-import {Component, forwardRef, Injector, Self} from '@angular/core';
+import {Component, forwardRef, Injector} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {
   FormBuilder,
   FormGroup,
-  FormsModule, NG_VALIDATORS,
+  FormsModule,
+  NG_VALIDATORS,
   NG_VALUE_ACCESSOR,
   ReactiveFormsModule,
   Validators
@@ -16,7 +17,7 @@ import {MatIcon} from '@angular/material/icon';
 import {MatIconButton} from '@angular/material/button';
 import {ChildFormAsFormControl} from '../../../enhanced-form-mixin';
 import {MenuComponent} from '../../menu.component';
-import {AuthType} from '../../../../domain/Secret';
+import {AuthType, SecretType} from '../../../../domain/Secret';
 import {SecretStorageService} from '../../../../services/secret-storage.service';
 import {SecretService} from '../../../../services/secret.service';
 import {SettingStorageService} from '../../../../services/setting-storage.service';
@@ -27,6 +28,8 @@ import {
   ModelFieldWithPrecondition,
   ModelFormController
 } from '../../../../utils/ModelFormController';
+import {SecretQuickFormComponent} from '../../../dialog/secret-quick-form/secret-quick-form.component';
+import {MatDialog} from '@angular/material/dialog';
 
 @Component({
   selector: 'app-custom-profile-form',
@@ -72,6 +75,7 @@ export class CustomProfileFormComponent extends ChildFormAsFormControl(MenuCompo
     public secretStorageService: SecretStorageService, // in html
     public secretService: SecretService, // in html
     public settingStorage: SettingStorageService,
+    public dialog: MatDialog,
   ) {
     super();
 
@@ -149,5 +153,18 @@ export class CustomProfileFormComponent extends ChildFormAsFormControl(MenuCompo
       this.form.get('confirmPassword')?.setValue(null);
       this.form.get('secretId')?.setValue(null);
     }
+  }
+
+  quickCreateSecret() {
+    this.dialog.open(SecretQuickFormComponent, {
+      width: '650px',
+      data: {
+        secretTypes: [SecretType.LOGIN_PASSWORD, SecretType.PASSWORD_ONLY]
+      }
+    });
+  }
+
+  filterSecret() {
+    return this.secretStorageService.filter(one => one.secretType == SecretType.LOGIN_PASSWORD || one.secretType == SecretType.PASSWORD_ONLY);
   }
 }

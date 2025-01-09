@@ -82,7 +82,7 @@ export class ProfileService implements OnDestroy{
   }
 
   // NOTE: if you add any field on Profiles, you need copy it here
-  get profiles(): Profiles {
+  get profilesCopy(): Profiles {
     let result = new Profiles(); // to avoid if this._profiles is deserialized we don't have fn on it
     if (this._profiles) {
       result.profiles = [...this._profiles.profiles]; // copy the elements
@@ -93,7 +93,7 @@ export class ProfileService implements OnDestroy{
     return result;
   }
 
-  async save(profiles: Profiles = this.profiles) {
+  async save(profiles: Profiles = this._profiles) {
     if (!profiles) {
       profiles = new Profiles();
     }

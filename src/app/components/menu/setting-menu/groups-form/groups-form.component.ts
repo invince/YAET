@@ -66,7 +66,7 @@ export class GroupsFormComponent implements OnInit{
   createGroupDataSource(): GroupNode[] {
     return GroupNode.map2DataSource(
       this.settingStorage.settings.groups,
-      this.profileService.profiles.profiles,
+      this.profileService.profilesCopy.profiles,
       true,
       false,
       (group, node) => {
