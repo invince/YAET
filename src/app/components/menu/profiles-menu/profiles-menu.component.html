@@ -42,7 +42,7 @@
                   <mat-nested-tree-node *matTreeNodeDef="let node" >
                     <div class="group-name"
                          [class.selected]="node.profile && node.profile.id === selectedProfileId"
-                         (click)="onTabChange(node.profile)">
+                         (click)="onTabChange(node.profile)" (dblclick)="onTabConnect(node.profile)">
                           @if (node.profile.icon) {
                             <mat-icon>{{node.profile.icon}}</mat-icon>
                           }
@@ -78,12 +78,12 @@
                   </mat-nested-tree-node>
                 </mat-tree>
               }
-              @else {
+              @else { // in list mode
                 @for (profile of profilesCopy.profiles | filterKeyword:keywordsProviders:filter; track profile.id) {
                 <div class="sidenav-item">
                   <button mat-button
                           [class.selected]="profile.id === selectedProfileId"
-                          (click)="onTabChange(profile)">
+                          (click)="onTabChange(profile)" (dblclick)="onTabConnect(profile)">
                     @if (profile.icon) {
                     <mat-icon>{{profile.icon}}</mat-icon>
                     }

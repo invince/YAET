@@ -134,6 +134,10 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     this.doAddTabOfProfile(Profile.clone($event));
   }
 
+  onTabConnect(profile: Profile) {
+    this.profileService.onProfileConnect(profile);
+  }
+
   onTabChange(profile: Profile) {
     if (!profile) {
       return;
@@ -297,4 +301,6 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   async commitChange() {
     await this.profileService.save(this.profilesCopy);
   }
+
+
 }
