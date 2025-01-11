@@ -24,10 +24,4 @@ export class TabInstance {
     }
   }
 
-
-  clone() {
-    let tab = new TabInstance(this.category, this.session);
-    tab.name = this.name;
-    return tab;
-  }
 }

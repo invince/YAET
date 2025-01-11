@@ -136,12 +136,15 @@ function initTerminalIpcHandler(log, terminalMap) {
     // Handle end event
     conn.on('end', () => {
       log.info('SSH connection ended for id:', id);
+
     });
 
     // Handle close event
     conn.on('close', (hadError) => {
       if (hadError) {
         log.info(`SSH connection closed for id: ${id}, hadError: ${hadError}`);
+        event.sender.send('session.disconnect.terminal.ssh', { id: id , error: hadError });
+      } else {
         event.sender.send('session.disconnect.terminal.ssh', { id: id });
       }
     });

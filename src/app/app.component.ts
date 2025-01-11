@@ -155,7 +155,7 @@ export class AppComponent implements OnInit, OnDestroy{
   }
 
   reconnect(i: number) {
-    this.tabService.reconnect(i);
+    this.sessionService.reconnect(i);
   }
 
   addLocalTerminal() {

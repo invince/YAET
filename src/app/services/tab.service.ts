@@ -41,12 +41,6 @@ export class TabService {
     this._tabs.push(tabInstance);
   }
 
-  reconnect(i: number) {
-    if(this._tabs) {
-      this._tabs[i] = this._tabs[i].clone();
-    }
-  }
-
   getSelectedTab() {
     if(this._tabs) {
       return this._tabs[this.currentTabIndex];

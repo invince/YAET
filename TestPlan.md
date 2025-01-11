@@ -120,6 +120,8 @@
 - download ok
 
 # Terminal
+- reconnect: open a ssh terminal, reboot, then the reconnect button should appear
+  - after you click it, your session should be reconnected
 
 ## Local Terminal
 - (Settings) if default open option checked, then a local terminal should start at startup

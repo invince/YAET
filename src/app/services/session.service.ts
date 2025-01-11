@@ -11,6 +11,7 @@ import {VncService} from './vnc.service';
 import {ScpSession} from '../domain/session/ScpSession';
 import {ScpService} from './scp.service';
 import {NotificationService} from './notification.service';
+import {TabInstance} from '../domain/TabInstance';
 
 @Injectable({
   providedIn: 'root'
@@ -63,6 +64,17 @@ export class SessionService {
           this.electron.openCustomSession(profile.customProfile);
           break;
       }
+    }
+  }
+
+  reconnect(i: number) {
+    if(this.tabService.tabs) {
+      let oldTab = this.tabService.tabs[i];
+      let oldSession = oldTab.session;
+      let newSession = this.create(oldSession.profile, oldSession.profileType);
+      let newTab =  new TabInstance(oldTab.category, newSession);
+      newTab.name = oldTab.name;
+      this.tabService.tabs[i] = newTab;
     }
   }
 }

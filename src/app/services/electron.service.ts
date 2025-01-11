@@ -129,7 +129,9 @@ export class ElectronService {
 
     this.ipc.on(SESSION_DISCONNECT_SSH, (event, data) => {
       this.log({level: 'info', message: 'SSH Disconnected:' + data.id});
-      this.notification.error('SSH Disconnected, you can try reconnect later');
+      if (data.error) {
+        this.notification.error('SSH Disconnected, you can try reconnect later');
+      }
       this.tabService.disconnected(data.id);
       // Handle disconnection logic
     });
