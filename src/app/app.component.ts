@@ -107,8 +107,9 @@ export class AppComponent implements OnInit, OnDestroy{
           }
           this.modalControl.closeModal([this.MENU_PROFILE, this.MENU_ADD ]);
           if (Profile.requireOpenNewTab(profile)) {
-            this.tabService.addTab(new TabInstance(profile.category, this.sessionService.create(profile, profile.profileType))); // Adds a new terminal identifier
-            this.tabService.currentTabIndex = this.tabService.tabs.length - 1;
+            const tab = new TabInstance(profile.category, this.sessionService.create(profile, profile.profileType));
+            this.tabService.addTab(tab); // Adds a new terminal identifier
+            this.tabService.currentTabIndex = this.tabService.tabs.findIndex(one => one.id === tab.id);
           } else {
             this.sessionService.openSessionWithoutTab(profile);
           }
@@ -159,9 +160,10 @@ export class AppComponent implements OnInit, OnDestroy{
 
   addLocalTerminal() {
     this.modalControl.closeModal();
-    this.tabService.addTab(new TabInstance( ProfileCategory.TERMINAL,
-      this.sessionService.create(this.settingService.createLocalTerminalProfile(),ProfileType.LOCAL_TERMINAL))); // Adds a new terminal identifier
-    this.tabService.currentTabIndex = this.tabService.tabs.length - 1;
+    const tab = new TabInstance( ProfileCategory.TERMINAL,
+      this.sessionService.create(this.settingService.createLocalTerminalProfile(),ProfileType.LOCAL_TERMINAL));
+    this.tabService.addTab(tab); // Adds a new terminal identifier
+    this.tabService.currentTabIndex = this.tabService.tabs.findIndex(one => one.id === tab.id);
   }
 
 
