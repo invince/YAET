@@ -146,7 +146,8 @@ export class AppComponent implements OnInit, OnDestroy{
   }
 
   removeTab(index: number) {
-    this.tabService.tabs.splice(index, 1);
+    this.tabService.removeTab(index);
+
   }
 
 

@@ -47,4 +47,11 @@ export class TabService {
     }
     return;
   }
+
+  removeTab(index: any) {
+    if (index <= this.currentTabIndex && this.currentTabIndex != 0) {
+      this.currentTabIndex --;
+    }
+    this._tabs.splice(index, 1);
+  }
 }
