@@ -137,30 +137,23 @@ export class ElectronService {
     });
   }
 
-  openTerminalSession(session: Session) {
+  closeSSHTerminalSession(session: Session) {
     if (this.ipc) {
-      switch (session.profileType) {
-        case ProfileType.LOCAL_TERMINAL: this.openLocalTerminalSession(session); break;
-        case ProfileType.SSH_TERMINAL: this.openSSHTerminalSession(session); break;
-
-
-      }
-    }
-  }
-  closeTerminalSession(session: Session) {
-    if (this.ipc) {
-      switch (session.profileType) {
-        case ProfileType.LOCAL_TERMINAL:
-          this.ipc.send(SESSION_CLOSE_LOCAL_TERMINAL, {terminalId: session.id});
-          break;
-        case ProfileType.SSH_TERMINAL:
-          this.ipc.send(SESSION_CLOSE_SSH_TERMINAL, {terminalId: session.id});
-          break;
-      }
+      this.ipc.send(SESSION_CLOSE_SSH_TERMINAL, {terminalId: session.id});
     }
   }
 
-  private openLocalTerminalSession(session: Session) {
+  closeLocalTerminalSession(session: Session) {
+    if (this.ipc) {
+      this.ipc.send(SESSION_CLOSE_LOCAL_TERMINAL, {terminalId: session.id});
+    }
+  }
+
+  openLocalTerminalSession(session: Session) {
+    if (!this.ipc) {
+      this.log({level: 'error', message : "Invalid configuration"});
+      return;
+    }
     if (!session.profile) {
       session.profile = new Profile();
     }
@@ -171,8 +164,8 @@ export class ElectronService {
     this.ipc.send(SESSION_OPEN_LOCAL_TERMINAL, {terminalId: session.id, terminalExec: localProfile.execPath});
   }
 
-  private openSSHTerminalSession(session: Session) {
-    if (!session.profile || !session.profile.sshProfile) {
+  openSSHTerminalSession(session: Session) {
+    if (!this.ipc || !session.profile || !session.profile.sshProfile) {
       this.log({level: 'error', message : "Invalid configuration"});
       return;
     }
