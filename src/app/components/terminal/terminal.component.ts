@@ -32,8 +32,9 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   private isViewInitialized = false;
 
   private xtermUnderlying : Terminal | undefined;
-  subscriptions: Subscription[] = [];
   private webglAddon = new WebglAddon();
+
+  private terminalOnDataSubscription?: Subscription;
 
   constructor(
     private electron: ElectronService,
@@ -88,15 +89,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     }
 
     this.initTab();
-    // Listen to output from Electron and display in xterm
-    this.electron.onTerminalOutput(this.session.id, (data) => {
-      this.terminal.write(data.data);
-    });
 
-    // Send user input back to Electron main process
-    this.subscriptions.push(this.terminal.onData().subscribe(data => {
-      this.electron.sendTerminalInput(this.session.id, data);
-    }));
     this.isViewInitialized = true;
   }
 
@@ -116,12 +109,24 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     // Set up data listeners and communication with the Electron main process
     this.session.open();
 
+    // Listen to output from Electron and display in xterm
+    this.electron.onTerminalOutput(this.session.id, (data) => {
+      this.terminal.write(data.data);
+    });
+
+    // Send user input back to Electron main process
+    if (this.terminalOnDataSubscription) {
+      this.terminalOnDataSubscription.unsubscribe();
+    }
+    this.terminalOnDataSubscription = this.terminal.onData().subscribe(data => {
+      this.electron.sendTerminalInput(this.session.id, data);
+    });
   }
 
   ngOnDestroy() {
     this.session.close();
-    if (this.subscriptions) {
-      this.subscriptions.forEach(one => one.unsubscribe());
+    if (this.terminalOnDataSubscription) {
+      this.terminalOnDataSubscription.unsubscribe();
     }
   }
 }

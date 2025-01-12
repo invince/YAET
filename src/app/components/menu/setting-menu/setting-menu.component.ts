@@ -39,6 +39,8 @@ import {SecretType} from '../../../domain/Secret';
 import {SecretStorageService} from '../../../services/secret-storage.service';
 import {SecretService} from '../../../services/secret.service';
 
+
+
 @Component({
   selector: 'app-setting-menu',
   standalone: true,
@@ -75,7 +77,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   remoteDesktopForm!: FormGroup;
   fileExplorerForm!: FormGroup;
 
-  LOCAL_TERM_OPTIONS = LocalTerminalType;
+  LOCAL_TERM_OPTIONS: LocalTerminalType[] = this.getLocalTermOptions();
 
   SIDE_NAV_TYPE_OPTIONS = SideNavType;
 
@@ -367,7 +369,15 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
   filterSecret() {
-    return this.secretStorageService.data.secrets?.filter(one => one.secretType == SecretType.LOGIN_PASSWORD);
+    return this.secretStorageService.filter(one => one.secretType == SecretType.LOGIN_PASSWORD);
+  }
+
+  getLocalTermOptions(): LocalTerminalType[] {
+    if (process.platform === 'win32') {
+      return [ LocalTerminalType.CMD , LocalTerminalType.POWERSHELL, LocalTerminalType.BASH];
+    } else {
+      return [LocalTerminalType.BASH];
+    }
   }
 
 }

@@ -156,7 +156,7 @@ export class VncProfileFormComponent extends ChildFormAsFormControl(MenuComponen
   }
 
   filterSecret() {
-    return this.secretStorageService.data.secrets?.filter(one => one.secretType == SecretType.PASSWORD_ONLY);
+    return this.secretStorageService.filter(one => one.secretType == SecretType.PASSWORD_ONLY);
 
   }
 }

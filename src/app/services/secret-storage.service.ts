@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {Secret, Secrets} from '../domain/Secret';
+import {Secret, Secrets, SecretType} from '../domain/Secret';
 
 @Injectable({
   providedIn: 'root'
@@ -14,15 +14,23 @@ export class SecretStorageService {
     this._data = data;
   }
 
-  get data(): Secrets {
-    if (!this._data) {
-      this._data = new Secrets();
+  get dataCopy(): Secrets {
+    let result = new Secrets(); // to avoid if this._data is deserialized we don't have fn on it
+    if (this._data) {
+      result.secrets = [...this._data.secrets]; // copy elements
+      result.version = this._data.version;
+      result.compatibleVersion = this._data.compatibleVersion;
+      result.revision = this._data.revision;
     }
-    return this._data;
+    return result;
   }
 
   findById(id: string): Secret | undefined {
     return this._data.secrets.find(one => one.id == id);
+  }
+
+  filter(predicate : (one:Secret) => boolean): Secret[] {
+    return this._data.secrets?.filter(predicate);
   }
 
 }

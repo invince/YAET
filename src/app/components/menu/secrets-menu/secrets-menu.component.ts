@@ -93,7 +93,7 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
       this.secretService.reload();
     }
 
-    this.secretsCopy = this.secretStorageService.data;
+    this.secretsCopy = this.secretStorageService.dataCopy;
     this.secretsCopy.secrets = this.secretsCopy.secrets.sort((a: Secret, b: Secret) => a.name.localeCompare(b.name));
   }
 

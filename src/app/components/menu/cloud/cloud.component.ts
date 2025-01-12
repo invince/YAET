@@ -214,7 +214,7 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
   }
 
   filterSecret() {
-    return this.secretStorageService.data.secrets?.filter(one => one.secretType == SecretType.LOGIN_PASSWORD);
+    return this.secretStorageService.filter(one => one.secretType == SecretType.LOGIN_PASSWORD);
   }
 
   quickCreateSecret() {

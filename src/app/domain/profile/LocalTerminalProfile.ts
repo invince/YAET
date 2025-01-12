@@ -2,8 +2,8 @@ export enum LocalTerminalType {
   CMD = 'cmd',
   POWERSHELL = 'powershell', // powershell.exe
 
-  // BASH = 'bash',
-  // CUSTOM = 'custom'
+  BASH = 'bash',
+  CUSTOM = 'custom'
 }
 
 export class LocalTerminalProfile {

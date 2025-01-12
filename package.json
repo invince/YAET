@@ -1,6 +1,6 @@
 {
   "name": "yet-another-electron-term",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "main": "src-electron/electronMain.js",
   "scripts": {
     "ng": "ng",
@@ -13,7 +13,7 @@
     "electron:dev": "wait-on http://localhost:4200 && cross-env NODE_ENV=development electron .",
     "postinstall": "patch-package",
     "build:release": "npm run clean && patch-package && ng build --base-href ./ && electron-builder --publish always",
-    "release": "npm run build:release && npm version patch"
+    "release": "npm version patch && npm run build:release"
   },
   "build": {
     "appId": "io.github.invince",
@@ -21,7 +21,7 @@
     "publish": {
       "provider": "github",
       "owner": "invince",
-      "repo": "YAET"
+      "repo": "YAET-RELEASE"
     },
     "nsis": {
       "oneClick": false,

@@ -42,7 +42,7 @@ export class QuickconnectMenuComponent extends MenuComponent  implements OnInit 
   }
 
   ngOnInit(): void {
-    this.profilesCopy = this.profileService.profiles;
+    this.profilesCopy = this.profileService.profilesCopy;
   }
 
   async onSaveOne($event: Profile) {
