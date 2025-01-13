@@ -8,7 +8,7 @@ import {Session} from '../domain/session/Session';
 })
 export class ScpService {
 
-  private apiUrl = 'http://localhost:13012/api/v1/scp/';
+  private apiUrl = 'http://localhost:13012/api/v1/scp';
 
   constructor(private electron: ElectronService) { }
 
@@ -18,7 +18,7 @@ export class ScpService {
 
   setup(session: Session) {
     return {
-      url: this.apiUrl + session.id, // Custom backend API
+      url: this.apiUrl + '/' + session.id, // Custom backend API
       uploadUrl: this.apiUrl + '/upload/' + session.id , // Custom upload endpoint
       downloadUrl: this.apiUrl + '/download/' + session.id, // Custom download endpoint
     };

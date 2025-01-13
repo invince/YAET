@@ -169,7 +169,7 @@ function initScpSftpHandler(log, scpMap, expressApp) {
       await sftp.connect(config);
 
       // Upload the file
-      const remotePath = avoidDuplicateName(sftp, `${path}/${req.file.originalname}`);
+      const remotePath = await avoidDuplicateName(sftp, `${path}/${req.file.originalname}`);
       await sftp.put(req.file.buffer, remotePath);
 
       res.json({ success: true, message: `File uploaded to ${remotePath}` });
@@ -266,6 +266,7 @@ function initScpSftpHandler(log, scpMap, expressApp) {
     }
     return targetFilePath;
   }
+
   async function getDetails(sftp, path, names = undefined) {
     if (!names || names.length === 0) {
       const fullPath = `${path}`;
