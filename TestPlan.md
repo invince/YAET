@@ -71,6 +71,7 @@
   - vnc
   - rdp
   - scp
+  - ftp
   - icon ok
 - clone works
   - custom
@@ -78,6 +79,7 @@
   - vnc
   - rdp
   - scp
+  - ftp
   - with same group info cloned
   - with same tags info cloned
 - edit
@@ -155,6 +157,38 @@
 ## SCP
 - all ok, use a third party lib
 - init path pb fixed via patch-package
+- [x] scp form
+- [x] connect
+- [x] list
+- [x] cd
+- [x] download single
+- [x] download multiple
+- [x] details
+- [x] upload
+- [x] drag and drop file to upload
+- [x] copy paste file
+- [x] cut paste file
+- [] open file
+- [x] create folder
+- [] create file
+- [] rename folder
+- [] rename file
+
+## Ftp
+- [x] profile form
+- [x] connect
+- [x] list
+- [x] cd
+- [x] download single
+- [x] download multiple
+- [x] upload
+- [x] drag and drop file to upload
+- [x] init path
+- [] open file
+- [x] create folder
+- [] create file
+- [x] rename folder
+- [x] rename file
 
 # Custom
 - custom command can start, for ex for realvnc

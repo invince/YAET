@@ -115,6 +115,7 @@ export class ProfileService implements OnDestroy{
 
         case ProfileType.SCP_FILE_EXPLORER:
         case ProfileType.SMB_FILE_EXPLORER:
+        case ProfileType.FTP_FILE_EXPLORER:
           one.icon = 'folder'; break;
         case ProfileType.CUSTOM:
           one.icon = 'star'; break;

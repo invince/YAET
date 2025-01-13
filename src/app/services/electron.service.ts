@@ -26,7 +26,7 @@ import {
   CLIPBOARD_PASTE,
   TRIGGER_NATIVE_CLIPBOARD_PASTE,
   SESSION_OPEN_CUSTOM,
-  SESSION_SCP_REGISTER, SESSION_CLOSE_LOCAL_TERMINAL, SESSION_CLOSE_SSH_TERMINAL, LOG
+  SESSION_SCP_REGISTER, SESSION_CLOSE_LOCAL_TERMINAL, SESSION_CLOSE_SSH_TERMINAL, LOG, SESSION_FTP_REGISTER
 } from '../domain/electronConstant';
 import {LocalTerminalProfile} from '../domain/profile/LocalTerminalProfile';
 import {Profile, ProfileType} from '../domain/profile/Profile';
@@ -42,7 +42,7 @@ import {SSHProfile} from '../domain/profile/SSHProfile';
 import {Session} from '../domain/session/Session';
 import {Log} from '../domain/Log';
 import {NotificationService} from './notification.service';
-import {GeneralSettings} from '../domain/setting/GeneralSettings';
+import {FTPProfile} from '../domain/profile/FTPProfile';
 
 
 @Injectable({
@@ -346,6 +346,51 @@ export class ElectronService {
     }
     await this.ipc.invoke(SESSION_SCP_REGISTER, {id: id, config: sshConfig});
   }
+
+
+  async registerFtpSession(id: string, ftpProfile: FTPProfile) {
+    if (!id || !ftpProfile) {
+      this.log({level: 'error', message : "Invalid configuration"});
+      return;
+    }
+    let ftpConfig: any = {
+    };
+
+    ftpConfig.host = ftpProfile.host;
+    ftpConfig.port = ftpProfile.port;
+    ftpConfig.secured = ftpProfile.secured;
+    if (ftpProfile.authType == AuthType.LOGIN) {
+      ftpConfig.user = ftpProfile.login;
+      ftpConfig.password = ftpProfile.password;
+    } else if (ftpProfile.authType == AuthType.SECRET) {
+      let secret = this.secretStorage.findById(ftpProfile.secretId);
+      if (!secret) {
+        this.log({level: 'error', message : "Invalid secret " + ftpProfile.secretId});
+        return;
+      }
+      switch (secret.secretType) {
+        case SecretType.LOGIN_PASSWORD: {
+          ftpConfig.user = secret.login;
+          ftpConfig.password = secret.password;
+          break;
+        }
+        case SecretType.SSH_KEY: {
+          ftpConfig.user = secret.login;
+          ftpConfig.privateKey = secret.key.replace(/\\n/g, '\n');
+          if (secret.passphrase) {
+            ftpConfig.passphrase = secret.passphrase;
+          }
+          break;
+        }
+        case SecretType.PASSWORD_ONLY: {
+          // todo
+          break;
+        }
+      }
+    }
+    await this.ipc.invoke(SESSION_FTP_REGISTER, {id: id, config: ftpConfig});
+  }
+
 
 //#endregion "Sessions"
 

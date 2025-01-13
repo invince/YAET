@@ -1,9 +1,11 @@
-<div class="scp-container">
+<div class="ftp-container">
   <ejs-filemanager
-    id='scp-filemanager'
+    id='ftp-filemanager'
+    #fileManager
     [ajaxSettings]="ajaxSettings"
     [navigationPaneSettings]="navigationPaneSettings"
     [toolbarSettings]="toolbarSettings"
+    [contextMenuSettings]='contextMenuSettings'
     [path]="path"
     height="100%"
   >

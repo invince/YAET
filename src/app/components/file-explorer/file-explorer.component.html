@@ -1,4 +1,10 @@
 <div class="file-explorer-container">
-  <app-scp [session]="session"></app-scp>
-
+  @switch (session.profileType) {
+    @case ('SCP_FILE_EXPLORER') {
+      <app-scp [session]="session"></app-scp>
+    }
+    @case ('FTP_FILE_EXPLORER') {
+      <app-ftp [session]="session"></app-ftp>
+    }
+  }
 </div>
