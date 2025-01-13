@@ -86,7 +86,7 @@ function initScpSftpHandler(log, scpMap, expressApp) {
           const name = req.body.name;
           const newName = req.body.newName;
           await sftp.rename(`${pathParam}${name}`, `${pathParam}${newName}`);
-          res.json({ cwd: { name: pathParam, type: 'folder' }, files: await getDetails(sftp, pathParam, newName) });
+          res.json({ cwd: { name: pathParam, type: 'folder' }, files: await getDetails(sftp, pathParam, [newName]) });
           break;
         }
         case 'copy': {

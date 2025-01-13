@@ -171,8 +171,10 @@
 - [] open file
 - [x] create folder
 - [] create file
-- [] rename folder
-- [] rename file
+- [x] rename folder
+- [x] rename file
+- [x] delete file
+- [x] delete folder
 
 ## Ftp
 - [x] profile form
@@ -189,6 +191,8 @@
 - [] create file
 - [x] rename folder
 - [x] rename file
-
+- [x] delete file
+- [x] delete folder
+- 
 # Custom
 - custom command can start, for ex for realvnc
