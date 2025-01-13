@@ -14,6 +14,10 @@ export class SecretStorageService {
     this._data = data;
   }
 
+  get data(): Secrets {
+    return this._data;
+  }
+
   get dataCopy(): Secrets {
     let result = new Secrets(); // to avoid if this._data is deserialized we don't have fn on it
     if (this._data) {
