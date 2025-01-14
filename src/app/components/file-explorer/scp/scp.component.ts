@@ -1,8 +1,10 @@
-import {Component, Input, OnDestroy, OnInit} from '@angular/core';
-import {FileManagerAllModule, FileManagerModule} from '@syncfusion/ej2-angular-filemanager';
+import {Component, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {FileManagerAllModule, FileManagerComponent, FileManagerModule} from '@syncfusion/ej2-angular-filemanager';
 import {ScpService} from '../../../services/scp.service';
-import {TabService} from '../../../services/tab.service';
 import {Session} from '../../../domain/session/Session';
+import {AbstractFileManager} from '../abstract-file-manager';
+import {HttpClient} from '@angular/common/http';
+import * as http from 'node:http';
 
 
 @Component({
@@ -15,39 +17,36 @@ import {Session} from '../../../domain/session/Session';
   templateUrl: './scp.component.html',
   styleUrl: './scp.component.css'
 })
-export class ScpComponent implements OnInit, OnDestroy{
+export class ScpComponent extends AbstractFileManager implements OnInit, OnDestroy{
 
-  @Input() session!: Session;
+  @Input() public session!: Session;
+  @ViewChild('fileManager', { static: false })
+  public fileManager?: FileManagerComponent;
 
-  path:string = '/';
-
-  public ajaxSettings = {};
-  public navigationPaneSettings = {
-    visible: true, // Show navigation pane
-    maxWidth: '150px', // Set width of the navigation pane
-    minWidth: '50px', // Set width of the navigation pane
-  };
-
-
-  public toolbarSettings = {
-    visible: true, // Show toolbar
-  };
-  constructor(private scpService: ScpService) {
+  constructor(private scpService: ScpService, http: HttpClient) {
+    super(http);
   }
-  ngOnInit(): void {
 
-   this.session.open();
+  ngOnInit(): void {
+    this.session.open();
 
     if (this.session.profile?.sshProfile?.initPath) {
       this.path = this.session.profile.sshProfile.initPath;
     }
-
-
-    this.ajaxSettings = this.scpService.setup(this.session);
+    this.ajaxSettings = this.generateAjaxSettings();
   }
+
 
   ngOnDestroy(): void {
     this.session.close();
+  }
+
+  generateAjaxSettings(): any {
+    return this.scpService.setup(this.session);
+  }
+
+  getCurrentPath(): string | undefined {
+    return this.fileManager?.path;
   }
 
 }

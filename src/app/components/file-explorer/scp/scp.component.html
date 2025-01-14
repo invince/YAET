@@ -1,9 +1,11 @@
 <div class="scp-container">
   <ejs-filemanager
     id='scp-filemanager'
+    #fileManager
     [ajaxSettings]="ajaxSettings"
     [navigationPaneSettings]="navigationPaneSettings"
     [toolbarSettings]="toolbarSettings"
+    (fileOpen)="onFileOpen($event)"
     [path]="path"
     height="100%"
   >
