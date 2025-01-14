@@ -18,9 +18,10 @@ export class ScpService {
 
   setup(session: Session) {
     return {
-      url: this.apiUrl + '/' + session.id, // Custom backend API
-      uploadUrl: this.apiUrl + '/upload/' + session.id , // Custom upload endpoint
-      downloadUrl: this.apiUrl + '/download/' + session.id, // Custom download endpoint
+      url: this.apiUrl + '/' + session.id, // Action api
+      uploadUrl: this.apiUrl + '/upload/' + session.id ,
+      downloadUrl: this.apiUrl + '/download/' + session.id,
+      openUrl: this.apiUrl + '/open/' + session.id,
     };
   }
 }

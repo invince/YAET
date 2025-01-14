@@ -287,8 +287,8 @@ function initFtpHandler(log, ftpMap, expressApp) {
         }, 10 * 60 * 1000);
       });
     } catch (error) {
-      log.error('Error downloading file:', error);
-      res.status(400).send({ error: { code: 400, message: 'Error downloading file: ' + error.message } });
+      log.error('Error open file:', error);
+      res.status(400).send({ error: { code: 400, message: 'Error open file: ' + error.message } });
     }
   });
 }
