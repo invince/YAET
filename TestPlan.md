@@ -4,6 +4,7 @@
 - multiple message can be displayed one by one (for ex, when you change master key and re-encrypt all settings)
 - dev mode has menu
 - prod mode no menu
+- mouse middle-click the title of the tab trigger close of the tab
 
 ## Package
 - local dev mode ok
@@ -168,13 +169,14 @@
 - [x] drag and drop file to upload
 - [x] copy paste file
 - [x] cut paste file
-- [] open file
 - [x] create folder
 - [] create file
 - [x] rename folder
 - [x] rename file
 - [x] delete file
 - [x] delete folder
+- [x] double click open the file 
+  - if you update the file, the file will be uploaded to scp
 
 ## Ftp
 - [x] profile form
@@ -186,13 +188,14 @@
 - [x] upload
 - [x] drag and drop file to upload
 - [x] init path
-- [] open file
 - [x] create folder
 - [] create file
 - [x] rename folder
 - [x] rename file
 - [x] delete file
 - [x] delete folder
-- 
+- [x] double click open the file
+  - if you update the file, the file will be uploaded to ftp
+
 # Custom
 - custom command can start, for ex for realvnc
