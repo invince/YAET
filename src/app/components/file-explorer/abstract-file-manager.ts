@@ -34,7 +34,7 @@ export abstract class AbstractFileManager {
 
     if (payload.names) {
       for (const name of payload.names) {
-        let path = this.ajaxSettings.downloadUrl
+        let path = this.ajaxSettings.openUrl;
 
         this.http
           .post(path, { downloadInput: JSON.stringify(payload) }, { responseType: 'blob' })

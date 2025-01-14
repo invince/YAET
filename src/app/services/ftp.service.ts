@@ -22,6 +22,7 @@ export class FtpService {
       url: this.apiUrl + '/' + session.id, // Custom backend API
       uploadUrl: this.apiUrl + '/upload/' + session.id , // Custom upload endpoint
       downloadUrl: this.apiUrl + '/download/' + session.id, // Custom download endpoint
+      openUrl: this.apiUrl + '/open/' + session.id, // Custom download endpoint
     };
   }
 }

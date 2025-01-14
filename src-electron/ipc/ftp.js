@@ -1,10 +1,15 @@
-const { ipcMain } = require('electron');
+const { ipcMain, shell } = require('electron');
 const ftp = require('basic-ftp');
 const multer = require('multer');
 const upload = multer();
 const path = require('path');
 const yazl = require('yazl');
 const { Writable , Readable} = require('stream');
+const fs = require('fs');
+const fsPromise = require('fs/promises');
+const os = require('os');
+const uuid = require('uuid');
+
 
 function initFtpHandler(log, ftpMap, expressApp) {
 
@@ -158,7 +163,7 @@ function initFtpHandler(log, ftpMap, expressApp) {
   expressApp.post('/api/v1/ftp/download/:id', upload.none(), async (req, res) => {
     const downloadInput = JSON.parse(req.body.downloadInput);
     const path = downloadInput.path;
-    const names = downloadInput.names; // Assuming a single file download
+    const names = downloadInput.names;
 
     const configId = req.params['id'];
     const config = ftpMap.get(configId);
@@ -233,6 +238,97 @@ function initFtpHandler(log, ftpMap, expressApp) {
         });
         zipfile.end();
       }
+    } catch (error) {
+      log.error('Error downloading file:', error);
+      res.status(400).send({ error: { code: 400, message: 'Error downloading file: ' + error.message } });
+    } finally {
+      client.close();
+    }
+  });
+
+
+  // File open
+  expressApp.post('/api/v1/ftp/open/:id', upload.none(), async (req, res) => {
+    const downloadInput = JSON.parse(req.body.downloadInput);
+    const remotePath = downloadInput.path;
+    const fileName = downloadInput.names[0]; // Assuming a single file
+
+    const configId = req.params['id'];
+    const config = ftpMap.get(configId);
+    if (!config) {
+      log.error('Error connection config not found');
+      res.status(400).send({ error: { code: 400, message: 'Error connection config not found' } });
+      return;
+    }
+
+    const client = new ftp.Client();
+    client.ftp.verbose = true;
+
+    try {
+      await client.access(config);
+
+      const fullRemotePath = remotePath + fileName;
+      const tempDir = path.join(os.tmpdir(), 'ftp-temp-files');
+      if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
+
+      const tempFilePath = path.join(tempDir, uuid.v4() + fileName);
+
+      // Create a writable stream to save the file locally
+      const writableStream = fs.createWriteStream(tempFilePath);
+
+      // Download the file from the FTP server
+      await client.downloadTo(writableStream, fullRemotePath);
+
+      writableStream.on('finish', () => {
+        log.info(`File downloaded to ${tempFilePath}`);
+        res.send({ message: 'File downloaded successfully', localFilePath: tempFilePath, fileName });
+      });
+
+      writableStream.on('error', (error) => {
+        log.error('Error writing file locally:', error);
+        res.status(500).send({ error: { code: 500, message: 'Error writing file locally' } });
+      });
+
+      const result = await shell.openPath(tempFilePath);
+      if (result) {
+        log.error(`Error opening file: ${result}`);
+      }
+
+      // Watch the file for changes
+      let watcher = fs.watch(tempFilePath, async (eventType) => {
+        if (eventType === 'change') {
+          log.info(`File modified: ${tempFilePath}`);
+          const clientUpdate = new ftp.Client();
+          clientUpdate.ftp.verbose = true;
+          try {
+            // Read the updated file into a buffer
+            const updatedBuffer = await fsPromise.readFile(tempFilePath);
+
+            // Convert the buffer into a readable stream
+            const bufferStream = new Readable();
+            bufferStream.push(updatedBuffer);
+            bufferStream.push(null);
+
+            await clientUpdate.access(config);
+
+            // Re-upload the updated file to the server
+            await clientUpdate.uploadFrom(bufferStream, fullRemotePath);
+            log.info(`File updated successfully: ${fullRemotePath}`);
+          } catch (error) {
+            log.error('Error uploading updated file:', error);
+          } finally {
+            clientUpdate.close();
+          }
+        }
+    });
+
+      // Clean up watcher and temp file after a timeout (optional)
+      setTimeout(() => {
+        watcher.close();
+        fsPromise.unlink(tempFilePath)
+            .then(() => log.info('Temporary file deleted:', tempFilePath))
+            .catch((err) => log.info('Error deleting temp file:', err));
+      }, 10 * 60 * 1000); // Stop watching after 10 minutes
     } catch (error) {
       log.error('Error downloading file:', error);
       res.status(400).send({ error: { code: 400, message: 'Error downloading file: ' + error.message } });
