@@ -6,6 +6,7 @@
     [navigationPaneSettings]="navigationPaneSettings"
     [toolbarSettings]="toolbarSettings"
     [contextMenuSettings]='contextMenuSettings'
+    (fileOpen)="onFileOpen($event)"
     [path]="path"
     height="100%"
   >

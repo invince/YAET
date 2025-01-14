@@ -38,7 +38,7 @@ export class ScpComponent implements OnInit, OnDestroy{
 
    this.session.open();
 
-    if (this.session.profile.sshProfile?.initPath) {
+    if (this.session.profile?.sshProfile?.initPath) {
       this.path = this.session.profile.sshProfile.initPath;
     }
 

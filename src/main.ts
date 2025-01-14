@@ -8,10 +8,10 @@ import config from '../config/config.json';
 
 export class Compatibility {
 
-  static settings = '0.9.0';
-  static cloud = '0.9.0';
-  static secrets = '0.9.0';
-  static profiles = '0.9.0';
+  static settings = '1.0.0';
+  static cloud = '1.0.0';
+  static secrets = '1.0.0';
+  static profiles = '1.0.0';
 }
 
 // Registering Syncfusion license key
