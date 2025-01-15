@@ -15,6 +15,7 @@ const {initCustomSessionHandler} = require("./ipc/custom");
 const {initScpSftpHandler} = require("./ipc/scp");
 const {initAutoUpdater} = require("./ipc/autoUpdater");
 const {initBackend} = require("./ipc/backend");
+const {initFtpHandler} = require("./ipc/ftp");
 
 let tray;
 let expressApp;
@@ -22,8 +23,10 @@ let mainWindow;
 let terminalMap = new Map();
 let vncMap = new Map();
 let scpMap = new Map();
+let ftpMap = new Map();
 
 const log = require("electron-log")
+
 const logPath = `${__dirname}/logs/main.log`;
 console.log(logPath);
 log.transports.file.resolvePathFn = () => logPath;
@@ -110,8 +113,12 @@ app.on('ready', () => {
   initRdpHandler(log);
   initVncHandler(log, vncMap);
   initScpSftpHandler(log, scpMap, expressApp);
+  initFtpHandler(log, ftpMap, expressApp);
   initClipboard(log, mainWindow);
   initCustomSessionHandler(log);
+
+  // Start API
+  expressApp.listen(13012, () => log.info('API listening on port 13012'));
 
 
 });
@@ -136,6 +143,14 @@ app.on('window-all-closed', () => {
       // value?.end();
       if (vncClient) {
         vncClient.close(); // WebSocket server for this vnc client closed
+      }
+    });
+
+
+    ftpMap.forEach((ftpClient) => {
+      // value?.end();
+      if (ftpClient) {
+        ftpClient.close(); // WebSocket server for this vnc client closed
       }
     });
 

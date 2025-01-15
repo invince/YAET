@@ -1,6 +1,7 @@
 # yetAnotherElectronTerm
 
-This project is based on angular + electron to create a remote connection tool supporting SSH RDP SCP VNC
+YAET is a remote connection tool based on angular + electron supporting SSH RDP SCP/SFTP FTP VNC
+
 ## Prerequisites
 - Node
 - angular cli

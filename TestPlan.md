@@ -4,6 +4,7 @@
 - multiple message can be displayed one by one (for ex, when you change master key and re-encrypt all settings)
 - dev mode has menu
 - prod mode no menu
+- mouse middle-click the title of the tab trigger close of the tab
 
 ## Package
 - local dev mode ok
@@ -71,6 +72,7 @@
   - vnc
   - rdp
   - scp
+  - ftp
   - icon ok
 - clone works
   - custom
@@ -78,6 +80,7 @@
   - vnc
   - rdp
   - scp
+  - ftp
   - with same group info cloned
   - with same tags info cloned
 - edit
@@ -155,6 +158,44 @@
 ## SCP
 - all ok, use a third party lib
 - init path pb fixed via patch-package
+- [x] scp form
+- [x] connect
+- [x] list
+- [x] cd
+- [x] download single
+- [x] download multiple
+- [x] details
+- [x] upload
+- [x] drag and drop file to upload
+- [x] copy paste file
+- [x] cut paste file
+- [x] create folder
+- [] create file
+- [x] rename folder
+- [x] rename file
+- [x] delete file
+- [x] delete folder
+- [x] double click open the file 
+  - if you update the file, the file will be uploaded to scp
+
+## Ftp
+- [x] profile form
+- [x] connect
+- [x] list
+- [x] cd
+- [x] download single
+- [x] download multiple
+- [x] upload
+- [x] drag and drop file to upload
+- [x] init path
+- [x] create folder
+- [] create file
+- [x] rename folder
+- [x] rename file
+- [x] delete file
+- [x] delete folder
+- [x] double click open the file
+  - if you update the file, the file will be uploaded to ftp
 
 # Custom
 - custom command can start, for ex for realvnc

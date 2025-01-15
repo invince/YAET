@@ -26,11 +26,15 @@
   </mat-sidenav>
 
   <mat-sidenav-content>
-    <mat-tab-group id="tab-group" [@.disabled]="true" [(selectedIndex)]="tabService.currentTabIndex">
+    <mat-tab-group id="tab-group"
+                   [@.disabled]="true"
+                   [(selectedIndex)]="tabService.currentTabIndex"
+                   mat-stretch-tabs="false"
+    >
       @for (tab of tabService.tabs ; let i = $index; track tab.id) {
         <mat-tab>
           <ng-template mat-tab-label>
-            <div class="tab-label">
+            <div class="tab-label" (mousedown)="onTabLabelMouseDown($event, i)">
               @if (!tab.connected) {
               <button mat-icon-button (click)="reconnect(i)" aria-label="Reconnect tab">
                 <mat-icon>refresh</mat-icon>

@@ -213,4 +213,10 @@ export class AppComponent implements OnInit, OnDestroy{
   }
 
 
+  onTabLabelMouseDown($event: MouseEvent, index: number) {
+    if ($event.button === 1) { // middle button
+      $event.preventDefault();
+      this.removeTab(index);
+    }
+  }
 }

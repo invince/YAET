@@ -12,6 +12,8 @@ import {ScpSession} from '../domain/session/ScpSession';
 import {ScpService} from './scp.service';
 import {NotificationService} from './notification.service';
 import {TabInstance} from '../domain/TabInstance';
+import {FtpSession} from '../domain/session/FtpSession';
+import {FtpService} from './ftp.service';
 
 @Injectable({
   providedIn: 'root'
@@ -24,6 +26,7 @@ export class SessionService {
     private vncService: VncService,
 
     private scpService: ScpService,
+    private ftpService: FtpService,
     private spinner: NgxSpinnerService,
     private notification: NotificationService,
   ) { }
@@ -40,7 +43,8 @@ export class SessionService {
 
       case ProfileType.SCP_FILE_EXPLORER:
         return new ScpSession(profile, profileType, this.tabService, this.scpService);
-
+      case ProfileType.FTP_FILE_EXPLORER:
+        return new FtpSession(profile, profileType, this.tabService, this.ftpService);
     }
 
     return new Session(profile, profileType, this.tabService);

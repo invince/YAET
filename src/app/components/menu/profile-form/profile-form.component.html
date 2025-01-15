@@ -65,7 +65,7 @@
 
 
       <mat-form-field class="field">
-        <mat-label>Terminal Category</mat-label>
+        <mat-label>Category</mat-label>
         <mat-select  (selectionChange)="onSelectCategory($event)" required formControlName="category">
           @for ( oneCat of CATEGORY_OPTIONS | keyvalue : unordered; track oneCat.value) {
           <mat-option [value]="oneCat.value">{{oneCat.value}}</mat-option>
@@ -74,7 +74,7 @@
       </mat-form-field>
       @if (form.get('category')?.value) {
       <mat-form-field class="field" >
-        <mat-label>Terminal Type</mat-label>
+        <mat-label>Connection Type</mat-label>
         <mat-select (selectionChange)="onSelectType($event)" required formControlName="profileType">
           <mat-option *ngFor="let oneType of getTypeOptions()  | keyvalue : unordered "
                       [value]="oneType.value">{{oneType.value}}</mat-option>
@@ -118,8 +118,8 @@
             <app-vnc-profile-form formControlName="vncProfileForm"></app-vnc-profile-form>
           }
 
-          @case('CUSTOM') {
-            <app-vnc-profile-form formControlName="vncProfileForm"></app-vnc-profile-form>
+          @case('FTP_FILE_EXPLORER') {
+            <app-ftp-profile-form formControlName="ftpProfileForm"></app-ftp-profile-form>
           }
         }
       }

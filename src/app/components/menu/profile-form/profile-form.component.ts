@@ -28,6 +28,8 @@ import {CustomProfileFormComponent} from './custom-profile-form/custom-profile-f
 import {CustomProfile} from '../../../domain/profile/CustomProfile';
 import {LogService} from '../../../services/log.service';
 import {NotificationService} from '../../../services/notification.service';
+import {FtpProfileFormComponent} from './ftp-profile-form/ftp-profile-form.component';
+import {FTPProfile} from '../../../domain/profile/FTPProfile';
 
 @Component({
   selector: 'app-profile-form',
@@ -52,6 +54,7 @@ import {NotificationService} from '../../../services/notification.service';
     RdpProfileFormComponent,
     VncProfileFormComponent,
     CustomProfileFormComponent,
+    FtpProfileFormComponent,
   ],
   templateUrl: './profile-form.component.html',
   styleUrl: './profile-form.component.scss'
@@ -80,6 +83,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   @ViewChild(RdpProfileFormComponent) rdpChild!: RdpProfileFormComponent;
   @ViewChild(VncProfileFormComponent) vncChild!: VncProfileFormComponent;
   @ViewChild(CustomProfileFormComponent) customChild!: CustomProfileFormComponent;
+  @ViewChild(FtpProfileFormComponent) ftpChild!: FtpProfileFormComponent;
 
   constructor(
     private log: LogService,
@@ -116,24 +120,23 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
 
 
   onInitForm(): FormGroup {
-    let form =  this.fb.group(
+    return this.fb.group(
       {
-        name:                   [this._profile.name, [Validators.required, Validators.minLength(3)]], // we shall avoid use ngModel and formControl at same time
-        comment:                [this._profile.comment],
-        category:               [this._profile.category, Validators.required],
-        group:                  [],
-        tags:                   [[]],
-        profileType:            [this._profile.profileType, Validators.required],
-        sshProfileForm:         [this._profile.sshProfile],
-        rdpProfileForm:         [this._profile.rdpProfile],
-        vncProfileForm:         [this._profile.vncProfile],
-        customProfileForm:      [this._profile.customProfile],
+        name: [this._profile.name, [Validators.required, Validators.minLength(3)]], // we shall avoid use ngModel and formControl at same time
+        comment: [this._profile.comment],
+        category: [this._profile.category, Validators.required],
+        group: [],
+        tags: [[]],
+        profileType: [this._profile.profileType, Validators.required],
+        sshProfileForm: [this._profile.sshProfile],
+        ftpProfileForm: [this._profile.ftpProfile],
+        rdpProfileForm: [this._profile.rdpProfile],
+        vncProfileForm: [this._profile.vncProfile],
+        customProfileForm: [this._profile.customProfile],
 
       },
       {validators: []}
     );
-
-    return form;
   }
 
   onSelectCategory($event: MatSelectChange) {
@@ -156,6 +159,9 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       case ProfileType.SSH_TERMINAL:
       case ProfileType.SCP_FILE_EXPLORER:
         this.form.get('sshProfileForm')?.setValue(new SSHProfile());
+        break;
+      case ProfileType.FTP_FILE_EXPLORER:
+        this.form.get('ftpProfileForm')?.setValue(new FTPProfile());
         break;
 
       case ProfileType.RDP_REMOTE_DESKTOP:
@@ -204,6 +210,9 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
           case ProfileType.SCP_FILE_EXPLORER:
             this.updateFormValue('sshProfileForm', profile?.sshProfile);
             break;
+          case ProfileType.FTP_FILE_EXPLORER:
+            this.updateFormValue('ftpProfileForm', profile?.ftpProfile);
+            break;
           case ProfileType.RDP_REMOTE_DESKTOP:
             this.updateFormValue('rdpProfileForm', profile?.rdpProfile);
             break;
@@ -238,6 +247,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     this._profile.rdpProfile = this.rdpChild?.formToModel();
     this._profile.vncProfile = this.vncChild?.formToModel();
     this._profile.customProfile = this.customChild?.formToModel();
+    this._profile.ftpProfile = this.ftpChild?.formToModel();
 
 
     return this._profile;
