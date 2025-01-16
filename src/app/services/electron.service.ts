@@ -26,7 +26,12 @@ import {
   CLIPBOARD_PASTE,
   TRIGGER_NATIVE_CLIPBOARD_PASTE,
   SESSION_OPEN_CUSTOM,
-  SESSION_SCP_REGISTER, SESSION_CLOSE_LOCAL_TERMINAL, SESSION_CLOSE_SSH_TERMINAL, LOG, SESSION_FTP_REGISTER
+  SESSION_SCP_REGISTER,
+  SESSION_CLOSE_LOCAL_TERMINAL,
+  SESSION_CLOSE_SSH_TERMINAL,
+  LOG,
+  SESSION_FTP_REGISTER,
+  SESSION_OPEN_TELNET_TERMINAL, SESSION_CLOSE_TELNET_TERMINAL
 } from '../domain/electronConstant';
 import {LocalTerminalProfile} from '../domain/profile/LocalTerminalProfile';
 import {Profile, ProfileType} from '../domain/profile/Profile';
@@ -38,7 +43,7 @@ import {CloudResponse} from '../domain/setting/CloudResponse';
 import {TabService} from './tab.service';
 import {RdpProfile} from '../domain/profile/RdpProfile';
 import {CustomProfile} from '../domain/profile/CustomProfile';
-import {SSHProfile} from '../domain/profile/SSHProfile';
+import {RemoteTerminalProfile} from '../domain/profile/RemoteTerminalProfile';
 import {Session} from '../domain/session/Session';
 import {Log} from '../domain/Log';
 import {NotificationService} from './notification.service';
@@ -137,6 +142,12 @@ export class ElectronService {
     });
   }
 
+  closeTelnetTerminalSession(session: Session) {
+    if (this.ipc) {
+      this.ipc.send(SESSION_CLOSE_TELNET_TERMINAL, {terminalId: session.id});
+    }
+  }
+
   closeSSHTerminalSession(session: Session) {
     if (this.ipc) {
       this.ipc.send(SESSION_CLOSE_SSH_TERMINAL, {terminalId: session.id});
@@ -162,6 +173,59 @@ export class ElectronService {
     }
     let localProfile: LocalTerminalProfile = session.profile.localTerminal;
     this.ipc.send(SESSION_OPEN_LOCAL_TERMINAL, {terminalId: session.id, terminalExec: localProfile.execPath});
+  }
+
+  openTelnetTerminalSession(session: Session) {
+    if (!this.ipc || !session.profile || !session.profile.telnetProfile) {
+      this.log({level: 'error', message : "Invalid configuration"});
+      return;
+    }
+    let telnetConfig: any = {
+      timeout: 1500,           // Wait up to 30 seconds for the connection.
+      negotiationMandatory: false,      // Send keepalive packets every 15 seconds.
+
+    };
+
+    let telnetProfile = session.profile.telnetProfile;
+    telnetConfig.host = telnetProfile.host;
+    telnetConfig.port = telnetProfile.port;
+    if (telnetProfile.authType == AuthType.LOGIN) {
+      telnetConfig.username = telnetProfile.login;
+      telnetConfig.password = telnetProfile.password;
+    } else if (telnetProfile.authType == AuthType.SECRET) {
+      let secret = this.secretStorage.findById(telnetProfile.secretId);
+      if (!secret) {
+        this.log({level: 'error', message : "Invalid secret " + telnetProfile.secretId});
+        return;
+      }
+      switch (secret.secretType) {
+        case SecretType.LOGIN_PASSWORD: {
+          telnetConfig.username = secret.login;
+          telnetConfig.password = secret.password;
+          break;
+        }
+        case SecretType.SSH_KEY: {
+          telnetConfig.username = secret.login;
+          telnetConfig.privateKey = secret.key.replace(/\\n/g, '\n');
+          if (secret.passphrase) {
+            telnetConfig.passphrase = secret.passphrase;
+          }
+          break;
+        }
+        case SecretType.PASSWORD_ONLY: {
+          // todo
+          break;
+        }
+      }
+    }
+    let data: {[key: string]: any;} = {terminalId: session.id, config: telnetConfig};
+    if (telnetProfile.initPath) {
+      data['initPath'] = telnetProfile.initPath;
+    }
+    if (telnetProfile.initCmd) {
+      data['initCmd'] = telnetProfile.initCmd;
+    }
+    this.ipc.send(SESSION_OPEN_TELNET_TERMINAL, data);
   }
 
   openSSHTerminalSession(session: Session) {
@@ -302,7 +366,7 @@ export class ElectronService {
     }
   }
 
-  async registerScpSession(id: string, sshProfile: SSHProfile) {
+  async registerScpSession(id: string, sshProfile: RemoteTerminalProfile) {
     if (!id || !sshProfile) {
       this.log({level: 'error', message : "Invalid configuration"});
       return;
@@ -390,6 +454,8 @@ export class ElectronService {
     }
     await this.ipc.invoke(SESSION_FTP_REGISTER, {id: id, config: ftpConfig});
   }
+
+
 
 
 //#endregion "Sessions"

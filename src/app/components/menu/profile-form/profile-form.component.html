@@ -104,11 +104,23 @@
       @else {
         @switch (form.get('profileType')?.value) {
           @case('SSH_TERMINAL') {
-            <app-ssh-profile-form formControlName="sshProfileForm"></app-ssh-profile-form>
+            <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm">
+
+            </app-remote-terminal-profile-form>
           }
           @case('SCP_FILE_EXPLORER') {
-            <app-ssh-profile-form formControlName="sshProfileForm" [type]="'scp'"></app-ssh-profile-form>
+            <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm" [type]="'scp'">
+
+            </app-remote-terminal-profile-form>
           }
+          @case('TELNET_TERMINAL') {
+            <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm"
+                                              [type]="'telnet'"
+                                              [supportedSecretType]="[SecretType.LOGIN_PASSWORD]" >
+
+            </app-remote-terminal-profile-form>
+          }
+
 
           @case('RDP_REMOTE_DESKTOP') {
             <app-rdp-profile-form formControlName="rdpProfileForm"></app-rdp-profile-form>

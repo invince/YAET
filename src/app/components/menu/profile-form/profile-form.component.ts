@@ -8,7 +8,7 @@ import {MatSelectChange, MatSelectModule} from '@angular/material/select';
 import {CommonModule, KeyValuePipe} from '@angular/common';
 import {MatInput} from '@angular/material/input';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {SshProfileFormComponent} from './ssh-profile-form/ssh-profile-form.component';
+import {RemoteTerminalProfileFormComponent} from './remote-terminal-profile-form/remote-terminal-profile-form.component';
 import {ProfileService} from '../../../services/profile.service';
 import {IsAChildForm} from '../../enhanced-form-mixin';
 import {MasterKeyService} from '../../../services/master-key.service';
@@ -18,7 +18,7 @@ import {MatChipInputEvent, MatChipsModule} from '@angular/material/chips';
 import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
 import {Tag} from '../../../domain/Tag';
-import {SSHProfile} from '../../../domain/profile/SSHProfile';
+import {RemoteTerminalProfile} from '../../../domain/profile/RemoteTerminalProfile';
 import {CdkTextareaAutosize} from '@angular/cdk/text-field';
 import {RdpProfileFormComponent} from './rdp-profile-form/rdp-profile-form.component';
 import {RdpProfile} from '../../../domain/profile/RdpProfile';
@@ -30,6 +30,8 @@ import {LogService} from '../../../services/log.service';
 import {NotificationService} from '../../../services/notification.service';
 import {FtpProfileFormComponent} from './ftp-profile-form/ftp-profile-form.component';
 import {FTPProfile} from '../../../domain/profile/FTPProfile';
+import {SecretType} from '../../../domain/Secret';
+
 
 @Component({
   selector: 'app-profile-form',
@@ -50,7 +52,7 @@ import {FTPProfile} from '../../../domain/profile/FTPProfile';
 
     CdkTextareaAutosize,
 
-    SshProfileFormComponent,
+    RemoteTerminalProfileFormComponent,
     RdpProfileFormComponent,
     VncProfileFormComponent,
     CustomProfileFormComponent,
@@ -79,7 +81,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   @ViewChild('tagsAutoCompleteInput') tagsAutoCompleteInput!: ElementRef;
   filteredTags!: Tag[];
 
-  @ViewChild(SshProfileFormComponent) sshChild!: SshProfileFormComponent;
+  @ViewChild(RemoteTerminalProfileFormComponent) remoteTerminalChild!: RemoteTerminalProfileFormComponent;
   @ViewChild(RdpProfileFormComponent) rdpChild!: RdpProfileFormComponent;
   @ViewChild(VncProfileFormComponent) vncChild!: VncProfileFormComponent;
   @ViewChild(CustomProfileFormComponent) customChild!: CustomProfileFormComponent;
@@ -128,7 +130,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
         group: [],
         tags: [[]],
         profileType: [this._profile.profileType, Validators.required],
-        sshProfileForm: [this._profile.sshProfile],
+        remoteTerminalProfileForm: [],
         ftpProfileForm: [this._profile.ftpProfile],
         rdpProfileForm: [this._profile.rdpProfile],
         vncProfileForm: [this._profile.vncProfile],
@@ -158,7 +160,10 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     switch($event.value) {
       case ProfileType.SSH_TERMINAL:
       case ProfileType.SCP_FILE_EXPLORER:
-        this.form.get('sshProfileForm')?.setValue(new SSHProfile());
+        this.form.get('remoteTerminalProfileForm')?.setValue(new RemoteTerminalProfile());
+        break;
+      case ProfileType.TELNET_TERMINAL:
+        this.form.get('remoteTerminalProfileForm')?.setValue(new RemoteTerminalProfile(23));
         break;
       case ProfileType.FTP_FILE_EXPLORER:
         this.form.get('ftpProfileForm')?.setValue(new FTPProfile());
@@ -208,7 +213,10 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
         switch (profile.profileType) {
           case ProfileType.SSH_TERMINAL:
           case ProfileType.SCP_FILE_EXPLORER:
-            this.updateFormValue('sshProfileForm', profile?.sshProfile);
+            this.updateFormValue('remoteTerminalProfileForm', profile?.sshProfile);
+            break;
+          case ProfileType.TELNET_TERMINAL:
+            this.updateFormValue('remoteTerminalProfileForm', profile?.telnetProfile);
             break;
           case ProfileType.FTP_FILE_EXPLORER:
             this.updateFormValue('ftpProfileForm', profile?.ftpProfile);
@@ -239,17 +247,29 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     this._profile.category = this.form.get('category')?.value;
     if (this._profile.category == ProfileCategory.CUSTOM) {
       this._profile.profileType = ProfileType.CUSTOM;
+      this._profile.customProfile = this.customChild?.formToModel();
     } else {
       this._profile.profileType = this.form.get('profileType')?.value;
     }
 
-    this._profile.sshProfile = this.sshChild?.formToModel();
-    this._profile.rdpProfile = this.rdpChild?.formToModel();
-    this._profile.vncProfile = this.vncChild?.formToModel();
-    this._profile.customProfile = this.customChild?.formToModel();
-    this._profile.ftpProfile = this.ftpChild?.formToModel();
-
-
+    switch (this._profile.profileType) {
+      case ProfileType.SSH_TERMINAL:
+      case ProfileType.SCP_FILE_EXPLORER:
+        this._profile.sshProfile = this.remoteTerminalChild?.formToModel();
+        break;
+      case ProfileType.TELNET_TERMINAL:
+        this._profile.telnetProfile = this.remoteTerminalChild?.formToModel();
+        break;
+      case ProfileType.FTP_FILE_EXPLORER:
+        this._profile.ftpProfile = this.ftpChild?.formToModel();
+        break;
+      case ProfileType.RDP_REMOTE_DESKTOP:
+        this._profile.rdpProfile = this.rdpChild?.formToModel();
+        break;
+      case ProfileType.VNC_REMOTE_DESKTOP:
+        this._profile.vncProfile = this.vncChild?.formToModel();
+        break;
+    }
     return this._profile;
   }
 
@@ -361,4 +381,5 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     this.profileService.reload();
   }
 
+  protected readonly SecretType = SecretType;
 }

@@ -14,6 +14,7 @@ import {NotificationService} from './notification.service';
 import {TabInstance} from '../domain/TabInstance';
 import {FtpSession} from '../domain/session/FtpSession';
 import {FtpService} from './ftp.service';
+import {TelnetSession} from '../domain/session/TelnetSession';
 
 @Injectable({
   providedIn: 'root'
@@ -38,6 +39,8 @@ export class SessionService {
         return new LocalTerminalSession(profile, profileType, this.tabService, this.electron);
       case ProfileType.SSH_TERMINAL:
         return new SSHSession(profile, profileType, this.tabService, this.electron);
+      case ProfileType.TELNET_TERMINAL:
+        return new TelnetSession(profile, profileType, this.tabService, this.electron);
       case ProfileType.VNC_REMOTE_DESKTOP:
         return new VncSession(profile, profileType, this.tabService, this.vncService, this.spinner, this.notification);
 

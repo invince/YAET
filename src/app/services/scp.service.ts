@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {ElectronService} from './electron.service';
-import {SSHProfile} from '../domain/profile/SSHProfile';
+import {RemoteTerminalProfile} from '../domain/profile/RemoteTerminalProfile';
 import {Session} from '../domain/session/Session';
 
 @Injectable({
@@ -12,7 +12,7 @@ export class ScpService {
 
   constructor(private electron: ElectronService) { }
 
-  async connect(id:string , sshProfile: SSHProfile) {
+  async connect(id:string , sshProfile: RemoteTerminalProfile) {
     return this.electron.registerScpSession(id , sshProfile);
   }
 

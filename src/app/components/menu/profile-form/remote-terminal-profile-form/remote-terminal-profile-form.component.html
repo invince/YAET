@@ -18,21 +18,23 @@
     <input matInput type="number" formControlName="port" required/>
   </mat-form-field>
 
-  <mat-form-field class="field">
-    <mat-label>Init Path</mat-label>
-    <input matInput type="text" formControlName="path"/>
-    @if (form.get('path')?.value) {
-    <button
-      matSuffix
-      mat-icon-button
-      aria-label="Clear"
-      (click)="clear(form,'path')">
-      <mat-icon>close</mat-icon>
-    </button>
-    }
-  </mat-form-field>
+  @if (type !== 'telnet') {
+    <mat-form-field class="field">
+      <mat-label>Init Path</mat-label>
+      <input matInput type="text" formControlName="path"/>
+      @if (form.get('path')?.value) {
+      <button
+        matSuffix
+        mat-icon-button
+        aria-label="Clear"
+        (click)="clear(form,'path')">
+        <mat-icon>close</mat-icon>
+      </button>
+      }
+    </mat-form-field>
+  }
 
-  @if (type !== 'scp') {
+  @if (type !== 'scp' && type !== 'telnet') {
     <mat-form-field class="field">
       <mat-label>Init Command</mat-label>
       <textarea matInput type="text" formControlName="cmd" cdkTextareaAutosize></textarea>
@@ -88,7 +90,7 @@
             <mat-icon>add</mat-icon>
             Add New...
           </mat-option>
-          @for (oneSecret of secretStorageService.dataCopy.secrets; track oneSecret.id) {
+          @for (oneSecret of filterSecret(); track oneSecret.id) {
           <mat-option [value]="oneSecret.id">
             @if (oneSecret.icon) {
               <mat-icon>{{oneSecret.icon}}</mat-icon>

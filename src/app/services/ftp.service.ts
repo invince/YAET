@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import {ElectronService} from './electron.service';
-import {SSHProfile} from '../domain/profile/SSHProfile';
 import {Session} from '../domain/session/Session';
 import {FTPProfile} from '../domain/profile/FTPProfile';
 

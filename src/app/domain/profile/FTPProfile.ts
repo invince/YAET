@@ -1,15 +1,12 @@
-import {AuthType} from '../Secret';
+import {AbstractRemoteConnectionProfile} from './AbstractRemoteConnectionProfile';
 
-export class FTPProfile {
-  public host: string = '';
-  public port: number = 21;
-
-  public initPath?: string;
+export class FTPProfile extends AbstractRemoteConnectionProfile {
   public secured: boolean = false;
+  public initPath?: string;
 
-  public authType?: AuthType;
-  public login: string = '';
-  public password: string = '';
-  public secretId!: string;
+  constructor() {
+    super();
+    this.port = 21;
+  }
 
 }

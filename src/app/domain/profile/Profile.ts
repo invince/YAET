@@ -1,6 +1,6 @@
 import {LocalTerminalProfile} from './LocalTerminalProfile';
 import {v4 as uuidv4} from 'uuid';
-import {SSHProfile} from './SSHProfile';
+import {RemoteTerminalProfile} from './RemoteTerminalProfile';
 import {Secret} from '../Secret';
 import {RdpProfile} from './RdpProfile';
 import {VncProfile} from './VncProfile';
@@ -100,7 +100,8 @@ export class Profile {
   public category!: ProfileCategory;
   public profileType!: ProfileType;
   public localTerminal!: LocalTerminalProfile;
-  public sshProfile!: SSHProfile;
+  public sshProfile!: RemoteTerminalProfile;
+  public telnetProfile!: RemoteTerminalProfile;
   public ftpProfile!: FTPProfile;
   public rdpProfile!: RdpProfile;
   public vncProfile!: VncProfile;
@@ -114,7 +115,8 @@ export class Profile {
 
   constructor() {
     this.localTerminal = new LocalTerminalProfile();
-    this.sshProfile = new SSHProfile();
+    this.sshProfile = new RemoteTerminalProfile();
+    this.telnetProfile = new RemoteTerminalProfile(23);
     this.ftpProfile = new FTPProfile();
     this.rdpProfile = new RdpProfile();
     this.vncProfile = new VncProfile();
@@ -130,6 +132,7 @@ export class Profile {
     cloned.profileType = base.profileType;
     cloned.localTerminal = base.localTerminal;
     cloned.sshProfile = base.sshProfile;
+    cloned.telnetProfile = base.telnetProfile;
     cloned.ftpProfile = base.ftpProfile;
     cloned.vncProfile = base.vncProfile;
     cloned.rdpProfile = base.rdpProfile;
@@ -150,6 +153,7 @@ export class Profile {
       switch (profile.profileType) {
         case ProfileType.SCP_FILE_EXPLORER:
         case ProfileType.SSH_TERMINAL: return profile.sshProfile.secretId == secret.id;
+        case ProfileType.TELNET_TERMINAL: return profile.telnetProfile.secretId == secret.id;
         case ProfileType.FTP_FILE_EXPLORER: return profile.ftpProfile.secretId == secret.id;
 
         case ProfileType.VNC_REMOTE_DESKTOP: return profile.vncProfile.secretId == secret.id;
@@ -166,6 +170,8 @@ export class Profile {
         case ProfileType.SCP_FILE_EXPLORER:
         case ProfileType.SSH_TERMINAL:
           profile.sshProfile.secretId = ''; break;
+        case ProfileType.TELNET_TERMINAL:
+          profile.telnetProfile.secretId = ''; break;
         case ProfileType.FTP_FILE_EXPLORER:
           profile.ftpProfile.secretId = ''; break;
         case ProfileType.VNC_REMOTE_DESKTOP:
