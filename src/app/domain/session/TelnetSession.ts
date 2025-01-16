@@ -1,13 +1,13 @@
 import {Profile, ProfileType} from '../profile/Profile';
 import {TabService} from '../../services/tab.service';
-import {ElectronService} from '../../services/electron.service';
 import {Session} from './Session';
+import {ElectronTerminalService} from '../../services/electron/electron-terminal.service';
 
 export class TelnetSession extends Session {
 
   constructor(profile: Profile, profileType: ProfileType,
               tabService: TabService,
-              private electron: ElectronService
+              private electron: ElectronTerminalService,
   ) {
     super(profile, profileType, tabService);
   }

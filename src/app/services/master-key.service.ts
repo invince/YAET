@@ -1,5 +1,5 @@
 import {Injectable, OnDestroy} from '@angular/core';
-import {ElectronService} from './electron.service';
+import {ElectronService} from './electron/electron.service';
 import CryptoJS from 'crypto-js';
 import {Subject, Subscription} from 'rxjs';
 import {Profile} from '../domain/profile/Profile';

@@ -5,17 +5,17 @@ const {app, globalShortcut, BrowserWindow, Tray, ipcMain} = require('electron');
 const {createMenu} = require('./ui/menu');
 const {SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON, APP_CONFIG_PATH} = require("./common");
 const {initConfigFilesIpcHandler} = require('./ipc/configFiles');
-const {initTerminalIpcHandler} = require('./ipc/terminal');
+const {initTerminalIpcHandler} = require('./ipc/terminal/terminal');
 const {initCloudIpcHandler} = require('./ipc/cloud');
 const {initSecurityIpcHandler} = require('./ipc/security');
-const {initRdpHandler} = require('./ipc/rdp');
+const {initRdpHandler} = require('./ipc/remote-desktop/rdp');
 const {initClipboard} = require('./ipc/clipboard');
-const {initVncHandler} = require("./ipc/vnc");
-const {initCustomSessionHandler} = require("./ipc/custom");
-const {initScpSftpHandler} = require("./ipc/scp");
+const {initVncHandler} = require("./ipc/remote-desktop/vnc");
+const {initCustomSessionHandler} = require("./ipc/customSession");
+const {initScpSftpHandler} = require("./ipc/file-explorer/scp");
 const {initAutoUpdater} = require("./ipc/autoUpdater");
 const {initBackend} = require("./ipc/backend");
-const {initFtpHandler} = require("./ipc/ftp");
+const {initFtpHandler} = require("./ipc/file-explorer/ftp");
 
 let tray;
 let expressApp;
@@ -26,6 +26,9 @@ let scpMap = new Map();
 let ftpMap = new Map();
 
 const log = require("electron-log")
+const {initSSHTerminalIpcHandler} = require("./ipc/terminal/ssh");
+const {initTelnetIpcHandler} = require("./ipc/terminal/telnet");
+const {initLocalTerminalIpcHandler} = require("./ipc/terminal/localTerminal");
 
 const logPath = `${__dirname}/logs/main.log`;
 console.log(logPath);
@@ -107,9 +110,12 @@ app.on('ready', () => {
   expressApp = initBackend(log);
 
   initConfigFilesIpcHandler(log, mainWindow);
-  initTerminalIpcHandler(log, terminalMap);
   initCloudIpcHandler(log);
   initSecurityIpcHandler(log);
+  initTerminalIpcHandler(log, terminalMap);
+  initSSHTerminalIpcHandler(log, terminalMap);
+  initTelnetIpcHandler(log, terminalMap);
+  initLocalTerminalIpcHandler(log, terminalMap);
   initRdpHandler(log);
   initVncHandler(log, vncMap);
   initScpSftpHandler(log, scpMap, expressApp);

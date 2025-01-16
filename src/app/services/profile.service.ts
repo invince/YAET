@@ -1,6 +1,6 @@
 import {Injectable, OnDestroy} from '@angular/core';
 import {Profile, Profiles, ProfileType} from '../domain/profile/Profile';
-import {ElectronService} from './electron.service';
+import {ElectronService} from './electron/electron.service';
 import {PROFILES_LOADED} from '../domain/electronConstant';
 import {Subject, Subscription} from 'rxjs';
 import {MasterKeyService} from './master-key.service';
