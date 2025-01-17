@@ -166,7 +166,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
         this.form.get('remoteTerminalProfileForm')?.setValue(new RemoteTerminalProfile(23));
         break;
       case ProfileType.WIN_RM_TERMINAL:
-        this.form.get('remoteTerminalProfileForm')?.setValue(new RemoteTerminalProfile(5985));
+        this.form.get('remoteTerminalProfileForm')?.setValue(new RemoteTerminalProfile()); // port is not important
         break;
       case ProfileType.FTP_FILE_EXPLORER:
         this.form.get('ftpProfileForm')?.setValue(new FTPProfile());

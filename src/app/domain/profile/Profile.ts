@@ -124,7 +124,7 @@ export class Profile {
     this.localTerminal = new LocalTerminalProfile();
     this.sshProfile = new RemoteTerminalProfile();
     this.telnetProfile = new RemoteTerminalProfile(23);
-    this.winRmProfile = new RemoteTerminalProfile(5985);
+    this.winRmProfile = new RemoteTerminalProfile(); // port is not important
     this.ftpProfile = new FTPProfile();
     this.rdpProfile = new RdpProfile();
     this.vncProfile = new VncProfile();

@@ -85,13 +85,18 @@ function initWinRmIpcHandler(log, terminalMap) {
 
     // Initialize the remote connection
     // Prepare the commands
-    let commandQueue = [
-      `$secPassword = ConvertTo-SecureString '${password}' -AsPlainText -Force`,
-      `$cred = New-Object System.Management.Automation.PSCredential('${username}', $secPassword)`,
-      `Enter-PSSession -ComputerName '${host}' -Credential $cred`,
-    ];
+    let connectionCommand = [];
+    if (password && username) {
+      connectionCommand =  [
+        `$secPassword = ConvertTo-SecureString '${password}' -AsPlainText -Force`,
+        `$cred = New-Object System.Management.Automation.PSCredential('${username}', $secPassword)`,
+        `Enter-PSSession -ComputerName '${host}' -Credential $cred`,
+      ];
+    } else {
+      connectionCommand = [`Enter-PSSession -ComputerName '${host}'`]
+    }
 
-    for (const oneCmd of commandQueue) {
+    for (const oneCmd of connectionCommand) {
       ptyProcess.write(oneCmd + '\r');
     }
 
