@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import {ElectronService} from './electron.service';
-import {SSHProfile} from '../domain/profile/SSHProfile';
+import {RemoteTerminalProfile} from '../domain/profile/RemoteTerminalProfile';
 import {Session} from '../domain/session/Session';
+import {ElectronFileExplorerService} from './electron/electron-file-explorer.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,9 +10,9 @@ export class ScpService {
 
   private apiUrl = 'http://localhost:13012/api/v1/scp';
 
-  constructor(private electron: ElectronService) { }
+  constructor(private electron: ElectronFileExplorerService) { }
 
-  async connect(id:string , sshProfile: SSHProfile) {
+  async connect(id:string , sshProfile: RemoteTerminalProfile) {
     return this.electron.registerScpSession(id , sshProfile);
   }
 

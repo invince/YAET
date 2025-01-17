@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import {Profile, ProfileType} from '../domain/profile/Profile';
 import {Session} from '../domain/session/Session';
 import {SSHSession} from '../domain/session/SSHSession';
-import {ElectronService} from './electron.service';
 import {TabService} from './tab.service';
 import {LocalTerminalSession} from '../domain/session/LocalTerminalSession';
 import {VncSession} from '../domain/session/VncSession';
@@ -14,6 +13,10 @@ import {NotificationService} from './notification.service';
 import {TabInstance} from '../domain/TabInstance';
 import {FtpSession} from '../domain/session/FtpSession';
 import {FtpService} from './ftp.service';
+import {TelnetSession} from '../domain/session/TelnetSession';
+import {ElectronTerminalService} from './electron/electron-terminal.service';
+import {ElectronRemoteDesktopService} from './electron/electron-remote-desktop.service';
+import {WinRMSession} from '../domain/session/WinRMSession';
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +25,8 @@ export class SessionService {
 
   constructor(
     private tabService: TabService,
-    private electron: ElectronService,
+    private electronTerm: ElectronTerminalService,
+    private electronRD: ElectronRemoteDesktopService,
     private vncService: VncService,
 
     private scpService: ScpService,
@@ -35,9 +39,13 @@ export class SessionService {
   create(profile: Profile, profileType: ProfileType): Session {
     switch (profileType) {
       case ProfileType.LOCAL_TERMINAL:
-        return new LocalTerminalSession(profile, profileType, this.tabService, this.electron);
+        return new LocalTerminalSession(profile, profileType, this.tabService, this.electronTerm);
       case ProfileType.SSH_TERMINAL:
-        return new SSHSession(profile, profileType, this.tabService, this.electron);
+        return new SSHSession(profile, profileType, this.tabService, this.electronTerm);
+      case ProfileType.TELNET_TERMINAL:
+        return new TelnetSession(profile, profileType, this.tabService, this.electronTerm);
+      case ProfileType.WIN_RM_TERMINAL:
+        return new WinRMSession(profile, profileType, this.tabService, this.electronTerm);
       case ProfileType.VNC_REMOTE_DESKTOP:
         return new VncSession(profile, profileType, this.tabService, this.vncService, this.spinner, this.notification);
 
@@ -58,14 +66,14 @@ export class SessionService {
             this.notification.error('Invalid Rdp Config');
             return;
           }
-          this.electron.openRdpSession(profile.rdpProfile);
+          this.electronRD.openRdpSession(profile.rdpProfile);
           break;
         case ProfileType.CUSTOM:
           if (!profile.customProfile || !profile.customProfile.execPath) {
             this.notification.error('Invalid Custom Profile');
             return;
           }
-          this.electron.openCustomSession(profile.customProfile);
+          this.electronTerm.openCustomSession(profile.customProfile);
           break;
       }
     }

@@ -3,12 +3,13 @@ import {ElementRef, Injectable} from '@angular/core';
 import {VncProfile} from '../domain/profile/VncProfile';
 import {AuthType, SecretType} from '../domain/Secret';
 import {SecretStorageService} from './secret-storage.service';
-import {ElectronService} from './electron.service';
+import {ElectronService} from './electron/electron.service';
 import RFB from '@novnc/novnc/lib/rfb';
 import {Subject} from 'rxjs';
 import {ProfileType} from '../domain/profile/Profile';
 import {SettingStorageService} from './setting-storage.service';
 import {LogService} from './log.service';
+import {ElectronRemoteDesktopService} from './electron/electron-remote-desktop.service';
 
 
 // we use ws to proxy to the vnc server
@@ -29,9 +30,9 @@ export class VncService {
     private log: LogService,
     private settingStorage: SettingStorageService,
     private secretStorage: SecretStorageService,
-    private electronService: ElectronService,
+    private electron: ElectronRemoteDesktopService,
   ) {
-    this.electronService.subscribeClipboard(ProfileType.VNC_REMOTE_DESKTOP, (id: string, text: string) => {
+    this.electron.subscribeClipboard(ProfileType.VNC_REMOTE_DESKTOP, (id: string, text: string) => {
       if(this.vncMap) {
         let rfb = this.vncMap.get(id);
         if (rfb) {
@@ -76,7 +77,7 @@ export class VncService {
           }
         }
       }
-      this.electronService.openVncSession(id, vncProfile.host, vncProfile.port).then(
+      this.electron.openVncSession(id, vncProfile.host, vncProfile.port).then(
         websocketPort => {
           const rfb = new RFB(vncCanvas.nativeElement, `ws://localhost:${websocketPort}`, {
             // @ts-ignore
@@ -107,7 +108,7 @@ export class VncService {
   }
 
   disconnect(id: string) {
-    this.electronService.closeVncSession(id);
+    this.electron.closeVncSession(id);
     let rfb = this.vncMap.get(id);
     rfb?.disconnect();
     this.vncMap.delete(id);

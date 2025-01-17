@@ -1,5 +1,4 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {RouterOutlet} from '@angular/router';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatTabsModule} from '@angular/material/tabs';
 import {TerminalComponent} from './components/terminal/terminal.component';
@@ -9,8 +8,6 @@ import {CommonModule} from '@angular/common';
 import {MatIcon} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
 import {menuAnimation} from './animations/menuAnimation';
-import {MenuComponent} from './components/menu/menu.component';
-import {ProfileFormComponent} from './components/menu/profile-form/profile-form.component';
 import {SettingMenuComponent} from './components/menu/setting-menu/setting-menu.component';
 import {SettingService} from './services/setting.service';
 import {ProfileService} from './services/profile.service';

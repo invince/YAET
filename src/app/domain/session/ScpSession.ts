@@ -1,6 +1,6 @@
 import {Session} from './Session';
 import {Profile, ProfileType} from '../profile/Profile';
-import {ElectronService} from '../../services/electron.service';
+import {ElectronService} from '../../services/electron/electron.service';
 import {TabService} from '../../services/tab.service';
 import {ScpService} from '../../services/scp.service';
 
