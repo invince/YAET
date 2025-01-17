@@ -1,10 +1,9 @@
-
 import {Profile, ProfileType} from '../profile/Profile';
 import {TabService} from '../../services/tab.service';
 import {Session} from './Session';
 import {ElectronTerminalService} from '../../services/electron/electron-terminal.service';
 
-export class LocalTerminalSession extends Session {
+export class WinRMSession extends Session {
 
   constructor(profile: Profile, profileType: ProfileType,
               tabService: TabService,
@@ -14,12 +13,12 @@ export class LocalTerminalSession extends Session {
   }
 
   override close(): void {
-    this.electron.closeLocalTerminalSession(this);
+    this.electron.closeWinRMTerminalSession(this);
     super.close();
   }
 
   override open(): void {
-    this.electron.openLocalTerminalSession(this);
+    this.electron.openWinRMTerminalSession(this);
     super.open();
   }
 }

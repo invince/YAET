@@ -8,7 +8,6 @@ import {
   SimpleChanges,
   OnDestroy, ElementRef
 } from '@angular/core';
-import {ElectronService} from '../../services/electron.service';
 import {NgTerminal, NgTerminalModule} from 'ng-terminal';
 import {Terminal} from '@xterm/xterm';
 import {Session} from '../../domain/session/Session';
@@ -16,6 +15,7 @@ import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { WebglAddon } from '@xterm/addon-webgl';
 import {Subscription} from 'rxjs';
+import {ElectronTerminalService} from '../../services/electron/electron-terminal.service';
 
 @Component({
   selector: 'app-terminal',
@@ -37,7 +37,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   private terminalOnDataSubscription?: Subscription;
 
   constructor(
-    private electron: ElectronService,
+    private electron: ElectronTerminalService,
   ) {
   }
 

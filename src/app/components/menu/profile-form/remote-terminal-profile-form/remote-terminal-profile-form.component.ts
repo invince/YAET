@@ -1,5 +1,5 @@
 import {Component, forwardRef, Input} from '@angular/core';
-import {SSHProfile} from '../../../../domain/profile/SSHProfile';
+import {RemoteTerminalProfile} from '../../../../domain/profile/RemoteTerminalProfile';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatIcon} from '@angular/material/icon';
@@ -28,12 +28,11 @@ import {
   ModelFieldWithPrecondition,
   ModelFormController
 } from '../../../../utils/ModelFormController';
-import {VncProfile} from '../../../../domain/profile/VncProfile';
 import {SecretQuickFormComponent} from '../../../dialog/secret-quick-form/secret-quick-form.component';
 import {MatDialog} from '@angular/material/dialog';
 
 @Component({
-  selector: 'app-ssh-profile-form',
+  selector: 'app-remote-terminal-profile-form',
   standalone: true,
   imports: [
     CommonModule,
@@ -52,24 +51,26 @@ import {MatDialog} from '@angular/material/dialog';
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => SshProfileFormComponent),
+      useExisting: forwardRef(() => RemoteTerminalProfileFormComponent),
       multi: true,
     },
     {
       provide: NG_VALIDATORS,
-      useExisting: forwardRef(() => SshProfileFormComponent),
+      useExisting: forwardRef(() => RemoteTerminalProfileFormComponent),
       multi: true,
     },
   ],
-  templateUrl: './ssh-profile-form.component.html',
-  styleUrl: './ssh-profile-form.component.css'
+  templateUrl: './remote-terminal-profile-form.component.html',
+  styleUrl: './remote-terminal-profile-form.component.css'
 })
-export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponent)  {
+export class RemoteTerminalProfileFormComponent extends ChildFormAsFormControl(MenuComponent)  {
 
   AUTH_OPTIONS = AuthType;
 
   @Input() type!: String;
-  private modelFormController : ModelFormController<SSHProfile>;
+  @Input() supportedSecretType: SecretType[] =  [SecretType.LOGIN_PASSWORD, SecretType.SSH_KEY];
+
+  private modelFormController : ModelFormController<RemoteTerminalProfile>;
   constructor(
     private fb: FormBuilder,
     public secretStorageService: SecretStorageService, // in html
@@ -92,7 +93,7 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
     mappings.set({name: 'password', precondition: form => false } , 'confirmPassword'); // we don't set model.password via confirmPassword control
     mappings.set({name: 'secretId', precondition: form => this.form.get('authType')?.value  == 'secret' } , 'secretId');
 
-    this.modelFormController = new ModelFormController<SSHProfile>(mappings);
+    this.modelFormController = new ModelFormController<RemoteTerminalProfile>(mappings);
   }
 
   onInitForm(): FormGroup {
@@ -132,16 +133,20 @@ export class SshProfileFormComponent extends ChildFormAsFormControl(MenuComponen
     }
   }
 
-  override formToModel(): SSHProfile {
-    return this.modelFormController.formToModel(new SSHProfile(), this.form);
+  override formToModel(): RemoteTerminalProfile {
+    return this.modelFormController.formToModel(new RemoteTerminalProfile(), this.form);
   }
 
   quickCreateSecret() {
     this.dialog.open(SecretQuickFormComponent, {
       width: '650px',
       data: {
-        secretTypes: [SecretType.LOGIN_PASSWORD, SecretType.PASSWORD_ONLY, SecretType.SSH_KEY]
+        secretTypes: this.supportedSecretType
       }
     });
+  }
+
+  filterSecret(): Secret[] {
+    return this.secretStorageService.dataCopy.secrets.filter(one => this.supportedSecretType.includes(one.secretType));
   }
 }

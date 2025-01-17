@@ -1,12 +1,11 @@
 import {AuthType} from '../Secret';
 
-export class SSHProfile {
+export class AbstractRemoteConnectionProfile {
   public host: string = '';
-  public port: number = 22;
+  public port: number = 0;
 
-  public initPath?: string;
 
-  public initCmd?: string;
+
   public authType?: AuthType;
   public login: string = '';
   public password: string = '';

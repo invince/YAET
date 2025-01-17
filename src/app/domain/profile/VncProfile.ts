@@ -1,12 +1,10 @@
-import {AuthType} from '../Secret';
+import {AbstractRemoteConnectionProfile} from './AbstractRemoteConnectionProfile';
 
-export class VncProfile {
-  public host: string = '';
-  public port: number = 5900;
+export class VncProfile extends AbstractRemoteConnectionProfile{
 
-  public authType?: AuthType;
-  public login: string = '';
-  public password: string = '';
-  public secretId!: string;
+  constructor() {
+    super();
+    this.port = 5900;
+  }
 
 }

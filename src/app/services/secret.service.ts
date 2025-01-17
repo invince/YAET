@@ -1,6 +1,6 @@
 import {Injectable, OnDestroy} from '@angular/core';
 import {Secret, Secrets, SecretType} from '../domain/Secret';
-import {ElectronService} from './electron.service';
+import {ElectronService} from './electron/electron.service';
 import {SECRETS_LOADED} from '../domain/electronConstant';
 import {MasterKeyService} from './master-key.service';
 import {SecretStorageService} from './secret-storage.service';

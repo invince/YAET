@@ -1,6 +1,6 @@
 import {Injectable, OnDestroy} from '@angular/core';
 import {Profile, Profiles, ProfileType} from '../domain/profile/Profile';
-import {ElectronService} from './electron.service';
+import {ElectronService} from './electron/electron.service';
 import {PROFILES_LOADED} from '../domain/electronConstant';
 import {Subject, Subscription} from 'rxjs';
 import {MasterKeyService} from './master-key.service';
@@ -107,6 +107,7 @@ export class ProfileService implements OnDestroy{
         case ProfileType.LOCAL_TERMINAL:
         case ProfileType.SSH_TERMINAL:
         case ProfileType.TELNET_TERMINAL:
+        case ProfileType.WIN_RM_TERMINAL:
           one.icon = 'terminal'; break;
 
         case ProfileType.VNC_REMOTE_DESKTOP:

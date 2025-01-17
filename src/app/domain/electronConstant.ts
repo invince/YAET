@@ -10,17 +10,22 @@ export const SESSION_OPEN_LOCAL_TERMINAL = 'session.open.terminal.local';
 export const SESSION_CLOSE_LOCAL_TERMINAL = 'session.close.terminal.local';
 export const SESSION_OPEN_SSH_TERMINAL = 'session.open.terminal.ssh';
 export const SESSION_CLOSE_SSH_TERMINAL = 'session.close.terminal.ssh';
-export const SESSION_OPEN_RDP = 'session.open.rd.rdp';
 export const SESSION_DISCONNECT_SSH = 'session.disconnect.terminal.ssh';
+export const SESSION_OPEN_WINRM_TERMINAL = 'session.open.terminal.winrm';
+export const SESSION_CLOSE_WINRM_TERMINAL = 'session.close.terminal.winrm';
+export const SESSION_OPEN_TELNET_TERMINAL = 'session.open.terminal.telnet';
+export const SESSION_CLOSE_TELNET_TERMINAL = 'session.close.terminal.telnet';
 export const TERMINAL_INPUT = 'terminal.input';
 export const TERMINAL_OUTPUT = 'terminal.output';
+
+export const SESSION_OPEN_RDP = 'session.open.rd.rdp';
 export const SESSION_OPEN_VNC = 'session.open.rd.vnc';
 export const SESSION_DISCONNECT_VNC = 'session.disconnect.rd.vnc';
 
-
-export const SESSION_OPEN_CUSTOM = 'session.open.custom';
 export const SESSION_SCP_REGISTER= 'session.fe.scp.register';
 export const SESSION_FTP_REGISTER= 'session.fe.ftp.register';
+
+export const SESSION_OPEN_CUSTOM = 'session.open.custom';
 
 //#endregion "Sessions"
 
