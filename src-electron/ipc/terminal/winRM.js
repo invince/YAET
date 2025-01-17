@@ -1,7 +1,7 @@
 const { ipcMain } = require('electron');
 const pty = require("node-pty");
 
-function initWinRmIpcHandler(log, terminalMap) {
+function initWinRmIpcHandler(settings, log, terminalMap) {
   ipcMain.on('session.open.terminal.winrm', (event, data) => {
     if (process.platform === 'win32') {
       openWin32WinRM(event, data);
@@ -30,8 +30,13 @@ function initWinRmIpcHandler(log, terminalMap) {
 
     log.info(`WinRM Terminal ${id} initializing`);
 
+    let localTermForWinRM = 'powershell.exe';
+    if('powershell 7' === settings?.terminal?.localTerminal?.type){
+      localTermForWinRM = 'pwsh.exe';
+    }
+
     // Spawn a PowerShell process
-    const ptyProcess = pty.spawn('powershell.exe', [], {
+    const ptyProcess = pty.spawn(localTermForWinRM, [], {
       name: 'xterm-color',
       cols: 80,
       rows: 30,

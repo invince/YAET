@@ -85,29 +85,30 @@ app.on('ready', () => {
     fs.mkdirSync(APP_CONFIG_PATH);
   }
 
+  initHandlerBeforeSettingLoad();
+
+
   // Ensure `load` runs on every page reload
   mainWindow.webContents.on('did-finish-load', () => {
-    load(log, mainWindow, SETTINGS_JSON, "settings.loaded", false)
-      .then(settings => {
-        const autoUpdate = settings?.general?.autoUpdate;
-        if (autoUpdate) {
-          initAutoUpdater(log);
-        }
-      })
-      .catch(log.error);
-    load(log, mainWindow,  PROFILES_JSON, "profiles.loaded", false)
-      .then(r =>  log.info(PROFILES_JSON + " loaded, event sent"))
+    load(log, mainWindow, PROFILES_JSON, "profiles.loaded", false)
+      .then(r => log.info(PROFILES_JSON + " loaded, event sent"))
       .catch(log.error);
     load(log, mainWindow, SECRETS_JSON, "secrets.loaded", true)
-      .then(r =>  log.info(SECRETS_JSON + " loaded, event sent"))
+      .then(r => log.info(SECRETS_JSON + " loaded, event sent"))
       .catch(log.error);
     load(log, mainWindow, CLOUD_JSON, "cloud.loaded", true)
-      .then(r =>  log.info(CLOUD_JSON + " loaded, event sent"))
+      .then(r => log.info(CLOUD_JSON + " loaded, event sent"))
       .catch(log.error);
+    load(log, mainWindow, SETTINGS_JSON, "settings.loaded", false)
+      .then(settings => {
+        initHandlerAfterSettingLoad(mainWindow, log, settings);
+      })
+      .catch(log.error);
+
   });
+});
 
-  // createMenu(log);
-
+function initHandlerBeforeSettingLoad() {
   expressApp = initBackend(log);
 
   initConfigFilesIpcHandler(log, mainWindow);
@@ -116,8 +117,6 @@ app.on('ready', () => {
   initTerminalIpcHandler(log, terminalMap);
   initSSHTerminalIpcHandler(log, terminalMap);
   initTelnetIpcHandler(log, terminalMap);
-  initLocalTerminalIpcHandler(log, terminalMap);
-  initWinRmIpcHandler(log, terminalMap);
   initRdpHandler(log);
   initVncHandler(log, vncMap);
   initScpSftpHandler(log, scpMap, expressApp);
@@ -127,9 +126,18 @@ app.on('ready', () => {
 
   // Start API
   expressApp.listen(13012, () => log.info('API listening on port 13012'));
+}
 
 
-});
+function initHandlerAfterSettingLoad(settings) {
+  // createMenu(log);
+  const autoUpdate = settings?.general?.autoUpdate;
+  if (autoUpdate) {
+    initAutoUpdater(log);
+  }
+  initLocalTerminalIpcHandler(settings, log, terminalMap);
+  initWinRmIpcHandler(settings, log, terminalMap);
+}
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -137,10 +145,12 @@ app.on('window-all-closed', () => {
     terminalMap.forEach((term) => {
       switch (term.type) {
         case 'local':
+        case 'winrm':
           term.process?.removeAllListeners();
           term.process?.kill() ;
           break;
         case 'ssh':
+        case 'telnet':
           term.process?.end() ;
           break;
 

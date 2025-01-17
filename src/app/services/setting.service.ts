@@ -116,8 +116,12 @@ export class SettingService {
         terminalSettings.localTerminal.type = LocalTerminalType.CMD;
       }
       switch (terminalSettings.localTerminal.type) {
-        case LocalTerminalType.CMD: terminalSettings.localTerminal.execPath = 'cmd.exe'; break;
-        case LocalTerminalType.POWERSHELL: terminalSettings.localTerminal.execPath = 'powershell.exe'; break;
+        case LocalTerminalType.CMD:
+          terminalSettings.localTerminal.execPath = 'cmd.exe'; break;
+        case LocalTerminalType.POWERSHELL:
+          terminalSettings.localTerminal.execPath = 'powershell.exe'; break;
+        case LocalTerminalType.POWERSHELL_7:
+          terminalSettings.localTerminal.execPath = 'pwsh.exe'; break;
         case LocalTerminalType.BASH: {
           if (process.platform === 'win32') {
             terminalSettings.localTerminal.execPath = 'wsl.exe';
