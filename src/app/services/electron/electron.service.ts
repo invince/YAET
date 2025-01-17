@@ -4,9 +4,6 @@ import {
   CLOUD_DOWNLOAD,
   CLOUD_RELOAD,
   CLOUD_SAVE,
-  CLOUD_UPLOAD,
-  SESSION_OPEN_LOCAL_TERMINAL,
-  SESSION_OPEN_SSH_TERMINAL,
   DELETE_MASTERKEY,
   ERROR,
   GET_MASTERKEY,
@@ -17,7 +14,7 @@ import {
   SECRETS_SAVE,
   SETTINGS_RELOAD,
   SETTINGS_SAVE,
-  LOG,
+  LOG, CLOUD_UPLOAD,
 } from '../../domain/electronConstant';
 import {ProfileType} from '../../domain/profile/Profile';
 import {MySettings} from '../../domain/setting/MySettings';
@@ -53,8 +50,6 @@ export class AbstractElectronService {
 })
 export class ElectronService extends AbstractElectronService {
 
-  private clipboardCallbackMap: Map<ProfileType, (id: string, text: string)=> boolean> = new Map();
-
   constructor(
     private secretStorage: SecretStorageService,
     private notification: NotificationService,
@@ -75,6 +70,9 @@ export class ElectronService extends AbstractElectronService {
     this.ipc.on(ERROR, (event, data) => {
       this.log({level: 'error:', message:  data});
       this.notification.error('ERROR: ' + data.error);
+      if (data.category === 'winrm' && data.id) {
+        this.tabService.connected(data.id);
+      }
       return;
     });
 

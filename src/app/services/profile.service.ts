@@ -107,6 +107,7 @@ export class ProfileService implements OnDestroy{
         case ProfileType.LOCAL_TERMINAL:
         case ProfileType.SSH_TERMINAL:
         case ProfileType.TELNET_TERMINAL:
+        case ProfileType.WIN_RM_TERMINAL:
           one.icon = 'terminal'; break;
 
         case ProfileType.VNC_REMOTE_DESKTOP:

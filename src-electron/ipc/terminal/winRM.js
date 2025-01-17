@@ -1,28 +1,5 @@
 const { ipcMain } = require('electron');
-const { spawn } = require('child_process');
-
-function runPowerShellCommand(command, callback) {
-  const psProcess = spawn('powershell.exe', ['-Command', command], {
-    env: process.env,
-    stdio: 'pipe',
-  });
-
-  psProcess.stdout.setEncoding('utf8');
-  psProcess.stderr.setEncoding('utf8');
-
-  let output = '';
-  psProcess.stdout.on('data', (data) => {
-    output += data.toString();
-  });
-
-  psProcess.stderr.on('data', (data) => {
-    console.error(`Error: ${data.toString()}`);
-  });
-
-  psProcess.on('close', (code) => {
-    callback(output, code);
-  });
-}
+const pty = require("node-pty");
 
 function initWinRmIpcHandler(log, terminalMap) {
   ipcMain.on('session.open.terminal.winrm', (event, data) => {
@@ -41,23 +18,7 @@ function initWinRmIpcHandler(log, terminalMap) {
     const id = data.terminalId;
     const terminal = terminalMap.get(id);
     if (terminal?.type === 'winrm') {
-      terminal.process.stdin.end(); // Close stdin
       terminal.process.kill(); // Kill the process
-
-      // Check the initial state of WinRM and act accordingly
-      if (!terminal.isWinRMActiveBeforeOpen) {
-        const disableWinRmCommand = `Disable-PSRemoting -Force`;
-        runPowerShellCommand(disableWinRmCommand, (output, code) => {
-          if (code !== 0) {
-            log.error('Failed to disable WinRM:', output);
-          } else {
-            log.info('WinRM disabled successfully.');
-          }
-        });
-      } else {
-        log.info('WinRM state unchanged, as it was active before opening.');
-      }
-
       terminalMap.delete(id);
       log.info(`WinRM Terminal ${id} closed`);
     }
@@ -65,92 +26,81 @@ function initWinRmIpcHandler(log, terminalMap) {
 
   function openWin32WinRM(event, data) {
     const id = data.terminalId;
-    const { host, username, password } = data;
+    const { host, username, password } = data.config;
 
     log.info(`WinRM Terminal ${id} initializing`);
 
-    // Check if WinRM is enabled
-    const checkWinRmCommand = `winrm quickconfig`;
-    runPowerShellCommand(checkWinRmCommand, (output, code) => {
-      const checkWinRmCommand = `Test-WSMan -ComputerName localhost`;
-      runPowerShellCommand(checkWinRmCommand, (output, code) => {
-        const isWinRMActiveBeforeOpen = code === 0; // If WinRM is enabled, code will be 0
-        if (!isWinRMActiveBeforeOpen) {
-          log.info('WinRM not enabled. Enabling now...');
-          const enableWinRmCommand = `Enable-PSRemoting -Force`;
-          runPowerShellCommand(enableWinRmCommand, (enableOutput, enableCode) => {
-            if (enableCode !== 0) {
-              log.error('Failed to enable WinRM:', enableOutput);
-              event.sender.send('error', {
-                category: 'winrm',
-                id: id,
-                error: 'Failed to enable WinRM',
-              });
-              return;
-            }
-            log.info('WinRM enabled successfully.');
-            openWinRmSession(isWinRMActiveBeforeOpen);
-          });
-        } else {
-          log.info('WinRM already enabled.');
-          openWinRmSession(isWinRMActiveBeforeOpen);
+    // Spawn a PowerShell process
+    const ptyProcess = pty.spawn('powershell.exe', [], {
+      name: 'xterm-color',
+      cols: 80,
+      rows: 30,
+      cwd: process.env.HOME,
+      env: process.env,
+      /* ISSUE 108, useConpty false to avoid Error: read EPIPE on close
+         ref: https://github.com/microsoft/node-pty/issues/512
+              https://github.com/vercel/hyper/issues/6961
+      */
+      useConpty: false,
+    });
+
+    let initialized = false;
+
+    ptyProcess.onData((data) => {
+      if (!initialized) {
+        // Buffer output until initialization completes
+        if (data.includes("Enter-PSSession")) {
+          initialized = true;
+          log.info(`WinRM Terminal ${id} session established`);
+          event.sender.send('terminal.opened', { id });
         }
+      } else {
+        // Send interactive output to the terminal
+        event.sender.send('terminal.output', { id, data: data.toString() });
+      }
+    });
+
+    ptyProcess.on('error', (data) => {
+      log.error(`Error in WinRM Terminal ${id}: ${data.toString()}`);
+      event.sender.send('error', {
+        category: 'winrm',
+        id,
+        error: data.toString(),
       });
     });
 
+    ptyProcess.on('close', (code) => {
+      log.info(`WinRM Terminal ${id} closed with code ${code}`);
+      terminalMap.delete(id);
+      event.sender.send('terminal.closed', { id });
+    });
 
-    function openWinRmSession(isWinRMActiveBeforeOpen) {
-      // PowerShell command for remote connection
-      const winRmCommand = `
-        $secPassword = ConvertTo-SecureString '${password}' -AsPlainText -Force;
-        $cred = New-Object System.Management.Automation.PSCredential('${username}', $secPassword);
-        Enter-PSSession -ComputerName '${host}' -Credential $cred
-      `;
+    terminalMap.set(id, {
+      type: 'winrm',
+      process: ptyProcess,
+      callback: (data) => {
+        ptyProcess.write(data);
+      },
+    });
 
-      // Spawn a PowerShell process
-      const psProcess = spawn('powershell.exe', ['-NoExit', '-Command', winRmCommand], {
-        env: process.env,
-        stdio: 'pipe',
-      });
+    // Initialize the remote connection
+    // Prepare the commands
+    let commandQueue = [
+      `$secPassword = ConvertTo-SecureString '${password}' -AsPlainText -Force`,
+      `$cred = New-Object System.Management.Automation.PSCredential('${username}', $secPassword)`,
+      `Enter-PSSession -ComputerName '${host}' -Credential $cred`,
+    ];
 
-      psProcess.stdout.setEncoding('utf8');
-      psProcess.stderr.setEncoding('utf8');
+    for (const oneCmd of commandQueue) {
+      ptyProcess.write(oneCmd + '\r');
+    }
 
-      psProcess.stdout.on('data', (data) => {
-        event.sender.send('terminal.output', { id: id, data: data.toString() });
-      });
-
-      psProcess.stderr.on('data', (data) => {
-        log.error(`Error in WinRM Terminal ${id}: ${data.toString()}`);
-        event.sender.send('error', {
-          category: 'winrm',
-          id: id,
-          error: data.toString(),
-        });
-      });
-
-      psProcess.on('close', (code) => {
-        log.info(`WinRM Terminal ${id} closed with code ${code}`);
-        terminalMap.delete(id);
-        event.sender.send('terminal.closed', { id: id });
-      });
-
-      terminalMap.set(id, {
-        type: 'winrm',
-        process: psProcess,
-        isWinRMActiveBeforeOpen, // Save the initial WinRM state
-        callback: (cmd) => {
-          psProcess.stdin.write(cmd + '\n');
-        },
-      });
-
-      // Send initial command if provided
-      if (data.initPath) {
-        psProcess.stdin.write('cd ' + data.initPath + '\n');
-      }
-      if (data.initCmd) {
-        psProcess.stdin.write(data.initCmd + '\n');
-      }
+    // Send initial command if provided after initialization
+    if (data.initPath) {
+      ptyProcess.write(`cd ${data.initPath}\r`);
+    }
+    if (data.initCmd) {
+      ptyProcess.write(`${data.initCmd}\r`);
     }
   }
 }
