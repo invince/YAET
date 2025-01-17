@@ -24,6 +24,7 @@ let terminalMap = new Map();
 let vncMap = new Map();
 let scpMap = new Map();
 let ftpMap = new Map();
+let initialized = false;
 
 const log = require("electron-log")
 const {initSSHTerminalIpcHandler} = require("./ipc/terminal/ssh");
@@ -131,12 +132,16 @@ function initHandlerBeforeSettingLoad() {
 
 function initHandlerAfterSettingLoad(settings) {
   // createMenu(log);
-  const autoUpdate = settings?.general?.autoUpdate;
-  if (autoUpdate) {
-    initAutoUpdater(log);
+  if (!initialized) {
+    const autoUpdate = settings?.general?.autoUpdate;
+    if (autoUpdate) {
+      initAutoUpdater(log);
+    }
+    initLocalTerminalIpcHandler(settings, log, terminalMap);
+    initWinRmIpcHandler(settings, log, terminalMap);
+    initialized = true;
   }
-  initLocalTerminalIpcHandler(settings, log, terminalMap);
-  initWinRmIpcHandler(settings, log, terminalMap);
+
 }
 
 app.on('window-all-closed', () => {
