@@ -165,6 +165,9 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       case ProfileType.TELNET_TERMINAL:
         this.form.get('remoteTerminalProfileForm')?.setValue(new RemoteTerminalProfile(23));
         break;
+      case ProfileType.WIN_RM_TERMINAL:
+        this.form.get('remoteTerminalProfileForm')?.setValue(new RemoteTerminalProfile(5985));
+        break;
       case ProfileType.FTP_FILE_EXPLORER:
         this.form.get('ftpProfileForm')?.setValue(new FTPProfile());
         break;
@@ -218,6 +221,9 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
           case ProfileType.TELNET_TERMINAL:
             this.updateFormValue('remoteTerminalProfileForm', profile?.telnetProfile);
             break;
+          case ProfileType.WIN_RM_TERMINAL:
+            this.updateFormValue('remoteTerminalProfileForm', profile?.winRmProfile);
+            break;
           case ProfileType.FTP_FILE_EXPLORER:
             this.updateFormValue('ftpProfileForm', profile?.ftpProfile);
             break;
@@ -259,6 +265,9 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
         break;
       case ProfileType.TELNET_TERMINAL:
         this._profile.telnetProfile = this.remoteTerminalChild?.formToModel();
+        break;
+      case ProfileType.WIN_RM_TERMINAL:
+        this._profile.winRmProfile = this.remoteTerminalChild?.formToModel();
         break;
       case ProfileType.FTP_FILE_EXPLORER:
         this._profile.ftpProfile = this.ftpChild?.formToModel();

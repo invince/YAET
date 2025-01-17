@@ -34,7 +34,7 @@ function initTelnetIpcHandler(log, terminalMap) {
           {
             type: 'telnet',
             process: telnetClient,
-            callback: (data) => { // cf terminal.js
+            callback: (data, id) => { // cf terminal.js
               if (data === '\r') {
                 if (isLoginPrompt) {
                   isLoginPrompt = false; // Reset the state

@@ -1,7 +1,5 @@
 const { ipcMain } = require('electron');
 const pty = require("node-pty");
-const {Client} = require("ssh2");
-const {Telnet} = require("telnet-client");
 
 function initLocalTerminalIpcHandler(log, terminalMap) {
 
@@ -53,7 +51,7 @@ function initLocalTerminalIpcHandler(log, terminalMap) {
       {
         type: 'local',
         process: ptyProcess,
-        callback: (data) => ptyProcess.write(data), // cf terminal.js
+        callback: (data, id) => ptyProcess.write(data), // cf terminal.js
       });
 
   });

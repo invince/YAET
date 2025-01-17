@@ -16,6 +16,7 @@ import {FtpService} from './ftp.service';
 import {TelnetSession} from '../domain/session/TelnetSession';
 import {ElectronTerminalService} from './electron/electron-terminal.service';
 import {ElectronRemoteDesktopService} from './electron/electron-remote-desktop.service';
+import {WinRMSession} from '../domain/session/WinRMSession';
 
 @Injectable({
   providedIn: 'root'
@@ -43,6 +44,8 @@ export class SessionService {
         return new SSHSession(profile, profileType, this.tabService, this.electronTerm);
       case ProfileType.TELNET_TERMINAL:
         return new TelnetSession(profile, profileType, this.tabService, this.electronTerm);
+      case ProfileType.WIN_RM_TERMINAL:
+        return new WinRMSession(profile, profileType, this.tabService, this.electronTerm);
       case ProfileType.VNC_REMOTE_DESKTOP:
         return new VncSession(profile, profileType, this.tabService, this.vncService, this.spinner, this.notification);
 

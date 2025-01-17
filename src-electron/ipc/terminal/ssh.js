@@ -51,7 +51,7 @@ function initSSHTerminalIpcHandler(log, terminalMap) {
           {
             type: 'ssh',
             process: conn,
-            callback: (data) => stream.write(data), // cf terminal.js
+            callback: (data, id) => stream.write(data), // cf terminal.js
           });
       });
     }).connect(sshConfig);

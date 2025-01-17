@@ -120,6 +120,13 @@
 
             </app-remote-terminal-profile-form>
           }
+          @case('WIN_RM_TERMINAL') {
+            <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm"
+                                              [type]="'winrm'"
+                                              [supportedSecretType]="[SecretType.LOGIN_PASSWORD]" >
+
+            </app-remote-terminal-profile-form>
+          }
 
 
           @case('RDP_REMOTE_DESKTOP') {

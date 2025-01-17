@@ -8,7 +8,11 @@ import {
   TERMINAL_OUTPUT,
   SESSION_CLOSE_LOCAL_TERMINAL,
   SESSION_CLOSE_SSH_TERMINAL,
-  SESSION_OPEN_TELNET_TERMINAL, SESSION_CLOSE_TELNET_TERMINAL, SESSION_OPEN_CUSTOM
+  SESSION_OPEN_TELNET_TERMINAL,
+  SESSION_CLOSE_TELNET_TERMINAL,
+  SESSION_OPEN_CUSTOM,
+  SESSION_CLOSE_WINRM_TERMINAL,
+  SESSION_OPEN_WINRM_TERMINAL
 } from '../../domain/electronConstant';
 import {LocalTerminalProfile} from '../../domain/profile/LocalTerminalProfile';
 import {Profile,} from '../../domain/profile/Profile';
@@ -72,6 +76,13 @@ export class ElectronTerminalService extends AbstractElectronService {
       this.ipc.send(SESSION_CLOSE_LOCAL_TERMINAL, {terminalId: session.id});
     }
   }
+
+  closeWinRMTerminalSession(session: Session) {
+    if (this.ipc) {
+      this.ipc.send(SESSION_CLOSE_WINRM_TERMINAL, {terminalId: session.id});
+    }
+  }
+
 
   openLocalTerminalSession(session: Session) {
     if (!this.ipc) {
@@ -193,6 +204,60 @@ export class ElectronTerminalService extends AbstractElectronService {
       data['initCmd'] = sshProfile.initCmd;
     }
     this.ipc.send(SESSION_OPEN_SSH_TERMINAL, data);
+  }
+
+
+  openWinRMTerminalSession(session: Session) {
+    if (!this.ipc || !session.profile || !session.profile.sshProfile) {
+      this.log({level: 'error', message : "Invalid configuration"});
+      return;
+    }
+
+    let config: any = {
+      executionPolicy: 'Bypass',
+      noProfile: true,
+
+    };
+    let profile = session.profile.winRmProfile;
+    config.host = profile.host;
+    config.port = profile.port;
+    if (profile.authType == AuthType.LOGIN) {
+      config.username = profile.login;
+      config.password = profile.password;
+    } else if (profile.authType == AuthType.SECRET) {
+      let secret = this.secretStorage.findById(profile.secretId);
+      if (!secret) {
+        this.log({level: 'error', message : "Invalid secret " + profile.secretId});
+        return;
+      }
+      switch (secret.secretType) {
+        case SecretType.LOGIN_PASSWORD: {
+          config.username = secret.login;
+          config.password = secret.password;
+          break;
+        }
+        case SecretType.SSH_KEY: {
+          config.username = secret.login;
+          config.privateKey = secret.key.replace(/\\n/g, '\n');
+          if (secret.passphrase) {
+            config.passphrase = secret.passphrase;
+          }
+          break;
+        }
+        case SecretType.PASSWORD_ONLY: {
+          // todo
+          break;
+        }
+      }
+    }
+    let data: {[key: string]: any;} = {terminalId: session.id, config: config};
+    if (profile.initPath) {
+      data['initPath'] = profile.initPath;
+    }
+    if (profile.initCmd) {
+      data['initCmd'] = profile.initCmd;
+    }
+    this.ipc.send(SESSION_OPEN_WINRM_TERMINAL, data);
   }
 
 

@@ -18,6 +18,7 @@ export enum ProfileType {
   LOCAL_TERMINAL = 'LOCAL_TERMINAL',
   SSH_TERMINAL = 'SSH_TERMINAL',
   TELNET_TERMINAL = 'TELNET_TERMINAL',
+  WIN_RM_TERMINAL = 'WIN_RM_TERMINAL',
 
   VNC_REMOTE_DESKTOP = 'VNC_REMOTE_DESKTOP',
   RDP_REMOTE_DESKTOP = 'RDP_REMOTE_DESKTOP',
@@ -32,6 +33,7 @@ export const ProfileCategoryTypeMap = new Map<ProfileCategory, any>([
   [ProfileCategory.TERMINAL, [
     ProfileType.SSH_TERMINAL,
     ProfileType.TELNET_TERMINAL,
+    ProfileType.WIN_RM_TERMINAL,
   ]],
 
   [ProfileCategory.REMOTE_DESKTOP, [
@@ -99,12 +101,17 @@ export class Profile {
 
   public category!: ProfileCategory;
   public profileType!: ProfileType;
+
   public localTerminal!: LocalTerminalProfile;
   public sshProfile!: RemoteTerminalProfile;
   public telnetProfile!: RemoteTerminalProfile;
+  public winRmProfile!: RemoteTerminalProfile;
+
   public ftpProfile!: FTPProfile;
+
   public rdpProfile!: RdpProfile;
   public vncProfile!: VncProfile;
+
   public customProfile!: CustomProfile;
 
   public group!: string
@@ -117,6 +124,7 @@ export class Profile {
     this.localTerminal = new LocalTerminalProfile();
     this.sshProfile = new RemoteTerminalProfile();
     this.telnetProfile = new RemoteTerminalProfile(23);
+    this.winRmProfile = new RemoteTerminalProfile(5985);
     this.ftpProfile = new FTPProfile();
     this.rdpProfile = new RdpProfile();
     this.vncProfile = new VncProfile();
@@ -133,6 +141,7 @@ export class Profile {
     cloned.localTerminal = base.localTerminal;
     cloned.sshProfile = base.sshProfile;
     cloned.telnetProfile = base.telnetProfile;
+    cloned.winRmProfile = base.winRmProfile;
     cloned.ftpProfile = base.ftpProfile;
     cloned.vncProfile = base.vncProfile;
     cloned.rdpProfile = base.rdpProfile;

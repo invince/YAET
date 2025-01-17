@@ -9,7 +9,7 @@ function initTerminalIpcHandler(log, terminalMap) {
     log.info('Terminal id to find ' + id);
     if (terminalCallback) {
       log.info('Terminal found. Sending input.');
-      terminalCallback(input); // Send input to the correct terminal
+      terminalCallback(input, id); // Send input to the correct terminal
     } else {
       log.info('Terminal not found for id:', id);
     }

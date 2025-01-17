@@ -29,6 +29,7 @@ const log = require("electron-log")
 const {initSSHTerminalIpcHandler} = require("./ipc/terminal/ssh");
 const {initTelnetIpcHandler} = require("./ipc/terminal/telnet");
 const {initLocalTerminalIpcHandler} = require("./ipc/terminal/localTerminal");
+const {initWinRmIpcHandler} = require("./ipc/terminal/winRM");
 
 const logPath = `${__dirname}/logs/main.log`;
 console.log(logPath);
@@ -116,6 +117,7 @@ app.on('ready', () => {
   initSSHTerminalIpcHandler(log, terminalMap);
   initTelnetIpcHandler(log, terminalMap);
   initLocalTerminalIpcHandler(log, terminalMap);
+  initWinRmIpcHandler(log, terminalMap);
   initRdpHandler(log);
   initVncHandler(log, vncMap);
   initScpSftpHandler(log, scpMap, expressApp);
