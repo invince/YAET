@@ -374,7 +374,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
   getLocalTermOptions(): LocalTerminalType[] {
     if (process.platform === 'win32') {
-      return [ LocalTerminalType.CMD , LocalTerminalType.POWERSHELL, LocalTerminalType.BASH];
+      return [ LocalTerminalType.CMD , LocalTerminalType.POWERSHELL, LocalTerminalType.POWERSHELL_7, LocalTerminalType.BASH];
     } else {
       return [LocalTerminalType.BASH];
     }

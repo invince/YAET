@@ -17,6 +17,8 @@ import {TelnetSession} from '../domain/session/TelnetSession';
 import {ElectronTerminalService} from './electron/electron-terminal.service';
 import {ElectronRemoteDesktopService} from './electron/electron-remote-desktop.service';
 import {WinRMSession} from '../domain/session/WinRMSession';
+import {SambaSession} from '../domain/session/SambaSession';
+import {SambaService} from './samba.service';
 
 @Injectable({
   providedIn: 'root'
@@ -31,6 +33,7 @@ export class SessionService {
 
     private scpService: ScpService,
     private ftpService: FtpService,
+    private sambaService: SambaService,
     private spinner: NgxSpinnerService,
     private notification: NotificationService,
   ) { }
@@ -48,6 +51,8 @@ export class SessionService {
         return new WinRMSession(profile, profileType, this.tabService, this.electronTerm);
       case ProfileType.VNC_REMOTE_DESKTOP:
         return new VncSession(profile, profileType, this.tabService, this.vncService, this.spinner, this.notification);
+      case ProfileType.SAMBA_FILE_EXPLORER:
+        return new SambaSession(profile, profileType, this.tabService, this.sambaService)
 
       case ProfileType.SCP_FILE_EXPLORER:
         return new ScpSession(profile, profileType, this.tabService, this.scpService);

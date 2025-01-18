@@ -1,7 +1,7 @@
 const { ipcMain } = require('electron');
 const pty = require("node-pty");
 
-function initLocalTerminalIpcHandler(log, terminalMap) {
+function initLocalTerminalIpcHandler(settings, log, terminalMap) {
 
   function validate(terminalExec) {
     if (!terminalExec) {

@@ -1,12 +1,13 @@
 import {Injectable} from '@angular/core';
 import {
-   SESSION_SCP_REGISTER, SESSION_FTP_REGISTER,
+  SESSION_SCP_REGISTER, SESSION_FTP_REGISTER, SESSION_SAMBA_REGISTER,
 } from '../../domain/electronConstant';
 import {AbstractElectronService} from './electron.service';
 import { RemoteTerminalProfile } from '../../domain/profile/RemoteTerminalProfile';
 import {SecretStorageService} from '../secret-storage.service';
 import {AuthType, SecretType} from '../../domain/Secret';
 import {FTPProfile} from '../../domain/profile/FTPProfile';
+import {SambaProfile} from '../../domain/profile/SambaProfile';
 
 
 @Injectable({
@@ -110,5 +111,36 @@ export class ElectronFileExplorerService extends AbstractElectronService {
     await this.ipc.invoke(SESSION_FTP_REGISTER, {id: id, config: ftpConfig});
   }
 
+
+  async registerSambaSession(id: string, sambaProfile: SambaProfile) {
+    if (!id || !sambaProfile) {
+      this.log({level: 'error', message : "Invalid configuration"});
+      return;
+    }
+    let sambaConfig: any = {
+    };
+
+    sambaConfig.share = sambaProfile.share;
+    sambaConfig.port = sambaProfile.port;
+    sambaConfig.domain = sambaProfile.domain;
+    if (sambaProfile.authType == AuthType.LOGIN) {
+      sambaConfig.username = sambaProfile.login;
+      sambaConfig.password = sambaProfile.password;
+    } else if (sambaProfile.authType == AuthType.SECRET) {
+      let secret = this.secretStorage.findById(sambaProfile.secretId);
+      if (!secret) {
+        this.log({level: 'error', message : "Invalid secret " + sambaProfile.secretId});
+        return;
+      }
+      switch (secret.secretType) {
+        case SecretType.LOGIN_PASSWORD: {
+          sambaConfig.username = secret.login;
+          sambaConfig.password = secret.password;
+          break;
+        }
+      }
+    }
+    await this.ipc.invoke(SESSION_SAMBA_REGISTER, {id: id, config: sambaConfig});
+  }
 
 }

@@ -138,9 +138,6 @@ function initFtpHandler(log, ftpMap, expressApp) {
               return { cwd: { name: pathParam, type: 'folder' }, files: await list(client, newFolderPath) };
             }
           }
-          case 'details': {
-            return { cwd: { name: pathParam, type: 'folder' }, details: await list(client, pathParam) };
-          }
           default:
             throw new Error(`Unknown action: ${action}`);
         }
@@ -200,7 +197,11 @@ function initFtpHandler(log, ftpMap, expressApp) {
           });
           await client.downloadTo(writableStream, fullPath);
           const buffer = Buffer.concat(chunks);
-          res.set('Content-Disposition', `attachment; filename=${names[0]}`);
+          const encodedFilename = encodeURIComponent(names[0]).replace(/['()]/g, escape).replace(/\*/g, '%2A');
+          res.set(
+            'Content-Disposition',
+            `attachment; filename*=UTF-8''${encodedFilename}`
+          );
           res.send(buffer);
         } else if (names.length > 1) {
           res.setHeader('Content-Disposition', 'attachment; filename="download.zip"');

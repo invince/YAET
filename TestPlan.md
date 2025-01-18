@@ -130,7 +130,21 @@
 - (Settings) if default open option checked, then a local terminal should start at startup
 - (Settings) if default open option not checked, then a local terminal should not start at startup
 - cmd powershell work in terminal
-- (Settings) be able to switch between cmd, powershell for local terminal
+- (Settings) be able to switch between cmd, powershell, powershell7, bash for local terminal
+
+## Telnet
+- be able to configure a telnet connection
+- be able to launch command on that telnet connection
+- NOTE: win11 doesn't support telnet server anymore, you need install a server yourself for ex: hk-telnet-server
+
+## WinRM (powershell)
+- be able to configure a winrm connection
+- be able to launch command on that winrm connection
+- NOTE: you may need run following cmd on your client post
+  - ```winrm quickconfigure```
+  - if you use http user authentication, you need add the winrm server into your trustedHost config
+  - ```winrm set winrm/config/client '@{TrustedHosts="machineA,machineB"}'```
+- for ssh type WinRM please use ssh connection in the below part
 
 ## SSH
 - connection ok
@@ -164,7 +178,7 @@
 - [x] cd
 - [x] download single
 - [x] download multiple
-- [x] details
+- [x] detail view
 - [x] upload
 - [x] drag and drop file to upload
 - [x] copy paste file
@@ -176,6 +190,28 @@
 - [x] delete file
 - [x] delete folder
 - [x] double click open the file 
+  - if you update the file, the file will be uploaded to scp
+
+## SMB
+- all ok, use a third party lib
+- [x] SMB form
+- [x] connect
+- [x] list
+- [x] cd
+- [x] download single
+- [x] download multiple
+- [x] detail view
+- [x] upload
+- [x] drag and drop file to upload
+- [] copy paste file
+- [] cut paste file
+- [x] create folder
+- [] create file
+- [x] rename folder
+- [x] rename file
+- [x] delete file
+- [x] delete folder
+- [x] double click open the file
   - if you update the file, the file will be uploaded to scp
 
 ## Ftp
@@ -196,6 +232,7 @@
 - [x] delete folder
 - [x] double click open the file
   - if you update the file, the file will be uploaded to ftp
+- [] secure FTPS
 
 # Custom
 - custom command can start, for ex for realvnc
