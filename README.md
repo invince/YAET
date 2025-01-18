@@ -4,7 +4,7 @@
 YAET is a remote connection tool based on angular + electron supporting 
   - Terminal: SSH, Telnet, WinRM
   - Remote Desktop: VNC, RDP
-  - Remote File Explorer: SCP/SFTP FTP
+  - Remote File Explorer: SCP/SFTP FTP SAMBA
   - Custom command
 
 With a password management, and cloud sync function.
