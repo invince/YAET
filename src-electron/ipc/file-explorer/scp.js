@@ -222,7 +222,11 @@ function initScpSftpHandler(log, scpMap, expressApp) {
         if (names.length === 1) {
           const fullRemotePath = path + names[0];
           const buffer = await sftp.get(fullRemotePath);
-          res.set('Content-Disposition', `attachment; filename=${names[0]}`);
+          const encodedFilename = encodeURIComponent(names[0]).replace(/['()]/g, escape).replace(/\*/g, '%2A');
+          res.set(
+            'Content-Disposition',
+            `attachment; filename*=UTF-8''${encodedFilename}`
+          );
           res.send(buffer);
         } else if (names.length > 1) {
           res.setHeader('Content-Disposition', 'attachment; filename="download.zip"');

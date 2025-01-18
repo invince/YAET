@@ -1,14 +1,6 @@
-import {AuthType} from '../Secret';
+import {HasLoginProfile} from './HasLoginProfile';
 
-export class AbstractRemoteConnectionProfile {
+export class AbstractRemoteConnectionProfile extends HasLoginProfile{
   public host: string = '';
   public port: number = 0;
-
-
-
-  public authType?: AuthType;
-  public login: string = '';
-  public password: string = '';
-  public secretId!: string;
-
 }

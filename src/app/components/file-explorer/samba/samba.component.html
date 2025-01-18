@@ -1,0 +1,14 @@
+<div class="samba-container">
+  <ejs-filemanager
+    id='samba-filemanager'
+    #fileManager
+    [ajaxSettings]="ajaxSettings"
+    [navigationPaneSettings]="navigationPaneSettings"
+    [toolbarSettings]="toolbarSettings"
+    [contextMenuSettings]='contextMenuSettings'
+    (fileOpen)="onFileOpen($event)"
+    height="100%"
+  >
+
+  </ejs-filemanager>
+</div>

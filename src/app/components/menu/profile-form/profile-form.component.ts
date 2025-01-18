@@ -31,6 +31,8 @@ import {NotificationService} from '../../../services/notification.service';
 import {FtpProfileFormComponent} from './ftp-profile-form/ftp-profile-form.component';
 import {FTPProfile} from '../../../domain/profile/FTPProfile';
 import {SecretType} from '../../../domain/Secret';
+import {SambaFormComponent} from './samba-form/samba-form.component';
+import {SambaProfile} from '../../../domain/profile/SambaProfile';
 
 
 @Component({
@@ -57,6 +59,7 @@ import {SecretType} from '../../../domain/Secret';
     VncProfileFormComponent,
     CustomProfileFormComponent,
     FtpProfileFormComponent,
+    SambaFormComponent,
   ],
   templateUrl: './profile-form.component.html',
   styleUrl: './profile-form.component.scss'
@@ -75,8 +78,6 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   CATEGORY_TYPE_MAP = ProfileCategoryTypeMap;
 
   groupColor: string | undefined = '';
-
-  readonly addOnBlur = true;
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
   @ViewChild('tagsAutoCompleteInput') tagsAutoCompleteInput!: ElementRef;
   filteredTags!: Tag[];
@@ -86,6 +87,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   @ViewChild(VncProfileFormComponent) vncChild!: VncProfileFormComponent;
   @ViewChild(CustomProfileFormComponent) customChild!: CustomProfileFormComponent;
   @ViewChild(FtpProfileFormComponent) ftpChild!: FtpProfileFormComponent;
+  @ViewChild(SambaFormComponent) sambaChild!: SambaFormComponent;
 
   constructor(
     private log: LogService,
@@ -134,6 +136,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
         ftpProfileForm: [this._profile.ftpProfile],
         rdpProfileForm: [this._profile.rdpProfile],
         vncProfileForm: [this._profile.vncProfile],
+        sambaProfileForm: [this._profile.sambaProfile],
         customProfileForm: [this._profile.customProfile],
 
       },
@@ -170,6 +173,9 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
         break;
       case ProfileType.FTP_FILE_EXPLORER:
         this.form.get('ftpProfileForm')?.setValue(new FTPProfile());
+        break;
+      case ProfileType.SAMBA_FILE_EXPLORER:
+        this.form.get('sambaProfileForm')?.setValue(new SambaProfile());
         break;
 
       case ProfileType.RDP_REMOTE_DESKTOP:
@@ -227,6 +233,9 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
           case ProfileType.FTP_FILE_EXPLORER:
             this.updateFormValue('ftpProfileForm', profile?.ftpProfile);
             break;
+          case ProfileType.SAMBA_FILE_EXPLORER:
+            this.updateFormValue('sambaProfileForm', profile?.sambaProfile);
+            break;
           case ProfileType.RDP_REMOTE_DESKTOP:
             this.updateFormValue('rdpProfileForm', profile?.rdpProfile);
             break;
@@ -271,6 +280,9 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
         break;
       case ProfileType.FTP_FILE_EXPLORER:
         this._profile.ftpProfile = this.ftpChild?.formToModel();
+        break;
+      case ProfileType.SAMBA_FILE_EXPLORER:
+        this._profile.sambaProfile = this.sambaChild?.formToModel();
         break;
       case ProfileType.RDP_REMOTE_DESKTOP:
         this._profile.rdpProfile = this.rdpChild?.formToModel();

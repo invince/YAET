@@ -192,6 +192,28 @@
 - [x] double click open the file 
   - if you update the file, the file will be uploaded to scp
 
+## SMB
+- all ok, use a third party lib
+- [x] SMB form
+- [x] connect
+- [x] list
+- [x] cd
+- [x] download single
+- [x] download multiple
+- [] details
+- [] upload
+- [] drag and drop file to upload
+- [] copy paste file
+- [] cut paste file
+- [] create folder
+- [] create file
+- [] rename folder
+- [] rename file
+- [] delete file
+- [] delete folder
+- [] double click open the file
+  - if you update the file, the file will be uploaded to scp
+
 ## Ftp
 - [x] profile form
 - [x] connect
@@ -210,6 +232,7 @@
 - [x] delete folder
 - [x] double click open the file
   - if you update the file, the file will be uploaded to ftp
+- [] secure FTPS
 
 # Custom
 - custom command can start, for ex for realvnc

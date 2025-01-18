@@ -6,6 +6,7 @@ import {RdpProfile} from './RdpProfile';
 import {VncProfile} from './VncProfile';
 import {CustomProfile} from './CustomProfile';
 import {FTPProfile} from './FTPProfile';
+import {SambaProfile} from './SambaProfile';
 
 export enum ProfileCategory {
   TERMINAL = 'TERMINAL',
@@ -24,7 +25,7 @@ export enum ProfileType {
   RDP_REMOTE_DESKTOP = 'RDP_REMOTE_DESKTOP',
   SCP_FILE_EXPLORER = 'SCP_FILE_EXPLORER',
   FTP_FILE_EXPLORER = 'FTP_FILE_EXPLORER',
-  SMB_FILE_EXPLORER = 'SMB_FILE_EXPLORER',
+  SAMBA_FILE_EXPLORER = 'SAMBA_FILE_EXPLORER',
 
   CUSTOM = 'CUSTOM',
 }
@@ -45,7 +46,7 @@ export const ProfileCategoryTypeMap = new Map<ProfileCategory, any>([
   [ProfileCategory.FILE_EXPLORER, [
     ProfileType.SCP_FILE_EXPLORER,
     ProfileType.FTP_FILE_EXPLORER,
-    // ProfileType.SMB_FILE_EXPLORER,
+    ProfileType.SAMBA_FILE_EXPLORER,
   ]],
 
   [ProfileCategory.CUSTOM, [
@@ -108,6 +109,7 @@ export class Profile {
   public winRmProfile!: RemoteTerminalProfile;
 
   public ftpProfile!: FTPProfile;
+  public sambaProfile!: SambaProfile;
 
   public rdpProfile!: RdpProfile;
   public vncProfile!: VncProfile;

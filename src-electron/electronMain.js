@@ -24,6 +24,7 @@ let terminalMap = new Map();
 let vncMap = new Map();
 let scpMap = new Map();
 let ftpMap = new Map();
+let sambaMap = new Map();
 let initialized = false;
 
 const log = require("electron-log")
@@ -31,6 +32,7 @@ const {initSSHTerminalIpcHandler} = require("./ipc/terminal/ssh");
 const {initTelnetIpcHandler} = require("./ipc/terminal/telnet");
 const {initLocalTerminalIpcHandler} = require("./ipc/terminal/localTerminal");
 const {initWinRmIpcHandler} = require("./ipc/terminal/winRM");
+const {initSambaHandler} = require("./ipc/file-explorer/samba");
 
 const logPath = `${__dirname}/logs/main.log`;
 console.log(logPath);
@@ -122,6 +124,7 @@ function initHandlerBeforeSettingLoad() {
   initVncHandler(log, vncMap);
   initScpSftpHandler(log, scpMap, expressApp);
   initFtpHandler(log, ftpMap, expressApp);
+  initSambaHandler(log, sambaMap, expressApp);
   initClipboard(log, mainWindow);
   initCustomSessionHandler(log);
 
