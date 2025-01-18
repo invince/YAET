@@ -56,19 +56,25 @@ export abstract class AbstractFileManager {
   protected generateNavigationPaneSettings(): any {
     return {
       visible: true, // Show navigation pane
-        maxWidth: '150px', // Set width of the navigation pane
+      maxWidth: '150px', // Set width of the navigation pane
       minWidth: '50px', // Set width of the navigation pane
     };
   }
 
+  // we remove the details button
   protected generateContextMenuSettings(): any {
     return  {
+      file: ['Open', '|', 'Cut', 'Copy', 'Paste', 'Delete', 'Rename'],
+      folder: ['Open', '|', 'Cut', 'Copy', 'Paste', 'Delete', 'Rename'],
+      layout: ['SortBy', 'View', 'Refresh', 'NewFolder', 'Upload', '|', 'SelectAll'],
       visible: true
     };
   }
 
+  // we remove the details button
   protected generateToolbarSettings(): any {
     return {
+      items: ['NewFolder', 'Upload', 'Cut', 'Copy', 'Paste', 'Delete', 'Download', 'Rename', 'SortBy', 'Refresh', 'Selection', 'View'],
       visible: true, // Show toolbar
     };
   }

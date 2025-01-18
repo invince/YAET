@@ -55,33 +55,6 @@ function initSambaHandler(log, sambaMap, expressApp) {
     return targetFilePath;
   }
 
-  async function getDetails(smbClient, directoryPath, names = []) {
-    if (names.length === 0) {
-      const stats = await smbClient.stat(directoryPath);
-      return {
-        name: directoryPath,
-        type: stats.isDirectory ? 'folder' : 'file',
-        size: stats.size,
-        modifyTime: stats.mtime,
-        accessTime: stats.atime,
-      };
-    } else {
-      const details = [];
-      for (const name of names) {
-        const fullPath = path.join(directoryPath, name);
-        const stats = await smbClient.stat(fullPath);
-        details.push({
-          name,
-          type: stats.isDirectory ? 'folder' : 'file',
-          size: stats.size,
-          location: directoryPath,
-          modified: stats.mtime,
-        });
-      }
-      return details;
-    }
-  }
-
   //==================== API ====================================================
   expressApp.post('/api/v1/samba/:id', async (req, res) => {
     const action = req.body.action || 'read';
@@ -138,10 +111,6 @@ function initSambaHandler(log, sambaMap, expressApp) {
               await smbClient.copy(sourceFilePath, targetFilePath);
             }
             return { cwd: { name: pathParam, type: 'folder' }, files: await smbClient.readdir(targetPath) };
-          }
-          case 'details': {
-            const names = req.body.names || [];
-            return { cwd: { name: pathParam, type: 'folder' }, details: await getDetails(smbClient, pathParam, names) };
           }
           default:
             throw new Error(`Unknown action: ${action}`);

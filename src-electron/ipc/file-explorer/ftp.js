@@ -138,9 +138,6 @@ function initFtpHandler(log, ftpMap, expressApp) {
               return { cwd: { name: pathParam, type: 'folder' }, files: await list(client, newFolderPath) };
             }
           }
-          case 'details': {
-            return { cwd: { name: pathParam, type: 'folder' }, details: await list(client, pathParam) };
-          }
           default:
             throw new Error(`Unknown action: ${action}`);
         }

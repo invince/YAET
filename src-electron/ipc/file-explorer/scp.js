@@ -53,32 +53,15 @@ function initScpSftpHandler(log, scpMap, expressApp) {
     return targetFilePath;
   }
 
-  async function getDetails(sftp, path, names = []) {
-    if (names.length === 0) {
-      const stats = await sftp.stat(path);
-      return {
-        name: path,
-        type: stats.isDirectory ? 'folder' : 'file',
-        size: stats.size,
-        accessTime: stats.atime,
-        modifyTime: stats.mtime,
-        createTime: stats.birthtime || null,
-      };
-    } else {
-      const details = [];
-      for (const name of names) {
-        const fullPath = `${path}${name}`;
-        const stats = await sftp.stat(fullPath);
-        details.push({
-          name,
-          type: stats.isDirectory ? 'folder' : 'file',
-          size: stats.size,
-          location: path,
-          modified: stats.mtime,
-        });
-      }
-      return details;
-    }
+  async function list(sftp, pathParam) {
+    const files = await sftp.list(pathParam);
+    return files.map(file => ({
+      name: file.name,
+      type: file.type === 'd' ? 'folder' : 'file',
+      isFile: file.type !== 'd',
+      size: file.size,
+      dateModified: file.modifyTime,
+    }));
   }
 
   //==================== API ==========================================================
@@ -91,15 +74,8 @@ function initScpSftpHandler(log, scpMap, expressApp) {
       const result = await withSftpClient(configId, async (sftp) => {
         switch (action) {
           case 'read': {
-            const files = await sftp.list(pathParam);
-            const formattedFiles = files.map(file => ({
-              name: file.name,
-              type: file.type === 'd' ? 'folder' : 'file',
-              isFile: file.type !== 'd',
-              size: file.size,
-              dateModified: file.modifyTime,
-            }));
-            return { cwd: { name: pathParam, type: 'folder' }, files: formattedFiles };
+
+            return { cwd: { name: pathParam, type: 'folder' }, files: await list(sftp, pathParam) };
           }
           case 'search': {
             const files = await sftp.list(pathParam);
@@ -129,13 +105,13 @@ function initScpSftpHandler(log, scpMap, expressApp) {
                 await sftp.delete(fileAbsPath);
               }
             }
-            return { cwd: { name: pathParam, type: 'folder' }, files: await getDetails(sftp, pathParam) };
+            return { cwd: { name: pathParam, type: 'folder' }, files: await list(sftp, pathParam) };
           }
           case 'rename': {
             const name = req.body.name;
             const newName = req.body.newName;
             await sftp.rename(`${pathParam}${name}`, `${pathParam}${newName}`);
-            return { cwd: { name: pathParam, type: 'folder' }, files: await getDetails(sftp, pathParam, [newName]) };
+            return { cwd: { name: pathParam, type: 'folder' }, files: await list(sftp, pathParam) };
           }
           case 'copy': {
             const names = req.body.names || [];
@@ -145,7 +121,7 @@ function initScpSftpHandler(log, scpMap, expressApp) {
               const targetFilePath = await avoidDuplicateName(sftp, `${targetPath}${name}`);
               await sftp.rcopy(sourceFilePath, targetFilePath);
             }
-            return { cwd: { name: pathParam, type: 'folder' }, files: await getDetails(sftp, targetPath, names) };
+            return { cwd: { name: pathParam, type: 'folder' }, files: await list(sftp, targetPath) };
           }
           case 'move': {
             const names = req.body.names || [];
@@ -158,7 +134,7 @@ function initScpSftpHandler(log, scpMap, expressApp) {
                 await sftp.delete(sourceFilePath, true);
               }
             }
-            return { cwd: { name: pathParam, type: 'folder' }, files: await getDetails(sftp, targetPath, names) };
+            return { cwd: { name: pathParam, type: 'folder' }, files: await list(sftp, targetPath) };
           }
           case 'create': {
             const name = req.body.name;
@@ -167,12 +143,8 @@ function initScpSftpHandler(log, scpMap, expressApp) {
               return { cwd: { name: pathParam, type: 'folder' }, error: { code: 416, message: 'folder already exists' } };
             } else {
               await sftp.mkdir(newFolderPath, true);
-              return { cwd: { name: pathParam, type: 'folder' }, files: await getDetails(sftp, newFolderPath) };
+              return { cwd: { name: pathParam, type: 'folder' }, files: await list(sftp, newFolderPath) };
             }
-          }
-          case 'details': {
-            const names = req.body.names || [];
-            return { cwd: { name: pathParam, type: 'folder' }, details: await getDetails(sftp, pathParam, names) };
           }
           default:
             throw new Error(`Unknown action: ${action}`);
