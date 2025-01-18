@@ -178,7 +178,7 @@
 - [x] cd
 - [x] download single
 - [x] download multiple
-- [x] details
+- [x] detail view
 - [x] upload
 - [x] drag and drop file to upload
 - [x] copy paste file
@@ -200,18 +200,18 @@
 - [x] cd
 - [x] download single
 - [x] download multiple
-- [] details
-- [] upload
-- [] drag and drop file to upload
+- [x] detail view
+- [x] upload
+- [x] drag and drop file to upload
 - [] copy paste file
 - [] cut paste file
-- [] create folder
+- [x] create folder
 - [] create file
-- [] rename folder
-- [] rename file
-- [] delete file
-- [] delete folder
-- [] double click open the file
+- [x] rename folder
+- [x] rename file
+- [x] delete file
+- [x] delete folder
+- [x] double click open the file
   - if you update the file, the file will be uploaded to scp
 
 ## Ftp

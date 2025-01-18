@@ -53,8 +53,11 @@ function initScpSftpHandler(log, scpMap, expressApp) {
     return targetFilePath;
   }
 
-  async function list(sftp, pathParam) {
-    const files = await sftp.list(pathParam);
+  async function list(sftp, pathParam, names = undefined) {
+    let files = await sftp.list(pathParam);
+    if (names) {
+      files = files.filter((file) => names.includes(file.name));
+    }
     return files.map(file => ({
       name: file.name,
       type: file.type === 'd' ? 'folder' : 'file',
@@ -121,7 +124,7 @@ function initScpSftpHandler(log, scpMap, expressApp) {
               const targetFilePath = await avoidDuplicateName(sftp, `${targetPath}${name}`);
               await sftp.rcopy(sourceFilePath, targetFilePath);
             }
-            return { cwd: { name: pathParam, type: 'folder' }, files: await list(sftp, targetPath) };
+            return { cwd: { name: pathParam, type: 'folder' }, files: await list(sftp, targetPath, names) };
           }
           case 'move': {
             const names = req.body.names || [];

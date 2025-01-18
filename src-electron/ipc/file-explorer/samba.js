@@ -7,7 +7,6 @@ const fs = require('fs');
 const fsPromise = require('fs/promises');
 const os = require('os');
 const uuid = require('uuid');
-const { Readable } = require('stream');
 const SMB2  = require('v9u-smb2');
 
 function initSambaHandler(log, sambaMap, expressApp) {
@@ -55,6 +54,24 @@ function initSambaHandler(log, sambaMap, expressApp) {
     return targetFilePath;
   }
 
+  async function list(smbClient, pathParam, names = undefined) {
+    let files = await smbClient.readdir(pathParam, {stats: true});
+    let formattedFiles = [];
+    if (names) {
+      files = files.filter((file) => names.includes(file.name));
+    }
+    if (files) {
+      formattedFiles =  files.map((file) => ({
+        name: file.name,
+        type: file.isDirectory() ? 'folder' : 'file',
+        isFile: !file.isDirectory(),
+        size: file.size,
+        dateModified: file.mtime,
+      }));
+    }
+    return formattedFiles;
+  }
+
   //==================== API ====================================================
   expressApp.post('/api/v1/samba/:id', async (req, res) => {
     const action = req.body.action || 'read';
@@ -69,20 +86,7 @@ function initSambaHandler(log, sambaMap, expressApp) {
       const result = await withSambaClient(configId, async (smbClient) => {
         switch (action) {
           case 'read': {
-
-            const files = await smbClient.readdir(pathParam, {stats: true});
-            let formattedFiles = [];
-            if (files) {
-              formattedFiles =  files.map((file) => ({
-                name: file.name,
-                type: file.isDirectory() ? 'folder' : 'file',
-                isFile: !file.isDirectory(),
-                size: file.size,
-                dateModified: file.mtime,
-              }));
-            }
-
-            return { cwd: { name: pathParam, type: 'folder' }, files: formattedFiles };
+            return { cwd: { name: pathParam, type: 'folder' }, files: await list(smbClient, pathParam)};
           }
           case 'delete': {
             const data = req.body.data || [];
@@ -94,13 +98,13 @@ function initSambaHandler(log, sambaMap, expressApp) {
                 await smbClient.unlink(fileAbsPath);
               }
             }
-            return { cwd: { name: pathParam, type: 'folder' }, files: await smbClient.readdir(pathParam) };
+            return { cwd: { name: pathParam, type: 'folder' }, files: await list(smbClient, pathParam)};
           }
           case 'rename': {
             const name = req.body.name;
             const newName = req.body.newName;
             await smbClient.rename(path.join(pathParam, name), path.join(pathParam, newName));
-            return { cwd: { name: pathParam, type: 'folder' }, files: await smbClient.readdir(pathParam) };
+            return { cwd: { name: pathParam, type: 'folder' }, files: await list(smbClient, pathParam) };
           }
           case 'copy': {
             const names = req.body.names || [];
@@ -108,9 +112,19 @@ function initSambaHandler(log, sambaMap, expressApp) {
             for (const name of names) {
               const sourceFilePath = path.join(pathParam, name);
               const targetFilePath = await avoidDuplicateName(smbClient, path.join(targetPath, name));
-              await smbClient.copy(sourceFilePath, targetFilePath);
+              await copyPasteFile(smbClient, sourceFilePath, targetFilePath);
             }
-            return { cwd: { name: pathParam, type: 'folder' }, files: await smbClient.readdir(targetPath) };
+            return { cwd: { name: pathParam, type: 'folder' }, files: await list(smbClient, targetPath, names) };
+          }
+          case 'create': {
+            const name = req.body.name;
+            const newFolderPath = path.join(pathParam, name);
+            if (await smbClient.exists(newFolderPath)) {
+              return { cwd: { name: pathParam, type: 'folder' }, error: { code: 416, message: 'folder already exists' } };
+            } else {
+              await smbClient.mkdir(newFolderPath);
+              return { cwd: { name: pathParam, type: 'folder' }, files: await list(smbClient, newFolderPath) };
+            }
           }
           default:
             throw new Error(`Unknown action: ${action}`);
@@ -193,6 +207,86 @@ function initSambaHandler(log, sambaMap, expressApp) {
       res.status(400).send({ error: { code: 400, message: 'Error downloading file: ' + error.message } });
     }
   });
+
+  expressApp.post('/api/v1/samba/open/:id', upload.none(), async (req, res) => {
+    const downloadInput = JSON.parse(req.body.downloadInput);
+    const remotePath = fixPath(downloadInput.path);
+    const fileName = downloadInput.names[0]; // Assuming a single file
+    const configId = req.params['id'];
+
+    try {
+      await withSambaClient(configId, async (smbClient) => {
+        const fullRemotePath = path.join(remotePath, fileName);
+        const tempDir = path.join(os.tmpdir(), 'scp-temp-files');
+        if (!fs.existsSync(tempDir)) {
+          fs.mkdirSync(tempDir, { recursive: true });
+        }
+
+        // Generate a unique temporary file path
+        const tempFilePath = path.join(tempDir, uuid.v4() + fileName);
+        const fileBuffer = await smbClient.readFile(fullRemotePath);
+        await fsPromise.writeFile(tempFilePath, fileBuffer);
+
+        // Open the file with the default system application
+        const result = await shell.openPath(tempFilePath);
+        if (result) {
+          log.error(`Error opening file: ${result}`);
+          res.status(500).send({ error: { code: 500, message: 'Error opening file' } });
+          return;
+        }
+
+        // Watch the file for changes
+        let watcher = fs.watch(tempFilePath, async (eventType) => {
+          if (eventType === 'change') {
+            log.info(`File modified: ${tempFilePath}`);
+
+            await withSambaClient(configId, async (smbClientUpload) => {
+              try {
+                // Read the updated file into a buffer
+                const updatedBuffer = await fsPromise.readFile(tempFilePath);
+
+                await smbClientUpload.unlink(fullRemotePath); // FIXME she smbClient.writeFile should override the file, but it's not working
+                // Re-upload the updated file to the samba server
+                await smbClientUpload.writeFile(fullRemotePath, updatedBuffer);
+                log.info(`File updated successfully: ${fullRemotePath}`);
+              } catch (error) {
+                log.error('Error uploading updated file:', error);
+              }
+            });
+          }
+        });
+
+        // Clean up watcher and temporary file after a timeout (optional)
+        setTimeout(async () => {
+          watcher.close();
+          try {
+            await fsPromise.unlink(tempFilePath);
+            log.info('Temporary file deleted:', tempFilePath);
+          } catch (err) {
+            log.error('Error deleting temporary file:', err);
+          }
+        }, 10 * 60 * 1000); // Stop watching after 10 minutes
+      });
+    } catch (error) {
+      log.error('Error open file:', error);
+      res.status(400).send({ error: { code: 400, message: 'Error open file: ' + error.message } });
+    }
+  });
+
+  async function copyPasteFile(smbClient, sourcePath, destPath) {
+    try {
+      // Read the source file into a buffer
+      const fileContent = await smbClient.readFile(sourcePath);
+      log.info(`File read successfully: ${sourcePath}`);
+
+      // Write the buffer content to the destination path
+      await smbClient.writeFile(destPath, fileContent);
+      log.info(`File written successfully to: ${destPath}`);
+    } catch (error) {
+      log.error('Error during copy-paste operation:', error);
+      throw error;
+    }
+  }
 
   function fixPath(path) {
     let pathParam = path || '';
