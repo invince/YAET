@@ -194,6 +194,7 @@
 - [x] delete folder containing files
 - [x] double click open the file 
   - if you update the file, the file will be uploaded to scp
+- [x] copy current path
 
 ## SMB
 - all ok, use a third party lib
@@ -209,7 +210,7 @@
 - [x] copy paste file
 - [x] cut paste file
 - [x] copy paste folder
-- [] cut paste folder
+- [x] cut paste folder
 - [x] create folder
 - [] create file
 - [x] rename folder
