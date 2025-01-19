@@ -191,6 +191,7 @@
 - [x] rename file
 - [x] delete file
 - [x] delete folder
+- [x] delete folder containing files
 - [x] double click open the file 
   - if you update the file, the file will be uploaded to scp
 
@@ -207,7 +208,7 @@
 - [x] drag and drop file to upload
 - [x] copy paste file
 - [x] cut paste file
-- [] copy paste folder
+- [x] copy paste folder
 - [] cut paste folder
 - [x] create folder
 - [] create file
@@ -215,6 +216,7 @@
 - [x] rename file
 - [x] delete file
 - [x] delete folder
+- [x] delete folder containing files
 - [x] double click open the file
   - if you update the file, the file will be uploaded to scp
 

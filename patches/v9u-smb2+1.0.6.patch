@@ -1,0 +1,120 @@
+diff --git a/node_modules/v9u-smb2/lib/api/rmdir.js b/node_modules/v9u-smb2/lib/api/rmdir.js
+index 0dd2032..e3ccac7 100644
+--- a/node_modules/v9u-smb2/lib/api/rmdir.js
++++ b/node_modules/v9u-smb2/lib/api/rmdir.js
+@@ -1,44 +1,82 @@
+ var SMB2Forge = require('../tools/smb2-forge');
+ var SMB2Request = SMB2Forge.request;
+-var BigInt = require('../tools/bigint');
++var bigint = require('../tools/bigint');
+ 
+ /*
+- * rmdir
+- * =====
+- *
+- * remove directory:
+- *
+- *  - open the folder
+- *
+- *  - remove the folder
+- *
+- *  - close the folder
++ * [INVINCE FIX]: add recursive
++ * Recursive rmdir
++ * ===============
+  *
++ * Removes a directory and its contents recursively.
+  */
+ module.exports = function rmdir(path, cb) {
+   var connection = this;
+ 
+-  // SMB2 open file
+-  SMB2Request('open_folder', { path: path }, connection, function(err, file) {
+-    if (err) cb && cb(err);
+-    // SMB2 query directory
+-    else
+-      SMB2Request(
+-        'set_info',
+-        {
+-          FileId: file.FileId,
+-          FileInfoClass: 'FileDispositionInformation',
+-          Buffer: new BigInt(1, 1).toBuffer(),
+-        },
+-        connection,
+-        function(err, files) {
+-          SMB2Request('close', file, connection, function() {
+-            if (err) {
+-              return cb(err);
+-            }
+-            cb(null, files);
+-          });
+-        }
+-      );
++  connection.exists(path, function (err, exists) {
++    if (err) return cb && cb(err);
++
++    if (!exists) {
++      return cb && cb(new Error('Folder does not exist'));
++    }
++
++    // Open the directory
++    SMB2Request('open_folder', { path: path }, connection, function (err, file) {
++      if (err) return cb && cb(err);
++
++      // Query directory contents
++      SMB2Request('query_directory', { FileId: file.FileId }, connection, function (err, files) {
++        if (err) return cb && cb(err);
++
++        // Recursively delete files and subfolders
++        let deleteTasks = files
++          .filter(fileInfo => '.' !== fileInfo.Filename && '..' !== fileInfo.Filename)
++          .map((fileInfo) => {
++
++          let childPath = `${path}\\${fileInfo.Filename}`;
++          if (fileInfo.FileAttributes & 0x10) {
++            // Directory
++            return new Promise((resolve, reject) => {
++              rmdir.call(connection, childPath, (err) => {
++                if (err) reject(err);
++                else resolve();
++              });
++            });
++          } else {
++            // File
++            return new Promise((resolve, reject) => {
++              connection.unlink(childPath, (err) => {
++                if (err) reject(err);
++                else resolve();
++              });
++            });
++          }
++        });
++
++        // Wait for all deletions to complete
++        Promise.all(deleteTasks)
++          .then(() => {
++            // Remove the directory itself
++            SMB2Request(
++              'set_info',
++              {
++                FileId: file.FileId,
++                FileInfoClass: 'FileDispositionInformation',
++                Buffer: new bigint(1, 1).toBuffer(),
++              },
++              connection,
++              function (err) {
++                if (err) return cb && cb(err);
++
++                // Close the directory handle
++                SMB2Request('close', file, connection, function (err) {
++                  if (err) cb && cb(err);
++                  else cb && cb(null);
++                });
++              }
++            );
++          })
++          .catch((err) => cb && cb(err));
++      });
++    });
+   });
+ };
