@@ -116,6 +116,18 @@ function initSambaHandler(log, sambaMap, expressApp) {
             }
             return { cwd: { name: pathParam, type: 'folder' }, files: await list(smbClient, targetPath, names) };
           }
+          case 'move': {
+            const names = req.body.names || [];
+            const targetPath = req.body.targetPath;
+            for (const name of names) {
+              const sourceFilePath = path.join(pathParam, name);
+              const targetFilePath = await avoidDuplicateName(smbClient, path.join(targetPath, name));
+              await copyPasteFile(smbClient, sourceFilePath, targetFilePath);
+              await smbClient.unlink(sourceFilePath);
+
+            }
+            return { cwd: { name: pathParam, type: 'folder' }, files: await list(smbClient, targetPath, names) };
+          }
           case 'create': {
             const name = req.body.name;
             const newFolderPath = path.join(pathParam, name);

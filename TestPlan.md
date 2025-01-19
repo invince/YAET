@@ -183,6 +183,8 @@
 - [x] drag and drop file to upload
 - [x] copy paste file
 - [x] cut paste file
+- [] copy paste folder
+- [] cut paste folder
 - [x] create folder
 - [] create file
 - [x] rename folder
@@ -203,8 +205,10 @@
 - [x] detail view
 - [x] upload
 - [x] drag and drop file to upload
-- [] copy paste file
-- [] cut paste file
+- [x] copy paste file
+- [x] cut paste file
+- [] copy paste folder
+- [] cut paste folder
 - [x] create folder
 - [] create file
 - [x] rename folder
