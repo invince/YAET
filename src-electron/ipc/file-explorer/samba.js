@@ -151,7 +151,7 @@ function initSambaHandler(log, sambaMap, expressApp) {
   });
 
   expressApp.post('/api/v1/samba/upload/:id', upload.single('uploadFiles'), async (req, res) => {
-    const { data } = req.body;
+    const { data, filename } = req.body;
     const targetDir = fixPath(JSON.parse(data).name);
     const configId = req.params['id'];
 
@@ -160,10 +160,9 @@ function initSambaHandler(log, sambaMap, expressApp) {
       res.status(400).send({ error: { code: 400, message: 'No file uploaded' } });
       return;
     }
-
     try {
       const result = await withSambaClient(configId, async (smbClient) => {
-        const targetPath = await avoidDuplicateName(smbClient, path.join(targetDir, req.file.originalname));
+        const targetPath = await avoidDuplicateName(smbClient, path.join(targetDir, filename));  // the req.file.originalname may have encoding pb
         await smbClient.writeFile(targetPath, req.file.buffer);
         return { success: true, message: `File uploaded to ${targetPath}` };
       });

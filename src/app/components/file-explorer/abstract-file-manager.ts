@@ -8,6 +8,7 @@ export abstract class AbstractFileManager {
   public navigationPaneSettings = this.generateNavigationPaneSettings();
   public contextMenuSettings = this.generateContextMenuSettings();
   public toolbarSettings = this.generateToolbarSettings();
+  public uploadSettings = this.generateUploadSettings();
 
   protected constructor(protected http: HttpClient) {
   }
@@ -76,6 +77,12 @@ export abstract class AbstractFileManager {
     return {
       items: ['NewFolder', 'Upload', 'Cut', 'Copy', 'Paste', 'Delete', 'Download', 'Rename', 'SortBy', 'Refresh', 'Selection', 'View'],
       visible: true, // Show toolbar
+    };
+  }
+
+  protected generateUploadSettings(): any {
+    return {
+      autoClose: true,
     };
   }
 

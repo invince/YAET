@@ -41,4 +41,9 @@ export class SambaComponent extends AbstractFileManager implements OnInit, OnDes
     return this.sambaService.setup(this.session);
   }
 
+
+  test($event: any) {
+    console.log($event);
+  }
+
 }

@@ -162,7 +162,7 @@ function initScpSftpHandler(log, scpMap, expressApp) {
   });
 
   expressApp.post('/api/v1/scp/upload/:id', upload.single('uploadFiles'), async (req, res) => {
-    const { data } = req.body;
+    const { data, filename } = req.body;
     const path = JSON.parse(data).name;
     const configId = req.params['id'];
 
@@ -174,7 +174,7 @@ function initScpSftpHandler(log, scpMap, expressApp) {
 
     try {
       const result = await withSftpClient(configId, async (sftp) => {
-        const remotePath = await avoidDuplicateName(sftp, `${path}/${req.file.originalname}`);
+        const remotePath = await avoidDuplicateName(sftp, `${path}/${filename}`);// the req.file.originalname may have encoding pb
         await sftp.put(req.file.buffer, remotePath);
         return { success: true, message: `File uploaded to ${remotePath}` };
       });

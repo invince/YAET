@@ -151,7 +151,7 @@ function initFtpHandler(log, ftpMap, expressApp) {
   });
 
   expressApp.post('/api/v1/ftp/upload/:id', upload.single('uploadFiles'), async (req, res) => {
-    const { data } = req.body;
+    const { data, filename} = req.body;
     const path = JSON.parse(data).name;
     const configId = req.params['id'];
 
@@ -163,7 +163,7 @@ function initFtpHandler(log, ftpMap, expressApp) {
 
     try {
       const result = await withFtpClient(configId, async (client) => {
-        const remotePath = await avoidDuplicateName(client, `${path}/${req.file.originalname}`);
+        const remotePath = await avoidDuplicateName(client, `${path}/${filename}`);// the req.file.originalname may have encoding pb
         const bufferStream = new Readable();
         bufferStream.push(req.file.buffer);
         bufferStream.push(null);
