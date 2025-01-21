@@ -1,7 +1,7 @@
 import {Injectable, OnDestroy} from '@angular/core';
 import {Profile, Profiles, ProfileType} from '../domain/profile/Profile';
 import {ElectronService} from './electron/electron.service';
-import {PROFILES_LOADED} from '../domain/electronConstant';
+import {PROFILES_LOADED} from './electron/ElectronConstant';
 import {Subject, Subscription} from 'rxjs';
 import {MasterKeyService} from './master-key.service';
 import {Tag} from '../domain/Tag';
@@ -118,6 +118,7 @@ export class ProfileService implements OnDestroy{
         case ProfileType.SAMBA_FILE_EXPLORER:
         case ProfileType.FTP_FILE_EXPLORER:
           one.icon = 'folder'; break;
+
         case ProfileType.CUSTOM:
           one.icon = 'star'; break;
       }

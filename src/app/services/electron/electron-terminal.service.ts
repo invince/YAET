@@ -1,19 +1,19 @@
 import {Injectable} from '@angular/core';
 import {
-  SESSION_OPEN_LOCAL_TERMINAL,
-  SESSION_OPEN_SSH_TERMINAL,
   ERROR,
-  SESSION_DISCONNECT_SSH,
-  TERMINAL_INPUT,
-  TERMINAL_OUTPUT,
   SESSION_CLOSE_LOCAL_TERMINAL,
   SESSION_CLOSE_SSH_TERMINAL,
-  SESSION_OPEN_TELNET_TERMINAL,
   SESSION_CLOSE_TELNET_TERMINAL,
-  SESSION_OPEN_CUSTOM,
   SESSION_CLOSE_WINRM_TERMINAL,
-  SESSION_OPEN_WINRM_TERMINAL
-} from '../../domain/electronConstant';
+  SESSION_DISCONNECT_SSH,
+  SESSION_OPEN_CUSTOM,
+  SESSION_OPEN_LOCAL_TERMINAL,
+  SESSION_OPEN_SSH_TERMINAL,
+  SESSION_OPEN_TELNET_TERMINAL,
+  SESSION_OPEN_WINRM_TERMINAL,
+  TERMINAL_INPUT,
+  TERMINAL_OUTPUT
+} from './ElectronConstant';
 import {LocalTerminalProfile} from '../../domain/profile/LocalTerminalProfile';
 import {Profile,} from '../../domain/profile/Profile';
 import {AuthType, SecretType} from '../../domain/Secret';

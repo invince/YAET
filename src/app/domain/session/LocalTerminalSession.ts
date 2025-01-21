@@ -1,4 +1,3 @@
-
 import {Profile, ProfileType} from '../profile/Profile';
 import {TabService} from '../../services/tab.service';
 import {Session} from './Session';

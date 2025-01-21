@@ -1,19 +1,20 @@
 import {
-  Component,
-  Input,
-  ViewChild,
   AfterViewInit,
-  ViewEncapsulation,
+  Component,
+  ElementRef,
+  Input,
   OnChanges,
+  OnDestroy,
   SimpleChanges,
-  OnDestroy, ElementRef
+  ViewChild,
+  ViewEncapsulation
 } from '@angular/core';
 import {NgTerminal, NgTerminalModule} from 'ng-terminal';
 import {Terminal} from '@xterm/xterm';
 import {Session} from '../../domain/session/Session';
-import { FitAddon } from '@xterm/addon-fit';
-import { WebLinksAddon } from '@xterm/addon-web-links';
-import { WebglAddon } from '@xterm/addon-webgl';
+import {FitAddon} from '@xterm/addon-fit';
+import {WebLinksAddon} from '@xterm/addon-web-links';
+import {WebglAddon} from '@xterm/addon-webgl';
 import {Subscription} from 'rxjs';
 import {ElectronTerminalService} from '../../services/electron/electron-terminal.service';
 

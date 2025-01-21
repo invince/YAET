@@ -10,7 +10,7 @@ import {SambaComponent} from './samba/samba.component';
   imports: [
     ScpComponent,
     FtpComponent,
-    SambaComponent
+    SambaComponent,
   ],
   templateUrl: './file-explorer.component.html',
   styleUrl: './file-explorer.component.css'

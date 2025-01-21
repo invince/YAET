@@ -1,7 +1,7 @@
 import {Session} from './Session';
 import {Profile, ProfileType} from '../profile/Profile';
 import {TabService} from '../../services/tab.service';
-import {VncService} from '../../services/vnc.service';
+import {VncService} from '../../services/remote-desktop/vnc.service';
 import {ElementRef} from '@angular/core';
 import {NgxSpinnerService} from 'ngx-spinner';
 import {NotificationService} from '../../services/notification.service';

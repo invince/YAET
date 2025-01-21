@@ -1,15 +1,14 @@
 import {ElementRef, Injectable} from '@angular/core';
 // @ts-ignore
-import {VncProfile} from '../domain/profile/VncProfile';
-import {AuthType, SecretType} from '../domain/Secret';
-import {SecretStorageService} from './secret-storage.service';
-import {ElectronService} from './electron/electron.service';
+import {VncProfile} from '../../domain/profile/VncProfile';
+import {AuthType, SecretType} from '../../domain/Secret';
+import {SecretStorageService} from '../secret-storage.service';
 import RFB from '@novnc/novnc/lib/rfb';
 import {Subject} from 'rxjs';
-import {ProfileType} from '../domain/profile/Profile';
-import {SettingStorageService} from './setting-storage.service';
-import {LogService} from './log.service';
-import {ElectronRemoteDesktopService} from './electron/electron-remote-desktop.service';
+import {ProfileType} from '../../domain/profile/Profile';
+import {SettingStorageService} from '../setting-storage.service';
+import {LogService} from '../log.service';
+import {ElectronRemoteDesktopService} from '../electron/electron-remote-desktop.service';
 
 
 // we use ws to proxy to the vnc server

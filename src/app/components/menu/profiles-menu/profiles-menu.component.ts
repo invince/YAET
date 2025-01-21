@@ -10,13 +10,13 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatButtonModule} from '@angular/material/button';
 import {ProfileFormComponent} from '../profile-form/profile-form.component';
-import {HasChildForm} from '../../enhanced-form-mixin';
+import {HasChildForm} from '../../EnhancedFormMixin';
 import {SettingStorageService} from '../../../services/setting-storage.service';
 import {Subscription} from 'rxjs';
 import {SettingService} from '../../../services/setting.service';
 import {FilterKeywordPipe} from '../../../pipes/filter-keyword.pipe';
 import {MatTree, MatTreeModule, MatTreeNestedDataSource} from '@angular/material/tree'
-import {NODE_DEFAULT_NAME, GroupNode} from '../../../domain/GroupNode';
+import {GroupNode, NODE_DEFAULT_NAME} from '../../../domain/GroupNode';
 import {NestedTreeControl} from '@angular/cdk/tree';
 import {SideNavType} from '../../../domain/setting/UISettings';
 import {MatDialog} from '@angular/material/dialog';

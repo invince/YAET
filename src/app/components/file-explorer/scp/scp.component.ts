@@ -5,7 +5,7 @@ import {
   FileManagerModule,
   ToolbarClickEventArgs
 } from '@syncfusion/ej2-angular-filemanager';
-import {ScpService} from '../../../services/scp.service';
+import {ScpService} from '../../../services/file-explorer/scp.service';
 import {Session} from '../../../domain/session/Session';
 import {AbstractFileManager} from '../abstract-file-manager';
 import {HttpClient} from '@angular/common/http';

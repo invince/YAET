@@ -8,9 +8,11 @@ import {MatSelectChange, MatSelectModule} from '@angular/material/select';
 import {CommonModule, KeyValuePipe} from '@angular/common';
 import {MatInput} from '@angular/material/input';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {RemoteTerminalProfileFormComponent} from './remote-terminal-profile-form/remote-terminal-profile-form.component';
+import {
+  RemoteTerminalProfileFormComponent
+} from './remote-terminal-profile-form/remote-terminal-profile-form.component';
 import {ProfileService} from '../../../services/profile.service';
-import {IsAChildForm} from '../../enhanced-form-mixin';
+import {IsAChildForm} from '../../EnhancedFormMixin';
 import {MasterKeyService} from '../../../services/master-key.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';
 import {SettingService} from '../../../services/setting.service';
@@ -91,19 +93,17 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
 
   constructor(
     private log: LogService,
-
     private fb: FormBuilder,
     private profileService: ProfileService,
     public masterKeyService: MasterKeyService, // in html
     public settingStorage: SettingStorageService, // in html
     private settingService: SettingService,
-
     private notification: NotificationService,
     private cdr: ChangeDetectorRef,
   ) {
     super();
 
-    if (!this.profileService.isLoaded ) {
+    if (!this.profileService.isLoaded) {
       this.notification.info('Profiles not loaded, we\'ll reload it, please close setting menu and reopen');
       this.profileService.reload();
     }
@@ -112,6 +112,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   get profile(): Profile {
     return this._profile;
   }
+
   @Input()
   set profile(value: Profile) {
     this._profile = value;
@@ -133,10 +134,12 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
         tags: [[]],
         profileType: [this._profile.profileType, Validators.required],
         remoteTerminalProfileForm: [],
+
         ftpProfileForm: [this._profile.ftpProfile],
+        sambaProfileForm: [this._profile.sambaProfile],
+
         rdpProfileForm: [this._profile.rdpProfile],
         vncProfileForm: [this._profile.vncProfile],
-        sambaProfileForm: [this._profile.sambaProfile],
         customProfileForm: [this._profile.customProfile],
 
       },
@@ -160,7 +163,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
 
   onSelectType($event: MatSelectChange) {
     // this.profile.profileType = $event;
-    switch($event.value) {
+    switch ($event.value) {
       case ProfileType.SSH_TERMINAL:
       case ProfileType.SCP_FILE_EXPLORER:
         this.form.get('remoteTerminalProfileForm')?.setValue(new RemoteTerminalProfile());
@@ -171,6 +174,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       case ProfileType.WIN_RM_TERMINAL:
         this.form.get('remoteTerminalProfileForm')?.setValue(new RemoteTerminalProfile()); // port is not important
         break;
+
       case ProfileType.FTP_FILE_EXPLORER:
         this.form.get('ftpProfileForm')?.setValue(new FTPProfile());
         break;
@@ -181,7 +185,6 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       case ProfileType.RDP_REMOTE_DESKTOP:
         this.form.get('rdpProfileForm')?.setValue(new RdpProfile());
         break;
-
       case ProfileType.VNC_REMOTE_DESKTOP:
         this.form.get('vncProfileForm')?.setValue(new VncProfile());
         break;
@@ -230,12 +233,14 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
           case ProfileType.WIN_RM_TERMINAL:
             this.updateFormValue('remoteTerminalProfileForm', profile?.winRmProfile);
             break;
+
           case ProfileType.FTP_FILE_EXPLORER:
             this.updateFormValue('ftpProfileForm', profile?.ftpProfile);
             break;
           case ProfileType.SAMBA_FILE_EXPLORER:
             this.updateFormValue('sambaProfileForm', profile?.sambaProfile);
             break;
+
           case ProfileType.RDP_REMOTE_DESKTOP:
             this.updateFormValue('rdpProfileForm', profile?.rdpProfile);
             break;
@@ -278,12 +283,14 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       case ProfileType.WIN_RM_TERMINAL:
         this._profile.winRmProfile = this.remoteTerminalChild?.formToModel();
         break;
+
       case ProfileType.FTP_FILE_EXPLORER:
         this._profile.ftpProfile = this.ftpChild?.formToModel();
         break;
       case ProfileType.SAMBA_FILE_EXPLORER:
         this._profile.sambaProfile = this.sambaChild?.formToModel();
         break;
+
       case ProfileType.RDP_REMOTE_DESKTOP:
         this._profile.rdpProfile = this.rdpChild?.formToModel();
         break;
@@ -293,9 +300,6 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     }
     return this._profile;
   }
-
-
-
 
 
   getTypeOptions() {
@@ -327,14 +331,11 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   }
 
 
-
-  updateFormValue(formName:string, value: any) {
+  updateFormValue(formName: string, value: any) {
     this.form.get(formName)?.setValue(value);
     this.form.get(formName)?.markAsUntouched();
     this.form.get(formName)?.markAsPristine();
   }
-
-
 
 
   onDelete() {

@@ -73,6 +73,7 @@
   - rdp
   - scp
   - ftp
+  - samba
   - icon ok
 - clone works
   - custom
@@ -81,6 +82,7 @@
   - rdp
   - scp
   - ftp
+  - samba
   - with same group info cloned
   - with same tags info cloned
 - edit

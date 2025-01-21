@@ -1,12 +1,14 @@
 import {Injectable} from '@angular/core';
-import {IpcRenderer } from 'electron';
+import {IpcRenderer} from 'electron';
 import {
   CLOUD_DOWNLOAD,
   CLOUD_RELOAD,
   CLOUD_SAVE,
+  CLOUD_UPLOAD,
   DELETE_MASTERKEY,
   ERROR,
   GET_MASTERKEY,
+  LOG,
   PROFILES_RELOAD,
   PROFILES_SAVE,
   SAVE_MASTERKEY,
@@ -14,9 +16,7 @@ import {
   SECRETS_SAVE,
   SETTINGS_RELOAD,
   SETTINGS_SAVE,
-  LOG, CLOUD_UPLOAD,
-} from '../../domain/electronConstant';
-import {ProfileType} from '../../domain/profile/Profile';
+} from './ElectronConstant';
 import {MySettings} from '../../domain/setting/MySettings';
 import {AuthType, SecretType} from '../../domain/Secret';
 import {SecretStorageService} from '../secret-storage.service';

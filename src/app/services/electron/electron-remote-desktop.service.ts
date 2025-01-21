@@ -1,11 +1,13 @@
 import {Injectable} from '@angular/core';
 import {
+  CLIPBOARD_PASTE,
   ERROR,
+  SESSION_DISCONNECT_VNC,
   SESSION_OPEN_RDP,
   SESSION_OPEN_VNC,
-  SESSION_DISCONNECT_VNC, CLIPBOARD_PASTE, TRIGGER_NATIVE_CLIPBOARD_PASTE,
-} from '../../domain/electronConstant';
-import { ProfileType} from '../../domain/profile/Profile';
+  TRIGGER_NATIVE_CLIPBOARD_PASTE,
+} from './ElectronConstant';
+import {ProfileType} from '../../domain/profile/Profile';
 import {TabService} from '../tab.service';
 import {RdpProfile} from '../../domain/profile/RdpProfile';
 import {AbstractElectronService} from './electron.service';

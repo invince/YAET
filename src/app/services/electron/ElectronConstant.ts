@@ -66,4 +66,4 @@ export const CLOUD_DOWNLOAD = 'cloud.download';
 //#endregion "Cloud"
 
 
-
+export const NODE_EXPRESS_API_ROOT = 'http://localhost:13012/api';

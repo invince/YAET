@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {MySettings} from '../domain/setting/MySettings';
 import {Profile} from '../domain/profile/Profile';
 import {ElectronService} from './electron/electron.service';
-import {SETTINGS_LOADED} from '../domain/electronConstant';
+import {SETTINGS_LOADED} from './electron/ElectronConstant';
 import {LocalTerminalType} from '../domain/profile/LocalTerminalProfile';
 import {Subject} from 'rxjs';
 import {SettingStorageService} from './setting-storage.service';

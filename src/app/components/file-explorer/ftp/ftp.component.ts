@@ -1,14 +1,9 @@
-import {
-  Component,
-  Input,
-  OnDestroy, OnInit, ViewChild,
-} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit, ViewChild,} from '@angular/core';
 import {Session} from '../../../domain/session/Session';
 import {FileManagerComponent, FileManagerModule} from '@syncfusion/ej2-angular-filemanager';
-import {FtpService} from '../../../services/ftp.service';
+import {FtpService} from '../../../services/file-explorer/ftp.service';
 import {HttpClient} from '@angular/common/http';
 import {AbstractFileManager} from '../abstract-file-manager';
-import * as http from 'node:http';
 
 @Component({
   selector: 'app-ftp',
