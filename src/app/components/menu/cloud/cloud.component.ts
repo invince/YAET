@@ -21,9 +21,7 @@ import {ProfileService} from '../../../services/profile.service';
 import {NgxSpinnerService} from 'ngx-spinner';
 import _ from 'lodash';
 import {NotificationService} from '../../../services/notification.service';
-import {MasterKeyComponent} from '../../dialog/master-key/master-key.component';
 import {MatDialog} from '@angular/material/dialog';
-import {SecretFormComponent} from '../secrets-menu/secret-form/secret-form.component';
 import {SecretQuickFormComponent} from '../../dialog/secret-quick-form/secret-quick-form.component';
 
 @Component({

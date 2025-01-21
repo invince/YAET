@@ -1,10 +1,6 @@
 import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
 import {MatFormFieldModule} from '@angular/material/form-field';
-import {
-  MatChipEditedEvent,
-  MatChipInputEvent,
-  MatChipsModule
-} from '@angular/material/chips';
+import {MatChipEditedEvent, MatChipInputEvent, MatChipsModule} from '@angular/material/chips';
 import {MatIconModule} from '@angular/material/icon';
 import {SettingStorageService} from '../../../../services/setting-storage.service';
 import {SettingService} from '../../../../services/setting.service';

@@ -12,7 +12,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatIcon} from '@angular/material/icon';
 import {MatIconButton} from '@angular/material/button';
-import {ChildFormAsFormControl} from '../../../enhanced-form-mixin';
+import {ChildFormAsFormControl} from '../../../EnhancedFormMixin';
 import {MenuComponent} from '../../menu.component';
 import {RdpProfile} from '../../../../domain/profile/RdpProfile';
 import {MatSlideToggle} from '@angular/material/slide-toggle';

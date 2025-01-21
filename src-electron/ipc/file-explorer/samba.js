@@ -8,6 +8,7 @@ const fsPromise = require('fs/promises');
 const os = require('os');
 const uuid = require('uuid');
 const SMB2  = require('v9u-smb2');
+const {sleep} = require("ssh2-sftp-client/src/utils");
 
 function initSambaHandler(log, sambaMap, expressApp) {
 
@@ -72,6 +73,27 @@ function initSambaHandler(log, sambaMap, expressApp) {
     return formattedFiles;
   }
 
+  async function copyDirectory(smbClient, sourceDir, targetDir) {
+    // Ensure the target directory exists
+    await smbClient.mkdir(targetDir, true);
+
+    // List all items in the source directory
+    const items = await smbClient.readdir(sourceDir, { stats: true });
+
+    for (const item of items) {
+      const sourcePath = path.join(sourceDir, item.name);
+      const targetPath = path.join(targetDir, item.name);
+
+      if (item.isDirectory()) {
+        // Recursively copy subdirectories
+        await copyDirectory(smbClient, sourcePath, targetPath);
+      } else {
+        // Copy individual files
+        await copyPasteFile(smbClient, sourcePath, targetPath);
+      }
+    }
+  }
+
   //==================== API ====================================================
   expressApp.post('/api/v1/samba/:id', async (req, res) => {
     const action = req.body.action || 'read';
@@ -110,9 +132,45 @@ function initSambaHandler(log, sambaMap, expressApp) {
             const names = req.body.names || [];
             const targetPath = req.body.targetPath;
             for (const name of names) {
-              const sourceFilePath = path.join(pathParam, name);
-              const targetFilePath = await avoidDuplicateName(smbClient, path.join(targetPath, name));
-              await copyPasteFile(smbClient, sourceFilePath, targetFilePath);
+              const sourcePath = path.join(pathParam, name);
+              const targetPathWithName = await avoidDuplicateName(smbClient, path.join(targetPath, name));
+              const stats = await smbClient.stat(sourcePath);
+
+              if (stats.isDirectory()) {
+                // Recursively copy the directory
+                await copyDirectory(smbClient, sourcePath, targetPathWithName);
+              } else {
+                // Copy a single file
+                await copyPasteFile(smbClient, sourcePath, targetPathWithName);
+              }
+            }
+            return { cwd: { name: pathParam, type: 'folder' }, files: await list(smbClient, targetPath, names) };
+          }
+          case 'move': {
+            const names = req.body.names || [];
+            const targetPath = req.body.targetPath;
+            for (const name of names) {
+              const sourcePath = path.join(pathParam, name);
+              const targetPathWithName = await avoidDuplicateName(smbClient, path.join(targetPath, name));
+              const stats = await smbClient.stat(sourcePath);
+
+              if (stats.isDirectory()) {
+                // Recursively copy the directory
+                await copyDirectory(smbClient, sourcePath, targetPathWithName);
+
+                // Ensure all resources are closed before deleting the source directory
+                // FIXME: the smbClient resolve too early, so we need wait a little
+                await new Promise((resolve) => setTimeout(resolve, 10 * 1000));
+
+                // Remove the original directory
+                // FIXME: also it's better to use a new connection
+                await withSambaClient(configId, async newSmbClient => await newSmbClient.rmdir(sourcePath));
+              } else {
+                // Copy and remove a single file
+                await copyPasteFile(smbClient, sourcePath, targetPathWithName);
+                await smbClient.unlink(sourcePath);
+              }
+
             }
             return { cwd: { name: pathParam, type: 'folder' }, files: await list(smbClient, targetPath, names) };
           }
@@ -139,7 +197,7 @@ function initSambaHandler(log, sambaMap, expressApp) {
   });
 
   expressApp.post('/api/v1/samba/upload/:id', upload.single('uploadFiles'), async (req, res) => {
-    const { data } = req.body;
+    const { data, filename } = req.body;
     const targetDir = fixPath(JSON.parse(data).name);
     const configId = req.params['id'];
 
@@ -148,10 +206,9 @@ function initSambaHandler(log, sambaMap, expressApp) {
       res.status(400).send({ error: { code: 400, message: 'No file uploaded' } });
       return;
     }
-
     try {
       const result = await withSambaClient(configId, async (smbClient) => {
-        const targetPath = await avoidDuplicateName(smbClient, path.join(targetDir, req.file.originalname));
+        const targetPath = await avoidDuplicateName(smbClient, path.join(targetDir, filename));  // the req.file.originalname may have encoding pb
         await smbClient.writeFile(targetPath, req.file.buffer);
         return { success: true, message: `File uploaded to ${targetPath}` };
       });

@@ -67,6 +67,25 @@ function initScpSftpHandler(log, scpMap, expressApp) {
     }));
   }
 
+  async function copyDirectory(sftp, sourcePath, targetPath) {
+    await sftp.mkdir(targetPath, true); // Create target directory if it doesn't exist
+    const items = await sftp.list(sourcePath);
+
+    for (const item of items) {
+      const sourceItemPath = `${sourcePath}/${item.name}`;
+      const targetItemPath = `${targetPath}/${item.name}`;
+
+      if (item.type === 'd') {
+        // Recursively copy subdirectory
+        await copyDirectory(sftp, sourceItemPath, targetItemPath);
+      } else {
+        // Copy file
+        await sftp.rcopy(sourceItemPath, targetItemPath);
+      }
+    }
+  }
+
+
   //==================== API ==========================================================
   expressApp.post('/api/v1/scp/:id', async (req, res) => {
     const action = req.body.action || 'read';
@@ -122,7 +141,13 @@ function initScpSftpHandler(log, scpMap, expressApp) {
             for (const name of names) {
               const sourceFilePath = `${pathParam}${name}`;
               const targetFilePath = await avoidDuplicateName(sftp, `${targetPath}${name}`);
-              await sftp.rcopy(sourceFilePath, targetFilePath);
+              const stats = await sftp.stat(sourceFilePath);
+              if (stats.isDirectory) {
+                // Recursively copy the directory
+                await copyDirectory(sftp, sourceFilePath, targetFilePath);
+              } else {
+                await sftp.rcopy(sourceFilePath, targetFilePath);
+              }
             }
             return { cwd: { name: pathParam, type: 'folder' }, files: await list(sftp, targetPath, names) };
           }
@@ -133,11 +158,18 @@ function initScpSftpHandler(log, scpMap, expressApp) {
               for (const name of names) {
                 const sourceFilePath = `${pathParam}${name}`;
                 const targetFilePath = await avoidDuplicateName(sftp, `${targetPath}${name}`);
-                await sftp.rcopy(sourceFilePath, targetFilePath);
-                await sftp.delete(sourceFilePath, true);
+                const stats = await sftp.stat(sourceFilePath);
+                if (stats.isDirectory) {
+                  // Recursively move the directory
+                  await copyDirectory(sftp, sourceFilePath, targetFilePath);
+                  await sftp.rmdir(sourceFilePath, true); // Remove source directory
+                } else {
+                  await sftp.rcopy(sourceFilePath, targetFilePath);
+                  await sftp.delete(sourceFilePath);
+                }
               }
             }
-            return { cwd: { name: pathParam, type: 'folder' }, files: await list(sftp, targetPath) };
+            return { cwd: { name: pathParam, type: 'folder' }, files: await list(sftp, targetPath, names) };
           }
           case 'create': {
             const name = req.body.name;
@@ -162,7 +194,7 @@ function initScpSftpHandler(log, scpMap, expressApp) {
   });
 
   expressApp.post('/api/v1/scp/upload/:id', upload.single('uploadFiles'), async (req, res) => {
-    const { data } = req.body;
+    const { data, filename } = req.body;
     const path = JSON.parse(data).name;
     const configId = req.params['id'];
 
@@ -174,7 +206,7 @@ function initScpSftpHandler(log, scpMap, expressApp) {
 
     try {
       const result = await withSftpClient(configId, async (sftp) => {
-        const remotePath = await avoidDuplicateName(sftp, `${path}/${req.file.originalname}`);
+        const remotePath = await avoidDuplicateName(sftp, `${path}/${filename}`);// the req.file.originalname may have encoding pb
         await sftp.put(req.file.buffer, remotePath);
         return { success: true, message: `File uploaded to ${remotePath}` };
       });

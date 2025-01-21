@@ -6,6 +6,8 @@
     [navigationPaneSettings]="navigationPaneSettings"
     [toolbarSettings]="toolbarSettings"
     [contextMenuSettings]='contextMenuSettings'
+    [uploadSettings]="uploadSettings"
+    (beforeSend)="test($event)"
     (fileOpen)="onFileOpen($event)"
     height="100%"
   >

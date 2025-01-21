@@ -8,7 +8,7 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
-import {ChildFormAsFormControl} from '../../../enhanced-form-mixin';
+import {ChildFormAsFormControl} from '../../../EnhancedFormMixin';
 import {MenuComponent} from '../../menu.component';
 import {CommonModule} from '@angular/common';
 import {MatSelectChange, MatSelectModule} from '@angular/material/select';

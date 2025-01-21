@@ -7,9 +7,7 @@ import {MatInput} from '@angular/material/input';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
 import {MatSelectChange, MatSelectModule} from '@angular/material/select';
-import {
-  ModelFormController
-} from '../../../utils/ModelFormController';
+import {ModelFormController} from '../../../utils/ModelFormController';
 import {SecretStorageService} from '../../../services/secret-storage.service';
 import {MenuComponent} from '../../menu/menu.component';
 import {SecretService} from '../../../services/secret.service';

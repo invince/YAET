@@ -3,7 +3,7 @@ import {FileManagerComponent, FileManagerModule} from "@syncfusion/ej2-angular-f
 import {AbstractFileManager} from '../abstract-file-manager';
 import {Session} from '../../../domain/session/Session';
 import {HttpClient} from '@angular/common/http';
-import {SambaService} from '../../../services/samba.service';
+import {SambaService} from '../../../services/file-explorer/samba.service';
 
 @Component({
   selector: 'app-samba',
@@ -39,6 +39,11 @@ export class SambaComponent extends AbstractFileManager implements OnInit, OnDes
 
   generateAjaxSettings(): any {
     return this.sambaService.setup(this.session);
+  }
+
+
+  test($event: any) {
+    console.log($event);
   }
 
 }

@@ -8,7 +8,7 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
-import {ChildFormAsFormControl} from '../../../enhanced-form-mixin';
+import {ChildFormAsFormControl} from '../../../EnhancedFormMixin';
 import {MenuComponent} from '../../menu.component';
 import {AuthType, SecretType} from '../../../../domain/Secret';
 import {
@@ -28,7 +28,6 @@ import {MatIcon} from '@angular/material/icon';
 import {MatIconButton} from '@angular/material/button';
 import {MatInput} from '@angular/material/input';
 import {MatRadioButton, MatRadioGroup} from '@angular/material/radio';
-import {MatSlideToggle} from '@angular/material/slide-toggle';
 
 @Component({
   selector: 'app-samba-form',
@@ -45,7 +44,6 @@ import {MatSlideToggle} from '@angular/material/slide-toggle';
     MatRadioButton,
     MatRadioGroup,
     MatSelect,
-    MatSlideToggle,
     MatSuffix,
     ReactiveFormsModule
   ],
@@ -139,7 +137,7 @@ export class SambaFormComponent extends ChildFormAsFormControl(MenuComponent)  {
     this.dialog.open(SecretQuickFormComponent, {
       width: '650px',
       data: {
-        secretTypes: [SecretType.LOGIN_PASSWORD, SecretType.PASSWORD_ONLY, SecretType.SSH_KEY]
+        secretTypes: [SecretType.LOGIN_PASSWORD, SecretType.PASSWORD_ONLY]
       }
     });
   }

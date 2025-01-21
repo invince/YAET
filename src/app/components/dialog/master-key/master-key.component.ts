@@ -1,9 +1,5 @@
 import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {
-  MAT_DIALOG_DATA, MatDialog,
-  MatDialogModule,
-  MatDialogRef
-} from '@angular/material/dialog';
+import {MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {MatError, MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatButton} from '@angular/material/button';

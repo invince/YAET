@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import {Secret, Secrets, SecretType} from '../domain/Secret';
+import {Injectable} from '@angular/core';
+import {Secret, Secrets} from '../domain/Secret';
 
 @Injectable({
   providedIn: 'root'

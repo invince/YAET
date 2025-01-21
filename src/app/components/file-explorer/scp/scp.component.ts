@@ -1,10 +1,14 @@
 import {Component, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {FileManagerAllModule, FileManagerComponent, FileManagerModule} from '@syncfusion/ej2-angular-filemanager';
-import {ScpService} from '../../../services/scp.service';
+import {
+  FileManagerAllModule,
+  FileManagerComponent,
+  FileManagerModule,
+  ToolbarClickEventArgs
+} from '@syncfusion/ej2-angular-filemanager';
+import {ScpService} from '../../../services/file-explorer/scp.service';
 import {Session} from '../../../domain/session/Session';
 import {AbstractFileManager} from '../abstract-file-manager';
 import {HttpClient} from '@angular/common/http';
-import * as http from 'node:http';
 
 
 @Component({
@@ -49,4 +53,10 @@ export class ScpComponent extends AbstractFileManager implements OnInit, OnDestr
     return this.fileManager?.path;
   }
 
+
+  onToolbarClick(args: ToolbarClickEventArgs | any) {
+    if (args.item?.properties?.text === 'Copy Path') {
+      navigator.clipboard.writeText(this.path);
+    }
+  }
 }

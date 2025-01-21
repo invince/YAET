@@ -1,6 +1,5 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import {Subject} from 'rxjs';
-import {AppComponent} from '../app.component';
 import {MenuConsts} from '../domain/MenuConsts';
 
 @Injectable({

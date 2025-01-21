@@ -1,10 +1,7 @@
 import {Session} from './Session';
 import {Profile, ProfileType} from '../profile/Profile';
-import {ElectronService} from '../../services/electron/electron.service';
 import {TabService} from '../../services/tab.service';
-import {ScpService} from '../../services/scp.service';
-import {FtpService} from '../../services/ftp.service';
-import {SambaService} from '../../services/samba.service';
+import {SambaService} from '../../services/file-explorer/samba.service';
 
 export class SambaSession extends Session {
 

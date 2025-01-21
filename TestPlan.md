@@ -73,6 +73,7 @@
   - rdp
   - scp
   - ftp
+  - samba
   - icon ok
 - clone works
   - custom
@@ -81,6 +82,7 @@
   - rdp
   - scp
   - ftp
+  - samba
   - with same group info cloned
   - with same tags info cloned
 - edit
@@ -183,14 +185,18 @@
 - [x] drag and drop file to upload
 - [x] copy paste file
 - [x] cut paste file
+- [x] copy paste folder
+- [x] cut paste folder
 - [x] create folder
 - [] create file
 - [x] rename folder
 - [x] rename file
 - [x] delete file
 - [x] delete folder
+- [x] delete folder containing files
 - [x] double click open the file 
   - if you update the file, the file will be uploaded to scp
+- [x] copy current path
 
 ## SMB
 - all ok, use a third party lib
@@ -203,14 +209,17 @@
 - [x] detail view
 - [x] upload
 - [x] drag and drop file to upload
-- [] copy paste file
-- [] cut paste file
+- [x] copy paste file
+- [x] cut paste file
+- [x] copy paste folder
+- [x] cut paste folder
 - [x] create folder
 - [] create file
 - [x] rename folder
 - [x] rename file
 - [x] delete file
 - [x] delete folder
+- [x] delete folder containing files
 - [x] double click open the file
   - if you update the file, the file will be uploaded to scp
 

@@ -2,7 +2,6 @@ import {Injectable, OnDestroy} from '@angular/core';
 import {ElectronService} from './electron/electron.service';
 import CryptoJS from 'crypto-js';
 import {Subject, Subscription} from 'rxjs';
-import {Profile} from '../domain/profile/Profile';
 import {LogService} from './log.service';
 import {MatDialog} from '@angular/material/dialog';
 import {ConfirmationComponent} from '../components/confirmation/confirmation.component';

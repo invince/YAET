@@ -1,7 +1,7 @@
 import {Component, forwardRef, Input} from '@angular/core';
-import {CdkTextareaAutosize} from "@angular/cdk/text-field";
 import {
-  FormBuilder, FormGroup,
+  FormBuilder,
+  FormGroup,
   FormsModule,
   NG_VALIDATORS,
   NG_VALUE_ACCESSOR,
@@ -15,7 +15,7 @@ import {MatIconButton} from "@angular/material/button";
 import {MatInput} from "@angular/material/input";
 import {MatRadioModule} from "@angular/material/radio";
 import {MatSelectChange, MatSelectModule} from "@angular/material/select";
-import {ChildFormAsFormControl} from '../../../enhanced-form-mixin';
+import {ChildFormAsFormControl} from '../../../EnhancedFormMixin';
 import {MenuComponent} from '../../menu.component';
 import {AuthType, SecretType} from '../../../../domain/Secret';
 import {
@@ -41,8 +41,6 @@ import {MatSlideToggle} from '@angular/material/slide-toggle';
     MatSelectModule,
     MatRadioModule,
     MatFormFieldModule,
-
-    CdkTextareaAutosize,
 
     MatInput,
     MatIcon,

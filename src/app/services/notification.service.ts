@@ -1,6 +1,6 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import {Injectable, OnDestroy} from '@angular/core';
 import {MatSnackBar, MatSnackBarConfig} from '@angular/material/snack-bar';
-import { Subscription } from 'rxjs';
+import {Subscription} from 'rxjs';
 
 interface Notification {
   message: string;

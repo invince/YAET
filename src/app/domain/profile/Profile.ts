@@ -127,7 +127,10 @@ export class Profile {
     this.sshProfile = new RemoteTerminalProfile();
     this.telnetProfile = new RemoteTerminalProfile(23);
     this.winRmProfile = new RemoteTerminalProfile(); // port is not important
+
     this.ftpProfile = new FTPProfile();
+    this.sambaProfile= new SambaProfile();
+
     this.rdpProfile = new RdpProfile();
     this.vncProfile = new VncProfile();
     this.customProfile = new CustomProfile();
@@ -140,13 +143,18 @@ export class Profile {
     cloned.icon = base.icon;
     cloned.category = base.category;
     cloned.profileType = base.profileType;
+
     cloned.localTerminal = base.localTerminal;
     cloned.sshProfile = base.sshProfile;
     cloned.telnetProfile = base.telnetProfile;
     cloned.winRmProfile = base.winRmProfile;
+
     cloned.ftpProfile = base.ftpProfile;
+    cloned.sambaProfile = base.sambaProfile;
+
     cloned.vncProfile = base.vncProfile;
     cloned.rdpProfile = base.rdpProfile;
+
     cloned.customProfile = base.customProfile;
     cloned.group = base.group;
     cloned.tags = base.tags;

@@ -108,11 +108,6 @@
 
             </app-remote-terminal-profile-form>
           }
-          @case ('SCP_FILE_EXPLORER') {
-            <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm" [type]="'scp'">
-
-            </app-remote-terminal-profile-form>
-          }
           @case ('TELNET_TERMINAL') {
             <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm"
                                               [type]="'telnet'"
@@ -127,17 +122,24 @@
 
             </app-remote-terminal-profile-form>
           }
-          @case ('RDP_REMOTE_DESKTOP') {
-            <app-rdp-profile-form formControlName="rdpProfileForm"></app-rdp-profile-form>
-          }
-          @case ('VNC_REMOTE_DESKTOP') {
-            <app-vnc-profile-form formControlName="vncProfileForm"></app-vnc-profile-form>
+
+          @case ('SCP_FILE_EXPLORER') {
+            <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm" [type]="'scp'">
+            </app-remote-terminal-profile-form>
           }
           @case ('FTP_FILE_EXPLORER') {
             <app-ftp-profile-form formControlName="ftpProfileForm"></app-ftp-profile-form>
           }
           @case ('SAMBA_FILE_EXPLORER') {
             <app-samba-form formControlName="sambaProfileForm"></app-samba-form>
+          }
+
+
+          @case ('RDP_REMOTE_DESKTOP') {
+            <app-rdp-profile-form formControlName="rdpProfileForm"></app-rdp-profile-form>
+          }
+          @case ('VNC_REMOTE_DESKTOP') {
+            <app-vnc-profile-form formControlName="vncProfileForm"></app-vnc-profile-form>
           }
         }
       }

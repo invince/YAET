@@ -17,7 +17,7 @@ import {AuthType, Secret, SecretType} from '../../../../domain/Secret';
 import {MenuComponent} from '../../menu.component';
 import {MatIconButton} from '@angular/material/button';
 import {MatSelectChange, MatSelectModule} from '@angular/material/select';
-import {ChildFormAsFormControl} from '../../../enhanced-form-mixin';
+import {ChildFormAsFormControl} from '../../../EnhancedFormMixin';
 import {MatRadioModule} from '@angular/material/radio';
 import {SecretStorageService} from '../../../../services/secret-storage.service';
 import {SettingStorageService} from '../../../../services/setting-storage.service';

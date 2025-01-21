@@ -40,7 +40,6 @@ import {SecretStorageService} from '../../../services/secret-storage.service';
 import {SecretService} from '../../../services/secret.service';
 
 
-
 @Component({
   selector: 'app-setting-menu',
   standalone: true,

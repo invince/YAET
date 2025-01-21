@@ -120,11 +120,14 @@ function initHandlerBeforeSettingLoad() {
   initTerminalIpcHandler(log, terminalMap);
   initSSHTerminalIpcHandler(log, terminalMap);
   initTelnetIpcHandler(log, terminalMap);
-  initRdpHandler(log);
-  initVncHandler(log, vncMap);
+
   initScpSftpHandler(log, scpMap, expressApp);
   initFtpHandler(log, ftpMap, expressApp);
   initSambaHandler(log, sambaMap, expressApp);
+
+  initRdpHandler(log);
+  initVncHandler(log, vncMap);
+
   initClipboard(log, mainWindow);
   initCustomSessionHandler(log);
 

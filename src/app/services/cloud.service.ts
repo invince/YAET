@@ -2,7 +2,7 @@ import {Injectable, OnDestroy} from '@angular/core';
 import {CloudSettings} from '../domain/setting/CloudSettings';
 import {ElectronService} from './electron/electron.service';
 import {MasterKeyService} from './master-key.service';
-import {CLOUD_LOADED} from '../domain/electronConstant';
+import {CLOUD_LOADED} from './electron/ElectronConstant';
 import {CloudResponse} from '../domain/setting/CloudResponse';
 import {SettingService} from './setting.service';
 import {ProfileService} from './profile.service';

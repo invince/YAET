@@ -1,9 +1,7 @@
 import {Injectable} from '@angular/core';
-import {
-  SESSION_SCP_REGISTER, SESSION_FTP_REGISTER, SESSION_SAMBA_REGISTER,
-} from '../../domain/electronConstant';
+import {SESSION_FTP_REGISTER, SESSION_SAMBA_REGISTER, SESSION_SCP_REGISTER,} from './ElectronConstant';
 import {AbstractElectronService} from './electron.service';
-import { RemoteTerminalProfile } from '../../domain/profile/RemoteTerminalProfile';
+import {RemoteTerminalProfile} from '../../domain/profile/RemoteTerminalProfile';
 import {SecretStorageService} from '../secret-storage.service';
 import {AuthType, SecretType} from '../../domain/Secret';
 import {FTPProfile} from '../../domain/profile/FTPProfile';
@@ -142,5 +140,4 @@ export class ElectronFileExplorerService extends AbstractElectronService {
     }
     await this.ipc.invoke(SESSION_SAMBA_REGISTER, {id: id, config: sambaConfig});
   }
-
 }
