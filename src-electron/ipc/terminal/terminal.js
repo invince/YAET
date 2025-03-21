@@ -1,4 +1,5 @@
 const {ipcMain} = require('electron');
+const {Terminal} = require("@xterm/xterm");
 
 function initTerminalIpcHandler(log, terminalMap) {
 
@@ -12,6 +13,16 @@ function initTerminalIpcHandler(log, terminalMap) {
       terminalCallback(input, id); // Send input to the correct terminal
     } else {
       log.info('Terminal not found for id:', id);
+    }
+  });
+
+  ipcMain.on('terminal.resize', (event, { id, cols, rows }) => {
+    const terminal = terminalMap.get(id);
+    if (!terminal) {
+      terminalMap.set(id, {cols: cols, rows: rows}); // resize may arrive before we create the terminal
+    }
+    if (terminal?.type === 'ssh') {
+      terminal.stream?.setWindow(rows, cols, null, null);
     }
   });
 
