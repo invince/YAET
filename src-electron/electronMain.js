@@ -104,7 +104,7 @@ app.on('ready', () => {
       .catch(log.error);
     load(log, mainWindow, SETTINGS_JSON, "settings.loaded", false)
       .then(settings => {
-        initHandlerAfterSettingLoad(mainWindow, log, settings);
+        initHandlerAfterSettingLoad(settings);
       })
       .catch(log.error);
 

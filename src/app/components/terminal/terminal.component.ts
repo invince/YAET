@@ -9,85 +9,102 @@ import {
   ViewChild,
   ViewEncapsulation
 } from '@angular/core';
-import {NgTerminal, NgTerminalModule} from 'ng-terminal';
 import {Terminal} from '@xterm/xterm';
 import {Session} from '../../domain/session/Session';
 import {FitAddon} from '@xterm/addon-fit';
 import {WebLinksAddon} from '@xterm/addon-web-links';
 import {WebglAddon} from '@xterm/addon-webgl';
-import {Subscription} from 'rxjs';
 import {ElectronTerminalService} from '../../services/electron/electron-terminal.service';
 
 @Component({
   selector: 'app-terminal',
   templateUrl: './terminal.component.html',
   styleUrls: ['./terminal.component.scss'],
-  imports: [NgTerminalModule],
   standalone: true,
   encapsulation: ViewEncapsulation.None
 })
 export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() session!: Session;
-  @ViewChild('term', {static: false}) terminal!: NgTerminal;
+  // @ViewChild('term', {static: false}) xtermUnderlying!: Terminal;
+  @ViewChild('term', {static: false}) terminalDiv!: ElementRef;
   @ViewChild('termContainer', {static: false}) termContainer!: ElementRef;
   private isViewInitialized = false;
 
-  private xtermUnderlying : Terminal | undefined;
+  private xtermUnderlying: Terminal;
   private webglAddon = new WebglAddon();
-
-  private terminalOnDataSubscription?: Subscription;
+  private fitAddon = new FitAddon();
+  private resizeObserver: ResizeObserver | undefined;
 
   constructor(
     private electron: ElectronTerminalService,
   ) {
+    this.xtermUnderlying = new Terminal({
+      fontFamily: '"Cascadia Code", Menlo, monospace',
+      // theme: {
+      //   background: 'rgba(0, 0, 0, 0)' // Fully transparent background
+      // },
+      convertEol: false,
+      cursorBlink: true
+    });
+
+
   }
 
   ngAfterViewInit(): void {
+    this.xtermUnderlying.open(this.terminalDiv.nativeElement);
 
-    // Open terminal in the container
-    this.xtermUnderlying = this.terminal.underlying;
-    if (this.xtermUnderlying) {
-      this.xtermUnderlying.loadAddon(new WebLinksAddon());
-      this.xtermUnderlying.loadAddon(new FitAddon());
-      this.webglAddon.onContextLoss(e => {
-        this.webglAddon.dispose();
-      });
-      this.xtermUnderlying.loadAddon(this.webglAddon);
-      this.terminal.setXtermOptions({
-        fontFamily: '"Cascadia Code", Menlo, monospace',
-        // theme: {
-        //   background: 'rgba(0, 0, 0, 0)' // Fully transparent background
-        // },
-        cursorBlink: true
-      });
+    this.xtermUnderlying.loadAddon(new WebLinksAddon());
+    this.xtermUnderlying.loadAddon(this.fitAddon);
+    this.webglAddon.onContextLoss(e => {
+      this.webglAddon.dispose();
+    });
+    this.xtermUnderlying.loadAddon(this.webglAddon);
+    // this.terminal.setXtermOptions({
+    //   fontFamily: '"Cascadia Code", Menlo, monospace',
+    //   // theme: {
+    //   //   background: 'rgba(0, 0, 0, 0)' // Fully transparent background
+    //   // },
+    //   convertEol: false,
+    //   cursorBlink: true
+    // });
 
-      //  ctrl + shift + c for copy when selecting data, default otherwise
-      this.xtermUnderlying.attachCustomKeyEventHandler((arg) => {
-        if (arg.ctrlKey && arg.shiftKey && arg.code === "KeyC" && arg.type === "keydown") {
-          const selection = this.xtermUnderlying?.getSelection();
-          if (selection) {
-            navigator.clipboard.writeText(selection);
-            return false;
-          }
-        }
-        return true;
-      });
+    // this.xtermUnderlying.onResize(size => {
+    //   this.electron.sendTerminalResize(this.session.id, size.cols, size.rows);
+    // });
 
-      // right click for paste. NOTE: ctrl + v should work natively
-      this.termContainer.nativeElement.addEventListener('contextmenu', (event: MouseEvent) => {
-        event.preventDefault(); // Prevent the default context menu
+    // Force initial fit
+    setTimeout(() => this.fitAddon.fit(), 0);
+
+// Add ResizeObserver for container changes
+    this.resizeObserver = new ResizeObserver(() => this.fitAddon.fit());
+    this.resizeObserver.observe(this.termContainer.nativeElement);
+
+    //  ctrl + shift + c for copy when selecting data, default otherwise
+    this.xtermUnderlying.attachCustomKeyEventHandler((arg) => {
+      if (arg.ctrlKey && arg.shiftKey && arg.code === "KeyC" && arg.type === "keydown") {
         const selection = this.xtermUnderlying?.getSelection();
         if (selection) {
           navigator.clipboard.writeText(selection);
-        } else {
-          navigator.clipboard.readText()
-            .then(text => {
-              this.electron.sendTerminalInput(this.session.id, text);
-            })
+          return false;
         }
-      });
+      }
+      return true;
+    });
 
-    }
+    // right click for paste. NOTE: ctrl + v should work natively
+    this.termContainer.nativeElement.addEventListener('contextmenu', (event: MouseEvent) => {
+      event.preventDefault(); // Prevent the default context menu
+      const selection = this.xtermUnderlying?.getSelection();
+      if (selection) {
+        navigator.clipboard.writeText(selection);
+      } else {
+        navigator.clipboard.readText()
+          .then(text => {
+            this.electron.sendTerminalInput(this.session.id, text);
+          })
+      }
+    });
+
 
     this.initTab();
 
@@ -112,22 +129,19 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     // Listen to output from Electron and display in xterm
     this.electron.onTerminalOutput(this.session.id, (data) => {
-      this.terminal.write(data.data);
+      this.xtermUnderlying?.write(data.data);
     });
 
     // Send user input back to Electron main process
-    if (this.terminalOnDataSubscription) {
-      this.terminalOnDataSubscription.unsubscribe();
-    }
-    this.terminalOnDataSubscription = this.terminal.onData().subscribe(data => {
-      this.electron.sendTerminalInput(this.session.id, data);
-    });
+    // if (this.terminalOnDataSubscription) {
+    //   this.terminalOnDataSubscription.unsubscribe();
+    // }
+    this.xtermUnderlying.onData(data => this.electron.sendTerminalInput(this.session.id, data));
   }
 
   ngOnDestroy() {
     this.session.close();
-    if (this.terminalOnDataSubscription) {
-      this.terminalOnDataSubscription.unsubscribe();
-    }
+    this.fitAddon?.dispose();
+    this.resizeObserver?.disconnect();
   }
 }

@@ -1,12 +1,6 @@
 <div class="terminal-container" #termContainer>
-  <div class="terminal">
-    <ng-terminal
-      [cols]="150"
-      #term></ng-terminal>
+  <div #term id="term">
+    <!-- xterm.js will insert its DOM here -->
   </div>
-  <div class="terminal-footer">
-    &nbsp;
-  </div>
-
+  <div class="terminal-footer"></div>
 </div>
-
