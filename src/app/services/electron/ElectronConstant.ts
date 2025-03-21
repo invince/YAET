@@ -17,6 +17,7 @@ export const SESSION_OPEN_TELNET_TERMINAL = 'session.open.terminal.telnet';
 export const SESSION_CLOSE_TELNET_TERMINAL = 'session.close.terminal.telnet';
 export const TERMINAL_INPUT = 'terminal.input';
 export const TERMINAL_OUTPUT = 'terminal.output';
+export const TERMINAL_RESIZE = 'terminal.resize';
 
 export const SESSION_OPEN_RDP = 'session.open.rd.rdp';
 export const SESSION_OPEN_VNC = 'session.open.rd.vnc';

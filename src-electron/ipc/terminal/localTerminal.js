@@ -25,7 +25,7 @@ function initLocalTerminalIpcHandler(settings, log, terminalMap) {
     let shell = validate(data.terminalExec);
     const ptyProcess = pty.spawn(shell, [], {
       name: 'xterm-color',
-      cols: 80,
+      cols: 150,
       rows: 30,
       cwd: process.env.HOME,
       env: process.env,

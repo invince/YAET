@@ -12,7 +12,8 @@ import {
   SESSION_OPEN_TELNET_TERMINAL,
   SESSION_OPEN_WINRM_TERMINAL,
   TERMINAL_INPUT,
-  TERMINAL_OUTPUT
+  TERMINAL_OUTPUT,
+  TERMINAL_RESIZE
 } from './ElectronConstant';
 import {LocalTerminalProfile} from '../../domain/profile/LocalTerminalProfile';
 import {Profile,} from '../../domain/profile/Profile';
@@ -310,6 +311,14 @@ export class ElectronTerminalService extends AbstractElectronService {
 
       this.ipc.send(SESSION_OPEN_CUSTOM, { command: cmd });
     }
+  }
+
+  sendTerminalResize(terminalId: string, cols: number | undefined, rows: number| undefined) {
+    this.ipc.send(TERMINAL_RESIZE, {
+      id: terminalId,
+      cols: cols,
+      rows: rows
+    });
   }
 }
 

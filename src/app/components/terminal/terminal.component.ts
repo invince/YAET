@@ -34,6 +34,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   private xtermUnderlying : Terminal | undefined;
   private webglAddon = new WebglAddon();
+  private fitAddon = new FitAddon();
 
   private terminalOnDataSubscription?: Subscription;
 
@@ -48,7 +49,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.xtermUnderlying = this.terminal.underlying;
     if (this.xtermUnderlying) {
       this.xtermUnderlying.loadAddon(new WebLinksAddon());
-      this.xtermUnderlying.loadAddon(new FitAddon());
+      this.xtermUnderlying.loadAddon(this.fitAddon);
       this.webglAddon.onContextLoss(e => {
         this.webglAddon.dispose();
       });
@@ -58,7 +59,12 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
         // theme: {
         //   background: 'rgba(0, 0, 0, 0)' // Fully transparent background
         // },
+        convertEol: false,
         cursorBlink: true
+      });
+
+      this.xtermUnderlying.onResize(size => {
+        this.electron.sendTerminalResize(this.session.id, size.cols, size.rows);
       });
 
       //  ctrl + shift + c for copy when selecting data, default otherwise
@@ -88,6 +94,8 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
       });
 
     }
+
+    this.fitAddon.fit();
 
     this.initTab();
 
@@ -126,8 +134,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   ngOnDestroy() {
     this.session.close();
-    if (this.terminalOnDataSubscription) {
-      this.terminalOnDataSubscription.unsubscribe();
-    }
+    this.terminalOnDataSubscription?.unsubscribe();
+    this.fitAddon?.dispose();
   }
 }

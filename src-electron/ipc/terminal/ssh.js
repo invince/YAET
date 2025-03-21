@@ -15,7 +15,7 @@ function initSSHTerminalIpcHandler(log, terminalMap) {
     const sshConfig = data.config;
     const id = data.terminalId;
     const shellOptions = {
-      term: 'xterm-256color'
+      term: 'xterm-256color',
     };
 
     sshConfig.debug = (info) => {
@@ -47,11 +47,18 @@ function initSSHTerminalIpcHandler(log, terminalMap) {
           );
         });
 
+        const terminal = terminalMap.get(id);
+        if (terminal) {
+          stream.setWindow(terminal.cols, terminal.rows, null, null); // means xtermjs resize arrive before we create ssh2 connection
+        }
+
         terminalMap.set(id,
           {
             type: 'ssh',
             process: conn,
+            stream: stream,
             callback: (data, id) => stream.write(data), // cf terminal.js
+
           });
       });
     }).connect(sshConfig);
