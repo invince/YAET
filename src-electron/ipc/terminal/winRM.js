@@ -38,7 +38,6 @@ function initWinRmIpcHandler(settings, log, terminalMap) {
     // Spawn a PowerShell process
     const ptyProcess = pty.spawn(localTermForWinRM, [], {
       name: 'xterm-color',
-      cols: 80,
       rows: 30,
       cwd: process.env.HOME,
       env: process.env,

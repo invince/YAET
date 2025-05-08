@@ -13,7 +13,6 @@ import {Terminal} from '@xterm/xterm';
 import {Session} from '../../domain/session/Session';
 import {FitAddon} from '@xterm/addon-fit';
 import {WebLinksAddon} from '@xterm/addon-web-links';
-import {WebglAddon} from '@xterm/addon-webgl';
 import {ElectronTerminalService} from '../../services/electron/electron-terminal.service';
 
 @Component({
@@ -30,7 +29,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   private isViewInitialized = false;
 
   private xtermUnderlying: Terminal;
-  private webglAddon = new WebglAddon();
+  // private webglAddon = new WebglAddon();
   private fitAddon = new FitAddon();
   private resizeObserver: ResizeObserver | undefined;
 
@@ -62,10 +61,10 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
       }
     }));
     this.xtermUnderlying.loadAddon(this.fitAddon);
-    this.webglAddon.onContextLoss(e => {
-      this.webglAddon.dispose();
-    });
-    this.xtermUnderlying.loadAddon(this.webglAddon);
+    // this.webglAddon.onContextLoss(e => {
+    //   this.webglAddon.dispose();
+    // });
+    // this.xtermUnderlying.loadAddon(this.webglAddon);
     // this.terminal.setXtermOptions({
     //   fontFamily: '"Cascadia Code", Menlo, monospace',
     //   // theme: {
@@ -75,9 +74,9 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     //   cursorBlink: true
     // });
 
-    // this.xtermUnderlying.onResize(size => {
-    //   this.electron.sendTerminalResize(this.session.id, size.cols, size.rows);
-    // });
+    this.xtermUnderlying.onResize(size => {
+      this.electron.sendTerminalResize(this.session.id, size.cols, size.rows);
+    });
 
     // Force initial fit
     setTimeout(() => this.fitAddon.fit(), 0);
@@ -136,6 +135,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     // Listen to output from Electron and display in xterm
     this.electron.onTerminalOutput(this.session.id, (data) => {
+      console.log(data.data);
       this.xtermUnderlying?.write(data.data);
     });
 
