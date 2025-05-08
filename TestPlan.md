@@ -127,6 +127,9 @@
 # Terminal
 - reconnect: open a ssh terminal, reboot, then the reconnect button should appear
   - after you click it, your session should be reconnected
+- open url: 
+  - when you click url, it's copied in your clipboard
+  - when you press ctrl and click url, it's opened in a new web browser (not in electron itself)
 
 ## Local Terminal
 - (Settings) if default open option checked, then a local terminal should start at startup

@@ -25,7 +25,6 @@ import {ElectronTerminalService} from '../../services/electron/electron-terminal
 })
 export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() session!: Session;
-  // @ViewChild('term', {static: false}) xtermUnderlying!: Terminal;
   @ViewChild('term', {static: false}) terminalDiv!: ElementRef;
   @ViewChild('termContainer', {static: false}) termContainer!: ElementRef;
   private isViewInitialized = false;
@@ -37,6 +36,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   constructor(
     private electron: ElectronTerminalService,
+
   ) {
     this.xtermUnderlying = new Terminal({
       fontFamily: '"Cascadia Code", Menlo, monospace',
@@ -53,7 +53,14 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   ngAfterViewInit(): void {
     this.xtermUnderlying.open(this.terminalDiv.nativeElement);
 
-    this.xtermUnderlying.loadAddon(new WebLinksAddon());
+    this.xtermUnderlying.loadAddon(new WebLinksAddon((event: MouseEvent, uri: string) => {
+      if (event.button === 0 && event.ctrlKey) { // ctrl + click = open link in web browser
+        this.electron.openUrl(uri);
+      }
+      if (event.button === 0) { // ctrl + right click = copy the url
+        navigator.clipboard.writeText(uri);
+      }
+    }));
     this.xtermUnderlying.loadAddon(this.fitAddon);
     this.webglAddon.onContextLoss(e => {
       this.webglAddon.dispose();
@@ -75,7 +82,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     // Force initial fit
     setTimeout(() => this.fitAddon.fit(), 0);
 
-// Add ResizeObserver for container changes
+    // Add ResizeObserver for container changes
     this.resizeObserver = new ResizeObserver(() => this.fitAddon.fit());
     this.resizeObserver.observe(this.termContainer.nativeElement);
 
