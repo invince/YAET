@@ -49,7 +49,7 @@ function initSSHTerminalIpcHandler(log, terminalMap) {
 
         const terminal = terminalMap.get(id);
         if (terminal) {
-          stream.setWindow(terminal.cols, terminal.rows, null, null); // means xtermjs resize arrive before we create ssh2 connection
+          stream.setWindow(terminal.rows, terminal.cols, null, null); // means xtermjs resize arrive before we create ssh2 connection
         }
 
         terminalMap.set(id,

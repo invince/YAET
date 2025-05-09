@@ -21,6 +21,9 @@ function initTerminalIpcHandler(log, terminalMap) {
     if (!terminal) {
       terminalMap.set(id, {cols: cols, rows: rows}); // resize may arrive before we create the terminal
     }
+    if (terminal?.type === 'local' || terminal?.type === 'winrm') {
+      terminal.process.resize(cols, rows)
+    }
     if (terminal?.type === 'ssh') {
       terminal.stream?.setWindow(rows, cols, null, null);
     }

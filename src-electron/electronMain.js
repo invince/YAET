@@ -1,6 +1,6 @@
 const path = require("path");
 const fs = require("fs");
-const {app, globalShortcut, BrowserWindow, Tray, ipcMain} = require('electron');
+const {app, globalShortcut, BrowserWindow, Tray} = require('electron');
 
 const {createMenu} = require('./ui/menu');
 const {SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON, APP_CONFIG_PATH} = require("./common");
@@ -28,6 +28,7 @@ let sambaMap = new Map();
 let initialized = false;
 
 const log = require("electron-log")
+const {initCommonIpc} = require("./ipc/commonIpc");
 const {initSSHTerminalIpcHandler} = require("./ipc/terminal/ssh");
 const {initTelnetIpcHandler} = require("./ipc/terminal/telnet");
 const {initLocalTerminalIpcHandler} = require("./ipc/terminal/localTerminal");
@@ -39,17 +40,7 @@ console.log(logPath);
 log.transports.file.resolvePathFn = () => logPath;
 log.transports.file.level = "debug"
 
-ipcMain.on('log', (event, {level, message}) => {
-  message = '[Frontend] ' + message;
-  switch (level) {
-    case 'info': log.info(message); break;
-    case 'debug': log.debug(message); break;
-    case 'trace': log.debug(message); break;
-    case 'warn': log.warn(message); break;
-    case 'error': log.error(message); break;
-    default: log.info(message); break;
-  }
-});
+
 
 app.on('ready', () => {
 
@@ -112,6 +103,9 @@ app.on('ready', () => {
 });
 
 function initHandlerBeforeSettingLoad() {
+
+  initCommonIpc(log);
+
   expressApp = initBackend(log);
 
   initConfigFilesIpcHandler(log, mainWindow);

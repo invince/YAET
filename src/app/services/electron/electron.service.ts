@@ -9,6 +9,7 @@ import {
   ERROR,
   GET_MASTERKEY,
   LOG,
+  OPEN_URL,
   PROFILES_RELOAD,
   PROFILES_SAVE,
   SAVE_MASTERKEY,
@@ -43,6 +44,13 @@ export class AbstractElectronService {
     }
   }
 
+  openUrl(url: string) {
+    if (this.ipc) {
+      this.ipc.send(OPEN_URL, {url: url});
+    }
+  }
+
+
 }
 
 @Injectable({
@@ -66,6 +74,7 @@ export class ElectronService extends AbstractElectronService {
       this.ipc.on(eventName, (event, data) => callback(data));
     }
   }
+
   private initCommonListener() {
     this.ipc.on(ERROR, (event, data) => {
       this.log({level: 'error:', message:  data});
@@ -77,6 +86,8 @@ export class ElectronService extends AbstractElectronService {
     });
 
   }
+
+
 //#endregion "Common"
 
 //#region "Settings"
