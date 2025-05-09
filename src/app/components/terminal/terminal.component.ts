@@ -135,7 +135,6 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     // Listen to output from Electron and display in xterm
     this.electron.onTerminalOutput(this.session.id, (data) => {
-      console.log(data.data);
       this.xtermUnderlying?.write(data.data);
     });
 
