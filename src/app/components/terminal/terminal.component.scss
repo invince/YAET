@@ -27,15 +27,6 @@ html, body, app-root {
       inset: 0 !important;
       padding: 8px !important;
       height: 100% !important;
-
-      // Override inline styles set by xterm.js
-      .xterm-screen {
-        margin-right: 15px; // to let the viewpoint scrollbar display
-        canvas {
-          width: 100% !important;
-          height: 100% !important;
-        }
-      }
     }
   }
 

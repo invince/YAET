@@ -1,31 +1,23 @@
-import {Component, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {
-  FileManagerAllModule,
-  FileManagerComponent,
-  FileManagerModule,
-  ToolbarClickEventArgs
-} from '@syncfusion/ej2-angular-filemanager';
-import {ScpService} from '../../../services/file-explorer/scp.service';
-import {Session} from '../../../domain/session/Session';
-import {AbstractFileManager} from '../abstract-file-manager';
-import {HttpClient} from '@angular/common/http';
-
+import { HttpClient } from '@angular/common/http';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Session } from '../../../domain/session/Session';
+import { ScpService } from '../../../services/file-explorer/scp.service';
+import { AbstractFileManager } from '../abstract-file-manager';
+import { FileListComponent } from '../custom/file-list.component';
 
 @Component({
   selector: 'app-scp',
   standalone: true,
   imports: [
-    FileManagerModule,
-    FileManagerAllModule,
+    FileListComponent
   ],
   templateUrl: './scp.component.html',
   styleUrl: './scp.component.css'
 })
-export class ScpComponent extends AbstractFileManager implements OnInit, OnDestroy{
+export class ScpComponent extends AbstractFileManager implements OnInit, OnDestroy {
 
   @Input() public session!: Session;
-  @ViewChild('fileManager', { static: false })
-  public fileManager?: FileManagerComponent;
+
 
   constructor(private scpService: ScpService, http: HttpClient) {
     super(http);
@@ -50,13 +42,6 @@ export class ScpComponent extends AbstractFileManager implements OnInit, OnDestr
   }
 
   getCurrentPath(): string | undefined {
-    return this.fileManager?.path;
-  }
-
-
-  onToolbarClick(args: ToolbarClickEventArgs | any) {
-    if (args.item?.properties?.text === 'Copy Path') {
-      navigator.clipboard.writeText(this.path);
-    }
+    return this.path;
   }
 }

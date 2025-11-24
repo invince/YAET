@@ -1,16 +1,3 @@
 <div class="ftp-container">
-  <ejs-filemanager
-    id='ftp-filemanager'
-    #fileManager
-    [ajaxSettings]="ajaxSettings"
-    [navigationPaneSettings]="navigationPaneSettings"
-    [toolbarSettings]="toolbarSettings"
-    [contextMenuSettings]='contextMenuSettings'
-    [uploadSettings]="uploadSettings"
-    (fileOpen)="onFileOpen($event)"
-    [path]="path"
-    height="100%"
-  >
-
-  </ejs-filemanager>
+  <app-file-list [ajaxSettings]="ajaxSettings" [path]="path" (pathChange)="path = $event"></app-file-list>
 </div>

@@ -59,8 +59,6 @@
     "@angular/platform-browser-dynamic": "^18.2.0",
     "@angular/router": "^18.2.0",
     "@novnc/novnc": "^1.5.0",
-    "@syncfusion/ej2-angular-base": "^28.1.33",
-    "@syncfusion/ej2-angular-filemanager": "^28.1.36",
     "@types/lodash": "^4.17.13",
     "@types/novnc__novnc": "^1.5.0",
     "@xterm/addon-fit": "^0.10.0",

@@ -1,24 +1,23 @@
-import {Component, Input, OnDestroy, OnInit, ViewChild,} from '@angular/core';
-import {Session} from '../../../domain/session/Session';
-import {FileManagerComponent, FileManagerModule} from '@syncfusion/ej2-angular-filemanager';
-import {FtpService} from '../../../services/file-explorer/ftp.service';
-import {HttpClient} from '@angular/common/http';
-import {AbstractFileManager} from '../abstract-file-manager';
+import { HttpClient } from '@angular/common/http';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Session } from '../../../domain/session/Session';
+import { FtpService } from '../../../services/file-explorer/ftp.service';
+import { AbstractFileManager } from '../abstract-file-manager';
+import { FileListComponent } from '../custom/file-list.component';
 
 @Component({
   selector: 'app-ftp',
   standalone: true,
   imports: [
-    FileManagerModule
+    FileListComponent
   ],
   templateUrl: './ftp.component.html',
   styleUrl: './ftp.component.css'
 })
-export class FtpComponent extends AbstractFileManager implements OnInit, OnDestroy{
+export class FtpComponent extends AbstractFileManager implements OnInit, OnDestroy {
 
   @Input() public session!: Session;
-  @ViewChild('fileManager', { static: false })
-  public fileManager?: FileManagerComponent;
+
 
   constructor(private ftpService: FtpService, http: HttpClient) {
     super(http);
@@ -37,27 +36,11 @@ export class FtpComponent extends AbstractFileManager implements OnInit, OnDestr
   }
 
   getCurrentPath(): string | undefined {
-    return this.fileManager?.path;
+    return this.path;
   }
 
   generateAjaxSettings(): any {
     return this.ftpService.setup(this.session);
-  }
-
-  protected override generateToolbarSettings() {
-    return {
-      items: ['NewFolder', 'Upload', 'Delete', 'Download', 'Rename', 'SortBy', 'Refresh', 'Selection', 'View'],
-      visible: true, // Show toolbar
-    };
-  }
-
-  protected override generateContextMenuSettings() {
-    return {
-      file: ['Open', '|', 'Delete', 'Rename'],
-      folder: ['Open', '|', 'Delete', 'Rename'],
-      layout: ['SortBy', 'View', 'Refresh', 'NewFolder', 'Upload', '|', 'SelectAll'],
-      visible: true
-    };
   }
 }
 

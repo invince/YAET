@@ -1,16 +1,3 @@
 <div class="samba-container">
-  <ejs-filemanager
-    id='samba-filemanager'
-    #fileManager
-    [ajaxSettings]="ajaxSettings"
-    [navigationPaneSettings]="navigationPaneSettings"
-    [toolbarSettings]="toolbarSettings"
-    [contextMenuSettings]='contextMenuSettings'
-    [uploadSettings]="uploadSettings"
-    (beforeSend)="test($event)"
-    (fileOpen)="onFileOpen($event)"
-    height="100%"
-  >
-
-  </ejs-filemanager>
+  <app-file-list [ajaxSettings]="ajaxSettings" [path]="path" (pathChange)="path = $event"></app-file-list>
 </div>

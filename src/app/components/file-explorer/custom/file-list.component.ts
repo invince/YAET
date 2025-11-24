@@ -1,0 +1,281 @@
+import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { FileEditorDialogComponent } from './file-editor-dialog.component';
+import { FileItem, FileSystemApiService } from './file-system-api.service';
+import { FolderNameDialogComponent } from './folder-name-dialog.component';
+
+@Component({
+    selector: 'app-file-list',
+    standalone: true,
+    imports: [
+        CommonModule,
+        MatTableModule,
+        MatIconModule,
+        MatButtonModule,
+        MatMenuModule,
+        MatProgressBarModule,
+        MatSortModule,
+        MatDialogModule,
+        FormsModule,
+        MatInputModule,
+        MatFormFieldModule
+    ],
+    templateUrl: './file-list.component.html',
+    styleUrls: ['./file-list.component.scss']
+})
+export class FileListComponent implements OnInit {
+    @Input() ajaxSettings: any;
+    @Input() path: string = '/';
+    @Output() pathChange = new EventEmitter<string>();
+
+    dataSource = new MatTableDataSource<FileItem>([]);
+    displayedColumns: string[] = ['icon', 'name', 'size', 'dateModified', 'actions'];
+    isLoading = false;
+    isEditingPath = false;
+    editPath = '';
+    isSaving = false;
+    clipboard: FileItem[] = [];
+    clipboardMode: 'copy' | 'cut' | null = null;
+    clipboardSourcePath = '';
+
+    @ViewChild(MatSort) sort!: MatSort;
+
+    constructor(private api: FileSystemApiService, private dialog: MatDialog) { }
+
+    ngOnInit(): void {
+        this.refresh();
+    }
+
+    ngAfterViewInit() {
+        this.dataSource.sort = this.sort;
+    }
+
+    refresh() {
+        if (!this.ajaxSettings?.url) return;
+        this.isLoading = true;
+        this.api.read(this.ajaxSettings.url, this.path).subscribe({
+            next: (res) => {
+                this.dataSource.data = res.files;
+                this.isLoading = false;
+                // Update path if changed by server (e.g. normalization)
+                if (res.cwd && res.cwd.name !== this.path) {
+                    this.path = res.cwd.name;
+                    this.pathChange.emit(this.path);
+                }
+            },
+            error: (err) => {
+                console.error('Error loading files', err);
+                this.isLoading = false;
+            }
+        });
+    }
+
+    navigate(item: FileItem) {
+        if (item.type === 'folder') {
+            // Ensure path ends with / before appending if not root
+            const separator = this.path.endsWith('/') ? '' : '/';
+            this.path = `${this.path}${separator}${item.name}`;
+            this.pathChange.emit(this.path);
+            this.refresh();
+        }
+    }
+
+    navigateUp() {
+        if (this.path === '/') return;
+        const parts = this.path.split('/').filter(p => p);
+        parts.pop();
+        this.path = parts.length > 0 ? '/' + parts.join('/') : '/';
+        this.pathChange.emit(this.path);
+        this.refresh();
+    }
+
+    formatSize(bytes: number): string {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    download(item: FileItem) {
+        if (!this.ajaxSettings?.downloadUrl) return;
+
+        const separator = this.path.endsWith('/') ? '' : '/';
+        const fullPath = `${this.path}${separator}`;
+
+        this.api.download(this.ajaxSettings.downloadUrl, fullPath, [item.name]).subscribe(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = item.name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        });
+    }
+
+    deleteItem(item: FileItem) {
+        if (!confirm(`Are you sure you want to delete ${item.name}?`)) return;
+
+        const separator = this.path.endsWith('/') ? '' : '/';
+        const fullPath = `${this.path}${separator}`;
+
+        this.api.delete(this.ajaxSettings.url, fullPath, [item]).subscribe(() => {
+            this.refresh();
+        });
+    }
+
+    createFolder() {
+        const dialogRef = this.dialog.open(FolderNameDialogComponent, {
+            width: '400px'
+        });
+
+        dialogRef.afterClosed().subscribe(folderName => {
+            if (folderName) {
+                const separator = this.path.endsWith('/') ? '' : '/';
+                const fullPath = `${this.path}${separator}`;
+
+                this.api.create(this.ajaxSettings.url, fullPath, folderName, 'folder').subscribe({
+                    next: () => {
+                        this.refresh();
+                    },
+                    error: (err: any) => {
+                        console.error('Error creating folder', err);
+                        alert('Failed to create folder');
+                    }
+                });
+            }
+        });
+    }
+
+    editFile(item: FileItem) {
+        if (!this.ajaxSettings?.downloadUrl) return;
+
+        // Download file content first
+        const separator = this.path.endsWith('/') ? '' : '/';
+        const fullPath = `${this.path}${separator}`;
+
+        this.api.download(this.ajaxSettings.downloadUrl, fullPath, [item.name]).subscribe(blob => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const content = reader.result as string;
+                const dialogRef = this.dialog.open(FileEditorDialogComponent, {
+                    width: '800px',
+                    data: { fileName: item.name, content: content }
+                });
+
+                dialogRef.afterClosed().subscribe(result => {
+                    if (result !== null && result !== undefined) {
+                        this.isSaving = true;
+                        // Delete the original file first to prevent duplicates
+                        this.api.delete(this.ajaxSettings.url, fullPath, [item]).subscribe({
+                            next: () => {
+                                // Then upload the new version
+                                const file = new File([result], item.name, { type: 'text/plain' });
+                                this.api.upload(this.ajaxSettings.uploadUrl, fullPath, file).subscribe({
+                                    next: () => {
+                                        this.isSaving = false;
+                                        this.refresh();
+                                    },
+                                    error: (err: any) => {
+                                        this.isSaving = false;
+                                        console.error('Error saving file', err);
+                                        alert('Failed to save file');
+                                    }
+                                });
+                            },
+                            error: (err: any) => {
+                                this.isSaving = false;
+                                console.error('Error deleting original file', err);
+                                alert('Failed to delete original file');
+                            }
+                        });
+                    }
+                });
+            };
+            reader.readAsText(blob);
+        });
+    }
+
+    enablePathEdit() {
+        this.editPath = this.path;
+        this.isEditingPath = true;
+    }
+
+    navigateToPath() {
+        if (this.editPath && this.editPath.trim()) {
+            this.path = this.editPath.trim();
+            this.pathChange.emit(this.path);
+            this.isEditingPath = false;
+            this.refresh();
+        }
+    }
+
+    cancelPathEdit() {
+        this.isEditingPath = false;
+        this.editPath = '';
+    }
+
+    copyItems(items: FileItem[]) {
+        this.clipboard = items;
+        this.clipboardMode = 'copy';
+        this.clipboardSourcePath = this.path;
+    }
+
+    cutItems(items: FileItem[]) {
+        this.clipboard = items;
+        this.clipboardMode = 'cut';
+        this.clipboardSourcePath = this.path;
+    }
+
+    pasteItems() {
+        if (this.clipboard.length === 0 || !this.clipboardMode) return;
+
+        const separator = this.path.endsWith('/') ? '' : '/';
+        const targetPath = `${this.path}${separator}`;
+        const sourceSeparator = this.clipboardSourcePath.endsWith('/') ? '' : '/';
+        const sourcePath = `${this.clipboardSourcePath}${sourceSeparator}`;
+        const names = this.clipboard.map(item => item.name);
+
+        if (this.clipboardMode === 'copy') {
+            this.api.copy(this.ajaxSettings.url, sourcePath, targetPath, names).subscribe({
+                next: () => {
+                    this.refresh();
+                },
+                error: (err: any) => {
+                    console.error('Error copying items', err);
+                    alert('Failed to copy items');
+                }
+            });
+        } else if (this.clipboardMode === 'cut') {
+            this.api.move(this.ajaxSettings.url, sourcePath, targetPath, names).subscribe({
+                next: () => {
+                    this.clipboard = [];
+                    this.clipboardMode = null;
+                    this.clipboardSourcePath = '';
+                    this.refresh();
+                },
+                error: (err: any) => {
+                    console.error('Error moving items', err);
+                    alert('Failed to move items');
+                }
+            });
+        }
+    }
+
+    canPaste(): boolean {
+        return this.clipboard.length > 0 && this.clipboardMode !== null;
+    }
+}
+

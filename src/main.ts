@@ -1,10 +1,6 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { appConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';
-
-import { registerLicense } from '@syncfusion/ej2-base';
-
-import config from '../config/config.json';
+import { appConfig } from './app/app.config';
 
 export class Compatibility {
 
@@ -13,9 +9,6 @@ export class Compatibility {
   static secrets = '1.0.0';
   static profiles = '1.0.0';
 }
-
-// Registering Syncfusion license key
-registerLicense(config.scfLK);
 
 bootstrapApplication(AppComponent, appConfig)
   .catch((err) => console.error(err));

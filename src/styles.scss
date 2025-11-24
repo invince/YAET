@@ -1,22 +1,20 @@
 /* You can add global styles to this file, and also import other style files */
 @import "modal";
 @import "snackbar";
-@import '../node_modules/@syncfusion/ej2-base/styles/material-dark.css';
-@import '../node_modules/@syncfusion/ej2-inputs/styles/material-dark.css';
-@import '../node_modules/@syncfusion/ej2-popups/styles/material-dark.css';
-@import '../node_modules/@syncfusion/ej2-buttons/styles/material-dark.css';
-@import '../node_modules/@syncfusion/ej2-splitbuttons/styles/material-dark.css';
-@import '../node_modules/@syncfusion/ej2-navigations/styles/material-dark.css';
-@import '../node_modules/@syncfusion/ej2-layouts/styles/material-dark.css';
-@import '../node_modules/@syncfusion/ej2-grids/styles/material-dark.css';
-@import '../node_modules/@syncfusion/ej2-angular-filemanager/styles/material-dark.css';
-
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 
-.mat-mdc-tab-body-wrapper
-{
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+
+.mat-mdc-tab-body-wrapper {
   flex-grow: 1;
 }
 
@@ -24,6 +22,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   animation: fade-out 0.5s;
   opacity: 0;
 }
+
 .mat-mdc-tab-body.mat-mdc-tab-body-active {
   animation: fade-in 0.5s;
   opacity: 1;
@@ -33,9 +32,11 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   0% {
     opacity: 0;
   }
+
   50% {
     opacity: 0;
   }
+
   100% {
     opacity: 1;
   }
@@ -45,9 +46,11 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   0% {
     opacity: 1;
   }
+
   50% {
     opacity: 0;
   }
+
   100% {
     opacity: 0;
   }
@@ -55,7 +58,11 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 /* In your component's CSS/SCSS file */
 .selected {
-  background-color: #e0f7fa !important; /* Example highlight color */
-  color: #00796b !important;; /* Example text color */
-  font-weight: bold !important;;
+  background-color: #e0f7fa !important;
+  /* Example highlight color */
+  color: #00796b !important;
+  ;
+  /* Example text color */
+  font-weight: bold !important;
+  ;
 }
