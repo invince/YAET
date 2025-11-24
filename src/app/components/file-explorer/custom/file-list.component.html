@@ -9,14 +9,20 @@
         <button mat-icon-button (click)="createFolder()">
             <mat-icon>create_new_folder</mat-icon>
         </button>
+        <button mat-icon-button (click)="pasteItems()" [disabled]="!canPaste()" title="Paste">
+            <mat-icon>content_paste</mat-icon>
+        </button>
         <div class="path-breadcrumb" *ngIf="!isEditingPath" (click)="enablePathEdit()" title="Click to edit path">{{
             path }}</div>
         <input class="path-input" *ngIf="isEditingPath" [(ngModel)]="editPath" (keydown.enter)="navigateToPath()"
             (keydown.escape)="cancelPathEdit()" (blur)="cancelPathEdit()" autofocus />
     </div>
 
-    <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
-    <mat-progress-bar *ngIf="isSaving" mode="indeterminate" color="accent"></mat-progress-bar>
+    <!-- Centered Spinner Overlay -->
+    <div class="spinner-overlay" *ngIf="isLoading || isSaving">
+        <mat-spinner diameter="60"></mat-spinner>
+        <div class="spinner-text">{{ isSaving ? 'Saving...' : 'Loading...' }}</div>
+    </div>
 
     <div class="table-container">
         <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z0">
@@ -74,10 +80,6 @@
                         <button mat-menu-item (click)="cutItems([element])">
                             <mat-icon>content_cut</mat-icon>
                             <span>Cut</span>
-                        </button>
-                        <button mat-menu-item (click)="pasteItems()" [disabled]="!canPaste()">
-                            <mat-icon>content_paste</mat-icon>
-                            <span>Paste</span>
                         </button>
                         <mat-divider></mat-divider>
                         <button mat-menu-item (click)="deleteItem(element)">

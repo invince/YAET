@@ -3,11 +3,13 @@ import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angu
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { FileEditorDialogComponent } from './file-editor-dialog.component';
@@ -24,8 +26,10 @@ import { FolderNameDialogComponent } from './folder-name-dialog.component';
         MatButtonModule,
         MatMenuModule,
         MatProgressBarModule,
+        MatProgressSpinnerModule,
         MatSortModule,
         MatDialogModule,
+        MatDividerModule,
         FormsModule,
         MatInputModule,
         MatFormFieldModule
@@ -249,24 +253,30 @@ export class FileListComponent implements OnInit {
         const names = this.clipboard.map(item => item.name);
 
         if (this.clipboardMode === 'copy') {
+            this.isLoading = true;
             this.api.copy(this.ajaxSettings.url, sourcePath, targetPath, names).subscribe({
                 next: () => {
+                    this.isLoading = false;
                     this.refresh();
                 },
                 error: (err: any) => {
+                    this.isLoading = false;
                     console.error('Error copying items', err);
                     alert('Failed to copy items');
                 }
             });
         } else if (this.clipboardMode === 'cut') {
+            this.isLoading = true;
             this.api.move(this.ajaxSettings.url, sourcePath, targetPath, names).subscribe({
                 next: () => {
+                    this.isLoading = false;
                     this.clipboard = [];
                     this.clipboardMode = null;
                     this.clipboardSourcePath = '';
                     this.refresh();
                 },
                 error: (err: any) => {
+                    this.isLoading = false;
                     console.error('Error moving items', err);
                     alert('Failed to move items');
                 }
