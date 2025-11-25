@@ -9,22 +9,29 @@
         <button mat-icon-button (click)="createFolder()">
             <mat-icon>create_new_folder</mat-icon>
         </button>
+        <button mat-icon-button (click)="createFile()" title="Create File">
+            <mat-icon>note_add</mat-icon>
+        </button>
         <button mat-icon-button (click)="pasteItems()" [disabled]="!canPaste()" title="Paste">
             <mat-icon>content_paste</mat-icon>
         </button>
         <div class="path-breadcrumb" *ngIf="!isEditingPath" (click)="enablePathEdit()" title="Click to edit path">{{
             path }}</div>
         <input class="path-input" *ngIf="isEditingPath" [(ngModel)]="editPath" (keydown.enter)="navigateToPath()"
-            (keydown.escape)="cancelPathEdit()" (blur)="cancelPathEdit()" autofocus />
+            (keydown.escape)="cancelPathEdit()" autofocus />
     </div>
 
-    <!-- Centered Spinner Overlay -->
-    <div class="spinner-overlay" *ngIf="isLoading || isSaving">
+    <!-- Linear Progress Bar for Folder Loading -->
+    <mat-progress-bar *ngIf="isLoading && !isSaving" mode="indeterminate"></mat-progress-bar>
+
+    <!-- Centered Spinner Overlay for Save/Paste/Upload -->
+    <div class="spinner-overlay" *ngIf="isSaving">
         <mat-spinner diameter="60"></mat-spinner>
-        <div class="spinner-text">{{ isSaving ? 'Saving...' : 'Loading...' }}</div>
+        <div class="spinner-text">Saving...</div>
     </div>
 
-    <div class="table-container">
+    <div class="table-container" [class.drag-over]="isDraggingOver" (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
         <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z0">
 
             <!-- Icon Column -->
@@ -71,6 +78,11 @@
                         <button mat-menu-item (click)="download(element)" *ngIf="element.type === 'file'">
                             <mat-icon>download</mat-icon>
                             <span>Download</span>
+                        </button>
+                        <mat-divider></mat-divider>
+                        <button mat-menu-item (click)="renameItem(element)">
+                            <mat-icon>drive_file_rename_outline</mat-icon>
+                            <span>Rename</span>
                         </button>
                         <mat-divider></mat-divider>
                         <button mat-menu-item (click)="copyItems([element])">

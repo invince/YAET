@@ -12,8 +12,9 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { FileItem, FileSystemApiService } from '../../../services/file-system/file-system-api.service';
+import { FileCreatorDialogComponent } from './file-creator-dialog.component';
 import { FileEditorDialogComponent } from './file-editor-dialog.component';
-import { FileItem, FileSystemApiService } from './file-system-api.service';
 import { FolderNameDialogComponent } from './folder-name-dialog.component';
 
 @Component({
@@ -51,6 +52,7 @@ export class FileListComponent implements OnInit {
     clipboard: FileItem[] = [];
     clipboardMode: 'copy' | 'cut' | null = null;
     clipboardSourcePath = '';
+    isDraggingOver = false;
 
     @ViewChild(MatSort) sort!: MatSort;
 
@@ -140,6 +142,27 @@ export class FileListComponent implements OnInit {
         });
     }
 
+    renameItem(item: FileItem) {
+        const newName = prompt(`Rename ${item.type}:`, item.name);
+        if (!newName || newName === item.name) return;
+
+        const separator = this.path.endsWith('/') ? '' : '/';
+        const fullPath = `${this.path}${separator}`;
+
+        this.isSaving = true;
+        this.api.rename(this.ajaxSettings.url, fullPath, item.name, newName).subscribe({
+            next: () => {
+                this.isSaving = false;
+                this.refresh();
+            },
+            error: (err: any) => {
+                this.isSaving = false;
+                console.error('Error renaming item', err);
+                alert('Failed to rename item');
+            }
+        });
+    }
+
     createFolder() {
         const dialogRef = this.dialog.open(FolderNameDialogComponent, {
             width: '400px'
@@ -157,6 +180,34 @@ export class FileListComponent implements OnInit {
                     error: (err: any) => {
                         console.error('Error creating folder', err);
                         alert('Failed to create folder');
+                    }
+                });
+            }
+        });
+    }
+
+    createFile() {
+        const dialogRef = this.dialog.open(FileCreatorDialogComponent, {
+            width: '500px',
+            data: { fileName: '', content: '' }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result && result.fileName) {
+                const separator = this.path.endsWith('/') ? '' : '/';
+                const fullPath = `${this.path}${separator}`;
+
+                this.isSaving = true;
+                const file = new File([result.content], result.fileName, { type: 'text/plain' });
+                this.api.upload(this.ajaxSettings.uploadUrl, fullPath, file).subscribe({
+                    next: () => {
+                        this.isSaving = false;
+                        this.refresh();
+                    },
+                    error: (err: any) => {
+                        this.isSaving = false;
+                        console.error('Error creating file', err);
+                        alert('Failed to create file');
                     }
                 });
             }
@@ -253,30 +304,30 @@ export class FileListComponent implements OnInit {
         const names = this.clipboard.map(item => item.name);
 
         if (this.clipboardMode === 'copy') {
-            this.isLoading = true;
+            this.isSaving = true;
             this.api.copy(this.ajaxSettings.url, sourcePath, targetPath, names).subscribe({
                 next: () => {
-                    this.isLoading = false;
+                    this.isSaving = false;
                     this.refresh();
                 },
                 error: (err: any) => {
-                    this.isLoading = false;
+                    this.isSaving = false;
                     console.error('Error copying items', err);
                     alert('Failed to copy items');
                 }
             });
         } else if (this.clipboardMode === 'cut') {
-            this.isLoading = true;
+            this.isSaving = true;
             this.api.move(this.ajaxSettings.url, sourcePath, targetPath, names).subscribe({
                 next: () => {
-                    this.isLoading = false;
+                    this.isSaving = false;
                     this.clipboard = [];
                     this.clipboardMode = null;
                     this.clipboardSourcePath = '';
                     this.refresh();
                 },
                 error: (err: any) => {
-                    this.isLoading = false;
+                    this.isSaving = false;
                     console.error('Error moving items', err);
                     alert('Failed to move items');
                 }
@@ -286,6 +337,62 @@ export class FileListComponent implements OnInit {
 
     canPaste(): boolean {
         return this.clipboard.length > 0 && this.clipboardMode !== null;
+    }
+
+    onDragOver(event: DragEvent) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.isDraggingOver = true;
+    }
+
+    onDragLeave(event: DragEvent) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.isDraggingOver = false;
+    }
+
+    onDrop(event: DragEvent) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.isDraggingOver = false;
+
+        const files = event.dataTransfer?.files;
+        if (files && files.length > 0) {
+            this.uploadFiles(files);
+        }
+    }
+
+    uploadFiles(files: FileList) {
+        if (!this.ajaxSettings?.uploadUrl) return;
+
+        const separator = this.path.endsWith('/') ? '' : '/';
+        const fullPath = `${this.path}${separator}`;
+
+        this.isSaving = true;
+        let uploadCount = 0;
+        const totalFiles = files.length;
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            this.api.upload(this.ajaxSettings.uploadUrl, fullPath, file).subscribe({
+                next: () => {
+                    uploadCount++;
+                    if (uploadCount === totalFiles) {
+                        this.isSaving = false;
+                        this.refresh();
+                    }
+                },
+                error: (err: any) => {
+                    uploadCount++;
+                    console.error('Error uploading file', file.name, err);
+                    if (uploadCount === totalFiles) {
+                        this.isSaving = false;
+                        this.refresh();
+                    }
+                    alert(`Failed to upload ${file.name}`);
+                }
+            });
+        }
     }
 }
 
