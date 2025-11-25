@@ -1,141 +1,183 @@
-<div class="modal-container">
-  <div class="modal">
-    <div class="modal-header">
-      <h3>Settings</h3>
-      <button mat-icon-button (click)="close()">
-        <mat-icon>close</mat-icon>
-      </button>
+<div class="modal-overlay" (click)="close()">
+  <div class="settings-container" (click)="$event.stopPropagation()">
+
+    <!-- Sidebar Navigation -->
+    <div class="settings-sidebar">
+      <div class="sidebar-title">Settings</div>
+
+      <div class="sidebar-item" [class.active]="currentTabIndex === 0" (click)="currentTabIndex = 0">
+        <mat-icon>tune</mat-icon> General
+      </div>
+      <div class="sidebar-item" [class.active]="currentTabIndex === 1" (click)="currentTabIndex = 1">
+        <mat-icon>palette</mat-icon> UI
+      </div>
+      <div class="sidebar-item" [class.active]="currentTabIndex === 2" (click)="currentTabIndex = 2">
+        <mat-icon>folder</mat-icon> Groups
+      </div>
+      <div class="sidebar-item" [class.active]="currentTabIndex === 3" (click)="currentTabIndex = 3">
+        <mat-icon>label</mat-icon> Tags
+      </div>
+      <div class="sidebar-item" [class.active]="currentTabIndex === 4" (click)="currentTabIndex = 4">
+        <mat-icon>terminal</mat-icon> Terminal
+      </div>
+      <div class="sidebar-item" [class.active]="currentTabIndex === 5" (click)="currentTabIndex = 5">
+        <mat-icon>desktop_windows</mat-icon> Remote Desktop
+      </div>
     </div>
 
-    <div class="modal-content" >
-      <mat-tab-group [(selectedIndex)]="currentTabIndex">
-        <mat-tab label="General">
+    <!-- Main Content Area -->
+    <div class="main-area">
+      <div class="settings-content">
+
+        <!-- General Settings -->
+        <div *ngIf="currentTabIndex === 0">
+          <div class="settings-header">General</div>
           <div class="setting-form" [formGroup]="generalForm">
-            <mat-label>App Version: <b>{{version}}</b></mat-label>
-            <mat-checkbox formControlName="autoUpdate" required>
-              Auto update application
-            </mat-checkbox>
-            <div>
-              <mat-label>Set Master Key</mat-label>
-              <button mat-button class="mat-primary" (click)="openMasterKeyModal()">
-                <mat-icon>password</mat-icon>
-              </button>
-              @if (masterKeyService.hasMasterKey) {
-                <button mat-button class="mat-primary"
-                        (click)="openDeleteMasterKeyConfirmationDialog()">
-                  <mat-icon>remove</mat-icon>
-                </button>
-              }
+            <div class="form-section">
+              <div class="section-title">Application</div>
+              <mat-label style="display: block; margin-bottom: 16px; color: #9ca3af;">App Version:
+                <b>{{version}}</b></mat-label>
+              <mat-checkbox formControlName="autoUpdate">Auto update application</mat-checkbox>
             </div>
 
+            <div class="form-section">
+              <div class="section-title">Security</div>
+              <div style="display: flex; align-items: center; gap: 16px;">
+                <button mat-stroked-button color="primary" (click)="openMasterKeyModal()">
+                  <mat-icon>password</mat-icon> Set Master Key
+                </button>
+                @if (masterKeyService.hasMasterKey) {
+                <button mat-stroked-button color="warn" (click)="openDeleteMasterKeyConfirmationDialog()">
+                  <mat-icon>remove_circle</mat-icon> Remove Master Key
+                </button>
+                }
+              </div>
+            </div>
           </div>
-        </mat-tab>
-        <mat-tab label="UI">
+        </div>
+
+        <!-- UI Settings -->
+        <div *ngIf="currentTabIndex === 1">
+          <div class="settings-header">User Interface</div>
           <div class="setting-form" [formGroup]="uiForm">
-            <mat-form-field class="field" >
-              <mat-label>Profile Label Length in Side Nav</mat-label>
-              <input matInput type="number" formControlName="uiProfileLabelLength"/>
-            </mat-form-field>
+            <div class="form-section">
+              <div class="section-title">Sidebar & Navigation</div>
+              <mat-form-field class="field" appearance="outline">
+                <mat-label>Profile Label Length</mat-label>
+                <input matInput type="number" formControlName="uiProfileLabelLength" />
+              </mat-form-field>
 
-            <mat-form-field class="field" >
-              <mat-label>Profile Side Nav Type</mat-label>
-              <mat-select formControlName="profileSideNavType">
-                @for (sideNavType of SIDE_NAV_TYPE_OPTIONS | keyvalue : unordered; track sideNavType.value) {
-                <mat-option [value]="sideNavType.value">
-                {{ sideNavType.value }}
-                </mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
+              <mat-form-field class="field" appearance="outline">
+                <mat-label>Side Nav Type</mat-label>
+                <mat-select formControlName="profileSideNavType">
+                  @for (sideNavType of SIDE_NAV_TYPE_OPTIONS | keyvalue : unordered; track sideNavType.value) {
+                  <mat-option [value]="sideNavType.value">{{ sideNavType.value }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
 
-            <mat-form-field class="field" >
-              <mat-label>Secret Label Length in Side Nav</mat-label>
-              <input matInput type="number" formControlName="uiSecretLabelLength"/>
-            </mat-form-field>
+            <div class="form-section">
+              <div class="section-title">Secrets Display</div>
+              <mat-form-field class="field" appearance="outline">
+                <mat-label>Secret Label Length (Side Nav)</mat-label>
+                <input matInput type="number" formControlName="uiSecretLabelLength" />
+              </mat-form-field>
 
-            <mat-form-field class="field" >
-              <mat-label>Secret Label Length in DropDown</mat-label>
-              <input matInput type="number" formControlName="uiSecretLabelLengthInDropDown"/>
-            </mat-form-field>
+              <mat-form-field class="field" appearance="outline">
+                <mat-label>Secret Label Length (Dropdown)</mat-label>
+                <input matInput type="number" formControlName="uiSecretLabelLengthInDropDown" />
+              </mat-form-field>
+            </div>
           </div>
-        </mat-tab>
-        <mat-tab label="Group / Tag">
+        </div>
+
+        <!-- Groups Settings -->
+        <div *ngIf="currentTabIndex === 2">
+          <div class="settings-header">Groups Management</div>
           <div class="setting-form">
-            <mat-accordion multi>
-              <mat-expansion-panel>
-                <mat-expansion-panel-header>
-                  <mat-panel-title> Tag Management </mat-panel-title>
-                </mat-expansion-panel-header>
-                <app-tags-form></app-tags-form>
-              </mat-expansion-panel>
-              <mat-expansion-panel>
-                <mat-expansion-panel-header>
-                  <mat-panel-title> Group Management </mat-panel-title>
-                </mat-expansion-panel-header>
-                <app-groups-form></app-groups-form>
-              </mat-expansion-panel>
-            </mat-accordion>
-
-
+            <app-groups-form></app-groups-form>
           </div>
-        </mat-tab>
-        <mat-tab label="Terminal">
-          <div class="setting-form"  [formGroup]="terminalForm">
-            <mat-checkbox formControlName="defaultOpen">
-              Open a local terminal at startup
-            </mat-checkbox>
-            <mat-form-field class="field">
-              <mat-label>Terminal Type</mat-label>
-              <mat-select formControlName="localTerminalType"
-                          (selectionChange)="onSelectLocalTerminalType($event)">
-                @for (localTermType of LOCAL_TERM_OPTIONS | keyvalue : unordered; track localTermType.value) {
-                <mat-option [value]="localTermType.value">
-                {{ localTermType.value }}
-                </mat-option>
+        </div>
+
+        <!-- Tags Settings -->
+        <div *ngIf="currentTabIndex === 3">
+          <div class="settings-header">Tags Management</div>
+          <div class="setting-form">
+            <app-tags-form></app-tags-form>
+          </div>
+        </div>
+
+        <!-- Terminal Settings -->
+        <div *ngIf="currentTabIndex === 4">
+          <div class="settings-header">Terminal</div>
+          <div class="setting-form" [formGroup]="terminalForm">
+            <div class="form-section">
+              <div class="section-title">Startup</div>
+              <mat-checkbox formControlName="defaultOpen">Open a local terminal at startup</mat-checkbox>
+            </div>
+
+            <div class="form-section">
+              <div class="section-title">Configuration</div>
+              <mat-form-field class="field" appearance="outline">
+                <mat-label>Terminal Type</mat-label>
+                <mat-select formControlName="localTerminalType" (selectionChange)="onSelectLocalTerminalType($event)">
+                  @for (localTermType of LOCAL_TERM_OPTIONS | keyvalue : unordered; track localTermType.value) {
+                  <mat-option [value]="localTermType.value">{{ localTermType.value }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field class="field" appearance="outline"
+                [class.cdk-visually-hidden]="terminalForm.get('localTerminalType')?.value != 'custom'">
+                <mat-label>Exec Path</mat-label>
+                <input matInput type="text" formControlName="localTerminalExecPath" />
+                @if (terminalForm.get('localTerminalExecPath')?.value) {
+                <button matSuffix mat-icon-button aria-label="Clear"
+                  (click)="clear(terminalForm, 'localTerminalExecPath')">
+                  <mat-icon>close</mat-icon>
+                </button>
                 }
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field class="field" [class.cdk-visually-hidden]= "terminalForm.get('localTerminalType')?.value != 'custom'">
-              <mat-label>Exec Path</mat-label>
-              <input matInput type="text" formControlName="localTerminalExecPath"/>
-              @if (terminalForm.get('localTerminalExecPath')?.value) {
-              <button
-                matSuffix
-                mat-icon-button
-                aria-label="Clear"
-                (click)="clear(terminalForm, 'localTerminalExecPath')">
-                <mat-icon>close</mat-icon>
-              </button>
-              }
-            </mat-form-field>
+              </mat-form-field>
+            </div>
           </div>
-        </mat-tab>
-        <mat-tab label="Remote Desktop">
+        </div>
+
+        <!-- Remote Desktop Settings -->
+        <div *ngIf="currentTabIndex === 5">
+          <div class="settings-header">Remote Desktop</div>
           <div class="setting-form" [formGroup]="remoteDesktopForm">
-            <mat-checkbox formControlName="vncClipboardCompatibleMode">
-              Enable Vnc Clipboard Compatible Mode
-            </mat-checkbox>
+            <div class="form-section">
+              <div class="section-title">VNC Options</div>
+              <mat-checkbox formControlName="vncClipboardCompatibleMode">Enable VNC Clipboard Compatible
+                Mode</mat-checkbox>
 
-            <mat-form-field class="field" >
-              <mat-label>Vnc Quality</mat-label>
-              <input matInput type="number" formControlName="vncQuality" required/>
-            </mat-form-field>
+              <div style="display: flex; gap: 16px; margin-top: 16px;">
+                <mat-form-field class="field" appearance="outline">
+                  <mat-label>Quality (0-9)</mat-label>
+                  <input matInput type="number" formControlName="vncQuality" required min="0" max="9" />
+                </mat-form-field>
 
-            <mat-form-field class="field" >
-              <mat-label>Vnc Compression Level</mat-label>
-              <input matInput type="number" formControlName="vncCompressionLevel" required/>
-            </mat-form-field>
+                <mat-form-field class="field" appearance="outline">
+                  <mat-label>Compression (0-9)</mat-label>
+                  <input matInput type="number" formControlName="vncCompressionLevel" required min="0" max="9" />
+                </mat-form-field>
+              </div>
+            </div>
           </div>
-        </mat-tab>
-      </mat-tab-group>
-    </div>
+        </div>
 
-    <div class="modal-footer">
-      <button mat-button (click)="close()">Cancel</button>
-      <button mat-stroked-button class="mat-accent" [disabled]="shouldDisableSave()" (click)="reload()">Reload</button>
-      <button mat-raised-button class="mat-primary" [disabled]="!currentFormValid() || shouldDisableSave()" (click)="onSave();close()">Save And Close</button>
-      <button mat-raised-button class="mat-primary" [disabled]="!currentFormValid() || shouldDisableSave()"  (click)="onSave()">Save</button>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="settings-actions">
+        <button mat-button (click)="close()">Cancel</button>
+        <button mat-stroked-button (click)="reload()">Reload</button>
+        <button mat-raised-button color="primary" [disabled]="!currentFormValid() || shouldDisableSave()"
+          (click)="onSave();close()">Save & Close</button>
+        <button mat-raised-button color="primary" [disabled]="!currentFormValid() || shouldDisableSave()"
+          (click)="onSave()">Save</button>
+      </div>
     </div>
   </div>
 </div>
-
