@@ -16,6 +16,7 @@ import { FileItem, FileSystemApiService } from '../../../services/file-system/fi
 import { FileCreatorDialogComponent } from './file-creator-dialog.component';
 import { FileEditorDialogComponent } from './file-editor-dialog.component';
 import { FolderNameDialogComponent } from './folder-name-dialog.component';
+import { RenameDialogComponent } from './rename-dialog.component';
 
 @Component({
     selector: 'app-file-list',
@@ -143,22 +144,28 @@ export class FileListComponent implements OnInit {
     }
 
     renameItem(item: FileItem) {
-        const newName = prompt(`Rename ${item.type}:`, item.name);
-        if (!newName || newName === item.name) return;
+        const dialogRef = this.dialog.open(RenameDialogComponent, {
+            width: '400px',
+            data: { currentName: item.name, type: item.type }
+        });
 
-        const separator = this.path.endsWith('/') ? '' : '/';
-        const fullPath = `${this.path}${separator}`;
+        dialogRef.afterClosed().subscribe(newName => {
+            if (newName) {
+                const separator = this.path.endsWith('/') ? '' : '/';
+                const fullPath = `${this.path}${separator}`;
 
-        this.isSaving = true;
-        this.api.rename(this.ajaxSettings.url, fullPath, item.name, newName).subscribe({
-            next: () => {
-                this.isSaving = false;
-                this.refresh();
-            },
-            error: (err: any) => {
-                this.isSaving = false;
-                console.error('Error renaming item', err);
-                alert('Failed to rename item');
+                this.isSaving = true;
+                this.api.rename(this.ajaxSettings.url, fullPath, item.name, newName).subscribe({
+                    next: () => {
+                        this.isSaving = false;
+                        this.refresh();
+                    },
+                    error: (err: any) => {
+                        this.isSaving = false;
+                        console.error('Error renaming item', err);
+                        alert('Failed to rename item: ' + (err.error?.error?.message || err.message));
+                    }
+                });
             }
         });
     }

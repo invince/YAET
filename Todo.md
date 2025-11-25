@@ -5,3 +5,4 @@
 8. when double click a file, open it in edit mode if it is a txt file. otherwise download it
 9. be able to split the window and show 2 tabs
 10. in settings, the group and tab config is ugly, can we make it better
+
