@@ -18,7 +18,7 @@
         <div class="path-breadcrumb" *ngIf="!isEditingPath" (click)="enablePathEdit()" title="Click to edit path">{{
             path }}</div>
         <input class="path-input" *ngIf="isEditingPath" [(ngModel)]="editPath" (keydown.enter)="navigateToPath()"
-            (keydown.escape)="cancelPathEdit()" autofocus />
+            (keydown.escape)="cancelPathEdit()" (blur)="cancelPathEdit()" autofocus />
     </div>
 
     <!-- Linear Progress Bar for Folder Loading -->
