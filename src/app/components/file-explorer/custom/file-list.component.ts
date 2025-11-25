@@ -54,6 +54,8 @@ export class FileListComponent implements OnInit {
     clipboardMode: 'copy' | 'cut' | null = null;
     clipboardSourcePath = '';
     isDraggingOver = false;
+    draggedItem: FileItem | null = null;
+    dragOverFolder: FileItem | null = null;
 
     @ViewChild(MatSort) sort!: MatSort;
 
@@ -443,6 +445,63 @@ export class FileListComponent implements OnInit {
                 }
             });
         }
+    }
+
+    // Internal drag and drop for moving files/folders
+    onRowDragStart(event: DragEvent, item: FileItem) {
+        this.draggedItem = item;
+        if (event.dataTransfer) {
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', item.name);
+        }
+    }
+
+    onRowDragEnd() {
+        this.draggedItem = null;
+        this.dragOverFolder = null;
+    }
+
+    onFolderDragOver(event: DragEvent, folder: FileItem) {
+        if (this.draggedItem && folder.type === 'folder' && this.draggedItem.name !== folder.name) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (event.dataTransfer) {
+                event.dataTransfer.dropEffect = 'move';
+            }
+            this.dragOverFolder = folder;
+        }
+    }
+
+    onFolderDragLeave(folder: FileItem) {
+        if (this.dragOverFolder === folder) {
+            this.dragOverFolder = null;
+        }
+    }
+
+    onFolderDrop(event: DragEvent, targetFolder: FileItem) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.dragOverFolder = null;
+
+        if (this.draggedItem && targetFolder.type === 'folder' && this.draggedItem.name !== targetFolder.name) {
+            const separator = this.path.endsWith('/') ? '' : '/';
+            const targetPath = `${this.path}${separator}${targetFolder.name}/`;
+
+            this.isSaving = true;
+            this.api.move(this.ajaxSettings.url, this.path + separator, targetPath, [this.draggedItem.name]).subscribe({
+                next: () => {
+                    this.isSaving = false;
+                    this.refresh();
+                },
+                error: (err: any) => {
+                    this.isSaving = false;
+                    console.error('Error moving item', err);
+                    alert('Failed to move item: ' + (err.error?.error?.message || err.message));
+                }
+            });
+        }
+
+        this.draggedItem = null;
     }
 }
 

@@ -48,7 +48,12 @@ function initFtpHandler(log, ftpMap, expressApp) {
 
     // Check if file exists and generate new target path
     while (await exists(client, targetFilePath)) {
-      targetFilePath = `${dir}/${fileName}_${index}${fileExt}`;
+      // Handle current directory case - avoid ./ prefix
+      if (dir === '.') {
+        targetFilePath = `${fileName}_${index}${fileExt}`;
+      } else {
+        targetFilePath = `${dir}/${fileName}_${index}${fileExt}`;
+      }
       index++;
     }
     return targetFilePath;
@@ -128,6 +133,69 @@ function initFtpHandler(log, ftpMap, expressApp) {
             await client.rename(`${pathParam}${name}`, `${pathParam}${newName}`);
             return { cwd: { name: pathParam, type: 'folder' }, files: await list(client, pathParam) };
           }
+          case 'copy': {
+            const names = req.body.names || [];
+            const targetPath = req.body.targetPath;
+            for (const name of names) {
+              const sourcePath = `${pathParam}${name}`;
+              const targetPathWithName = await avoidDuplicateName(client, `${targetPath}${name}`);
+
+              // Download from source
+              const chunks = [];
+              const writableStream = new Writable({
+                write(chunk, encoding, callback) {
+                  chunks.push(chunk);
+                  callback();
+                },
+              });
+              await client.downloadTo(writableStream, sourcePath);
+              const buffer = Buffer.concat(chunks);
+
+              // Upload to target
+              const bufferStream = new Readable();
+              bufferStream.push(buffer);
+              bufferStream.push(null);
+              await client.uploadFrom(bufferStream, targetPathWithName);
+            }
+            return { cwd: { name: pathParam, type: 'folder' }, files: await list(client, targetPath) };
+          }
+          case 'move': {
+            const names = req.body.names || [];
+            const targetPath = req.body.targetPath;
+            for (const name of names) {
+              const sourcePath = `${pathParam}${name}`;
+              const targetPathWithName = await avoidDuplicateName(client, `${targetPath}${name}`);
+
+              // Try to use rename first (more efficient if on same server)
+              try {
+                await client.rename(sourcePath, targetPathWithName);
+              } catch (error) {
+                // If rename fails, fall back to copy + delete
+                log.info('Rename failed, using copy+delete:', error.message);
+
+                // Download from source
+                const chunks = [];
+                const writableStream = new Writable({
+                  write(chunk, encoding, callback) {
+                    chunks.push(chunk);
+                    callback();
+                  },
+                });
+                await client.downloadTo(writableStream, sourcePath);
+                const buffer = Buffer.concat(chunks);
+
+                // Upload to target
+                const bufferStream = new Readable();
+                bufferStream.push(buffer);
+                bufferStream.push(null);
+                await client.uploadFrom(bufferStream, targetPathWithName);
+
+                // Delete source
+                await client.remove(sourcePath);
+              }
+            }
+            return { cwd: { name: pathParam, type: 'folder' }, files: await list(client, targetPath) };
+          }
           case 'create': {
             const name = req.body.name;
             const newFolderPath = `${pathParam}${name}`;
@@ -151,8 +219,8 @@ function initFtpHandler(log, ftpMap, expressApp) {
   });
 
   expressApp.post('/api/v1/ftp/upload/:id', upload.single('uploadFiles'), async (req, res) => {
-    const { data, filename} = req.body;
-    const path = JSON.parse(data).name;
+    const { data, filename } = req.body;
+    const directoryPath = JSON.parse(data).name;
     const configId = req.params['id'];
 
     if (!req.file) {
@@ -163,7 +231,7 @@ function initFtpHandler(log, ftpMap, expressApp) {
 
     try {
       const result = await withFtpClient(configId, async (client) => {
-        const remotePath = await avoidDuplicateName(client, `${path}/${filename}`);// the req.file.originalname may have encoding pb
+        const remotePath = await avoidDuplicateName(client, path.join(directoryPath, filename));// the req.file.originalname may have encoding pb
         const bufferStream = new Readable();
         bufferStream.push(req.file.buffer);
         bufferStream.push(null);
@@ -180,14 +248,14 @@ function initFtpHandler(log, ftpMap, expressApp) {
 
   expressApp.post('/api/v1/ftp/download/:id', upload.none(), async (req, res) => {
     const downloadInput = JSON.parse(req.body.downloadInput);
-    const path = downloadInput.path;
+    const directoryPath = downloadInput.path;
     const names = downloadInput.names;
     const configId = req.params['id'];
 
     try {
       await withFtpClient(configId, async (client) => {
         if (names.length === 1) {
-          const fullPath = path + names[0];
+          const fullPath = path.join(directoryPath, names[0]);
           const chunks = [];
           const writableStream = new Writable({
             write(chunk, encoding, callback) {
@@ -208,7 +276,7 @@ function initFtpHandler(log, ftpMap, expressApp) {
           res.setHeader('Content-Type', 'application/zip');
           const zipfile = new yazl.ZipFile();
           for (const name of names) {
-            const fullRemotePath = `${path}${name}`;
+            const fullRemotePath = path.join(directoryPath, name);
             try {
               const chunks = [];
               const writableStream = new Writable({
@@ -269,7 +337,7 @@ function initFtpHandler(log, ftpMap, expressApp) {
         let watcher = fs.watch(tempFilePath, async (eventType) => {
           if (eventType === 'change') {
             log.info(`File modified: ${tempFilePath}`);
-            await withFtpClient(configId,  async (clientUpdate) => {
+            await withFtpClient(configId, async (clientUpdate) => {
               const updatedBuffer = await fsPromise.readFile(tempFilePath);
               const bufferStream = new Readable();
               bufferStream.push(updatedBuffer);

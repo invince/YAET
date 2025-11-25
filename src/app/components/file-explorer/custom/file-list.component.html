@@ -104,7 +104,12 @@
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.folder-row]="row.type === 'folder'"
-                (dblclick)="navigate(row)"></tr>
+                [class.dragging]="draggedItem === row"
+                [class.drag-over-folder]="dragOverFolder === row && row.type === 'folder'" draggable="true"
+                (dragstart)="onRowDragStart($event, row)" (dragend)="onRowDragEnd()"
+                (dragover)="row.type === 'folder' ? onFolderDragOver($event, row) : null"
+                (dragleave)="row.type === 'folder' ? onFolderDragLeave(row) : null"
+                (drop)="row.type === 'folder' ? onFolderDrop($event, row) : null" (dblclick)="navigate(row)"></tr>
         </table>
 
         <div *ngIf="dataSource.data.length === 0 && !isLoading" class="empty-state">
