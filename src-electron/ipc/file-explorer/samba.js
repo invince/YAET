@@ -7,8 +7,8 @@ const fs = require('fs');
 const fsPromise = require('fs/promises');
 const os = require('os');
 const uuid = require('uuid');
-const SMB2  = require('v9u-smb2');
-const {sleep} = require("ssh2-sftp-client/src/utils");
+const SMB2 = require('v9u-smb2');
+const { sleep } = require("ssh2-sftp-client/src/utils");
 
 function initSambaHandler(log, sambaMap, expressApp) {
 
@@ -49,20 +49,25 @@ function initSambaHandler(log, sambaMap, expressApp) {
     let index = 1;
 
     while (await smbClient.exists(targetFilePath)) {
-      targetFilePath = `${dir}/${fileName}_${index}${fileExt}`;
+      // Handle current directory case - avoid ./ prefix
+      if (dir === '.') {
+        targetFilePath = `${fileName}_${index}${fileExt}`;
+      } else {
+        targetFilePath = path.join(dir, `${fileName}_${index}${fileExt}`);
+      }
       index++;
     }
     return targetFilePath;
   }
 
   async function list(smbClient, pathParam, names = undefined) {
-    let files = await smbClient.readdir(pathParam, {stats: true});
+    let files = await smbClient.readdir(pathParam, { stats: true });
     let formattedFiles = [];
     if (names) {
       files = files.filter((file) => names.includes(file.name));
     }
     if (files) {
-      formattedFiles =  files.map((file) => ({
+      formattedFiles = files.map((file) => ({
         name: file.name,
         type: file.isDirectory() ? 'folder' : 'file',
         isFile: !file.isDirectory(),
@@ -108,7 +113,7 @@ function initSambaHandler(log, sambaMap, expressApp) {
       const result = await withSambaClient(configId, async (smbClient) => {
         switch (action) {
           case 'read': {
-            return { cwd: { name: pathParam, type: 'folder' }, files: await list(smbClient, pathParam)};
+            return { cwd: { name: pathParam, type: 'folder' }, files: await list(smbClient, pathParam) };
           }
           case 'delete': {
             const data = req.body.data || [];
@@ -120,7 +125,7 @@ function initSambaHandler(log, sambaMap, expressApp) {
                 await smbClient.unlink(fileAbsPath);
               }
             }
-            return { cwd: { name: pathParam, type: 'folder' }, files: await list(smbClient, pathParam)};
+            return { cwd: { name: pathParam, type: 'folder' }, files: await list(smbClient, pathParam) };
           }
           case 'rename': {
             const name = req.body.name;
