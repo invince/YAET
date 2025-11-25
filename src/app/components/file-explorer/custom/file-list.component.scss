@@ -49,10 +49,6 @@
             border-color: #3f51b5;
         }
     }
-
-    button {
-        margin-right: 8px;
-    }
 }
 
 .table-container {
@@ -60,12 +56,6 @@
     overflow: auto;
     position: relative;
     min-height: 400px;
-
-    &.drag-over {
-        border: 2px dashed #3f51b5 !important;
-        background-color: rgba(63, 81, 181, 0.1) !important;
-        transition: all 0.2s ease;
-    }
 
     table {
         width: 100%;
@@ -90,11 +80,6 @@
             cursor: pointer;
         }
     }
-}
-
-.mat-icon {
-    vertical-align: middle;
-    margin-right: 8px;
 }
 
 .empty-state {

@@ -459,10 +459,22 @@ export class FileListComponent implements OnInit {
     onRowDragEnd() {
         this.draggedItem = null;
         this.dragOverFolder = null;
+
+        // Extra safeguard: ensure cleanup happens even if events fire in unexpected order
+        setTimeout(() => {
+            if (!this.draggedItem) {
+                this.dragOverFolder = null;
+            }
+        }, 100);
     }
 
     onFolderDragOver(event: DragEvent, folder: FileItem) {
-        if (this.draggedItem && folder.type === 'folder' && this.draggedItem.name !== folder.name) {
+        // Only allow dropping on folders, not files
+        if (folder.type !== 'folder') {
+            return;
+        }
+
+        if (this.draggedItem && this.draggedItem.name !== folder.name) {
             event.preventDefault();
             event.stopPropagation();
             if (event.dataTransfer) {
@@ -473,17 +485,28 @@ export class FileListComponent implements OnInit {
     }
 
     onFolderDragLeave(folder: FileItem) {
+        // Only handle folders
+        if (folder.type !== 'folder') {
+            return;
+        }
+
+        // Clear highlight only if we're leaving the folder that's currently highlighted
         if (this.dragOverFolder === folder) {
             this.dragOverFolder = null;
         }
     }
 
     onFolderDrop(event: DragEvent, targetFolder: FileItem) {
+        // Only allow dropping on folders
+        if (targetFolder.type !== 'folder') {
+            return;
+        }
+
         event.preventDefault();
         event.stopPropagation();
         this.dragOverFolder = null;
 
-        if (this.draggedItem && targetFolder.type === 'folder' && this.draggedItem.name !== targetFolder.name) {
+        if (this.draggedItem && this.draggedItem.name !== targetFolder.name) {
             const separator = this.path.endsWith('/') ? '' : '/';
             const targetPath = `${this.path}${separator}${targetFolder.name}/`;
 
