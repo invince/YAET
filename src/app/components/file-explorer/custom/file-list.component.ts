@@ -94,7 +94,50 @@ export class FileListComponent implements OnInit {
             this.path = `${this.path}${separator}${item.name}`;
             this.pathChange.emit(this.path);
             this.refresh();
+        } else if (item.type === 'file') {
+            // Check if it's a text-based file
+            const isTextFile = this.isTextBasedFile(item.name);
+
+            if (isTextFile) {
+                // Open in edit mode
+                this.editFile(item);
+            } else {
+                // Download the file
+                this.download(item);
+            }
         }
+    }
+
+    private isTextBasedFile(filename: string): boolean {
+        const lowerName = filename.toLowerCase();
+
+        // Common text file extensions
+        const textExtensions = [
+            '.txt', '.md', '.json', '.xml', '.yaml', '.yml',
+            '.js', '.ts', '.jsx', '.tsx', '.css', '.scss', '.sass', '.less',
+            '.html', '.htm', '.svg',
+            '.sh', '.bash', '.zsh', '.fish',
+            '.py', '.rb', '.php', '.java', '.c', '.cpp', '.h', '.hpp',
+            '.go', '.rs', '.swift', '.kt',
+            '.sql', '.csv', '.tsv',
+            '.log', '.conf', '.config', '.ini', '.env',
+            '.gitignore', '.dockerignore', '.editorconfig'
+        ];
+
+        // Check if file has a text extension
+        if (textExtensions.some(ext => lowerName.endsWith(ext))) {
+            return true;
+        }
+
+        // Check for files without extensions that are typically text files
+        const textFilesWithoutExt = [
+            'dockerfile', 'makefile', 'rakefile', 'gemfile',
+            '.bashrc', '.bash_profile', '.zshrc', '.profile',
+            '.vimrc', '.gitconfig', '.npmrc', '.yarnrc',
+            'readme', 'license', 'changelog', 'contributing'
+        ];
+
+        return textFilesWithoutExt.some(name => lowerName === name || lowerName.endsWith('/' + name));
     }
 
     navigateUp() {
