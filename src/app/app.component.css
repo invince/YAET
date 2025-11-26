@@ -1,36 +1,3 @@
-.sidebar-buttons {
-  padding-left: 3px;
-  padding-right: 3px;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  /* Ensures the container takes full height of the sidenav */
-  gap: 15px;
-  /* Space between buttons */
-  overflow: hidden;
-}
-
-.sidebar-buttons-top {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  /* Space between buttons */
-  padding-left: 3px;
-  padding-right: 3px;
-}
-
-.sidebar-buttons-bottom {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  /* Space between buttons */
-  margin-top: auto;
-  /* Pushes this section to the bottom */
-  padding-left: 3px;
-  padding-right: 3px;
-  padding-bottom: 10px;
-}
-
 .mat-drawer-opened {
   min-width: 50px;
   max-width: 250px;
