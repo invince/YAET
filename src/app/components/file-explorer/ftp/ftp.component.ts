@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Session } from '../../../domain/session/Session';
 import { FtpService } from '../../../services/file-explorer/ftp.service';
+import { TabService } from '../../../services/tab.service';
 import { AbstractFileManager } from '../abstract-file-manager';
 import { FileListComponent } from '../custom/file-list.component';
 
@@ -19,7 +20,7 @@ export class FtpComponent extends AbstractFileManager implements OnInit, OnDestr
   @Input() public session!: Session;
 
 
-  constructor(private ftpService: FtpService, http: HttpClient) {
+  constructor(private ftpService: FtpService, http: HttpClient, private tabService: TabService) {
     super(http);
   }
 
@@ -32,7 +33,10 @@ export class FtpComponent extends AbstractFileManager implements OnInit, OnDestr
   }
 
   ngOnDestroy(): void {
-    this.session.close();
+    const isTabStillActive = this.tabService.tabs.some(t => t.id === this.session.id);
+    if (!isTabStillActive) {
+      this.session.close();
+    }
   }
 
   getCurrentPath(): string | undefined {
