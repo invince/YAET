@@ -1,43 +1,43 @@
-import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
-import {MenuComponent} from '../menu.component';
-import {MatIcon} from '@angular/material/icon';
-import {MatButton, MatIconButton} from '@angular/material/button';
-import {MatTab, MatTabGroup} from '@angular/material/tabs';
-import {MySettings} from '../../../domain/setting/MySettings';
-import {SettingService} from '../../../services/setting.service';
-import {MatFormField, MatLabel, MatSuffix} from '@angular/material/form-field';
-import {MatOption, MatSelect} from '@angular/material/select';
-import {LocalTerminalProfile, LocalTerminalType} from '../../../domain/profile/LocalTerminalProfile';
-import {CommonModule, KeyValuePipe} from '@angular/common';
-import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {MatInput} from '@angular/material/input';
-import {Subscription} from 'rxjs';
-import {MatDialog} from '@angular/material/dialog';
-import {MasterKeyComponent} from '../../dialog/master-key/master-key.component';
-import {ConfirmationComponent} from '../../confirmation/confirmation.component';
-import {MasterKeyService} from '../../../services/master-key.service';
-import {SettingStorageService} from '../../../services/setting-storage.service';
-import {SideNavType, UISettings} from '../../../domain/setting/UISettings';
-import {TagsFormComponent} from './tags-form/tags-form.component';
-import {GroupsFormComponent} from './groups-form/groups-form.component';
-import {GeneralSettings} from '../../../domain/setting/GeneralSettings';
-import {NgxSpinnerService} from 'ngx-spinner';
-import {MatCheckbox} from '@angular/material/checkbox';
+import { CommonModule, KeyValuePipe } from '@angular/common';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatButton, MatIconButton } from '@angular/material/button';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatDialog } from '@angular/material/dialog';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormField, MatLabel, MatSuffix } from '@angular/material/form-field';
+import { MatIcon } from '@angular/material/icon';
+import { MatInput } from '@angular/material/input';
+import { MatOption, MatSelect } from '@angular/material/select';
+import { MatTab, MatTabGroup } from '@angular/material/tabs';
+import { NgxSpinnerService } from 'ngx-spinner';
+import { Subscription } from 'rxjs';
 import packageJson from '../../../../../package.json';
-import {RemoteDesktopSettings} from '../../../domain/setting/RemoteDesktopSettings';
-import {TerminalSettings} from '../../../domain/setting/TerminalSettings';
-import {FileExplorerSettings} from '../../../domain/setting/FileExplorerSettings';
-import {MatExpansionModule} from '@angular/material/expansion';
-import {LogService} from '../../../services/log.service';
-import {NotificationService} from '../../../services/notification.service';
+import { LocalTerminalProfile, LocalTerminalType } from '../../../domain/profile/LocalTerminalProfile';
+import { SecretType } from '../../../domain/Secret';
+import { FileExplorerSettings } from '../../../domain/setting/FileExplorerSettings';
+import { GeneralSettings } from '../../../domain/setting/GeneralSettings';
+import { MySettings } from '../../../domain/setting/MySettings';
+import { RemoteDesktopSettings } from '../../../domain/setting/RemoteDesktopSettings';
+import { TerminalSettings } from '../../../domain/setting/TerminalSettings';
+import { SideNavType, UISettings } from '../../../domain/setting/UISettings';
+import { LogService } from '../../../services/log.service';
+import { MasterKeyService } from '../../../services/master-key.service';
+import { NotificationService } from '../../../services/notification.service';
+import { SecretStorageService } from '../../../services/secret-storage.service';
+import { SecretService } from '../../../services/secret.service';
+import { SettingStorageService } from '../../../services/setting-storage.service';
+import { SettingService } from '../../../services/setting.service';
 import {
   FormFieldWithPrecondition,
   ModelFieldWithPrecondition,
   ModelFormController
 } from '../../../utils/ModelFormController';
-import {SecretType} from '../../../domain/Secret';
-import {SecretStorageService} from '../../../services/secret-storage.service';
-import {SecretService} from '../../../services/secret.service';
+import { ConfirmationComponent } from '../../confirmation/confirmation.component';
+import { MasterKeyComponent } from '../../dialog/master-key/master-key.component';
+import { MenuComponent } from '../menu.component';
+import { GroupsFormComponent } from './groups-form/groups-form.component';
+import { TagsFormComponent } from './tags-form/tags-form.component';
 
 
 @Component({
@@ -81,23 +81,24 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   SIDE_NAV_TYPE_OPTIONS = SideNavType;
 
   settingsCopy!: MySettings;
-  private subscriptions: Subscription[] =[];
+  private subscriptions: Subscription[] = [];
   currentTabIndex: number = 0;
 
   GENERAL_FORM_TAB_INDEX = 0;
   UI_FORM_TAB_INDEX = 1;
-  GROUP_TAG_FORM_TAB_INDEX = 2;
-  TERM_FORM_TAB_INDEX = 3;
-  REMOTE_DESKTOP_FORM_TAB_INDEX = 4;
-  FILE_EXPLORER_FORM_TAB_INDEX = 5;
+  GROUP_FORM_TAB_INDEX = 2;
+  TAG_FORM_TAB_INDEX = 3;
+  TERM_FORM_TAB_INDEX = 4;
+  REMOTE_DESKTOP_FORM_TAB_INDEX = 5;
+  FILE_EXPLORER_FORM_TAB_INDEX = 6;
 
-  version ='';
+  version = '';
 
-  private mfcGeneral                  : ModelFormController<GeneralSettings>;
-  private mfcUI                       : ModelFormController<UISettings>;
-  private mfcRemoteDesktop            : ModelFormController<RemoteDesktopSettings>;
-  private mfcLocalTerminal             : ModelFormController<LocalTerminalProfile>;
-  private mfcFileExplorer             : ModelFormController<FileExplorerSettings>;
+  private mfcGeneral: ModelFormController<GeneralSettings>;
+  private mfcUI: ModelFormController<UISettings>;
+  private mfcRemoteDesktop: ModelFormController<RemoteDesktopSettings>;
+  private mfcLocalTerminal: ModelFormController<LocalTerminalProfile>;
+  private mfcFileExplorer: ModelFormController<FileExplorerSettings>;
 
   constructor(
     private log: LogService,
@@ -124,27 +125,27 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
     this.mfcUI = new ModelFormController<UISettings>(
       new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>([
-        ['profileLabelLength',          { name: 'uiProfileLabelLength', formControlOption:  ['', Validators.required]}],
-        ['profileSideNavType',          { name: 'profileSideNavType', formControlOption:  ['', Validators.required]}],
-        ['secretLabelLength',           { name: 'uiSecretLabelLength', formControlOption:  ['', Validators.required]}],
-        ['secretLabelLengthInDropDown', { name: 'uiSecretLabelLengthInDropDown', formControlOption:  ['', Validators.required]}],
+        ['profileLabelLength', { name: 'uiProfileLabelLength', formControlOption: ['', Validators.required] }],
+        ['profileSideNavType', { name: 'profileSideNavType', formControlOption: ['', Validators.required] }],
+        ['secretLabelLength', { name: 'uiSecretLabelLength', formControlOption: ['', Validators.required] }],
+        ['secretLabelLengthInDropDown', { name: 'uiSecretLabelLengthInDropDown', formControlOption: ['', Validators.required] }],
       ])
     );
 
     this.mfcRemoteDesktop = new ModelFormController<RemoteDesktopSettings>(
       new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>([
-        ['vncClipboardCompatibleMode',     'vncClipboardCompatibleMode'],
-        ['vncCompressionLevel',            { name: 'vncCompressionLevel', formControlOption:  ['', [Validators.required, Validators.min(0), Validators.max(9)]]}],
-        ['vncQuality',                     { name: 'vncQuality', formControlOption:  ['', [Validators.required,  Validators.min(1), Validators.max(9)]]}],
+        ['vncClipboardCompatibleMode', 'vncClipboardCompatibleMode'],
+        ['vncCompressionLevel', { name: 'vncCompressionLevel', formControlOption: ['', [Validators.required, Validators.min(0), Validators.max(9)]] }],
+        ['vncQuality', { name: 'vncQuality', formControlOption: ['', [Validators.required, Validators.min(1), Validators.max(9)]] }],
       ])
     );
 
 
     this.mfcLocalTerminal = new ModelFormController<LocalTerminalProfile>(
       new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>([
-        ['type',         { name: 'localTerminalType', formControlOption:  ['', Validators.required]}],
-        ['execPath',     { name: 'localTerminalExecPath', formControlOption:  ['', Validators.required]}],
-        ['defaultOpen',  'defaultOpen'],
+        ['type', { name: 'localTerminalType', formControlOption: ['', Validators.required] }],
+        ['execPath', { name: 'localTerminalExecPath', formControlOption: ['', Validators.required] }],
+        ['defaultOpen', 'defaultOpen'],
       ])
     );
 
@@ -169,7 +170,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
   ngOnInit() {
-    if (!this.settingService.isLoaded ) {
+    if (!this.settingService.isLoaded) {
       this.notification.info('Settings not loaded, we\'ll reload it, please close setting menu and reopen');
       this.settingService.reload();
     }
@@ -293,7 +294,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       value = new MySettings();
     }
 
-    if(this.generalForm) {
+    if (this.generalForm) {
       if (!value.general) {
         value.general = new GeneralSettings();
       }
@@ -309,7 +310,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     }
 
 
-    if(this.remoteDesktopForm) {
+    if (this.remoteDesktopForm) {
       if (!value.remoteDesktop) {
         value.remoteDesktop = new RemoteDesktopSettings();
       }
@@ -327,7 +328,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       this.mfcLocalTerminal.refreshForm(value.terminal.localTerminal, this.terminalForm);
     }
 
-    if(this.fileExplorerForm) {
+    if (this.fileExplorerForm) {
       this.fileExplorerForm.reset();
       if (!value.fileExplorer) {
         value.fileExplorer = new FileExplorerSettings();
@@ -337,7 +338,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
   shouldDisableSave() {
-    return [this.GROUP_TAG_FORM_TAB_INDEX].includes(this.currentTabIndex);
+    return [this.GROUP_FORM_TAB_INDEX, this.TAG_FORM_TAB_INDEX].includes(this.currentTabIndex);
   }
 
 
@@ -346,7 +347,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
   private generalFormToModel() {
-    return this.mfcGeneral.formToModel( new GeneralSettings(), this.generalForm);
+    return this.mfcGeneral.formToModel(new GeneralSettings(), this.generalForm);
   }
 
   private remoteDesktopFormToModel() {
@@ -355,7 +356,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
   private termFormToModel() {
     let term = new TerminalSettings();
-    term.localTerminal =  this.mfcLocalTerminal.formToModel(new LocalTerminalProfile(), this.terminalForm);
+    term.localTerminal = this.mfcLocalTerminal.formToModel(new LocalTerminalProfile(), this.terminalForm);
     return term;
   }
 
@@ -373,7 +374,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
   getLocalTermOptions(): LocalTerminalType[] {
     if (process.platform === 'win32') {
-      return [ LocalTerminalType.CMD , LocalTerminalType.POWERSHELL, LocalTerminalType.POWERSHELL_7, LocalTerminalType.BASH];
+      return [LocalTerminalType.CMD, LocalTerminalType.POWERSHELL, LocalTerminalType.POWERSHELL_7, LocalTerminalType.BASH];
     } else {
       return [LocalTerminalType.BASH];
     }

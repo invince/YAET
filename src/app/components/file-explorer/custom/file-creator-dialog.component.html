@@ -1,0 +1,37 @@
+<h2 mat-dialog-title>Create New Text File</h2>
+<h2 mat-dialog-title>Create New Text File</h2>
+<mat-dialog-content>
+    <div class="spinner-overlay" *ngIf="isSaving">
+        <mat-spinner diameter="50"></mat-spinner>
+    </div>
+
+    <mat-form-field appearance="outline" style="width: 100%; margin-bottom: 16px;">
+        <mat-label>File Name</mat-label>
+        <input matInput [(ngModel)]="fileName" placeholder="example.txt" autofocus (keydown.enter)="onSave()">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" style="width: 100%;">
+        <mat-label>Content</mat-label>
+        <textarea matInput [(ngModel)]="content" rows="10" placeholder="Enter file content here..."></textarea>
+    </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()" [disabled]="isSaving">Cancel</button>
+    <button mat-raised-button color="primary" (click)="onSave()"
+        [disabled]="!fileName.trim() || isSaving">Create</button>
+</mat-dialog-actions>
+
+<style>
+    .spinner-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+</style>

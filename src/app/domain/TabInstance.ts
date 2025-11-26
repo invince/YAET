@@ -1,5 +1,5 @@
-import {ProfileCategory} from './profile/Profile';
-import {Session} from './session/Session';
+import { ProfileCategory } from './profile/Profile';
+import { Session } from './session/Session';
 
 export class TabInstance {
 
@@ -9,6 +9,7 @@ export class TabInstance {
   readonly category: ProfileCategory;
 
   public connected: boolean = false;
+  public paneId: number = 0;
 
 
   session: Session;

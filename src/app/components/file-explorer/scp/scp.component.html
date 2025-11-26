@@ -1,32 +1,3 @@
 <div class="scp-container">
-  <ejs-filemanager
-    id='scp-filemanager'
-    #fileManager
-    [ajaxSettings]="ajaxSettings"
-    [navigationPaneSettings]="navigationPaneSettings"
-    [toolbarSettings]="toolbarSettings"
-    [contextMenuSettings]='contextMenuSettings'
-    [uploadSettings]="uploadSettings"
-    (fileOpen)="onFileOpen($event)"
-    (toolbarClick)="onToolbarClick($event)"
-    [path]="path"
-    height="100%"
-  >
-    <e-toolbaritems>
-      <e-toolbaritem name= "NewFolder"></e-toolbaritem>
-      <e-toolbaritem name= "CopyPath" text="Copy Path" tooltipText="Copy Current path" prefixIcon="e-copy" ></e-toolbaritem>
-      <e-toolbaritem name= "Upload"></e-toolbaritem>
-      <e-toolbaritem name= "SortBy"></e-toolbaritem>
-      <e-toolbaritem name= "Refresh"></e-toolbaritem>
-      <e-toolbaritem name= "Cut"></e-toolbaritem>
-      <e-toolbaritem name= "Copy"></e-toolbaritem>
-      <e-toolbaritem name= "Paste"></e-toolbaritem>
-      <e-toolbaritem name= "Delete"></e-toolbaritem>
-      <e-toolbaritem name= "Download"></e-toolbaritem>
-      <e-toolbaritem name= "Rename"></e-toolbaritem>
-      <e-toolbaritem name= "Selection"></e-toolbaritem>
-      <e-toolbaritem name= "View"></e-toolbaritem>
-    </e-toolbaritems>
-
-  </ejs-filemanager>
+  <app-file-list [ajaxSettings]="ajaxSettings" [path]="path" (pathChange)="path = $event"></app-file-list>
 </div>
