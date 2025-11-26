@@ -5,14 +5,19 @@
 
     <mat-sidenav-content style="display: flex; flex-direction: column; overflow: hidden;">
         <div class="split-container" [style.display]="tabService.splitMode ? 'flex' : 'block'"
+            [style.flex-direction]="tabService.splitDirection === 'vertical' ? 'row' : 'column'"
             style="flex: 1; overflow: hidden;">
 
             <!-- Pane 0 -->
-            <div class="split-pane" [style.width]="tabService.splitMode ? '50%' : '100%'"
-                [style.border-right]="tabService.splitMode ? '1px solid #333' : 'none'" (click)="setActivePane(0)"
-                [class.active-pane]="tabService.activePane === 0" [class.drag-over]="dragOverPane === 0"
-                (dragover)="onPaneDragOver($event, 0)" (dragleave)="onPaneDragLeave(0)" (drop)="onPaneDrop($event, 0)"
-                style="height: 100%; display: flex; flex-direction: column;">
+            <div class="split-pane"
+                [style.width]="tabService.splitMode && tabService.splitDirection === 'vertical' ? tabService.splitRatio + '%' : '100%'"
+                [style.height]="tabService.splitMode && tabService.splitDirection === 'horizontal' ? tabService.splitRatio + '%' : '100%'"
+                [style.border-right]="tabService.splitMode && tabService.splitDirection === 'vertical' ? '1px solid #333' : 'none'"
+                [style.border-bottom]="tabService.splitMode && tabService.splitDirection === 'horizontal' ? '1px solid #333' : 'none'"
+                (click)="setActivePane(0)" [class.active-pane]="tabService.activePane === 0"
+                [class.drag-over]="dragOverPane === 0" (dragover)="onPaneDragOver($event, 0)"
+                (dragleave)="onPaneDragLeave(0)" (drop)="onPaneDrop($event, 0)"
+                style="display: flex; flex-direction: column;">
 
                 <mat-tab-group id="tab-group-0" [@.disabled]="true" [(selectedIndex)]="tabService.paneTabIndices[0]"
                     mat-stretch-tabs="false" style="flex: 1; overflow: hidden;">
@@ -32,7 +37,9 @@
 
             <!-- Pane 1 -->
             <div class="split-pane" *ngIf="tabService.splitMode"
-                style="width: 50%; height: 100%; display: flex; flex-direction: column;" (click)="setActivePane(1)"
+                [style.width]="tabService.splitDirection === 'vertical' ? (100 - tabService.splitRatio) + '%' : '100%'"
+                [style.height]="tabService.splitDirection === 'horizontal' ? (100 - tabService.splitRatio) + '%' : '100%'"
+                style="display: flex; flex-direction: column;" (click)="setActivePane(1)"
                 [class.active-pane]="tabService.activePane === 1" [class.drag-over]="dragOverPane === 1"
                 (dragover)="onPaneDragOver($event, 1)" (dragleave)="onPaneDragLeave(1)" (drop)="onPaneDrop($event, 1)">
 
@@ -118,6 +125,6 @@
         <app-bottom-toolbar></app-bottom-toolbar>
     </mat-sidenav-content>
 </mat-sidenav-container>
-<ngx-spinner bdColor="rgba(0, 0, 0, 0.8)" size="medium" color="##fff" type="ball-scale-multiple" [fullScreen]="true">
+<ngx-spinner bdColor="rgba(0, 0, 0, 0.8)" size="medium" color="#fff" type="ball-scale-multiple" [fullScreen]="true">
     <p style="color: white"> Loading... </p>
 </ngx-spinner>

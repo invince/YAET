@@ -11,6 +11,8 @@ export class TabService {
   public currentTabIndex = 0; // Deprecated, use paneTabIndices
   public paneTabIndices: number[] = [0, 0];
   public splitMode: boolean = false;
+  public splitRatio: number = 50;
+  public splitDirection: 'vertical' | 'horizontal' = 'vertical';
   public activePane: number = 0;
 
   constructor() { }
@@ -80,12 +82,25 @@ export class TabService {
     }
   }
 
-  toggleSplit() {
-    this.splitMode = !this.splitMode;
+  toggleSplit(direction: 'vertical' | 'horizontal' = 'vertical', ratio: number = 50) {
     if (!this.splitMode) {
-      // Merge all tabs to pane 0
-      this._tabs.forEach(t => t.paneId = 0);
-      this.activePane = 0;
+      // Enable split mode
+      this.splitMode = true;
+      this.splitDirection = direction;
+      this.splitRatio = ratio;
+    } else {
+      // Already in split mode
+      if (this.splitDirection !== direction || this.splitRatio !== ratio) {
+        // Change direction or ratio
+        this.splitDirection = direction;
+        this.splitRatio = ratio;
+      } else {
+        // Toggle off if clicking the same button
+        this.splitMode = false;
+        // Merge all tabs to pane 0
+        this._tabs.forEach(t => t.paneId = 0);
+        this.activePane = 0;
+      }
     }
   }
 

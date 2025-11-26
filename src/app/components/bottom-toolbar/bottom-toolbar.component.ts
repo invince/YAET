@@ -15,7 +15,7 @@ import { TabService } from '../../services/tab.service';
 export class BottomToolbarComponent {
     constructor(public tabService: TabService) { }
 
-    toggleSplit() {
-        this.tabService.toggleSplit();
+    toggleSplit(direction: 'vertical' | 'horizontal' = 'vertical', ratio: number = 50) {
+        this.tabService.toggleSplit(direction, ratio);
     }
 }
