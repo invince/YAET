@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   Component,
+  Inject,
   OnDestroy,
   OnInit
 } from '@angular/core';
@@ -9,6 +10,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatTabsModule } from '@angular/material/tabs';
+import { TranslateService } from '@ngx-translate/core';
 import { NgxSpinnerModule } from 'ngx-spinner';
 import { Subscription } from 'rxjs';
 import { menuAnimation } from './animations/menuAnimation';
@@ -102,6 +104,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     private notification: NotificationService,
     public dialog: MatDialog,
+    @Inject(TranslateService) private translate: TranslateService
   ) { }
 
   ngOnInit() {
@@ -135,6 +138,11 @@ export class AppComponent implements OnInit, OnDestroy {
           }
 
           this.settingInitialized = true;
+
+          // Initialize language
+          this.translate.setDefaultLang('en');
+          const savedLang = this.settingStorage.settings.general?.language || 'en';
+          this.translate.use(savedLang);
         }
       )
     );

@@ -1,0 +1,69 @@
+{
+    "COMMON": {
+        "SAVE": "Speichern",
+        "SAVE_AND_CLOSE": "Speichern & Schließen",
+        "CANCEL": "Abbrechen",
+        "CLOSE": "Schließen",
+        "RELOAD": "Neu laden",
+        "DELETE": "Löschen",
+        "REMOVE": "Entfernen",
+        "SET": "Setzen",
+        "CLEAR": "Löschen",
+        "OK": "OK",
+        "YES": "Ja",
+        "NO": "Nein"
+    },
+    "SETTINGS": {
+        "TITLE": "Einstellungen",
+        "GENERAL": "Allgemein",
+        "UI": "Benutzeroberfläche",
+        "GROUPS": "Gruppen",
+        "TAGS": "Tags",
+        "TERMINAL": "Terminal",
+        "REMOTE_DESKTOP": "Remote Desktop",
+        "FILE_EXPLORER": "Datei-Explorer",
+        "GENERAL_SETTINGS": "Allgemein",
+        "UI_SETTINGS": "Benutzeroberfläche",
+        "GROUPS_MANAGEMENT": "Gruppenverwaltung",
+        "TAGS_MANAGEMENT": "Tag-Verwaltung",
+        "TERMINAL_SETTINGS": "Terminal",
+        "REMOTE_DESKTOP_SETTINGS": "Remote Desktop",
+        "APPLICATION": "Anwendung",
+        "SECURITY": "Sicherheit",
+        "APP_VERSION": "App-Version",
+        "AUTO_UPDATE": "Anwendung automatisch aktualisieren",
+        "LANGUAGE": "Sprache",
+        "LANGUAGE_LABEL": "Oberflächensprache",
+        "SET_MASTER_KEY": "Master-Schlüssel setzen",
+        "REMOVE_MASTER_KEY": "Master-Schlüssel entfernen",
+        "SIDEBAR_NAVIGATION": "Seitenleiste & Navigation",
+        "PROFILE_LABEL_LENGTH": "Profil-Label-Länge",
+        "SIDE_NAV_TYPE": "Seitenleisten-Typ",
+        "SECRETS_DISPLAY": "Geheimnisse-Anzeige",
+        "SECRET_LABEL_LENGTH_SIDENAV": "Geheimnis-Label-Länge (Seitenleiste)",
+        "SECRET_LABEL_LENGTH_DROPDOWN": "Geheimnis-Label-Länge (Dropdown)",
+        "STARTUP": "Start",
+        "OPEN_LOCAL_TERMINAL_STARTUP": "Lokales Terminal beim Start öffnen",
+        "CONFIGURATION": "Konfiguration",
+        "TERMINAL_TYPE": "Terminal-Typ",
+        "EXEC_PATH": "Ausführungspfad",
+        "VNC_OPTIONS": "VNC-Optionen",
+        "VNC_CLIPBOARD_COMPATIBLE": "VNC-Zwischenablage-Kompatibilitätsmodus aktivieren",
+        "VNC_QUALITY": "Qualität (0-9)",
+        "VNC_COMPRESSION": "Kompression (0-9)"
+    },
+    "LANGUAGES": {
+        "EN": "English",
+        "DE": "Deutsch",
+        "FR": "Français",
+        "ES": "Español",
+        "ZH": "中文"
+    },
+    "NOTIFICATIONS": {
+        "SETTINGS_NOT_LOADED": "Einstellungen nicht geladen, wir laden sie neu, bitte schließen Sie das Einstellungsmenü und öffnen Sie es erneut",
+        "MASTER_KEY_DELETED": "Master-Schlüssel gelöscht"
+    },
+    "DIALOGS": {
+        "DELETE_MASTER_KEY_CONFIRM": "Master-Schlüssel löschen. Wenn Sie fortfahren, werden alle vorhandenen Geheimnisse ungültig. Möchten Sie fortfahren?"
+    }
+}

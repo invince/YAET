@@ -1,5 +1,5 @@
 import { CommonModule, KeyValuePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatCheckbox } from '@angular/material/checkbox';
@@ -10,6 +10,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatInput } from '@angular/material/input';
 import { MatOption, MatSelect } from '@angular/material/select';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { Subscription } from 'rxjs';
 import packageJson from '../../../../../package.json';
@@ -64,6 +65,7 @@ import { TagsFormComponent } from './tags-form/tags-form.component';
     MatSuffix,
     MatCheckbox,
     MatExpansionModule,
+    TranslateModule,
   ],
   templateUrl: './setting-menu.component.html',
   styleUrl: './setting-menu.component.css'
@@ -77,6 +79,14 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   fileExplorerForm!: FormGroup;
 
   LOCAL_TERM_OPTIONS: LocalTerminalType[] = this.getLocalTermOptions();
+
+  LANGUAGE_OPTIONS = [
+    { code: 'en', name: 'English' },
+    { code: 'de', name: 'Deutsch' },
+    { code: 'fr', name: 'Français' },
+    { code: 'es', name: 'Español' },
+    { code: 'zh', name: '中文' }
+  ];
 
   SIDE_NAV_TYPE_OPTIONS = SideNavType;
 
@@ -111,7 +121,8 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     private cdr: ChangeDetectorRef,
     public dialog: MatDialog,
     private notification: NotificationService,
-    private spinner: NgxSpinnerService
+    private spinner: NgxSpinnerService,
+    @Inject(TranslateService) private translate: TranslateService
   ) {
     super();
     this.version = packageJson.version;
@@ -120,6 +131,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     this.mfcGeneral = new ModelFormController<GeneralSettings>(
       new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>([
         ['autoUpdate', 'autoUpdate'],
+        ['language', { name: 'language', formControlOption: ['', Validators.required] }],
       ])
     );
 
@@ -370,6 +382,10 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
   filterSecret() {
     return this.secretStorageService.filter(one => one.secretType == SecretType.LOGIN_PASSWORD);
+  }
+
+  onLanguageChange($event: any) {
+    this.translate.use($event.value);
   }
 
   getLocalTermOptions(): LocalTerminalType[] {
