@@ -3,7 +3,6 @@
   max-width: 250px;
 }
 
-
 mat-tab-group {
   height: 100%;
 }
@@ -15,6 +14,18 @@ mat-tab-group {
   width: 100%;
 }
 
+.tab-drag-handle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  cursor: grab;
+}
+
+.tab-drag-handle:active {
+  cursor: grabbing;
+}
+
 /* Split View Styles */
 .split-pane {
   position: relative;
@@ -24,4 +35,10 @@ mat-tab-group {
 /* Visual indicator for active pane */
 .split-pane.active-pane {
   box-shadow: inset 0 0 0 1px #3f51b5;
+}
+
+/* Drag and drop styles */
+.split-pane.drag-over {
+  background-color: rgba(63, 81, 181, 0.1);
+  box-shadow: inset 0 0 0 2px #3f51b5;
 }

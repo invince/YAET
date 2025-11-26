@@ -3,14 +3,15 @@
         <app-sidebar></app-sidebar>
     </mat-sidenav>
 
-    <mat-sidenav-content style="display: flex; flex-direction: column;">
+    <mat-sidenav-content style="display: flex; flex-direction: column; overflow: hidden;">
         <div class="split-container" [style.display]="tabService.splitMode ? 'flex' : 'block'"
             style="flex: 1; overflow: hidden;">
 
             <!-- Pane 0 -->
             <div class="split-pane" [style.width]="tabService.splitMode ? '50%' : '100%'"
                 [style.border-right]="tabService.splitMode ? '1px solid #333' : 'none'" (click)="setActivePane(0)"
-                [class.active-pane]="tabService.activePane === 0"
+                [class.active-pane]="tabService.activePane === 0" [class.drag-over]="dragOverPane === 0"
+                (dragover)="onPaneDragOver($event, 0)" (dragleave)="onPaneDragLeave(0)" (drop)="onPaneDrop($event, 0)"
                 style="height: 100%; display: flex; flex-direction: column;">
 
                 <mat-tab-group id="tab-group-0" [@.disabled]="true" [(selectedIndex)]="tabService.paneTabIndices[0]"
@@ -32,7 +33,8 @@
             <!-- Pane 1 -->
             <div class="split-pane" *ngIf="tabService.splitMode"
                 style="width: 50%; height: 100%; display: flex; flex-direction: column;" (click)="setActivePane(1)"
-                [class.active-pane]="tabService.activePane === 1">
+                [class.active-pane]="tabService.activePane === 1" [class.drag-over]="dragOverPane === 1"
+                (dragover)="onPaneDragOver($event, 1)" (dragleave)="onPaneDragLeave(1)" (drop)="onPaneDrop($event, 1)">
 
                 <mat-tab-group id="tab-group-1" [@.disabled]="true" [(selectedIndex)]="tabService.paneTabIndices[1]"
                     mat-stretch-tabs="false" style="flex: 1; overflow: hidden;">
@@ -54,14 +56,18 @@
 
         <!-- Templates -->
         <ng-template #tabLabel let-tab="tab" let-i="i" let-paneId="paneId">
-            <div class="tab-label" (mousedown)="onTabLabelMouseDown($event, i, paneId)">
-                @if (!tab.connected) {
-                <button mat-icon-button (click)="reconnect(i)" aria-label="Reconnect tab">
-                    <mat-icon>refresh</mat-icon>
-                </button>
-                }
-                <span>{{ tab.name }} </span>
-                <button mat-icon-button (click)="removeTab(i, paneId)" aria-label="Remove tab">
+            <div class="tab-label">
+                <span class="tab-drag-handle" draggable="true" (dragstart)="onTabDragStart($event, tab, i, paneId)"
+                    (dragend)="onTabDragEnd()">
+                    @if (!tab.connected) {
+                    <button mat-icon-button (click)="reconnect(tab)" aria-label="Reconnect tab">
+                        <mat-icon>refresh</mat-icon>
+                    </button>
+                    }
+                    {{ tab.name }}
+                </span>
+                <button mat-icon-button (click)="removeTab(i, paneId)"
+                    (mousedown)="onTabLabelMouseDown($event, i, paneId)" aria-label="Remove tab">
                     <mat-icon>close</mat-icon>
                 </button>
             </div>
@@ -112,6 +118,6 @@
         <app-bottom-toolbar></app-bottom-toolbar>
     </mat-sidenav-content>
 </mat-sidenav-container>
-<ngx-spinner bdColor="rgba(0, 0, 0, 0.8)" size="medium" color="#fff" type="ball-scale-multiple" [fullScreen]="true">
+<ngx-spinner bdColor="rgba(0, 0, 0, 0.8)" size="medium" color="##fff" type="ball-scale-multiple" [fullScreen]="true">
     <p style="color: white"> Loading... </p>
 </ngx-spinner>

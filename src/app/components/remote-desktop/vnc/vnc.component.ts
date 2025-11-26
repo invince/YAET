@@ -8,7 +8,8 @@ import {
   SimpleChanges,
   ViewChild
 } from '@angular/core';
-import {Session} from '../../../domain/session/Session';
+import { Session } from '../../../domain/session/Session';
+import { TabService } from '../../../services/tab.service';
 
 
 @Component({
@@ -26,7 +27,8 @@ export class VncComponent implements AfterViewInit, OnChanges, OnDestroy {
   status: string = 'disconnected';
 
   constructor(
-  ) {}
+    private tabService: TabService
+  ) { }
 
 
   @ViewChild('vnc', { static: true }) vncContainer!: ElementRef;
@@ -54,7 +56,10 @@ export class VncComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   disconnect() {
-    this.session.close();
+    const isTabStillActive = this.tabService.tabs.some(t => t.id === this.session.id);
+    if (!isTabStillActive) {
+      this.session.close();
+    }
   }
 
   showRealSize() {

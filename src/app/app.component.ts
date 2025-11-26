@@ -1,5 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
@@ -77,6 +81,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
   settingInitialized = false;
 
+  // Drag and drop state
+  draggedTab: { tab: TabInstance, index: number, paneId: number } | null = null;
+  dragOverPane: number | null = null;
 
 
   constructor(
@@ -147,28 +154,78 @@ export class AppComponent implements OnInit, OnDestroy {
       ;
   }
 
-  reconnect(i: number) {
-    this.sessionService.reconnect(i);
+  reconnect(tab: TabInstance) {
+    // Find the global index of this tab
+    const globalIndex = this.tabService.tabs.indexOf(tab);
+    if (globalIndex !== -1) {
+      this.sessionService.reconnect(globalIndex);
+    }
   }
 
   removeTab(index: number, paneId: number = 0) {
     this.tabService.removeTab(index, paneId);
   }
 
-
-
-
-
   onTabLabelMouseDown($event: MouseEvent, index: number, paneId: number = 0) {
+    // Only handle middle button (close tab) - don't interfere with left button drag
     if ($event.button === 1) { // middle button
       $event.preventDefault();
       this.removeTab(index, paneId);
     }
   }
 
-
-
   setActivePane(paneId: number) {
     this.tabService.setActivePane(paneId);
+  }
+
+  // Drag and drop handlers
+  onTabDragStart(event: DragEvent, tab: TabInstance, index: number, paneId: number) {
+    this.draggedTab = { tab, index, paneId };
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', tab.id);
+    }
+  }
+
+  onTabDragEnd() {
+    this.draggedTab = null;
+    this.dragOverPane = null;
+  }
+
+  onPaneDragOver(event: DragEvent, paneId: number) {
+    if (!this.draggedTab || !this.tabService.splitMode) {
+      return;
+    }
+
+    // Only allow drop if dragging to different pane
+    if (this.draggedTab.paneId !== paneId) {
+      event.preventDefault();
+      if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = 'move';
+      }
+      this.dragOverPane = paneId;
+    }
+  }
+
+  onPaneDragLeave(paneId: number) {
+    if (this.dragOverPane === paneId) {
+      this.dragOverPane = null;
+    }
+  }
+
+  onPaneDrop(event: DragEvent, targetPaneId: number) {
+    event.preventDefault();
+
+    if (!this.draggedTab || !this.tabService.splitMode) {
+      return;
+    }
+
+    // Move tab to target pane
+    if (this.draggedTab.paneId !== targetPaneId) {
+      this.tabService.moveTabToPane(this.draggedTab.tab, targetPaneId);
+    }
+
+    this.draggedTab = null;
+    this.dragOverPane = null;
   }
 }
