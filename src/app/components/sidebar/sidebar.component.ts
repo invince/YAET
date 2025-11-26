@@ -103,8 +103,4 @@ export class SidebarComponent {
     toggleMenu(menu: string) {
         this.modalControl.toggleMenu(menu);
     }
-
-    toggleSplit() {
-        this.tabService.toggleSplit();
-    }
 }

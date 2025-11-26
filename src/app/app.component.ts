@@ -8,6 +8,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { NgxSpinnerModule } from 'ngx-spinner';
 import { Subscription } from 'rxjs';
 import { menuAnimation } from './animations/menuAnimation';
+import { BottomToolbarComponent } from './components/bottom-toolbar/bottom-toolbar.component';
 import { FileExplorerComponent } from './components/file-explorer/file-explorer.component';
 import { CloudComponent } from './components/menu/cloud/cloud.component';
 import { ProfilesMenuComponent } from './components/menu/profiles-menu/profiles-menu.component';
@@ -54,6 +55,7 @@ import { TabService } from './services/tab.service';
     QuickconnectMenuComponent,
     CloudComponent,
     SidebarComponent,
+    BottomToolbarComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
