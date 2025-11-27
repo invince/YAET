@@ -39,9 +39,13 @@ $deeppurple-amber-theme: mat.m2-define-light-theme((color: (primary: $deeppurple
         warn: $deeppurple-amber-warn,
       )));
 
-// Apply the themes to specific classes
+// Apply the base styles (typography and density) globally once
+@include mat.all-component-typographies($pink-bluegrey-theme);
+@include mat.all-component-densities($pink-bluegrey-theme);
+
+// Apply the color themes to specific classes
 .theme-pink-bluegrey {
-  @include mat.all-component-themes($pink-bluegrey-theme);
+  @include mat.all-component-colors($pink-bluegrey-theme);
   --app-bg-color: #1e1e1e;
   --app-sidebar-bg-color: #252526;
   --app-text-color: #e0e0e0;
@@ -52,7 +56,7 @@ $deeppurple-amber-theme: mat.m2-define-light-theme((color: (primary: $deeppurple
 }
 
 .theme-purple-green {
-  @include mat.all-component-themes($purple-green-theme);
+  @include mat.all-component-colors($purple-green-theme);
   --app-bg-color: #1e1e1e;
   --app-sidebar-bg-color: #252526;
   --app-text-color: #e0e0e0;
@@ -63,7 +67,7 @@ $deeppurple-amber-theme: mat.m2-define-light-theme((color: (primary: $deeppurple
 }
 
 .theme-indigo-pink {
-  @include mat.all-component-themes($indigo-pink-theme);
+  @include mat.all-component-colors($indigo-pink-theme);
   --app-bg-color: #fafafa;
   --app-sidebar-bg-color: #f5f5f5;
   --app-text-color: rgba(0, 0, 0, 0.87);
@@ -74,7 +78,7 @@ $deeppurple-amber-theme: mat.m2-define-light-theme((color: (primary: $deeppurple
 }
 
 .theme-deeppurple-amber {
-  @include mat.all-component-themes($deeppurple-amber-theme);
+  @include mat.all-component-colors($deeppurple-amber-theme);
   --app-bg-color: #fafafa;
   --app-sidebar-bg-color: #f5f5f5;
   --app-text-color: rgba(0, 0, 0, 0.87);
