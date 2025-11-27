@@ -51,3 +51,5 @@ config
 
 src-electron/logs
 build.log
+
+.vscode/
