@@ -90,6 +90,13 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
   SIDE_NAV_TYPE_OPTIONS = SideNavType;
 
+  THEME_OPTIONS = [
+    { value: 'pink-bluegrey', label: 'Pink & Blue-Grey (Dark)' },
+    { value: 'purple-green', label: 'Purple & Green (Dark)' },
+    { value: 'indigo-pink', label: 'Indigo & Pink (Light)' },
+    { value: 'deeppurple-amber', label: 'Deep Purple & Amber (Light)' },
+  ];
+
   settingsCopy!: MySettings;
   private subscriptions: Subscription[] = [];
   currentTabIndex: number = 0;
@@ -141,6 +148,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
         ['profileSideNavType', { name: 'profileSideNavType', formControlOption: ['', Validators.required] }],
         ['secretLabelLength', { name: 'uiSecretLabelLength', formControlOption: ['', Validators.required] }],
         ['secretLabelLengthInDropDown', { name: 'uiSecretLabelLengthInDropDown', formControlOption: ['', Validators.required] }],
+        ['theme', { name: 'theme', formControlOption: ['', Validators.required] }],
       ])
     );
 

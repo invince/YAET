@@ -1,9 +1,10 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import {
   Component,
   Inject,
   OnDestroy,
-  OnInit
+  OnInit,
+  Renderer2
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -104,7 +105,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
     private notification: NotificationService,
     public dialog: MatDialog,
-    @Inject(TranslateService) private translate: TranslateService
+    @Inject(TranslateService) private translate: TranslateService,
+    @Inject(DOCUMENT) private document: Document,
+    private renderer: Renderer2
   ) { }
 
   ngOnInit() {
@@ -143,6 +146,9 @@ export class AppComponent implements OnInit, OnDestroy {
           this.translate.setDefaultLang('en');
           const savedLang = this.settingStorage.settings.general?.language || 'en';
           this.translate.use(savedLang);
+
+          // Apply theme
+          this.applyTheme(this.settingStorage.settings.ui?.theme);
         }
       )
     );
@@ -235,5 +241,26 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.draggedTab = null;
     this.dragOverPane = null;
+    this.draggedTab = null;
+    this.dragOverPane = null;
+  }
+
+  applyTheme(theme: string | undefined) {
+    if (!theme) {
+      theme = 'pink-bluegrey';
+    }
+    // remove old theme classes
+    const classes = this.document.body.classList;
+    const toRemove: string[] = [];
+    for (let i = 0; i < classes.length; i++) {
+      const cls = classes.item(i);
+      if (cls && cls.startsWith('theme-')) {
+        toRemove.push(cls);
+      }
+    }
+    toRemove.forEach(c => this.renderer.removeClass(this.document.body, c));
+
+    // add new theme class
+    this.renderer.addClass(this.document.body, 'theme-' + theme);
   }
 }

@@ -18,20 +18,20 @@
   display: flex;
   width: 900px;
   height: 650px;
-  background-color: #1e1e1e;
+  background-color: var(--app-bg-color);
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
   overflow: hidden;
-  color: #e0e0e0;
+  color: var(--app-text-color);
   font-family: 'Segoe UI', sans-serif;
-  border: 1px solid #333;
+  border: 1px solid var(--app-border-color);
 }
 
 /* Sidebar Navigation */
 .settings-sidebar {
   width: 220px;
-  background-color: #252526;
-  border-right: 1px solid #333;
+  background-color: var(--app-sidebar-bg-color);
+  border-right: 1px solid var(--app-border-color);
   display: flex;
   flex-direction: column;
   padding-top: 24px;
@@ -41,33 +41,36 @@
   font-size: 18px;
   font-weight: 600;
   padding: 0 24px 24px 24px;
-  color: #fff;
+  color: var(--app-header-text-color);
   opacity: 0.9;
 }
 
 .sidebar-item {
   padding: 12px 24px;
   cursor: pointer;
-  color: #9ca3af;
+  color: var(--app-text-color);
   transition: all 0.2s ease;
   font-size: 14px;
   display: flex;
   align-items: center;
   gap: 12px;
   border-left: 3px solid transparent;
+  opacity: 0.7;
 }
 
 .sidebar-item:hover {
-  background-color: #2a2d2e;
-  color: #e0e0e0;
+  background-color: var(--app-hover-bg-color);
+  color: var(--app-text-color);
+  opacity: 1;
 }
 
 .sidebar-item.active {
-  background-color: #37373d;
-  color: #fff;
+  background-color: var(--app-active-bg-color);
+  color: var(--app-text-color);
   border-left-color: #3f51b5;
   /* Primary accent color */
   font-weight: 500;
+  opacity: 1;
 }
 
 .sidebar-item mat-icon {
@@ -81,7 +84,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #1e1e1e;
+  background-color: var(--app-bg-color);
 }
 
 .settings-content {
@@ -94,8 +97,8 @@
   font-size: 24px;
   font-weight: 500;
   margin-bottom: 32px;
-  color: #fff;
-  border-bottom: 1px solid #333;
+  color: var(--app-header-text-color);
+  border-bottom: 1px solid var(--app-border-color);
   padding-bottom: 16px;
 }
 
@@ -122,11 +125,11 @@
 /* Footer Actions */
 .settings-actions {
   padding: 16px 32px;
-  border-top: 1px solid #333;
+  border-top: 1px solid var(--app-border-color);
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  background-color: #252526;
+  background-color: var(--app-sidebar-bg-color);
 }
 
 /* Custom Scrollbar */

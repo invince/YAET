@@ -89,6 +89,15 @@
                     }
                   </mat-select>
                 </mat-form-field>
+
+                <mat-form-field class="field" appearance="outline">
+                  <mat-label>Theme</mat-label>
+                  <mat-select formControlName="theme">
+                    @for (theme of THEME_OPTIONS; track theme.value) {
+                    <mat-option [value]="theme.value">{{ theme.label }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
               </div>
 
               <div class="form-section">
@@ -195,3 +204,4 @@
       </div>
     </div>
   </div>
+</div>

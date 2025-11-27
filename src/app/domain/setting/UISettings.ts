@@ -6,6 +6,7 @@ export class UISettings {
   public secretLabelLength: number = 10;
   public secretLabelLengthInDropDown: number = 8;
 
+  public theme: string = 'pink-bluegrey';
 }
 
 
