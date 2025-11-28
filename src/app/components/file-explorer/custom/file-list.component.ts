@@ -20,7 +20,6 @@ import { RenameDialogComponent } from './rename-dialog.component';
 
 @Component({
     selector: 'app-file-list',
-    standalone: true,
     imports: [
         CommonModule,
         MatTableModule,

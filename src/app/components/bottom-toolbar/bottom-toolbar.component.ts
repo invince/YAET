@@ -7,7 +7,6 @@ import { TabService } from '../../services/tab.service';
 
 @Component({
     selector: 'app-bottom-toolbar',
-    standalone: true,
     imports: [CommonModule, MatToolbarModule, MatButtonModule, MatIconModule],
     templateUrl: './bottom-toolbar.component.html',
     styleUrls: ['./bottom-toolbar.component.css']

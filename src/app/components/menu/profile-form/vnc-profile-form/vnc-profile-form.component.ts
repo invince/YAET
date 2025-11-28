@@ -31,35 +31,32 @@ import {SecretQuickFormComponent} from '../../../dialog/secret-quick-form/secret
 import {MatDialog} from '@angular/material/dialog';
 
 @Component({
-  selector: 'app-vnc-profile-form',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    MatSelectModule,
-    MatRadioModule,
-    MatFormFieldModule,
-
-    MatInput,
-    MatIcon,
-    MatIconButton,
-
-  ],
-  templateUrl: './vnc-profile-form.component.html',
-  styleUrl: './vnc-profile-form.component.css',
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => VncProfileFormComponent),
-      multi: true,
-    },
-    {
-      provide: NG_VALIDATORS,
-      useExisting: forwardRef(() => VncProfileFormComponent),
-      multi: true,
-    },
-  ],
+    selector: 'app-vnc-profile-form',
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatSelectModule,
+        MatRadioModule,
+        MatFormFieldModule,
+        MatInput,
+        MatIcon,
+        MatIconButton,
+    ],
+    templateUrl: './vnc-profile-form.component.html',
+    styleUrl: './vnc-profile-form.component.css',
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => VncProfileFormComponent),
+            multi: true,
+        },
+        {
+            provide: NG_VALIDATORS,
+            useExisting: forwardRef(() => VncProfileFormComponent),
+            multi: true,
+        },
+    ]
 })
 export class VncProfileFormComponent extends ChildFormAsFormControl(MenuComponent)  {
   AUTH_OPTIONS = AuthType;

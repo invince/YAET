@@ -27,27 +27,23 @@ import {Tag} from '../../../domain/Tag';
 import {NotificationService} from '../../../services/notification.service';
 
 @Component({
-  selector: 'app-profiles-menu',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-
-    MatFormFieldModule,
-    MatSidenavModule,
-    MatButtonModule,
-    MatTreeModule,
-
-    MatInput,
-    MatIcon,
-
-    ProfileFormComponent,
-    FilterKeywordPipe,
-  ],
-  templateUrl: './profiles-menu.component.html',
-  styleUrl: './profiles-menu.component.scss',
-  providers: [FilterKeywordPipe]
+    selector: 'app-profiles-menu',
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatFormFieldModule,
+        MatSidenavModule,
+        MatButtonModule,
+        MatTreeModule,
+        MatInput,
+        MatIcon,
+        ProfileFormComponent,
+        FilterKeywordPipe,
+    ],
+    templateUrl: './profiles-menu.component.html',
+    styleUrl: './profiles-menu.component.scss',
+    providers: [FilterKeywordPipe]
 })
 export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
 

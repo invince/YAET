@@ -42,33 +42,31 @@ import { TagsFormComponent } from './tags-form/tags-form.component';
 
 
 @Component({
-  selector: 'app-setting-menu',
-  standalone: true,
-  imports: [
-    TagsFormComponent,
-    GroupsFormComponent,
-
-    FormsModule,
-    ReactiveFormsModule,
-    CommonModule,
-    MatIcon,
-    MatIconButton,
-    MatTabGroup,
-    MatTab,
-    MatFormField,
-    MatLabel,
-    MatSelect,
-    MatOption,
-    KeyValuePipe,
-    MatInput,
-    MatButton,
-    MatSuffix,
-    MatCheckbox,
-    MatExpansionModule,
-    TranslateModule,
-  ],
-  templateUrl: './setting-menu.component.html',
-  styleUrl: './setting-menu.component.css'
+    selector: 'app-setting-menu',
+    imports: [
+        TagsFormComponent,
+        GroupsFormComponent,
+        FormsModule,
+        ReactiveFormsModule,
+        CommonModule,
+        MatIcon,
+        MatIconButton,
+        MatTabGroup,
+        MatTab,
+        MatFormField,
+        MatLabel,
+        MatSelect,
+        MatOption,
+        KeyValuePipe,
+        MatInput,
+        MatButton,
+        MatSuffix,
+        MatCheckbox,
+        MatExpansionModule,
+        TranslateModule,
+    ],
+    templateUrl: './setting-menu.component.html',
+    styleUrl: './setting-menu.component.css'
 })
 export class SettingMenuComponent extends MenuComponent implements OnInit, OnDestroy {
 

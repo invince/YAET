@@ -25,26 +25,22 @@ import {MatDialog} from '@angular/material/dialog';
 import {SecretQuickFormComponent} from '../../dialog/secret-quick-form/secret-quick-form.component';
 
 @Component({
-  selector: 'app-cloud-menu',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-
-    MatFormFieldModule,
-    MatRadioModule,
-    MatSelectModule,
-    MatListModule,
-
-    MatButtonModule,
-    MatIcon,
-    MatInput,
-    MatCheckbox,
-
-  ],
-  templateUrl: './cloud.component.html',
-  styleUrl: './cloud.component.css'
+    selector: 'app-cloud-menu',
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatFormFieldModule,
+        MatRadioModule,
+        MatSelectModule,
+        MatListModule,
+        MatButtonModule,
+        MatIcon,
+        MatInput,
+        MatCheckbox,
+    ],
+    templateUrl: './cloud.component.html',
+    styleUrl: './cloud.component.css'
 })
 export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
   AUTH_OPTIONS = AuthType;

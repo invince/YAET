@@ -15,11 +15,10 @@ import { TabService } from '../../../services/tab.service';
 
 
 @Component({
-  selector: 'app-vnc',
-  standalone: true,
-  imports: [],
-  templateUrl: './vnc.component.html',
-  styleUrl: './vnc.component.css'
+    selector: 'app-vnc',
+    imports: [],
+    templateUrl: './vnc.component.html',
+    styleUrl: './vnc.component.css'
 })
 export class VncComponent implements AfterViewInit, OnChanges, OnDestroy {
 

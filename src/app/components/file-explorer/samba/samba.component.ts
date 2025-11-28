@@ -7,13 +7,12 @@ import { AbstractFileManager } from '../abstract-file-manager';
 import { FileListComponent } from '../custom/file-list.component';
 
 @Component({
-  selector: 'app-samba',
-  standalone: true,
-  imports: [
-    FileListComponent
-  ],
-  templateUrl: './samba.component.html',
-  styleUrl: './samba.component.css'
+    selector: 'app-samba',
+    imports: [
+        FileListComponent
+    ],
+    templateUrl: './samba.component.html',
+    styleUrl: './samba.component.css'
 })
 export class SambaComponent extends AbstractFileManager implements OnInit, OnDestroy {
 

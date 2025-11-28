@@ -41,34 +41,30 @@ import { SettingService } from './services/setting.service';
 import { TabService } from './services/tab.service';
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [
-    TerminalComponent,
-    MatSidenavModule,
-    MatTabsModule,
-    MatButtonModule,
-    NgxSpinnerModule,
-
-    MatIcon,
-
-    CommonModule,
-
-    SettingMenuComponent,
-    RemoteDesktopComponent,
-    FileExplorerComponent,
-    SecretsMenuComponent,
-    ProfilesMenuComponent,
-    QuickconnectMenuComponent,
-    CloudComponent,
-    SidebarComponent,
-    BottomToolbarComponent,
-  ],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css',
-  animations: [
-    menuAnimation,
-  ],
+    selector: 'app-root',
+    imports: [
+        TerminalComponent,
+        MatSidenavModule,
+        MatTabsModule,
+        MatButtonModule,
+        NgxSpinnerModule,
+        MatIcon,
+        CommonModule,
+        SettingMenuComponent,
+        RemoteDesktopComponent,
+        FileExplorerComponent,
+        SecretsMenuComponent,
+        ProfilesMenuComponent,
+        QuickconnectMenuComponent,
+        CloudComponent,
+        SidebarComponent,
+        BottomToolbarComponent,
+    ],
+    templateUrl: './app.component.html',
+    styleUrl: './app.component.css',
+    animations: [
+        menuAnimation,
+    ]
 })
 export class AppComponent implements OnInit, OnDestroy {
 

@@ -18,7 +18,6 @@ import { TabService } from '../../services/tab.service';
 
 @Component({
     selector: 'app-sidebar',
-    standalone: true,
     imports: [
         CommonModule,
         MatButtonModule,

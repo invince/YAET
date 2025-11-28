@@ -24,27 +24,23 @@ import {NotificationService} from '../../../services/notification.service';
 import {ProfileService} from '../../../services/profile.service';
 
 @Component({
-  selector: 'app-secrets-menu',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-
-    MatFormFieldModule,
-    MatButtonModule,
-    MatSidenavModule,
-    MatSelectModule,
-
-    MatInput,
-    MatIcon,
-    SecretFormComponent,
-
-    FilterKeywordPipe,
-  ],
-  templateUrl: './secrets-menu.component.html',
-  styleUrl: './secrets-menu.component.scss',
-  providers: [FilterKeywordPipe]
+    selector: 'app-secrets-menu',
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatFormFieldModule,
+        MatButtonModule,
+        MatSidenavModule,
+        MatSelectModule,
+        MatInput,
+        MatIcon,
+        SecretFormComponent,
+        FilterKeywordPipe,
+    ],
+    templateUrl: './secrets-menu.component.html',
+    styleUrl: './secrets-menu.component.scss',
+    providers: [FilterKeywordPipe]
 })
 export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
 

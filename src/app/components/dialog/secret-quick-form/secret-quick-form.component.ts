@@ -21,24 +21,23 @@ import {
 import {SecretFormMixin} from '../../menu/secrets-menu/secret-form/secretFormMixin';
 
 @Component({
-  selector: 'app-secret-quick-form',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    MatIconModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    KeyValuePipe,
-    MatInput,
-    MatDialogContent,
-    MatDialogTitle,
-    MatDialogActions,
-  ],
-  templateUrl: './secret-quick-form.component.html',
-  styleUrl: './secret-quick-form.component.scss'
+    selector: 'app-secret-quick-form',
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatIconModule,
+        MatButtonModule,
+        MatFormFieldModule,
+        MatSelectModule,
+        KeyValuePipe,
+        MatInput,
+        MatDialogContent,
+        MatDialogTitle,
+        MatDialogActions,
+    ],
+    templateUrl: './secret-quick-form.component.html',
+    styleUrl: './secret-quick-form.component.scss'
 })
 export class SecretQuickFormComponent extends  MenuComponent implements OnInit, OnDestroy {
 

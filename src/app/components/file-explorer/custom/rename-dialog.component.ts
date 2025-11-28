@@ -13,7 +13,6 @@ export interface RenameDialogData {
 
 @Component({
     selector: 'app-rename-dialog',
-    standalone: true,
     imports: [
         CommonModule,
         FormsModule,
