@@ -70,6 +70,18 @@
   }
 }
 
+// Force width for the sidenav container in Angular Material 21
+::ng-deep .menu-sidenav {
+  width: 200px !important;
+  min-width: 200px !important;
+  max-width: 200px !important;
+
+  .mat-drawer-inner-container {
+    width: 200px !important;
+    overflow: hidden !important;
+  }
+}
+
 // Group Tree
 .group-tree {
   .child-tree-invisible {
@@ -81,7 +93,7 @@
       padding-left: 28px;
       padding-bottom: 10px;
 
-      > .mat-nested-tree-node {
+      >.mat-nested-tree-node {
         display: flex;
         align-items: center; // Aligns items vertically
         padding-left: 0;
@@ -124,9 +136,12 @@
 }
 
 .tag-suffix {
-  display: flex; /* or inline-flex if it's within a text flow */
-  gap: 1px; /* Adjust spacing between dots */
-  align-items: center; /* Align dots vertically if needed */
+  display: flex;
+  /* or inline-flex if it's within a text flow */
+  gap: 1px;
+  /* Adjust spacing between dots */
+  align-items: center;
+  /* Align dots vertically if needed */
 }
 
 
