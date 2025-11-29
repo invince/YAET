@@ -58,6 +58,19 @@ export class FileListComponent implements OnInit {
     draggedItem: FileItem | null = null;
     dragOverFolder: FileItem | null = null;
 
+    // Column resizing
+    isResizing = false;
+    resizingColumn: string | null = null;
+    startX = 0;
+    startWidth = 0;
+    columnWidths: { [key: string]: number } = {
+        icon: 60,
+        name: 400,
+        size: 120,
+        dateModified: 180,
+        actions: 60
+    };
+
     @ViewChild(MatSort) sort!: MatSort;
 
     constructor(
@@ -623,6 +636,42 @@ export class FileListComponent implements OnInit {
                 }
             });
         });
+    }
+
+    // Column resizing methods
+    onResizeStart(event: MouseEvent, column: string): void {
+        event.preventDefault();
+        event.stopPropagation();
+
+        this.isResizing = true;
+        this.resizingColumn = column;
+        this.startX = event.pageX;
+        this.startWidth = this.columnWidths[column];
+
+        // Add global mouse event listeners
+        document.addEventListener('mousemove', this.onResizeMove);
+        document.addEventListener('mouseup', this.onResizeEnd);
+    }
+
+    onResizeMove = (event: MouseEvent): void => {
+        if (!this.isResizing || !this.resizingColumn) return;
+
+        const diff = event.pageX - this.startX;
+        const newWidth = Math.max(50, this.startWidth + diff); // Minimum 50px
+        this.columnWidths[this.resizingColumn] = newWidth;
+    }
+
+    onResizeEnd = (): void => {
+        this.isResizing = false;
+        this.resizingColumn = null;
+
+        // Remove global mouse event listeners
+        document.removeEventListener('mousemove', this.onResizeMove);
+        document.removeEventListener('mouseup', this.onResizeEnd);
+    }
+
+    getColumnWidth(column: string): string {
+        return `${this.columnWidths[column]}px`;
     }
 }
 
