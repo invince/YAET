@@ -1,11 +1,11 @@
-/* Angular Material 21 sidenav sizing */
-mat-sidenav {
+/* Angular Material 21 sidenav sizing - Scoped to main app sidebar */
+.main-app-sidenav {
   width: 50px !important;
   min-width: 50px !important;
   max-width: 50px !important;
 }
 
-.mat-drawer-inner-container {
+.main-app-sidenav .mat-drawer-inner-container {
   width: 50px !important;
   overflow: visible !important;
 }
