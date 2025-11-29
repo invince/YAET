@@ -233,8 +233,12 @@ function initFtpHandler(log, ftpMap, expressApp) {
       const result = await withFtpClient(configId, async (client) => {
         const remotePath = await avoidDuplicateName(client, path.join(directoryPath, filename));// the req.file.originalname may have encoding pb
         const bufferStream = new Readable();
-        // Multer 2.0 changed req.file.buffer to req.file.data
-        const fileData = req.file.data || req.file.buffer;
+        // Multer 2.0 changed req.file.buffer to req.file.data (Uint8Array)
+        // Convert to Buffer if needed for FTP client compatibility
+        let fileData = req.file.data || req.file.buffer;
+        if (fileData && !(fileData instanceof Buffer)) {
+          fileData = Buffer.from(fileData);
+        }
         bufferStream.push(fileData);
         bufferStream.push(null);
         await client.uploadFrom(bufferStream, remotePath);
