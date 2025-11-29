@@ -12,19 +12,18 @@ import {CommonModule} from '@angular/common';
 import {NotificationService} from '../../../../services/notification.service';
 
 @Component({
-  selector: 'app-tags-form',
-  standalone: true,
-  imports: [
-    FormsModule,
-    ReactiveFormsModule,
-    CommonModule,
-    MatFormFieldModule,
-    MatChipsModule,
-    MatIconModule
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './tags-form.component.html',
-  styleUrl: './tags-form.component.scss'
+    selector: 'app-tags-form',
+    imports: [
+        FormsModule,
+        ReactiveFormsModule,
+        CommonModule,
+        MatFormFieldModule,
+        MatChipsModule,
+        MatIconModule
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    templateUrl: './tags-form.component.html',
+    styleUrl: './tags-form.component.scss'
 })
 export class TagsFormComponent implements OnInit{
 

@@ -16,22 +16,21 @@ import {NestedTreeControl} from '@angular/cdk/tree';
 import {NotificationService} from '../../../../services/notification.service';
 
 @Component({
-  selector: 'app-groups-form',
-  standalone: true,
-  imports: [
-    FormsModule,
-    ReactiveFormsModule,
-    CommonModule,
-    MatTreeModule,
-    MatButtonModule,
-    MatIconModule,
-    MatFormFieldModule,
-    MatChipsModule,
-    MatInput
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './groups-form.component.html',
-  styleUrl: './groups-form.component.scss'
+    selector: 'app-groups-form',
+    imports: [
+        FormsModule,
+        ReactiveFormsModule,
+        CommonModule,
+        MatTreeModule,
+        MatButtonModule,
+        MatIconModule,
+        MatFormFieldModule,
+        MatChipsModule,
+        MatInput
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    templateUrl: './groups-form.component.html',
+    styleUrl: './groups-form.component.scss'
 })
 export class GroupsFormComponent implements OnInit{
 

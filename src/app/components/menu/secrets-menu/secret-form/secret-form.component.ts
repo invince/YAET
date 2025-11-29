@@ -14,21 +14,20 @@ import {SecretStorageService} from '../../../../services/secret-storage.service'
 import {SecretFormMixin} from './secretFormMixin';
 
 @Component({
-  selector: 'app-secret-form',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    MatIconModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    KeyValuePipe,
-    MatInput,
-  ],
-  templateUrl: './secret-form.component.html',
-  styleUrl: './secret-form.component.scss'
+    selector: 'app-secret-form',
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatIconModule,
+        MatButtonModule,
+        MatFormFieldModule,
+        MatSelectModule,
+        KeyValuePipe,
+        MatInput,
+    ],
+    templateUrl: './secret-form.component.html',
+    styleUrl: './secret-form.component.scss'
 })
 export class SecretFormComponent extends IsAChildForm(MenuComponent) implements OnInit {
   private _secret!: Secret;

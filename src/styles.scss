@@ -1,22 +1,106 @@
+@use '@angular/material' as mat;
+
 /* You can add global styles to this file, and also import other style files */
-@import "modal";
-@import "snackbar";
-@import '../node_modules/@syncfusion/ej2-base/styles/material-dark.css';
-@import '../node_modules/@syncfusion/ej2-inputs/styles/material-dark.css';
-@import '../node_modules/@syncfusion/ej2-popups/styles/material-dark.css';
-@import '../node_modules/@syncfusion/ej2-buttons/styles/material-dark.css';
-@import '../node_modules/@syncfusion/ej2-splitbuttons/styles/material-dark.css';
-@import '../node_modules/@syncfusion/ej2-navigations/styles/material-dark.css';
-@import '../node_modules/@syncfusion/ej2-layouts/styles/material-dark.css';
-@import '../node_modules/@syncfusion/ej2-grids/styles/material-dark.css';
-@import '../node_modules/@syncfusion/ej2-angular-filemanager/styles/material-dark.css';
+@use "modal";
+@use "snackbar";
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+@include mat.core();
+
+// Define the palettes for your custom themes
+$pink-bluegrey-primary: mat.m2-define-palette(mat.$m2-pink-palette);
+$pink-bluegrey-accent: mat.m2-define-palette(mat.$m2-blue-grey-palette, A200, A100, A400);
+$pink-bluegrey-warn: mat.m2-define-palette(mat.$m2-red-palette);
+$pink-bluegrey-theme: mat.m2-define-dark-theme((color: (primary: $pink-bluegrey-primary,
+        accent: $pink-bluegrey-accent,
+        warn: $pink-bluegrey-warn,
+      )));
+
+$purple-green-primary: mat.m2-define-palette(mat.$m2-purple-palette);
+$purple-green-accent: mat.m2-define-palette(mat.$m2-green-palette, A200, A100, A400);
+$purple-green-warn: mat.m2-define-palette(mat.$m2-red-palette);
+$purple-green-theme: mat.m2-define-dark-theme((color: (primary: $purple-green-primary,
+        accent: $purple-green-accent,
+        warn: $purple-green-warn,
+      )));
+
+$indigo-pink-primary: mat.m2-define-palette(mat.$m2-indigo-palette);
+$indigo-pink-accent: mat.m2-define-palette(mat.$m2-pink-palette, A200, A100, A400);
+$indigo-pink-warn: mat.m2-define-palette(mat.$m2-red-palette);
+$indigo-pink-theme: mat.m2-define-light-theme((color: (primary: $indigo-pink-primary,
+        accent: $indigo-pink-accent,
+        warn: $indigo-pink-warn,
+      )));
+
+$deeppurple-amber-primary: mat.m2-define-palette(mat.$m2-deep-purple-palette);
+$deeppurple-amber-accent: mat.m2-define-palette(mat.$m2-amber-palette, A200, A100, A400);
+$deeppurple-amber-warn: mat.m2-define-palette(mat.$m2-red-palette);
+$deeppurple-amber-theme: mat.m2-define-light-theme((color: (primary: $deeppurple-amber-primary,
+        accent: $deeppurple-amber-accent,
+        warn: $deeppurple-amber-warn,
+      )));
+
+// Apply the base styles (typography and density) globally once
+@include mat.all-component-typographies($pink-bluegrey-theme);
+@include mat.all-component-densities($pink-bluegrey-theme);
+
+// Apply the color themes to specific classes
+.theme-pink-bluegrey {
+  @include mat.all-component-colors($pink-bluegrey-theme);
+  --app-bg-color: #1e1e1e;
+  --app-sidebar-bg-color: #252526;
+  --app-text-color: #e0e0e0;
+  --app-header-text-color: #fff;
+  --app-border-color: #333;
+  --app-hover-bg-color: #2a2d2e;
+  --app-active-bg-color: #37373d;
+}
+
+.theme-purple-green {
+  @include mat.all-component-colors($purple-green-theme);
+  --app-bg-color: #1e1e1e;
+  --app-sidebar-bg-color: #252526;
+  --app-text-color: #e0e0e0;
+  --app-header-text-color: #fff;
+  --app-border-color: #333;
+  --app-hover-bg-color: #2a2d2e;
+  --app-active-bg-color: #37373d;
+}
+
+.theme-indigo-pink {
+  @include mat.all-component-colors($indigo-pink-theme);
+  --app-bg-color: #fafafa;
+  --app-sidebar-bg-color: #f5f5f5;
+  --app-text-color: rgba(0, 0, 0, 0.87);
+  --app-header-text-color: rgba(0, 0, 0, 0.87);
+  --app-border-color: #e0e0e0;
+  --app-hover-bg-color: #e0e0e0;
+  --app-active-bg-color: #d5d5d5;
+}
+
+.theme-deeppurple-amber {
+  @include mat.all-component-colors($deeppurple-amber-theme);
+  --app-bg-color: #fafafa;
+  --app-sidebar-bg-color: #f5f5f5;
+  --app-text-color: rgba(0, 0, 0, 0.87);
+  --app-header-text-color: rgba(0, 0, 0, 0.87);
+  --app-border-color: #e0e0e0;
+  --app-hover-bg-color: #e0e0e0;
+  --app-active-bg-color: #d5d5d5;
+}
 
 
-.mat-mdc-tab-body-wrapper
-{
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+
+.mat-mdc-tab-body-wrapper {
   flex-grow: 1;
 }
 
@@ -24,6 +108,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   animation: fade-out 0.5s;
   opacity: 0;
 }
+
 .mat-mdc-tab-body.mat-mdc-tab-body-active {
   animation: fade-in 0.5s;
   opacity: 1;
@@ -33,9 +118,11 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   0% {
     opacity: 0;
   }
+
   50% {
     opacity: 0;
   }
+
   100% {
     opacity: 1;
   }
@@ -45,9 +132,11 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   0% {
     opacity: 1;
   }
+
   50% {
     opacity: 0;
   }
+
   100% {
     opacity: 0;
   }
@@ -55,7 +144,9 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 /* In your component's CSS/SCSS file */
 .selected {
-  background-color: #e0f7fa !important; /* Example highlight color */
-  color: #00796b !important;; /* Example text color */
-  font-weight: bold !important;;
+  background-color: #e0f7fa !important;
+  /* Example highlight color */
+  color: #00796b !important;
+  /* Example text color */
+  font-weight: bold !important;
 }

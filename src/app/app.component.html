@@ -1,101 +1,130 @@
-<mat-sidenav-container fullscreen >
-  <mat-sidenav #sidenav mode="side" opened>
-    <!-- Sidebar buttons -->
-    <div class="sidebar-buttons">
-      <br>
-      <div class="sidebar-buttons-top">
-        <button mat-mini-fab color="primary" (click)="addLocalTerminal()" aria-label="Add Local Terminal">
-          <mat-icon>terminal</mat-icon>
-        </button>
-        <button mat-mini-fab color="primary" (click)="addMenu()" aria-label="Add Profile">
-          <mat-icon>add</mat-icon>
-        </button>
-        <button mat-mini-fab color="primary" (click)="profileMenu()" aria-label="Favorite">
-          <mat-icon>favorite</mat-icon>
-        </button>
-        <button mat-mini-fab color="primary" (click)="secureMenu()" aria-label="Save">
-          <mat-icon>password</mat-icon>
-        </button>
-      </div>
-      <div class="sidebar-buttons-bottom">
-        <button mat-mini-fab color="primary" (click)="cloudMenu()" aria-label="Cloud">
-          <mat-icon>cloud</mat-icon>
-        </button>
+<mat-sidenav-container fullscreen>
+    <mat-sidenav #sidenav mode="side" opened class="main-app-sidenav">
+        <app-sidebar></app-sidebar>
+    </mat-sidenav>
 
-        <button mat-mini-fab color="primary" (click)="settingMenu()" aria-label="Settings">
-          <mat-icon>settings</mat-icon>
-        </button>
-      </div>
-    </div>
+    <mat-sidenav-content style="display: flex; flex-direction: column; overflow: hidden;">
+        <div class="split-container" [style.display]="tabService.splitMode ? 'flex' : 'block'"
+            [style.flex-direction]="tabService.splitDirection === 'vertical' ? 'row' : 'column'"
+            style="flex: 1; overflow: hidden;">
 
-  </mat-sidenav>
+            <!-- Pane 0 -->
+            <div class="split-pane"
+                [style.width]="tabService.splitMode && tabService.splitDirection === 'vertical' ? tabService.splitRatio + '%' : '100%'"
+                [style.height]="tabService.splitMode && tabService.splitDirection === 'horizontal' ? tabService.splitRatio + '%' : '100%'"
+                [style.border-right]="tabService.splitMode && tabService.splitDirection === 'vertical' ? '1px solid #333' : 'none'"
+                [style.border-bottom]="tabService.splitMode && tabService.splitDirection === 'horizontal' ? '1px solid #333' : 'none'"
+                (click)="setActivePane(0)" [class.active-pane]="tabService.activePane === 0"
+                [class.drag-over]="dragOverPane === 0" (dragover)="onPaneDragOver($event, 0)"
+                (dragleave)="onPaneDragLeave(0)" (drop)="onPaneDrop($event, 0)"
+                style="display: flex; flex-direction: column;">
 
-  <mat-sidenav-content>
-    <mat-tab-group id="tab-group"
-                   [@.disabled]="true"
-                   [(selectedIndex)]="tabService.currentTabIndex"
-                   mat-stretch-tabs="false"
-    >
-      @for (tab of tabService.tabs ; let i = $index; track tab.id) {
-        <mat-tab>
-          <ng-template mat-tab-label>
-            <div class="tab-label" (mousedown)="onTabLabelMouseDown($event, i)">
-              @if (!tab.connected) {
-              <button mat-icon-button (click)="reconnect(i)" aria-label="Reconnect tab">
-                <mat-icon>refresh</mat-icon>
-              </button>
-              }
-              <span>{{ tab.name }} </span>
-              <button mat-icon-button (click)="removeTab(i)" aria-label="Remove tab">
-                <mat-icon>close</mat-icon>
-              </button>
+                <mat-tab-group id="tab-group-0" [@.disabled]="true" [(selectedIndex)]="tabService.paneTabIndices[0]"
+                    mat-stretch-tabs="false" style="flex: 1; overflow: hidden;">
+                    @for (tab of tabService.getTabsForPane(0) ; let i = $index; track tab.id) {
+                    <mat-tab>
+                        <ng-template mat-tab-label>
+                            <ng-container
+                                *ngTemplateOutlet="tabLabel; context: {tab: tab, i: i, paneId: 0}"></ng-container>
+                        </ng-template>
+                        <div style="height: 100%">
+                            <ng-container *ngTemplateOutlet="tabContent; context: {tab: tab}"></ng-container>
+                        </div>
+                    </mat-tab>
+                    }
+                </mat-tab-group>
             </div>
-          </ng-template>
-          <div>
+
+            <!-- Pane 1 -->
+            <div class="split-pane" *ngIf="tabService.splitMode"
+                [style.width]="tabService.splitDirection === 'vertical' ? (100 - tabService.splitRatio) + '%' : '100%'"
+                [style.height]="tabService.splitDirection === 'horizontal' ? (100 - tabService.splitRatio) + '%' : '100%'"
+                style="display: flex; flex-direction: column;" (click)="setActivePane(1)"
+                [class.active-pane]="tabService.activePane === 1" [class.drag-over]="dragOverPane === 1"
+                (dragover)="onPaneDragOver($event, 1)" (dragleave)="onPaneDragLeave(1)" (drop)="onPaneDrop($event, 1)">
+
+                <mat-tab-group id="tab-group-1" [@.disabled]="true" [(selectedIndex)]="tabService.paneTabIndices[1]"
+                    mat-stretch-tabs="false" style="flex: 1; overflow: hidden;">
+                    @for (tab of tabService.getTabsForPane(1) ; let i = $index; track tab.id) {
+                    <mat-tab>
+                        <ng-template mat-tab-label>
+                            <ng-container
+                                *ngTemplateOutlet="tabLabel; context: {tab: tab, i: i, paneId: 1}"></ng-container>
+                        </ng-template>
+                        <div style="height: 100%">
+                            <ng-container *ngTemplateOutlet="tabContent; context: {tab: tab}"></ng-container>
+                        </div>
+                    </mat-tab>
+                    }
+                </mat-tab-group>
+            </div>
+
+        </div>
+
+        <!-- Templates -->
+        <ng-template #tabLabel let-tab="tab" let-i="i" let-paneId="paneId">
+            <div class="tab-label">
+                <span class="tab-drag-handle" draggable="true" (dragstart)="onTabDragStart($event, tab, i, paneId)"
+                    (dragend)="onTabDragEnd()">
+                    @if (!tab.connected) {
+                    <button mat-icon-button (click)="reconnect(tab)" aria-label="Reconnect tab">
+                        <mat-icon>refresh</mat-icon>
+                    </button>
+                    }
+                    {{ tab.name }}
+                </span>
+                <button mat-icon-button (click)="removeTab(i, paneId)"
+                    (mousedown)="onTabLabelMouseDown($event, i, paneId)" aria-label="Remove tab">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </div>
+        </ng-template>
+
+        <ng-template #tabContent let-tab="tab">
             <ng-container>
-              @switch(tab.category) {
+                @switch(tab.category) {
                 @case('TERMINAL') {
-                  <app-terminal [session]="tab.session"></app-terminal>
+                <app-terminal [session]="tab.session"></app-terminal>
                 }
                 @case('REMOTE_DESKTOP') {
-                  <app-remote-desktop [session]="tab.session"></app-remote-desktop>
+                <app-remote-desktop [session]="tab.session"></app-remote-desktop>
                 }
                 @case('FILE_EXPLORER') {
-                  <app-file-explorer [session]="tab.session"></app-file-explorer>
+                <app-file-explorer [session]="tab.session"></app-file-explorer>
                 }
-              }
+                }
             </ng-container>
-          </div>
-        </mat-tab>
-      }
-    </mat-tab-group>
+        </ng-template>
 
-    @if (modalControl.isMenuModalOpen) {
-    <div>
-      @switch(modalControl.currentOpenedMenu) {
-        @case(MENU_ADD) {
-          <app-quickconnect-menu [@slideInOut]="'in'"
-            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-quickconnect-menu>
+        @if (modalControl.isMenuModalOpen) {
+        <div>
+            @switch(modalControl.currentOpenedMenu) {
+            @case(MENU_ADD) {
+            <app-quickconnect-menu [@slideInOut]="'in'"
+                (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-quickconnect-menu>
+            }
+            @case(MENU_PROFILE) {
+            <app-profiles-menu [@slideInOut]="'in'"
+                (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-profiles-menu>
+            }
+            @case(MENU_SECURE) {
+            <app-secrets-menu [@slideInOut]="'in'"
+                (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-secrets-menu>
+            }
+            @case(MENU_CLOUD) {
+            <app-cloud-menu [@slideInOut]="'in'"
+                (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-cloud-menu>
+            }
+            @case(MENU_SETTING) {
+            <app-setting-menu [@slideInOut]="'in'"
+                (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-setting-menu>
+            }
+            }
+        </div>
         }
-        @case(MENU_PROFILE) {
-          <app-profiles-menu [@slideInOut]="'in'"
-            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-profiles-menu>
-        }
-        @case(MENU_SECURE) {
-          <app-secrets-menu [@slideInOut]="'in'"
-            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-secrets-menu>
-        }
-        @case(MENU_CLOUD) {
-          <app-cloud-menu [@slideInOut]="'in'"
-            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-cloud-menu>
-        }
-        @case(MENU_SETTING) {
-          <app-setting-menu [@slideInOut]="'in'"
-            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-setting-menu>
-        }
-      }
-    </div>
-    }
-  </mat-sidenav-content>
+        <app-bottom-toolbar></app-bottom-toolbar>
+    </mat-sidenav-content>
 </mat-sidenav-container>
-<ngx-spinner bdColor = "rgba(0, 0, 0, 0.8)" size = "medium" color = "#fff" type = "ball-scale-multiple" [fullScreen] = "true"><p style="color: white" > Loading... </p></ngx-spinner>
+<ngx-spinner bdColor="rgba(0, 0, 0, 0.8)" size="medium" color="#fff" type="ball-scale-multiple" [fullScreen]="true">
+    <p style="color: white"> Loading... </p>
+</ngx-spinner>

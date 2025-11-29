@@ -1,38 +1,16 @@
-.sidebar-buttons {
-  padding-left: 3px;
-  padding-right: 3px;
-  display: flex;
-  flex-direction: column;
-  height: 100%; /* Ensures the container takes full height of the sidenav */
-  gap: 15px; /* Space between buttons */
-  overflow: hidden;
+/* Angular Material 21 sidenav sizing - Scoped to main app sidebar */
+.main-app-sidenav {
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
 }
 
-.sidebar-buttons-top {
-  display: flex;
-  flex-direction: column;
-  gap: 15px; /* Space between buttons */
-  padding-left: 3px;
-  padding-right: 3px;
+.main-app-sidenav .mat-drawer-inner-container {
+  width: 50px !important;
+  overflow: visible !important;
 }
 
-.sidebar-buttons-bottom {
-  display: flex;
-  flex-direction: column;
-  gap: 15px; /* Space between buttons */
-  margin-top: auto; /* Pushes this section to the bottom */
-  padding-left: 3px;
-  padding-right: 3px;
-  padding-bottom: 10px;
-}
-
-.mat-drawer-opened {
-  min-width: 50px;
-  max-width: 250px;
-}
-
-
-#tab-group{
+mat-tab-group {
   height: 100%;
 }
 
@@ -43,5 +21,31 @@
   width: 100%;
 }
 
+.tab-drag-handle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  cursor: grab;
+}
 
+.tab-drag-handle:active {
+  cursor: grabbing;
+}
 
+/* Split View Styles */
+.split-pane {
+  position: relative;
+  transition: width 0.2s ease;
+}
+
+/* Visual indicator for active pane */
+.split-pane.active-pane {
+  box-shadow: inset 0 0 0 1px #3f51b5;
+}
+
+/* Drag and drop styles */
+.split-pane.drag-over {
+  background-color: rgba(63, 81, 181, 0.1);
+  box-shadow: inset 0 0 0 2px #3f51b5;
+}

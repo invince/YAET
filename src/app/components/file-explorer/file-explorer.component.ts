@@ -5,15 +5,14 @@ import {FtpComponent} from './ftp/ftp.component';
 import {SambaComponent} from './samba/samba.component';
 
 @Component({
-  selector: 'app-file-explorer',
-  standalone: true,
-  imports: [
-    ScpComponent,
-    FtpComponent,
-    SambaComponent,
-  ],
-  templateUrl: './file-explorer.component.html',
-  styleUrl: './file-explorer.component.css'
+    selector: 'app-file-explorer',
+    imports: [
+        ScpComponent,
+        FtpComponent,
+        SambaComponent,
+    ],
+    templateUrl: './file-explorer.component.html',
+    styleUrl: './file-explorer.component.css'
 })
 export class FileExplorerComponent {
   @Input() session!: Session;

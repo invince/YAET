@@ -38,33 +38,29 @@ import {SambaProfile} from '../../../domain/profile/SambaProfile';
 
 
 @Component({
-  selector: 'app-profile-form',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatChipsModule,
-    MatAutocompleteModule,
-
-    MatIcon,
-    KeyValuePipe,
-    MatInput,
-
-    CdkTextareaAutosize,
-
-    RemoteTerminalProfileFormComponent,
-    RdpProfileFormComponent,
-    VncProfileFormComponent,
-    CustomProfileFormComponent,
-    FtpProfileFormComponent,
-    SambaFormComponent,
-  ],
-  templateUrl: './profile-form.component.html',
-  styleUrl: './profile-form.component.scss'
+    selector: 'app-profile-form',
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatFormFieldModule,
+        MatSelectModule,
+        MatButtonModule,
+        MatChipsModule,
+        MatAutocompleteModule,
+        MatIcon,
+        KeyValuePipe,
+        MatInput,
+        CdkTextareaAutosize,
+        RemoteTerminalProfileFormComponent,
+        RdpProfileFormComponent,
+        VncProfileFormComponent,
+        CustomProfileFormComponent,
+        FtpProfileFormComponent,
+        SambaFormComponent,
+    ],
+    templateUrl: './profile-form.component.html',
+    styleUrl: './profile-form.component.scss'
 })
 export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements OnInit {
 

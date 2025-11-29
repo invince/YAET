@@ -1,26 +1,25 @@
-import {Component, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {FileManagerComponent, FileManagerModule} from "@syncfusion/ej2-angular-filemanager";
-import {AbstractFileManager} from '../abstract-file-manager';
-import {Session} from '../../../domain/session/Session';
-import {HttpClient} from '@angular/common/http';
-import {SambaService} from '../../../services/file-explorer/samba.service';
+import { HttpClient } from '@angular/common/http';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Session } from '../../../domain/session/Session';
+import { SambaService } from '../../../services/file-explorer/samba.service';
+import { TabService } from '../../../services/tab.service';
+import { AbstractFileManager } from '../abstract-file-manager';
+import { FileListComponent } from '../custom/file-list.component';
 
 @Component({
-  selector: 'app-samba',
-  standalone: true,
+    selector: 'app-samba',
     imports: [
-        FileManagerModule
+        FileListComponent
     ],
-  templateUrl: './samba.component.html',
-  styleUrl: './samba.component.css'
+    templateUrl: './samba.component.html',
+    styleUrl: './samba.component.css'
 })
-export class SambaComponent extends AbstractFileManager implements OnInit, OnDestroy{
+export class SambaComponent extends AbstractFileManager implements OnInit, OnDestroy {
 
   @Input() public session!: Session;
-  @ViewChild('fileManager', { static: false })
-  public fileManager?: FileManagerComponent;
 
-  constructor(private sambaService: SambaService, http: HttpClient) {
+
+  constructor(private sambaService: SambaService, http: HttpClient, private tabService: TabService) {
     super(http);
   }
 
@@ -30,20 +29,18 @@ export class SambaComponent extends AbstractFileManager implements OnInit, OnDes
   }
 
   ngOnDestroy(): void {
-    this.session.close();
+    const isTabStillActive = this.tabService.tabs.some(t => t.id === this.session.id);
+    if (!isTabStillActive) {
+      this.session.close();
+    }
   }
 
   getCurrentPath(): string | undefined {
-    return this.fileManager?.path;
+    return this.path;
   }
 
   generateAjaxSettings(): any {
     return this.sambaService.setup(this.session);
-  }
-
-
-  test($event: any) {
-    console.log($event);
   }
 
 }

@@ -23,33 +23,31 @@ import {
 } from '../../../../utils/ModelFormController';
 
 @Component({
-  selector: 'app-rdp-profile-form',
-  standalone: true,
-  imports: [
-    FormsModule,
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatFormFieldModule,
-
-    MatInput,
-    MatIcon,
-    MatIconButton,
-    MatSlideToggle,
-  ],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => RdpProfileFormComponent),
-      multi: true,
-    },
-    {
-      provide: NG_VALIDATORS,
-      useExisting: forwardRef(() => RdpProfileFormComponent),
-      multi: true,
-    },
-  ],
-  templateUrl: './rdp-profile-form.component.html',
-  styleUrl: './rdp-profile-form.component.css'
+    selector: 'app-rdp-profile-form',
+    imports: [
+        FormsModule,
+        ReactiveFormsModule,
+        MatFormFieldModule,
+        MatFormFieldModule,
+        MatInput,
+        MatIcon,
+        MatIconButton,
+        MatSlideToggle,
+    ],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => RdpProfileFormComponent),
+            multi: true,
+        },
+        {
+            provide: NG_VALIDATORS,
+            useExisting: forwardRef(() => RdpProfileFormComponent),
+            multi: true,
+        },
+    ],
+    templateUrl: './rdp-profile-form.component.html',
+    styleUrl: './rdp-profile-form.component.css'
 })
 export class RdpProfileFormComponent extends ChildFormAsFormControl(MenuComponent)  {
 

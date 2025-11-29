@@ -1,7 +1,10 @@
-@import 'xterm/css/xterm.css';
+@use 'sass:color';
+@use 'xterm/css/xterm.css';
 
 // Fix parent chain heights
-html, body, app-root {
+html,
+body,
+app-root {
   height: 100%;
   margin: 0;
 }
@@ -9,7 +12,7 @@ html, body, app-root {
 .terminal-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 48px);
+  height: 100%;
   width: 100%;
   background: black;
   overflow: hidden;
@@ -27,20 +30,11 @@ html, body, app-root {
       inset: 0 !important;
       padding: 8px !important;
       height: 100% !important;
-
-      // Override inline styles set by xterm.js
-      .xterm-screen {
-        margin-right: 15px; // to let the viewpoint scrollbar display
-        canvas {
-          width: 100% !important;
-          height: 100% !important;
-        }
-      }
     }
   }
 
   .terminal-footer {
     height: 10px;
-    background: darken(black, 10%);
+    background: color.adjust(black, $lightness: -10%);
   }
 }

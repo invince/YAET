@@ -1,0 +1,11 @@
+<mat-toolbar color="primary" class="bottom-toolbar">
+    <span class="spacer"></span>
+    <button mat-icon-button (click)="toggleSplit('vertical', 50)" aria-label="Split View 50/50 Vertical"
+        [color]="tabService.splitMode && tabService.splitDirection === 'vertical' && tabService.splitRatio === 50 ? 'accent' : ''">
+        <mat-icon>vertical_split</mat-icon>
+    </button>
+    <button mat-icon-button (click)="toggleSplit('horizontal', 60)" aria-label="Split View 60/40 Horizontal"
+        [color]="tabService.splitMode && tabService.splitDirection === 'horizontal' && tabService.splitRatio === 60 ? 'accent' : ''">
+        <mat-icon>horizontal_split</mat-icon>
+    </button>
+</mat-toolbar>

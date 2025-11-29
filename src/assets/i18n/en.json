@@ -1,0 +1,69 @@
+{
+    "COMMON": {
+        "SAVE": "Save",
+        "SAVE_AND_CLOSE": "Save & Close",
+        "CANCEL": "Cancel",
+        "CLOSE": "Close",
+        "RELOAD": "Reload",
+        "DELETE": "Delete",
+        "REMOVE": "Remove",
+        "SET": "Set",
+        "CLEAR": "Clear",
+        "OK": "OK",
+        "YES": "Yes",
+        "NO": "No"
+    },
+    "SETTINGS": {
+        "TITLE": "Settings",
+        "GENERAL": "General",
+        "UI": "UI",
+        "GROUPS": "Groups",
+        "TAGS": "Tags",
+        "TERMINAL": "Terminal",
+        "REMOTE_DESKTOP": "Remote Desktop",
+        "FILE_EXPLORER": "File Explorer",
+        "GENERAL_SETTINGS": "General",
+        "UI_SETTINGS": "User Interface",
+        "GROUPS_MANAGEMENT": "Groups Management",
+        "TAGS_MANAGEMENT": "Tags Management",
+        "TERMINAL_SETTINGS": "Terminal",
+        "REMOTE_DESKTOP_SETTINGS": "Remote Desktop",
+        "APPLICATION": "Application",
+        "SECURITY": "Security",
+        "APP_VERSION": "App Version",
+        "AUTO_UPDATE": "Auto update application",
+        "LANGUAGE": "Language",
+        "LANGUAGE_LABEL": "Interface Language",
+        "SET_MASTER_KEY": "Set Master Key",
+        "REMOVE_MASTER_KEY": "Remove Master Key",
+        "SIDEBAR_NAVIGATION": "Sidebar & Navigation",
+        "PROFILE_LABEL_LENGTH": "Profile Label Length",
+        "SIDE_NAV_TYPE": "Side Nav Type",
+        "SECRETS_DISPLAY": "Secrets Display",
+        "SECRET_LABEL_LENGTH_SIDENAV": "Secret Label Length (Side Nav)",
+        "SECRET_LABEL_LENGTH_DROPDOWN": "Secret Label Length (Dropdown)",
+        "STARTUP": "Startup",
+        "OPEN_LOCAL_TERMINAL_STARTUP": "Open a local terminal at startup",
+        "CONFIGURATION": "Configuration",
+        "TERMINAL_TYPE": "Terminal Type",
+        "EXEC_PATH": "Exec Path",
+        "VNC_OPTIONS": "VNC Options",
+        "VNC_CLIPBOARD_COMPATIBLE": "Enable VNC Clipboard Compatible Mode",
+        "VNC_QUALITY": "Quality (0-9)",
+        "VNC_COMPRESSION": "Compression (0-9)"
+    },
+    "LANGUAGES": {
+        "EN": "English",
+        "DE": "Deutsch",
+        "FR": "Français",
+        "ES": "Español",
+        "ZH": "中文"
+    },
+    "NOTIFICATIONS": {
+        "SETTINGS_NOT_LOADED": "Settings not loaded, we'll reload it, please close setting menu and reopen",
+        "MASTER_KEY_DELETED": "Master Key Deleted"
+    },
+    "DIALOGS": {
+        "DELETE_MASTER_KEY_CONFIRM": "Delete master key, if you continue, all existing secrets will be invalid. Do you want continue ?"
+    }
+}

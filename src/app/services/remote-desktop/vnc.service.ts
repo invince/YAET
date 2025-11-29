@@ -1,14 +1,13 @@
-import {ElementRef, Injectable} from '@angular/core';
+import { ElementRef, Injectable } from '@angular/core';
 // @ts-ignore
-import {VncProfile} from '../../domain/profile/VncProfile';
-import {AuthType, SecretType} from '../../domain/Secret';
-import {SecretStorageService} from '../secret-storage.service';
 import RFB from '@novnc/novnc/lib/rfb';
-import {Subject} from 'rxjs';
-import {ProfileType} from '../../domain/profile/Profile';
-import {SettingStorageService} from '../setting-storage.service';
-import {LogService} from '../log.service';
-import {ElectronRemoteDesktopService} from '../electron/electron-remote-desktop.service';
+import { Subject } from 'rxjs';
+import { VncProfile } from '../../domain/profile/VncProfile';
+import { AuthType, SecretType } from '../../domain/Secret';
+import { ElectronRemoteDesktopService } from '../electron/electron-remote-desktop.service';
+import { LogService } from '../log.service';
+import { SecretStorageService } from '../secret-storage.service';
+import { SettingStorageService } from '../setting-storage.service';
 
 
 // we use ws to proxy to the vnc server
@@ -17,9 +16,9 @@ import {ElectronRemoteDesktopService} from '../electron/electron-remote-desktop.
   providedIn: 'root',
 })
 export class VncService {
-  readonly XK_Control_L= 0xffe3; // from keysym.js
-  readonly XK_Shift_L= 0xffe1; // from keysym.js
-  readonly   XK_V =  0x0056; // from keysym.js
+  readonly XK_Control_L = 0xffe3; // from keysym.js
+  readonly XK_Shift_L = 0xffe1; // from keysym.js
+  readonly XK_v = 0x0076; // from keysym.js
   vncMap: Map<string, RFB> = new Map();
 
   private clipboardEventSubject = new Subject<string>();
@@ -31,23 +30,34 @@ export class VncService {
     private secretStorage: SecretStorageService,
     private electron: ElectronRemoteDesktopService,
   ) {
-    this.electron.subscribeClipboard(ProfileType.VNC_REMOTE_DESKTOP, (id: string, text: string) => {
-      if(this.vncMap) {
-        let rfb = this.vncMap.get(id);
-        if (rfb) {
-          rfb.clipboardPasteFrom(text);
-          if (this.settingStorage.settings?.remoteDesktop?.vncClipboardCompatibleMode) {
-            rfb.sendKey(this.XK_Control_L, "ControlLeft", true);
-            rfb.sendKey(this.XK_Shift_L, "ShiftLeft", true);
-            rfb.sendKey(this.XK_V, "v");
-            rfb.sendKey(this.XK_Shift_L, "ShiftLeft", false);
-            rfb.sendKey(this.XK_Control_L, "ControlLeft", false);
-          }
-          return true;
-        }
+  }
+
+  handleClipboardPaste(id: string, text: string) {
+    if (this.vncMap) {
+      let rfb = this.vncMap.get(id);
+      if (rfb) {
+        rfb.clipboardPasteFrom(text);
+        // we trigger ctrl+v to paste the text
+        // setTimeout(() => {
+        //   rfb.sendKey(this.XK_Control_L, "ControlLeft", true);
+        //   rfb.sendKey(this.XK_v, "KeyV", true);
+        //   rfb.sendKey(this.XK_v, "KeyV", false);
+        //   rfb.sendKey(this.XK_Control_L, "ControlLeft", false);
+        // }, 50);
+
+        // if (this.settingStorage.settings?.remoteDesktop?.vncClipboardCompatibleMode) {
+        //   setTimeout(() => {
+        //     rfb.sendKey(this.XK_Control_L, "ControlLeft", true);
+        //     rfb.sendKey(this.XK_Shift_L, "ShiftLeft", true);
+        //     rfb.sendKey(this.XK_v, "KeyV");
+        //     rfb.sendKey(this.XK_Shift_L, "ShiftLeft", false);
+        //     rfb.sendKey(this.XK_Control_L, "ControlLeft", false);
+        //   }, 50);
+        // }
+        return true;
       }
-      return false;
-    });
+    }
+    return false;
   }
 
   async connect(id: string, vncProfile: VncProfile, vncCanvas: ElementRef) {
@@ -80,10 +90,10 @@ export class VncService {
         websocketPort => {
           const rfb = new RFB(vncCanvas.nativeElement, `ws://localhost:${websocketPort}`, {
             // @ts-ignore
-            credentials: {password: vncProfile.password},
+            credentials: { password: vncProfile.password },
           });
-          rfb.qualityLevel = this.settingStorage.settings.remoteDesktop?.vncQuality || 9;
-          rfb.compressionLevel = this.settingStorage.settings.remoteDesktop?.vncCompressionLevel || 0;
+          rfb.qualityLevel = this.settingStorage.settings.remoteDesktop?.vncQuality || 7;
+          rfb.compressionLevel = this.settingStorage.settings.remoteDesktop?.vncCompressionLevel || 6;
           rfb.viewOnly = false; // Set to true if you want a read-only connection
           rfb.clipViewport = true; // Clip the remote session to the viewport
           rfb.scaleViewport = true; // Scale the remote desktop to fit the container

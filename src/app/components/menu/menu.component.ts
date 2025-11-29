@@ -2,10 +2,9 @@ import {Component, EventEmitter, Output} from '@angular/core';
 import {FormGroup} from '@angular/forms';
 
 @Component({
-  selector: 'app-menu',
-  standalone: true,
-  imports: [],
-  template: `<p>Abstract Menu</p>`,
+    selector: 'app-menu',
+    imports: [],
+    template: `<p>Abstract Menu</p>`
 })
 export class MenuComponent {
 

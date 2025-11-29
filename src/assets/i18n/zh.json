@@ -1,0 +1,69 @@
+{
+    "COMMON": {
+        "SAVE": "保存",
+        "SAVE_AND_CLOSE": "保存并关闭",
+        "CANCEL": "取消",
+        "CLOSE": "关闭",
+        "RELOAD": "重新加载",
+        "DELETE": "删除",
+        "REMOVE": "移除",
+        "SET": "设置",
+        "CLEAR": "清除",
+        "OK": "确定",
+        "YES": "是",
+        "NO": "否"
+    },
+    "SETTINGS": {
+        "TITLE": "设置",
+        "GENERAL": "常规",
+        "UI": "界面",
+        "GROUPS": "组",
+        "TAGS": "标签",
+        "TERMINAL": "终端",
+        "REMOTE_DESKTOP": "远程桌面",
+        "FILE_EXPLORER": "文件浏览器",
+        "GENERAL_SETTINGS": "常规",
+        "UI_SETTINGS": "用户界面",
+        "GROUPS_MANAGEMENT": "组管理",
+        "TAGS_MANAGEMENT": "标签管理",
+        "TERMINAL_SETTINGS": "终端",
+        "REMOTE_DESKTOP_SETTINGS": "远程桌面",
+        "APPLICATION": "应用程序",
+        "SECURITY": "安全",
+        "APP_VERSION": "应用版本",
+        "AUTO_UPDATE": "自动更新应用程序",
+        "LANGUAGE": "语言",
+        "LANGUAGE_LABEL": "界面语言",
+        "SET_MASTER_KEY": "设置主密钥",
+        "REMOVE_MASTER_KEY": "移除主密钥",
+        "SIDEBAR_NAVIGATION": "侧边栏和导航",
+        "PROFILE_LABEL_LENGTH": "配置文件标签长度",
+        "SIDE_NAV_TYPE": "侧边导航类型",
+        "SECRETS_DISPLAY": "密钥显示",
+        "SECRET_LABEL_LENGTH_SIDENAV": "密钥标签长度（侧边栏）",
+        "SECRET_LABEL_LENGTH_DROPDOWN": "密钥标签长度（下拉菜单）",
+        "STARTUP": "启动",
+        "OPEN_LOCAL_TERMINAL_STARTUP": "启动时打开本地终端",
+        "CONFIGURATION": "配置",
+        "TERMINAL_TYPE": "终端类型",
+        "EXEC_PATH": "执行路径",
+        "VNC_OPTIONS": "VNC 选项",
+        "VNC_CLIPBOARD_COMPATIBLE": "启用 VNC 剪贴板兼容模式",
+        "VNC_QUALITY": "质量 (0-9)",
+        "VNC_COMPRESSION": "压缩 (0-9)"
+    },
+    "LANGUAGES": {
+        "EN": "English",
+        "DE": "Deutsch",
+        "FR": "Français",
+        "ES": "Español",
+        "ZH": "中文"
+    },
+    "NOTIFICATIONS": {
+        "SETTINGS_NOT_LOADED": "设置未加载，我们将重新加载，请关闭设置菜单并重新打开",
+        "MASTER_KEY_DELETED": "主密钥已删除"
+    },
+    "DIALOGS": {
+        "DELETE_MASTER_KEY_CONFIRM": "删除主密钥，如果继续，所有现有密钥将失效。您要继续吗？"
+    }
+}

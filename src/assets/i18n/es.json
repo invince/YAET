@@ -1,0 +1,69 @@
+{
+    "COMMON": {
+        "SAVE": "Guardar",
+        "SAVE_AND_CLOSE": "Guardar y cerrar",
+        "CANCEL": "Cancelar",
+        "CLOSE": "Cerrar",
+        "RELOAD": "Recargar",
+        "DELETE": "Eliminar",
+        "REMOVE": "Quitar",
+        "SET": "Establecer",
+        "CLEAR": "Limpiar",
+        "OK": "OK",
+        "YES": "Sí",
+        "NO": "No"
+    },
+    "SETTINGS": {
+        "TITLE": "Configuración",
+        "GENERAL": "General",
+        "UI": "Interfaz",
+        "GROUPS": "Grupos",
+        "TAGS": "Etiquetas",
+        "TERMINAL": "Terminal",
+        "REMOTE_DESKTOP": "Escritorio remoto",
+        "FILE_EXPLORER": "Explorador de archivos",
+        "GENERAL_SETTINGS": "General",
+        "UI_SETTINGS": "Interfaz de usuario",
+        "GROUPS_MANAGEMENT": "Gestión de grupos",
+        "TAGS_MANAGEMENT": "Gestión de etiquetas",
+        "TERMINAL_SETTINGS": "Terminal",
+        "REMOTE_DESKTOP_SETTINGS": "Escritorio remoto",
+        "APPLICATION": "Aplicación",
+        "SECURITY": "Seguridad",
+        "APP_VERSION": "Versión de la aplicación",
+        "AUTO_UPDATE": "Actualizar aplicación automáticamente",
+        "LANGUAGE": "Idioma",
+        "LANGUAGE_LABEL": "Idioma de la interfaz",
+        "SET_MASTER_KEY": "Establecer clave maestra",
+        "REMOVE_MASTER_KEY": "Eliminar clave maestra",
+        "SIDEBAR_NAVIGATION": "Barra lateral y navegación",
+        "PROFILE_LABEL_LENGTH": "Longitud de etiqueta de perfil",
+        "SIDE_NAV_TYPE": "Tipo de navegación lateral",
+        "SECRETS_DISPLAY": "Visualización de secretos",
+        "SECRET_LABEL_LENGTH_SIDENAV": "Longitud de etiqueta de secreto (barra lateral)",
+        "SECRET_LABEL_LENGTH_DROPDOWN": "Longitud de etiqueta de secreto (menú desplegable)",
+        "STARTUP": "Inicio",
+        "OPEN_LOCAL_TERMINAL_STARTUP": "Abrir un terminal local al iniciar",
+        "CONFIGURATION": "Configuración",
+        "TERMINAL_TYPE": "Tipo de terminal",
+        "EXEC_PATH": "Ruta de ejecución",
+        "VNC_OPTIONS": "Opciones VNC",
+        "VNC_CLIPBOARD_COMPATIBLE": "Habilitar modo compatible con portapapeles VNC",
+        "VNC_QUALITY": "Calidad (0-9)",
+        "VNC_COMPRESSION": "Compresión (0-9)"
+    },
+    "LANGUAGES": {
+        "EN": "English",
+        "DE": "Deutsch",
+        "FR": "Français",
+        "ES": "Español",
+        "ZH": "中文"
+    },
+    "NOTIFICATIONS": {
+        "SETTINGS_NOT_LOADED": "Configuración no cargada, la recargaremos, por favor cierre el menú de configuración y vuelva a abrirlo",
+        "MASTER_KEY_DELETED": "Clave maestra eliminada"
+    },
+    "DIALOGS": {
+        "DELETE_MASTER_KEY_CONFIRM": "Eliminar clave maestra. Si continúa, todos los secretos existentes serán inválidos. ¿Desea continuar?"
+    }
+}

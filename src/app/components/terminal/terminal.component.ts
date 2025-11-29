@@ -9,11 +9,12 @@ import {
   ViewChild,
   ViewEncapsulation
 } from '@angular/core';
-import {Terminal} from '@xterm/xterm';
-import {Session} from '../../domain/session/Session';
-import {FitAddon} from '@xterm/addon-fit';
-import {WebLinksAddon} from '@xterm/addon-web-links';
-import {ElectronTerminalService} from '../../services/electron/electron-terminal.service';
+import { FitAddon } from '@xterm/addon-fit';
+import { WebLinksAddon } from '@xterm/addon-web-links';
+import { Terminal } from '@xterm/xterm';
+import { Session } from '../../domain/session/Session';
+import { ElectronTerminalService } from '../../services/electron/electron-terminal.service';
+import { TabService } from '../../services/tab.service';
 
 @Component({
   selector: 'app-terminal',
@@ -24,8 +25,8 @@ import {ElectronTerminalService} from '../../services/electron/electron-terminal
 })
 export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() session!: Session;
-  @ViewChild('term', {static: false}) terminalDiv!: ElementRef;
-  @ViewChild('termContainer', {static: false}) termContainer!: ElementRef;
+  @ViewChild('term', { static: false }) terminalDiv!: ElementRef;
+  @ViewChild('termContainer', { static: false }) termContainer!: ElementRef;
   private isViewInitialized = false;
 
   private xtermUnderlying: Terminal;
@@ -35,7 +36,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   constructor(
     private electron: ElectronTerminalService,
-
+    private tabService: TabService,
   ) {
     this.xtermUnderlying = new Terminal({
       fontFamily: '"Cascadia Code", Menlo, monospace',
@@ -146,7 +147,13 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.session.close();
+    // Only close the session if the tab is actually removed from the service
+    // If the tab still exists (e.g. moving between panes), don't close the session
+    const isTabStillActive = this.tabService.tabs.some(t => t.id === this.session.id);
+    if (!isTabStillActive) {
+      this.session.close();
+    }
+
     this.fitAddon?.dispose();
     this.resizeObserver?.disconnect();
   }
