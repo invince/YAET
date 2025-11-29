@@ -231,7 +231,8 @@ function initFtpHandler(log, ftpMap, expressApp) {
 
     try {
       const result = await withFtpClient(configId, async (client) => {
-        const remotePath = await avoidDuplicateName(client, path.join(directoryPath, filename));// the req.file.originalname may have encoding pb
+        // Use forward slashes for FTP paths (path.join uses backslashes on Windows)
+        const remotePath = await avoidDuplicateName(client, `${directoryPath}/${filename}`.replace(/\\/g, '/'));// the req.file.originalname may have encoding pb
         const bufferStream = new Readable();
         // Multer 2.0 changed req.file.buffer to req.file.data (Uint8Array)
         // Convert to Buffer if needed for FTP client compatibility
