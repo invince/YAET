@@ -32,18 +32,23 @@
 }
 
 /* Fix Angular 21 mat-mini-fab sizing regression */
-.sidebar-buttons button.mat-mdc-mini-fab {
+.sidebar-buttons button[mat-mini-fab],
+.sidebar-buttons .mat-mdc-mini-fab {
   width: 40px !important;
   height: 40px !important;
   padding: 0 !important;
+  border-radius: 50% !important;
+  min-width: 40px !important;
 }
 
-.sidebar-buttons button.mat-mdc-mini-fab .mat-mdc-button-touch-target {
+.sidebar-buttons button[mat-mini-fab] .mat-mdc-button-touch-target,
+.sidebar-buttons .mat-mdc-mini-fab .mat-mdc-button-touch-target {
   width: 40px !important;
   height: 40px !important;
 }
 
-.sidebar-buttons button.mat-mdc-mini-fab .mat-icon {
+.sidebar-buttons button[mat-mini-fab] .mat-icon,
+.sidebar-buttons .mat-mdc-mini-fab .mat-icon {
   width: 24px;
   height: 24px;
   font-size: 24px;
