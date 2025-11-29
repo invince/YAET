@@ -207,7 +207,9 @@ function initScpSftpHandler(log, scpMap, expressApp) {
     try {
       const result = await withSftpClient(configId, async (sftp) => {
         const remotePath = await avoidDuplicateName(sftp, `${path}/${filename}`);// the req.file.originalname may have encoding pb
-        await sftp.put(req.file.buffer, remotePath);
+        // Multer 2.0 changed req.file.buffer to req.file.data
+        const fileData = req.file.data || req.file.buffer;
+        await sftp.put(fileData, remotePath);
         return { success: true, message: `File uploaded to ${remotePath}` };
       });
 
