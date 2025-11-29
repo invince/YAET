@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use 'xterm/css/xterm.css';
 
 // Fix parent chain heights
@@ -34,6 +35,6 @@ app-root {
 
   .terminal-footer {
     height: 10px;
-    background: darken(black, 10%);
+    background: color.adjust(black, $lightness: -10%);
   }
 }
