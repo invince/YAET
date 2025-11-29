@@ -1,8 +1,8 @@
 .sidebar-buttons {
-  padding-left: 3px;
-  padding-right: 3px;
+  padding: 0;
   display: flex;
   flex-direction: column;
+  align-items: center;
   height: 100%;
   /* Ensures the container takes full height of the sidenav */
   gap: 15px;
@@ -13,22 +13,21 @@
 .sidebar-buttons-top {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 15px;
   /* Space between buttons */
-  padding-left: 3px;
-  padding-right: 3px;
+  padding: 0;
 }
 
 .sidebar-buttons-bottom {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 15px;
   /* Space between buttons */
   margin-top: auto;
   /* Pushes this section to the bottom */
-  padding-left: 3px;
-  padding-right: 3px;
-  padding-bottom: 10px;
+  padding: 0 0 10px 0;
 }
 
 /* Fix Angular 21 mat-mini-fab sizing regression */
