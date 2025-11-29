@@ -4,102 +4,117 @@
       <h3>Profiles</h3>
       <button mat-icon-button (click)="close()">
         <mat-icon>close</mat-icon>
-        <button matSuffix mat-icon-button aria-label="Clear" (click)="clearFilter() ">
-          <mat-icon>close</mat-icon>
-        </button>
-        }
-        </mat-form-field>
-    </div>
-
-    <div class="sidenav-add">
-      <button mat-button (click)="addTab()" [disabled]="lastChildFormDirtyState || hasNewProfile()"
-        aria-label="Add Profile">
-        <mat-icon>add</mat-icon>
       </button>
     </div>
 
-    <div class="sidenav-content">
-      @if (sideNavType=='tree') {
-      <mat-tree #tree [dataSource]="treeDataSource" [treeControl]="treeControl" class="group-tree">
-        <!-- Leaf Node -->
-        <mat-nested-tree-node *matTreeNodeDef="let node">
-          <div class="group-name" [class.selected]="node.profile && node.profile.id === selectedProfileId"
-            (click)="onTabChange(node.profile)" (dblclick)="onTabConnect(node.profile)">
-            @if (node.profile.icon) {
-            <mat-icon>{{node.profile.icon}}</mat-icon>
-            }
-            {{ displayProfileTabLabel(node) }}
-          </div>
-          <div class="tag-suffix">
-            @for(color of tagsColor(node.profile); track color) {
-            <span class="color-dot" [style.background]="color"></span>
-            }
-          </div>
-        </mat-nested-tree-node>
+    <div class="modal-content">
+      <mat-sidenav-container class="sidenav-container">
 
-        <!-- Expandable Node -->
-        <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild">
-          <div class="tree-parent-node">
-            <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'Toggle ' + node.name">
-              <mat-icon class="mat-icon-rtl-mirror">
-                {{ treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}
-              </mat-icon>
-            </button>
-            @if (node.group?.color) {
-            <div class="group-name" matTreeNodeToggle [style.color]="node.group.color">{{
-              displayProfileTabLabel(node) }}</div>
-            } @else {
-            <div class="group-name" matTreeNodeToggle>{{ displayProfileTabLabel(node) }}</div>
-            }
-          </div>
-          <!-- There is inline padding applied to this div using styles.
+        <!-- Sidebar -->
+        <mat-sidenav mode="side" opened class="menu-sidenav">
+          <div class="sidenav">
+            <div class="sidenav-filter">
+              <mat-form-field class="field">
+                <mat-label>Filter</mat-label>
+                <input matInput type="text" [(ngModel)]="filter" (ngModelChange)="applyFilterToTree()" />
+                @if (filter) {
+                <button matSuffix mat-icon-button aria-label="Clear" (click)="clearFilter() ">
+                  <mat-icon>close</mat-icon>
+                </button>
+                }
+              </mat-form-field>
+            </div>
+
+            <div class="sidenav-add">
+              <button mat-button (click)="addTab()" [disabled]="lastChildFormDirtyState || hasNewProfile()"
+                aria-label="Add Profile">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+
+            <div class="sidenav-content">
+              @if (sideNavType=='tree') {
+              <mat-tree #tree [dataSource]="treeDataSource" [treeControl]="treeControl" class="group-tree">
+                <!-- Leaf Node -->
+                <mat-nested-tree-node *matTreeNodeDef="let node">
+                  <div class="group-name" [class.selected]="node.profile && node.profile.id === selectedProfileId"
+                    (click)="onTabChange(node.profile)" (dblclick)="onTabConnect(node.profile)">
+                    @if (node.profile.icon) {
+                    <mat-icon>{{node.profile.icon}}</mat-icon>
+                    }
+                    {{ displayProfileTabLabel(node) }}
+                  </div>
+                  <div class="tag-suffix">
+                    @for(color of tagsColor(node.profile); track color) {
+                    <span class="color-dot" [style.background]="color"></span>
+                    }
+                  </div>
+                </mat-nested-tree-node>
+
+                <!-- Expandable Node -->
+                <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild">
+                  <div class="tree-parent-node">
+                    <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'Toggle ' + node.name">
+                      <mat-icon class="mat-icon-rtl-mirror">
+                        {{ treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}
+                      </mat-icon>
+                    </button>
+                    @if (node.group?.color) {
+                    <div class="group-name" matTreeNodeToggle [style.color]="node.group.color">{{
+                      displayProfileTabLabel(node) }}</div>
+                    } @else {
+                    <div class="group-name" matTreeNodeToggle>{{ displayProfileTabLabel(node) }}</div>
+                    }
+                  </div>
+                  <!-- There is inline padding applied to this div using styles.
                         This padding value depends on the mat-icon-button width.  -->
-          <div [class.child-tree-invisible]="!treeControl.isExpanded(node)" role="group">
-            <ng-container matTreeNodeOutlet></ng-container>
-          </div>
-        </mat-nested-tree-node>
-      </mat-tree>
-      }
-      @else {
-      @for (profile of profilesCopy.profiles | filterKeyword:keywordsProviders:filter; track profile.id) {
-      <div class="sidenav-item">
-        <button mat-button [class.selected]="profile.id === selectedProfileId" (click)="onTabChange(profile)"
-          (dblclick)="onTabConnect(profile)">
-          @if (profile.icon) {
-          <mat-icon>{{profile.icon}}</mat-icon>
-          }
-          {{ displayProfileTabLabel(profile) }}
-          @for(color of tagsColor(profile); track color) {
-          <span class="color-dot" [style.background]="color"></span>
-          }
-        </button>
+                  <div [class.child-tree-invisible]="!treeControl.isExpanded(node)" role="group">
+                    <ng-container matTreeNodeOutlet></ng-container>
+                  </div>
+                </mat-nested-tree-node>
+              </mat-tree>
+              }
+              @else {
+              @for (profile of profilesCopy.profiles | filterKeyword:keywordsProviders:filter; track profile.id) {
+              <div class="sidenav-item">
+                <button mat-button [class.selected]="profile.id === selectedProfileId" (click)="onTabChange(profile)"
+                  (dblclick)="onTabConnect(profile)">
+                  @if (profile.icon) {
+                  <mat-icon>{{profile.icon}}</mat-icon>
+                  }
+                  {{ displayProfileTabLabel(profile) }}
+                  @for(color of tagsColor(profile); track color) {
+                  <span class="color-dot" [style.background]="color"></span>
+                  }
+                </button>
 
-      </div>
-      }
-      }
-    </div>
-    <div class="sidenav-bottom-bar">
-      <button mat-icon-button (click)="changeSideNavType('flat')" aria-label="Flat Style">
-        <mat-icon>menu</mat-icon>
-      </button>
-      <button mat-icon-button (click)="changeSideNavType('tree')" aria-label="Tree Style">
-        <mat-icon>read_more</mat-icon>
-      </button>
+              </div>
+              }
+              }
+            </div>
+            <div class="sidenav-bottom-bar">
+              <button mat-icon-button (click)="changeSideNavType('flat')" aria-label="Flat Style">
+                <mat-icon>menu</mat-icon>
+              </button>
+              <button mat-icon-button (click)="changeSideNavType('tree')" aria-label="Tree Style">
+                <mat-icon>read_more</mat-icon>
+              </button>
+            </div>
+          </div>
+
+        </mat-sidenav>
+
+        <!-- Main Content -->
+        <mat-sidenav-content class="one-form">
+          @if (selectedProfile) {
+          <app-profile-form [profile]="selectedProfile" [buttons]="['close', 'delete', 'clone', 'save', 'connect' ]"
+            (onProfileCancel)="onCancel($event)" (onProfileDelete)="onDelete($event)"
+            (onProfileSave)="onSaveOne($event)" (onProfileClone)="onCloneOne($event)"
+            (invalidStateChange)="onChildFormInvalidStateChange($event)"
+            (dirtyStateChange)="onChildFormDirtyStateChange($event)"></app-profile-form>
+          }
+        </mat-sidenav-content>
+      </mat-sidenav-container>
     </div>
   </div>
-
-  </mat-sidenav>
-
-  <!-- Main Content -->
-  <mat-sidenav-content class="one-form">
-    @if (selectedProfile) {
-    <app-profile-form [profile]="selectedProfile" [buttons]="['close', 'delete', 'clone', 'save', 'connect' ]"
-      (onProfileCancel)="onCancel($event)" (onProfileDelete)="onDelete($event)" (onProfileSave)="onSaveOne($event)"
-      (onProfileClone)="onCloneOne($event)" (invalidStateChange)="onChildFormInvalidStateChange($event)"
-      (dirtyStateChange)="onChildFormDirtyStateChange($event)"></app-profile-form>
-    }
-  </mat-sidenav-content>
-  </mat-sidenav-container>
-</div>
-</div>
 </div>
