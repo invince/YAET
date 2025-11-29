@@ -11,18 +11,23 @@ With a password management, and cloud sync function.
 
 
 ## Prerequisites
-- Node
-- angular cli
-- to compile module used in electron code: ```npm install --global --production windows-build-tools```
+- Node.js (v20.19+ or v22.12+ or v24+)
+- Angular CLI
+- Python 3.x (for native module compilation)
+  - **Important**: If using Python 3.12+, you must install setuptools: `pip install setuptools`
+- Visual Studio Build Tools with "Desktop development with C++" workload (Windows)
+  - Or: `npm install --global --production windows-build-tools` (legacy method)
 
 ## Before you start
-- open an admin terminal (because we'll create some symbolic link, you need admin right for the 1st time) run first ```npm run build```
-- create config/config.json, put your syncfusion key inside config.json 
+- Open an admin terminal (symbolic links require admin rights on first run)
+- Run `npm install` to install dependencies
+- If native modules fail to build, run `npm run rebuild-native`
+- Create `config/config.json` and add your Syncfusion key
 
 ## Local DEV
-- ```npm run start``` to do local dev
-- or ```npm run ng:serve``` and ```npm run electron:dev``` separately
-- If you install some modules used by electron, you need run ```electron-rebuild```
+- `npm run start` to run development mode
+- Or `npm run ng:serve` and `npm run electron:dev` separately
+- If you install modules used by Electron, run `npm run rebuild-native`
 
 ## Package the installer
 - ```npm run build```

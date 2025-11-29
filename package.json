@@ -12,6 +12,7 @@
     "ng:serve": "ng serve",
     "electron:dev": "wait-on http://localhost:4200 && cross-env NODE_ENV=development electron .",
     "postinstall": "patch-package",
+    "rebuild-native": "electron-builder install-app-deps",
     "build:release": "npm run clean && patch-package && ng build --base-href ./ && electron-builder --publish always",
     "release": "npm version patch && npm run build:release"
   },
@@ -103,7 +104,7 @@
     "@types/jasmine": "~5.1.0",
     "concurrently": "^9.1.1",
     "cross-env": "^7.0.3",
-    "electron": "^39.2.4",
+    "electron": "^31.7.5",
     "electron-builder": "^25.1.8",
     "electron-packager": "^17.1.2",
     "electron-rebuild": "^3.2.9",
