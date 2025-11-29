@@ -1,6 +1,13 @@
-.mat-drawer-opened {
-  min-width: 50px;
-  max-width: 250px;
+/* Angular Material 21 sidenav sizing - Scoped to main app sidebar */
+.main-app-sidenav {
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
+}
+
+.main-app-sidenav .mat-drawer-inner-container {
+  width: 50px !important;
+  overflow: visible !important;
 }
 
 mat-tab-group {

@@ -10,20 +10,19 @@ import {MasterKeyService} from '../../../services/master-key.service';
 import {Subscription} from 'rxjs';
 
 @Component({
-  selector: 'app-master-key',
-  standalone: true,
-  imports: [
-    MatDialogModule,
-    MatFormFieldModule,
-    MatInput,
-    MatButton,
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    MatError,
-  ],
-  templateUrl: './master-key.component.html',
-  styleUrl: './master-key.component.css'
+    selector: 'app-master-key',
+    imports: [
+        MatDialogModule,
+        MatFormFieldModule,
+        MatInput,
+        MatButton,
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatError,
+    ],
+    templateUrl: './master-key.component.html',
+    styleUrl: './master-key.component.css'
 })
 export class MasterKeyComponent implements OnInit, OnDestroy{
   resetPasswordForm: FormGroup;

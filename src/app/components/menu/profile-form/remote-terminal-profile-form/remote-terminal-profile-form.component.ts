@@ -32,36 +32,33 @@ import {SecretQuickFormComponent} from '../../../dialog/secret-quick-form/secret
 import {MatDialog} from '@angular/material/dialog';
 
 @Component({
-  selector: 'app-remote-terminal-profile-form',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    MatSelectModule,
-    MatRadioModule,
-    MatFormFieldModule,
-
-    CdkTextareaAutosize,
-
-    MatInput,
-    MatIcon,
-    MatIconButton,
-  ],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => RemoteTerminalProfileFormComponent),
-      multi: true,
-    },
-    {
-      provide: NG_VALIDATORS,
-      useExisting: forwardRef(() => RemoteTerminalProfileFormComponent),
-      multi: true,
-    },
-  ],
-  templateUrl: './remote-terminal-profile-form.component.html',
-  styleUrl: './remote-terminal-profile-form.component.css'
+    selector: 'app-remote-terminal-profile-form',
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatSelectModule,
+        MatRadioModule,
+        MatFormFieldModule,
+        CdkTextareaAutosize,
+        MatInput,
+        MatIcon,
+        MatIconButton,
+    ],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => RemoteTerminalProfileFormComponent),
+            multi: true,
+        },
+        {
+            provide: NG_VALIDATORS,
+            useExisting: forwardRef(() => RemoteTerminalProfileFormComponent),
+            multi: true,
+        },
+    ],
+    templateUrl: './remote-terminal-profile-form.component.html',
+    styleUrl: './remote-terminal-profile-form.component.css'
 })
 export class RemoteTerminalProfileFormComponent extends ChildFormAsFormControl(MenuComponent)  {
 

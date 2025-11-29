@@ -1,8 +1,8 @@
 .sidebar-buttons {
-  padding-left: 3px;
-  padding-right: 3px;
+  padding: 0;
   display: flex;
   flex-direction: column;
+  align-items: center;
   height: 100%;
   /* Ensures the container takes full height of the sidenav */
   gap: 15px;
@@ -13,20 +13,43 @@
 .sidebar-buttons-top {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 15px;
   /* Space between buttons */
-  padding-left: 3px;
-  padding-right: 3px;
+  padding: 0;
 }
 
 .sidebar-buttons-bottom {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 15px;
   /* Space between buttons */
   margin-top: auto;
   /* Pushes this section to the bottom */
-  padding-left: 3px;
-  padding-right: 3px;
-  padding-bottom: 10px;
+  padding: 0 0 10px 0;
+}
+
+/* Fix Angular 21 mat-mini-fab sizing regression */
+.sidebar-buttons button[mat-mini-fab],
+.sidebar-buttons .mat-mdc-mini-fab {
+  width: 40px !important;
+  height: 40px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  min-width: 40px !important;
+}
+
+.sidebar-buttons button[mat-mini-fab] .mat-mdc-button-touch-target,
+.sidebar-buttons .mat-mdc-mini-fab .mat-mdc-button-touch-target {
+  width: 40px !important;
+  height: 40px !important;
+}
+
+.sidebar-buttons button[mat-mini-fab] .mat-icon,
+.sidebar-buttons .mat-mdc-mini-fab .mat-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
+  line-height: 24px;
 }

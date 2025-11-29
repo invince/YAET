@@ -12,17 +12,16 @@ export interface FileEditorData {
 }
 
 @Component({
-  selector: 'app-file-editor-dialog',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    MatDialogModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule
-  ],
-  template: `
+    selector: 'app-file-editor-dialog',
+    imports: [
+        CommonModule,
+        FormsModule,
+        MatDialogModule,
+        MatButtonModule,
+        MatFormFieldModule,
+        MatInputModule
+    ],
+    template: `
     <h2 mat-dialog-title>Edit {{data.fileName}}</h2>
     <mat-dialog-content class="editor-content">
       <textarea [(ngModel)]="editedContent" class="editor-textarea"></textarea>
@@ -32,7 +31,7 @@ export interface FileEditorData {
       <button mat-raised-button color="primary" (click)="save()">Save</button>
     </mat-dialog-actions>
   `,
-  styles: [`
+    styles: [`
     .editor-content {
       min-width: 600px;
       min-height: 450px;

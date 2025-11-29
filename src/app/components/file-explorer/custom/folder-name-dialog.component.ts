@@ -8,7 +8,6 @@ import { MatInputModule } from '@angular/material/input';
 
 @Component({
     selector: 'app-folder-name-dialog',
-    standalone: true,
     imports: [
         CommonModule,
         FormsModule,

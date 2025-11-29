@@ -7,13 +7,12 @@ import { AbstractFileManager } from '../abstract-file-manager';
 import { FileListComponent } from '../custom/file-list.component';
 
 @Component({
-  selector: 'app-scp',
-  standalone: true,
-  imports: [
-    FileListComponent
-  ],
-  templateUrl: './scp.component.html',
-  styleUrl: './scp.component.css'
+    selector: 'app-scp',
+    imports: [
+        FileListComponent
+    ],
+    templateUrl: './scp.component.html',
+    styleUrl: './scp.component.css'
 })
 export class ScpComponent extends AbstractFileManager implements OnInit, OnDestroy {
 

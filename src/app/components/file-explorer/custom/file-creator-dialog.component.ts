@@ -14,7 +14,6 @@ export interface FileCreatorData {
 
 @Component({
     selector: 'app-file-creator-dialog',
-    standalone: true,
     imports: [
         CommonModule,
         FormsModule,

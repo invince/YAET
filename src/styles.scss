@@ -1,8 +1,8 @@
 @use '@angular/material' as mat;
 
 /* You can add global styles to this file, and also import other style files */
-@import "modal";
-@import "snackbar";
+@use "modal";
+@use "snackbar";
 
 @include mat.core();
 
@@ -147,8 +147,6 @@ body {
   background-color: #e0f7fa !important;
   /* Example highlight color */
   color: #00796b !important;
-  ;
   /* Example text color */
   font-weight: bold !important;
-  ;
 }

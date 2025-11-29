@@ -32,36 +32,33 @@ import {SecretQuickFormComponent} from '../../../dialog/secret-quick-form/secret
 import {MatDialog} from '@angular/material/dialog';
 
 @Component({
-  selector: 'app-custom-profile-form',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    MatSelectModule,
-    MatRadioModule,
-    MatFormFieldModule,
-
-    MatInput,
-    MatIcon,
-    MatIconButton,
-    CdkTextareaAutosize,
-
-  ],
-  templateUrl: './custom-profile-form.component.html',
-  styleUrl: './custom-profile-form.component.css',
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => CustomProfileFormComponent),
-      multi: true,
-    },
-    {
-      provide: NG_VALIDATORS,
-      useExisting: forwardRef(() => CustomProfileFormComponent),
-      multi: true,
-    },
-  ],
+    selector: 'app-custom-profile-form',
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatSelectModule,
+        MatRadioModule,
+        MatFormFieldModule,
+        MatInput,
+        MatIcon,
+        MatIconButton,
+        CdkTextareaAutosize,
+    ],
+    templateUrl: './custom-profile-form.component.html',
+    styleUrl: './custom-profile-form.component.css',
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => CustomProfileFormComponent),
+            multi: true,
+        },
+        {
+            provide: NG_VALIDATORS,
+            useExisting: forwardRef(() => CustomProfileFormComponent),
+            multi: true,
+        },
+    ]
 })
 export class CustomProfileFormComponent extends ChildFormAsFormControl(MenuComponent)  {
   AUTH_OPTIONS = AuthType;

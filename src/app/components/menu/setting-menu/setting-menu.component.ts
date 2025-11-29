@@ -9,7 +9,6 @@ import { MatFormField, MatLabel, MatSuffix } from '@angular/material/form-field'
 import { MatIcon } from '@angular/material/icon';
 import { MatInput } from '@angular/material/input';
 import { MatOption, MatSelect } from '@angular/material/select';
-import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { Subscription } from 'rxjs';
@@ -43,18 +42,14 @@ import { TagsFormComponent } from './tags-form/tags-form.component';
 
 @Component({
   selector: 'app-setting-menu',
-  standalone: true,
   imports: [
     TagsFormComponent,
     GroupsFormComponent,
-
     FormsModule,
     ReactiveFormsModule,
     CommonModule,
     MatIcon,
     MatIconButton,
-    MatTabGroup,
-    MatTab,
     MatFormField,
     MatLabel,
     MatSelect,

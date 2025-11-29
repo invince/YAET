@@ -30,37 +30,36 @@ import {MatInput} from '@angular/material/input';
 import {MatRadioButton, MatRadioGroup} from '@angular/material/radio';
 
 @Component({
-  selector: 'app-samba-form',
-  standalone: true,
-  imports: [
-    FormsModule,
-    KeyValuePipe,
-    MatFormField,
-    MatIcon,
-    MatIconButton,
-    MatInput,
-    MatLabel,
-    MatOption,
-    MatRadioButton,
-    MatRadioGroup,
-    MatSelect,
-    MatSuffix,
-    ReactiveFormsModule
-  ],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => SambaFormComponent),
-      multi: true,
-    },
-    {
-      provide: NG_VALIDATORS,
-      useExisting: forwardRef(() => SambaFormComponent),
-      multi: true,
-    },
-  ],
-  templateUrl: './samba-form.component.html',
-  styleUrl: './samba-form.component.css'
+    selector: 'app-samba-form',
+    imports: [
+        FormsModule,
+        KeyValuePipe,
+        MatFormField,
+        MatIcon,
+        MatIconButton,
+        MatInput,
+        MatLabel,
+        MatOption,
+        MatRadioButton,
+        MatRadioGroup,
+        MatSelect,
+        MatSuffix,
+        ReactiveFormsModule
+    ],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => SambaFormComponent),
+            multi: true,
+        },
+        {
+            provide: NG_VALIDATORS,
+            useExisting: forwardRef(() => SambaFormComponent),
+            multi: true,
+        },
+    ],
+    templateUrl: './samba-form.component.html',
+    styleUrl: './samba-form.component.css'
 })
 export class SambaFormComponent extends ChildFormAsFormControl(MenuComponent)  {
 

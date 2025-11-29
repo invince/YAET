@@ -33,10 +33,9 @@ export function IsAChildForm<TBase extends Constructor>(Base: TBase) {
 
   @Component({
     selector: 'app-is-a-child-form',
-    standalone: true,
     imports: [],
-    template: `<p>Abstract Menu</p>`,
-  })
+    template: `<p>Abstract Menu</p>`
+})
   abstract class IsAChildFormClazz extends Base implements OnInit, OnDestroy  {
     // @ts-ignore
 
@@ -96,10 +95,9 @@ export function ChildFormAsFormControl<TBase extends Constructor>(Base: TBase) {
 
   @Component({
     selector: 'app-child-form-as-formcontrol',
-    standalone: true,
     imports: [],
-    template: `<p>Abstract Menu</p>`,
-  })
+    template: `<p>Abstract Menu</p>`
+})
   abstract class ChildFormAsFormClazz extends Base implements OnInit, OnDestroy, ControlValueAccessor, Validator   {
 
     form!: FormGroup;

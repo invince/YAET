@@ -7,13 +7,12 @@ import { AbstractFileManager } from '../abstract-file-manager';
 import { FileListComponent } from '../custom/file-list.component';
 
 @Component({
-  selector: 'app-ftp',
-  standalone: true,
-  imports: [
-    FileListComponent
-  ],
-  templateUrl: './ftp.component.html',
-  styleUrl: './ftp.component.css'
+    selector: 'app-ftp',
+    imports: [
+        FileListComponent
+    ],
+    templateUrl: './ftp.component.html',
+    styleUrl: './ftp.component.css'
 })
 export class FtpComponent extends AbstractFileManager implements OnInit, OnDestroy {
 

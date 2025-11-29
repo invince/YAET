@@ -32,35 +32,33 @@ import {FTPProfile} from '../../../../domain/profile/FTPProfile';
 import {MatSlideToggle} from '@angular/material/slide-toggle';
 
 @Component({
-  selector: 'app-ftp-profile-form',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    MatSelectModule,
-    MatRadioModule,
-    MatFormFieldModule,
-
-    MatInput,
-    MatIcon,
-    MatIconButton,
-    MatSlideToggle,
-  ],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => FtpProfileFormComponent),
-      multi: true,
-    },
-    {
-      provide: NG_VALIDATORS,
-      useExisting: forwardRef(() => FtpProfileFormComponent),
-      multi: true,
-    },
-  ],
-  templateUrl: './ftp-profile-form.component.html',
-  styleUrl: './ftp-profile-form.component.css'
+    selector: 'app-ftp-profile-form',
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatSelectModule,
+        MatRadioModule,
+        MatFormFieldModule,
+        MatInput,
+        MatIcon,
+        MatIconButton,
+        MatSlideToggle,
+    ],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => FtpProfileFormComponent),
+            multi: true,
+        },
+        {
+            provide: NG_VALIDATORS,
+            useExisting: forwardRef(() => FtpProfileFormComponent),
+            multi: true,
+        },
+    ],
+    templateUrl: './ftp-profile-form.component.html',
+    styleUrl: './ftp-profile-form.component.css'
 })
 export class FtpProfileFormComponent extends ChildFormAsFormControl(MenuComponent)  {
 

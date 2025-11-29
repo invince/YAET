@@ -12,23 +12,19 @@ import {ProfileService} from '../../../services/profile.service';
 import {NotificationService} from '../../../services/notification.service';
 
 @Component({
-  selector: 'app-quickconnect-menu',
-  standalone: true,
+    selector: 'app-quickconnect-menu',
     imports: [
-      CommonModule,
-      FormsModule,
-      ReactiveFormsModule,
-
-      MatFormFieldModule,
-      MatButtonModule,
-      MatSelectModule,
-
-      MatIcon,
-      ProfileFormComponent,
-
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatFormFieldModule,
+        MatButtonModule,
+        MatSelectModule,
+        MatIcon,
+        ProfileFormComponent,
     ],
-  templateUrl: './quickconnect-menu.component.html',
-  styleUrl: './quickconnect-menu.component.css'
+    templateUrl: './quickconnect-menu.component.html',
+    styleUrl: './quickconnect-menu.component.css'
 })
 export class QuickconnectMenuComponent extends MenuComponent  implements OnInit {
 
