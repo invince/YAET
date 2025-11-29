@@ -3,17 +3,11 @@
     <div class="profile-form-left-part">
       <mat-form-field class="field">
         <mat-label>Name</mat-label>
-        <input matInput type="text"
-               formControlName="name"
-               required/>
+        <input matInput type="text" formControlName="name" required />
         @if (form.get('name')?.value) {
-          <button
-            matSuffix
-            mat-icon-button
-            aria-label="Clear"
-            (click)="clear(form,'name')">
-            <mat-icon>close</mat-icon>
-          </button>
+        <button matSuffix mat-icon-button aria-label="Clear" (click)="clear(form,'name')">
+          <mat-icon>close</mat-icon>
+        </button>
         }
       </mat-form-field>
 
@@ -22,7 +16,7 @@
         <mat-select formControlName="group" (selectionChange)="onSelectGroup($event)" [style.color]="groupColor">
           <mat-option></mat-option>
           @for (oneGroup of settingStorage.settings.groups; track oneGroup.id) {
-            <mat-option [value]="oneGroup" [style.background]="oneGroup.color">{{ oneGroup.name }}</mat-option>
+          <mat-option [value]="oneGroup" [style.background]="oneGroup.color">{{ oneGroup.name }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
@@ -30,57 +24,54 @@
       <mat-form-field class="field">
         <mat-chip-grid #chipGrid aria-label="Enter Tags" formControlName="tags">
           @if (form.get("tags")?.value) {
-            @for (tag of form.get("tags")?.value; track tag.id) {
-              <mat-chip-row
-                class="tag-chip"
-                [removable]="true"
-                (removed)="removeTag(tag)"
-                [style.background]="tag.color"
-                [attr.aria-description]="'press enter to edit ' + tag.name"
-                [value]="tag"
-              >
-                {{ tag.name }}
-                <button matChipRemove [attr.aria-label]="'remove ' + tag.name" [style.cursor]="'grab'">
-                  <mat-icon>cancel</mat-icon>
-                </button>
-              </mat-chip-row>
-            }
+          @for (tag of form.get("tags")?.value; track tag.id) {
+          <mat-chip-row class="tag-chip" [removable]="true" (removed)="removeTag(tag)" [style.background]="tag.color"
+            [attr.aria-description]="'press enter to edit ' + tag.name" [value]="tag">
+            {{ tag.name }}
+            <button matChipRemove [attr.aria-label]="'remove ' + tag.name" [style.cursor]="'grab'">
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip-row>
+          }
           }
         </mat-chip-grid>
-        <input
-          #tagsAutoCompleteInput
-          placeholder="Add Tag..."
-          (input)="updateFilteredTag($event)"
-          [matChipInputFor]="chipGrid"
-          [matAutocomplete]="auto"
-          [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-          (matChipInputTokenEnd)="addTag($event)"
-        />
+        <input #tagsAutoCompleteInput placeholder="Add Tag..." (input)="updateFilteredTag($event)"
+          [matChipInputFor]="chipGrid" [matAutocomplete]="auto" [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+          (matChipInputTokenEnd)="addTag($event)" />
         <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectTag($event)">
           @for (tag of filteredTags; track tag.id) {
-            <mat-option [value]="tag">{{ tag.name }}</mat-option>
+          <mat-option [value]="tag">{{ tag.name }}</mat-option>
           }
         </mat-autocomplete>
       </mat-form-field>
 
+      <mat-form-field class="field">
+        <mat-label>Proxy</mat-label>
+        <mat-select formControlName="proxyId">
+          <mat-option></mat-option>
+          @for (proxy of proxyStorage.dataCopy.proxies; track proxy.id) {
+          <mat-option [value]="proxy.id">{{ proxy.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
 
       <mat-form-field class="field">
         <mat-label>Category</mat-label>
         <mat-select (selectionChange)="onSelectCategory($event)" required formControlName="category">
           @for (oneCat of CATEGORY_OPTIONS | keyvalue : unordered; track oneCat.value) {
-            <mat-option [value]="oneCat.value">{{ oneCat.value }}</mat-option>
+          <mat-option [value]="oneCat.value">{{ oneCat.value }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
       @if (form.get('category')?.value) {
-        <mat-form-field class="field">
-          <mat-label>Connection Type</mat-label>
-          <mat-select (selectionChange)="onSelectType($event)" required formControlName="profileType">
-            <mat-option *ngFor="let oneType of getTypeOptions()  | keyvalue : unordered "
-                        [value]="oneType.value">{{ oneType.value }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
+      <mat-form-field class="field">
+        <mat-label>Connection Type</mat-label>
+        <mat-select (selectionChange)="onSelectType($event)" required formControlName="profileType">
+          <mat-option *ngFor="let oneType of getTypeOptions()  | keyvalue : unordered " [value]="oneType.value">{{
+            oneType.value }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
       }
     </div>
 
@@ -89,59 +80,53 @@
         <mat-label>Description</mat-label>
         <textarea matInput type="text" formControlName="comment" cdkTextareaAutosize></textarea>
         @if (form.get('comment')?.value) {
-          <button
-            matSuffix
-            mat-icon-button
-            aria-label="Clear"
-            (click)="clear(form,'comment')">
-            <mat-icon>close</mat-icon>
-          </button>
+        <button matSuffix mat-icon-button aria-label="Clear" (click)="clear(form,'comment')">
+          <mat-icon>close</mat-icon>
+        </button>
         }
       </mat-form-field>
 
       @if (form.get('category')?.value == 'CUSTOM') {
-        <app-custom-profile-form formControlName="customProfileForm"></app-custom-profile-form>
+      <app-custom-profile-form formControlName="customProfileForm"></app-custom-profile-form>
       } @else {
-        @switch (form.get('profileType')?.value) {
-          @case ('SSH_TERMINAL') {
-            <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm">
+      @switch (form.get('profileType')?.value) {
+      @case ('SSH_TERMINAL') {
+      <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm">
 
-            </app-remote-terminal-profile-form>
-          }
-          @case ('TELNET_TERMINAL') {
-            <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm"
-                                              [type]="'telnet'"
-                                              [supportedSecretType]="[SecretType.LOGIN_PASSWORD]">
+      </app-remote-terminal-profile-form>
+      }
+      @case ('TELNET_TERMINAL') {
+      <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm" [type]="'telnet'"
+        [supportedSecretType]="[SecretType.LOGIN_PASSWORD]">
 
-            </app-remote-terminal-profile-form>
-          }
-          @case ('WIN_RM_TERMINAL') {
-            <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm"
-                                              [type]="'winrm'"
-                                              [supportedSecretType]="[SecretType.LOGIN_PASSWORD]">
+      </app-remote-terminal-profile-form>
+      }
+      @case ('WIN_RM_TERMINAL') {
+      <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm" [type]="'winrm'"
+        [supportedSecretType]="[SecretType.LOGIN_PASSWORD]">
 
-            </app-remote-terminal-profile-form>
-          }
+      </app-remote-terminal-profile-form>
+      }
 
-          @case ('SCP_FILE_EXPLORER') {
-            <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm" [type]="'scp'">
-            </app-remote-terminal-profile-form>
-          }
-          @case ('FTP_FILE_EXPLORER') {
-            <app-ftp-profile-form formControlName="ftpProfileForm"></app-ftp-profile-form>
-          }
-          @case ('SAMBA_FILE_EXPLORER') {
-            <app-samba-form formControlName="sambaProfileForm"></app-samba-form>
-          }
+      @case ('SCP_FILE_EXPLORER') {
+      <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm" [type]="'scp'">
+      </app-remote-terminal-profile-form>
+      }
+      @case ('FTP_FILE_EXPLORER') {
+      <app-ftp-profile-form formControlName="ftpProfileForm"></app-ftp-profile-form>
+      }
+      @case ('SAMBA_FILE_EXPLORER') {
+      <app-samba-form formControlName="sambaProfileForm"></app-samba-form>
+      }
 
 
-          @case ('RDP_REMOTE_DESKTOP') {
-            <app-rdp-profile-form formControlName="rdpProfileForm"></app-rdp-profile-form>
-          }
-          @case ('VNC_REMOTE_DESKTOP') {
-            <app-vnc-profile-form formControlName="vncProfileForm"></app-vnc-profile-form>
-          }
-        }
+      @case ('RDP_REMOTE_DESKTOP') {
+      <app-rdp-profile-form formControlName="rdpProfileForm"></app-rdp-profile-form>
+      }
+      @case ('VNC_REMOTE_DESKTOP') {
+      <app-vnc-profile-form formControlName="vncProfileForm"></app-vnc-profile-form>
+      }
+      }
       }
 
     </div>
@@ -149,28 +134,26 @@
 
   <div class="profile-form-footer modal-footer">
     @if (!profile.isNew && buttons.includes('close')) {
-      <button mat-button (click)="onClose()">Cancel</button>
+    <button mat-button (click)="onClose()">Cancel</button>
     }
     @if (buttons.includes('reload')) {
-      <button mat-stroked-button class="mat-accent" (click)="onReload()">Reload</button>
+    <button mat-stroked-button class="mat-accent" (click)="onReload()">Reload</button>
     }
     @if (buttons.includes('delete')) {
-      <button mat-raised-button color="warn" (click)="onDelete()">Delete</button>
+    <button mat-raised-button color="warn" (click)="onDelete()">Delete</button>
     }
     @if (!profile.isNew && buttons.includes('clone')) {
-      <button mat-raised-button color="warn" (click)="onClone()"
-              [disabled]="form.invalid">Clone
-      </button>
+    <button mat-raised-button color="warn" (click)="onClone()" [disabled]="form.invalid">Clone
+    </button>
     }
     @if (masterKeyService.hasMasterKey && buttons.includes('save')) {
-      <button mat-raised-button class="mat-primary" (click)="onSave()"
-              [disabled]="form.invalid || !form.dirty" cdkFocusInitial>Save
-      </button>
+    <button mat-raised-button class="mat-primary" (click)="onSave()" [disabled]="form.invalid || !form.dirty"
+      cdkFocusInitial>Save
+    </button>
     }
     @if (buttons.includes('connect')) {
-      <button mat-raised-button class="mat-primary" (click)="onConnect()"
-              [disabled]="form.invalid">Connect
-      </button>
+    <button mat-raised-button class="mat-primary" (click)="onConnect()" [disabled]="form.invalid">Connect
+    </button>
     }
   </div>
 </div>

@@ -1,66 +1,67 @@
-import {ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
-import {MenuComponent} from '../menu.component';
-import {MatIcon} from '@angular/material/icon';
-import {MatButtonModule} from '@angular/material/button';
-import {Profile, ProfileCategory, ProfileCategoryTypeMap, ProfileType} from '../../../domain/profile/Profile';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatSelectChange, MatSelectModule} from '@angular/material/select';
-import {CommonModule, KeyValuePipe} from '@angular/common';
-import {MatInput} from '@angular/material/input';
-import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { CdkTextareaAutosize } from '@angular/cdk/text-field';
+import { CommonModule, KeyValuePipe } from '@angular/common';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { MatButtonModule } from '@angular/material/button';
+import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIcon } from '@angular/material/icon';
+import { MatInput } from '@angular/material/input';
+import { MatSelectChange, MatSelectModule } from '@angular/material/select';
+import { CustomProfile } from '../../../domain/profile/CustomProfile';
+import { FTPProfile } from '../../../domain/profile/FTPProfile';
+import { Profile, ProfileCategory, ProfileCategoryTypeMap, ProfileType } from '../../../domain/profile/Profile';
+import { RdpProfile } from '../../../domain/profile/RdpProfile';
+import { RemoteTerminalProfile } from '../../../domain/profile/RemoteTerminalProfile';
+import { SambaProfile } from '../../../domain/profile/SambaProfile';
+import { VncProfile } from '../../../domain/profile/VncProfile';
+import { SecretType } from '../../../domain/Secret';
+import { Tag } from '../../../domain/Tag';
+import { LogService } from '../../../services/log.service';
+import { MasterKeyService } from '../../../services/master-key.service';
+import { NotificationService } from '../../../services/notification.service';
+import { ProfileService } from '../../../services/profile.service';
+import { SettingStorageService } from '../../../services/setting-storage.service';
+import { SettingService } from '../../../services/setting.service';
+import { IsAChildForm } from '../../EnhancedFormMixin';
+import { MenuComponent } from '../menu.component';
+import { CustomProfileFormComponent } from './custom-profile-form/custom-profile-form.component';
+import { FtpProfileFormComponent } from './ftp-profile-form/ftp-profile-form.component';
+import { RdpProfileFormComponent } from './rdp-profile-form/rdp-profile-form.component';
 import {
   RemoteTerminalProfileFormComponent
 } from './remote-terminal-profile-form/remote-terminal-profile-form.component';
-import {ProfileService} from '../../../services/profile.service';
-import {IsAChildForm} from '../../EnhancedFormMixin';
-import {MasterKeyService} from '../../../services/master-key.service';
-import {SettingStorageService} from '../../../services/setting-storage.service';
-import {SettingService} from '../../../services/setting.service';
-import {MatChipInputEvent, MatChipsModule} from '@angular/material/chips';
-import {COMMA, ENTER} from '@angular/cdk/keycodes';
-import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
-import {Tag} from '../../../domain/Tag';
-import {RemoteTerminalProfile} from '../../../domain/profile/RemoteTerminalProfile';
-import {CdkTextareaAutosize} from '@angular/cdk/text-field';
-import {RdpProfileFormComponent} from './rdp-profile-form/rdp-profile-form.component';
-import {RdpProfile} from '../../../domain/profile/RdpProfile';
-import {VncProfileFormComponent} from './vnc-profile-form/vnc-profile-form.component';
-import {VncProfile} from '../../../domain/profile/VncProfile';
-import {CustomProfileFormComponent} from './custom-profile-form/custom-profile-form.component';
-import {CustomProfile} from '../../../domain/profile/CustomProfile';
-import {LogService} from '../../../services/log.service';
-import {NotificationService} from '../../../services/notification.service';
-import {FtpProfileFormComponent} from './ftp-profile-form/ftp-profile-form.component';
-import {FTPProfile} from '../../../domain/profile/FTPProfile';
-import {SecretType} from '../../../domain/Secret';
-import {SambaFormComponent} from './samba-form/samba-form.component';
-import {SambaProfile} from '../../../domain/profile/SambaProfile';
-
+import { SambaFormComponent } from './samba-form/samba-form.component';
+import { VncProfileFormComponent } from './vnc-profile-form/vnc-profile-form.component';
+import { ProxyService } from '../../../services/proxy.service';
+import { ProxyStorageService } from '../../../services/proxy-storage.service';
 
 @Component({
-    selector: 'app-profile-form',
-    imports: [
-        CommonModule,
-        FormsModule,
-        ReactiveFormsModule,
-        MatFormFieldModule,
-        MatSelectModule,
-        MatButtonModule,
-        MatChipsModule,
-        MatAutocompleteModule,
-        MatIcon,
-        KeyValuePipe,
-        MatInput,
-        CdkTextareaAutosize,
-        RemoteTerminalProfileFormComponent,
-        RdpProfileFormComponent,
-        VncProfileFormComponent,
-        CustomProfileFormComponent,
-        FtpProfileFormComponent,
-        SambaFormComponent,
-    ],
-    templateUrl: './profile-form.component.html',
-    styleUrl: './profile-form.component.scss'
+  selector: 'app-profile-form',
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatChipsModule,
+    MatAutocompleteModule,
+    MatIcon,
+    KeyValuePipe,
+    MatInput,
+    CdkTextareaAutosize,
+    RemoteTerminalProfileFormComponent,
+    RdpProfileFormComponent,
+    VncProfileFormComponent,
+    CustomProfileFormComponent,
+    FtpProfileFormComponent,
+    SambaFormComponent,
+  ],
+  templateUrl: './profile-form.component.html',
+  styleUrl: './profile-form.component.scss'
 })
 export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements OnInit {
 
@@ -96,6 +97,8 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     private settingService: SettingService,
     private notification: NotificationService,
     private cdr: ChangeDetectorRef,
+    public proxyService: ProxyService,
+    public proxyStorage: ProxyStorageService
   ) {
     super();
 
@@ -128,6 +131,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
         category: [this._profile.category, Validators.required],
         group: [],
         tags: [[]],
+        proxyId: [this._profile.proxyId],
         profileType: [this._profile.profileType, Validators.required],
         remoteTerminalProfileForm: [],
 
@@ -139,7 +143,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
         customProfileForm: [this._profile.customProfile],
 
       },
-      {validators: []}
+      { validators: [] }
     );
   }
 
@@ -213,6 +217,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
         this.form.get('tags')?.updateValueAndValidity();
       }
       this.form.get('category')?.setValue(profile?.category);
+      this.form.get('proxyId')?.setValue(profile?.proxyId);
       this.form.get('profileType')?.setValue(profile?.profileType);
 
       if (profile?.category == ProfileCategory.CUSTOM) {
@@ -259,6 +264,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     if (tags && Array.isArray(tags)) {
       this._profile.tags = tags.map(one => one.id);
     }
+    this._profile.proxyId = this.form.get('proxyId')?.value;
 
     this._profile.category = this.form.get('category')?.value;
     if (this._profile.category == ProfileCategory.CUSTOM) {

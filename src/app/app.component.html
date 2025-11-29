@@ -111,6 +111,10 @@
             <app-secrets-menu [@slideInOut]="'in'"
                 (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-secrets-menu>
             }
+            @case(MENU_PROXY) {
+            <app-proxy-menu [@slideInOut]="'in'"
+                (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-proxy-menu>
+            }
             @case(MENU_CLOUD) {
             <app-cloud-menu [@slideInOut]="'in'"
                 (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-cloud-menu>

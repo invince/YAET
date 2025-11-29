@@ -1,46 +1,48 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {MenuComponent} from '../menu.component';
-import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatIcon} from '@angular/material/icon';
-import {MatInput} from '@angular/material/input';
-import {MatRadioModule} from '@angular/material/radio';
-import {MatSelectChange, MatSelectModule} from '@angular/material/select';
-import {AuthType, SecretType} from '../../../domain/Secret';
-import {CloudSettings} from '../../../domain/setting/CloudSettings';
-import {MatButtonModule} from '@angular/material/button';
-import {SecretStorageService} from '../../../services/secret-storage.service';
-import {CloudService} from '../../../services/cloud.service';
-import {MasterKeyService} from '../../../services/master-key.service';
-import {CommonModule} from '@angular/common';
-import {MatListModule} from '@angular/material/list';
-import {MatCheckbox} from '@angular/material/checkbox';
-import {SecretService} from '../../../services/secret.service';
-import {SettingService} from '../../../services/setting.service';
-import {ProfileService} from '../../../services/profile.service';
-import {NgxSpinnerService} from 'ngx-spinner';
+import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatDialog } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIcon } from '@angular/material/icon';
+import { MatInput } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatSelectChange, MatSelectModule } from '@angular/material/select';
 import _ from 'lodash';
-import {NotificationService} from '../../../services/notification.service';
-import {MatDialog} from '@angular/material/dialog';
-import {SecretQuickFormComponent} from '../../dialog/secret-quick-form/secret-quick-form.component';
+import { NgxSpinnerService } from 'ngx-spinner';
+import { AuthType, SecretType } from '../../../domain/Secret';
+import { CloudSettings } from '../../../domain/setting/CloudSettings';
+import { CloudService } from '../../../services/cloud.service';
+import { MasterKeyService } from '../../../services/master-key.service';
+import { NotificationService } from '../../../services/notification.service';
+import { ProfileService } from '../../../services/profile.service';
+import { ProxyService } from '../../../services/proxy.service';
+import { ProxyStorageService } from '../../../services/proxy-storage.service';
+import { SecretStorageService } from '../../../services/secret-storage.service';
+import { SecretService } from '../../../services/secret.service';
+import { SettingService } from '../../../services/setting.service';
+import { SecretQuickFormComponent } from '../../dialog/secret-quick-form/secret-quick-form.component';
+import { MenuComponent } from '../menu.component';
 
 @Component({
-    selector: 'app-cloud-menu',
-    imports: [
-        CommonModule,
-        FormsModule,
-        ReactiveFormsModule,
-        MatFormFieldModule,
-        MatRadioModule,
-        MatSelectModule,
-        MatListModule,
-        MatButtonModule,
-        MatIcon,
-        MatInput,
-        MatCheckbox,
-    ],
-    templateUrl: './cloud.component.html',
-    styleUrl: './cloud.component.css'
+  selector: 'app-cloud-menu',
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatRadioModule,
+    MatSelectModule,
+    MatListModule,
+    MatButtonModule,
+    MatIcon,
+    MatInput,
+    MatCheckbox,
+  ],
+  templateUrl: './cloud.component.html',
+  styleUrl: './cloud.component.css'
 })
 export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
   AUTH_OPTIONS = AuthType;
@@ -67,8 +69,10 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
 
     private spinner: NgxSpinnerService,
     public dialog: MatDialog,
+    public proxyService: ProxyService,
+    public proxyStorage: ProxyStorageService
   ) {
-      super();
+    super();
   }
 
   ngOnDestroy(): void {
@@ -76,7 +80,7 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    if (!this.cloudService.isLoaded ) {
+    if (!this.cloudService.isLoaded) {
       this.notification.info('Cloud Setting not loaded, we\'ll reload it, please close Cloud menu and reopen');
       this.cloudService.reload();
     }
@@ -92,8 +96,9 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
         login: [cloudSettings.login],
         password: [cloudSettings.password],
         secretId: [cloudSettings.secretId],
+        proxyId: [cloudSettings.proxyId],
       },
-      {validators: [this.secretOrPasswordMatchValidator]}
+      { validators: [this.secretOrPasswordMatchValidator] }
     );
 
     this.allSelected = _.isEqual(cloudSettings.items, this.SYNC_ITEMS);
@@ -115,14 +120,14 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
     if (authType == 'login') {
       group.get('password')?.addValidators(Validators.required);
       group.get('secretId')?.removeValidators(Validators.required);
-      return group.get('password')?.value ? null : {passwordRequired: true};
+      return group.get('password')?.value ? null : { passwordRequired: true };
     } else if (authType == 'secret') {
       group.get('password')?.removeValidators(Validators.required);
       group.get('secretId')?.addValidators(Validators.required);
-      return group.get('secretId')?.value ? null : {secretRequired: true};
+      return group.get('secretId')?.value ? null : { secretRequired: true };
     } else {
 
-      return {authTypeRequired: true};
+      return { authTypeRequired: true };
     }
   }
 
@@ -144,6 +149,7 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
       cloud.password = '';
       cloud.secretId = this.form.get('secretId')?.value;
     }
+    cloud.proxyId = this.form.get('proxyId')?.value;
     return cloud;
   }
 

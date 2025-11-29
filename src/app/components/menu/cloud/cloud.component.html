@@ -11,114 +11,107 @@
       <div class="cloud-form" [formGroup]="form">
         <mat-form-field class="field-long">
           <mat-label>Git URl</mat-label>
-          <input matInput type="text"
-                 formControlName="url"
-                 required/>
+          <input matInput type="text" formControlName="url" required />
           @if (form.get('url')?.value) {
-            <button
-              matSuffix
-              mat-icon-button
-              aria-label="Clear"
-              (click)="clear(form,'url')">
-              <mat-icon>close</mat-icon>
-            </button>
+          <button matSuffix mat-icon-button aria-label="Clear" (click)="clear(form,'url')">
+            <mat-icon>close</mat-icon>
+          </button>
           }
         </mat-form-field>
 
         <!-- Check All -->
-        <mat-checkbox
-          (change)="toggleAll($event)"
-          [checked]="allSelected"
-          [indeterminate]="indeterminateState">
+        <mat-checkbox (change)="toggleAll($event)" [checked]="allSelected" [indeterminate]="indeterminateState">
           Check All
         </mat-checkbox>
 
         <mat-selection-list formControlName="items">
           @for (item of SYNC_ITEMS; track item) {
-            <mat-list-option [value]="item" togglePosition='before'>
-              {{ item }}
-            </mat-list-option>
+          <mat-list-option [value]="item" togglePosition='before'>
+            {{ item }}
+          </mat-list-option>
           }
         </mat-selection-list>
 
+        <mat-form-field class="field">
+          <mat-label>Proxy</mat-label>
+          <mat-select formControlName="proxyId">
+            <mat-option></mat-option>
+            @for (proxy of proxyStorage.dataCopy.proxies; track proxy.id) {
+            <mat-option [value]="proxy.id">{{ proxy.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
         <mat-radio-group class="field" aria-label="Auth Type" formControlName="authType" required>
           @for (oneType of AUTH_OPTIONS | keyvalue : unordered; track oneType.value) {
-            <mat-radio-button [value]="oneType.value">{{ oneType.value }}</mat-radio-button>
+          <mat-radio-button [value]="oneType.value">{{ oneType.value }}</mat-radio-button>
           }
         </mat-radio-group>
 
         @switch (form.get('authType')?.value) {
-          @case (AUTH_OPTIONS.LOGIN) {
-            <mat-form-field class="field" required>
-              <mat-label>Login</mat-label>
-              <input matInput type="text" formControlName="login" />
-              @if (form.get('login')?.value) {
-              <button
-                matSuffix
-                mat-icon-button
-                aria-label="Clear"
-                (click)="clear(form,'login')">
-                <mat-icon>close</mat-icon>
-              </button>
-              }
-            </mat-form-field>
-
-            <mat-form-field class="field" required>
-              <mat-label>Password</mat-label>
-              <input matInput type="password" formControlName="password" />
-            </mat-form-field>
-
+        @case (AUTH_OPTIONS.LOGIN) {
+        <mat-form-field class="field" required>
+          <mat-label>Login</mat-label>
+          <input matInput type="text" formControlName="login" />
+          @if (form.get('login')?.value) {
+          <button matSuffix mat-icon-button aria-label="Clear" (click)="clear(form,'login')">
+            <mat-icon>close</mat-icon>
+          </button>
           }
+        </mat-form-field>
 
-          @case (AUTH_OPTIONS.SECRET) {
-            <mat-form-field class="field" required>
-              <mat-label>Secret</mat-label>
-              <mat-select (selectionChange)="onSelectSecret($event)" formControlName="secretId">
-                <mat-option (click)="quickCreateSecret()">
-                  <mat-icon>add</mat-icon>
-                  Add New...
-                </mat-option>
-                @for (oneSecret of filterSecret(); track oneSecret.id) {
-                <mat-option [value]="oneSecret.id">
-                  @if (oneSecret.icon) {
-                    <mat-icon>{{oneSecret.icon}}</mat-icon>
-                  }
-                {{ secretService.displaySecretOptionName(oneSecret) }}
-                </mat-option>
-                }
-              </mat-select>
-              @if (form.get('secretId')?.value) {
-                <button
-                  matSuffix
-                  mat-icon-button
-                  aria-label="Clear"
-                  (click)="clear(form,'secretId')">
-                  <mat-icon>close</mat-icon>
-                </button>
+        <mat-form-field class="field" required>
+          <mat-label>Password</mat-label>
+          <input matInput type="password" formControlName="password" />
+        </mat-form-field>
+
+        }
+
+        @case (AUTH_OPTIONS.SECRET) {
+        <mat-form-field class="field" required>
+          <mat-label>Secret</mat-label>
+          <mat-select (selectionChange)="onSelectSecret($event)" formControlName="secretId">
+            <mat-option (click)="quickCreateSecret()">
+              <mat-icon>add</mat-icon>
+              Add New...
+            </mat-option>
+            @for (oneSecret of filterSecret(); track oneSecret.id) {
+            <mat-option [value]="oneSecret.id">
+              @if (oneSecret.icon) {
+              <mat-icon>{{oneSecret.icon}}</mat-icon>
               }
-            </mat-form-field>
+              {{ secretService.displaySecretOptionName(oneSecret) }}
+            </mat-option>
+            }
+          </mat-select>
+          @if (form.get('secretId')?.value) {
+          <button matSuffix mat-icon-button aria-label="Clear" (click)="clear(form,'secretId')">
+            <mat-icon>close</mat-icon>
+          </button>
           }
+        </mat-form-field>
+        }
         }
         @if (form.hasError('passwordRequired')) {
-          <mat-error>
-            Password is required
-          </mat-error>
+        <mat-error>
+          Password is required
+        </mat-error>
         }
         @if (form.hasError('secretRequired')) {
-          <mat-error>
-            Secret is required
-          </mat-error>
+        <mat-error>
+          Secret is required
+        </mat-error>
         }
       </div>
     </div>
 
     <div class="modal-footer">
       <button mat-button (click)="close()">Cancel</button>
-      <button mat-fab extended (click)="upload()" class="small-icon" [disabled]="form.invalid || processing" >
+      <button mat-fab extended (click)="upload()" class="small-icon" [disabled]="form.invalid || processing">
         <mat-icon>cloud_upload</mat-icon>
         Upload
       </button>
-      <button mat-fab extended (click)="download()" class="small-icon" [disabled]="form.invalid || processing" >
+      <button mat-fab extended (click)="download()" class="small-icon" [disabled]="form.invalid || processing">
         <mat-icon>cloud_download</mat-icon>
         Download
       </button>

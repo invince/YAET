@@ -1,0 +1,60 @@
+<form [formGroup]="form" class="proxy-form">
+    <div class="form-header">
+        <h2>{{ proxy.isNew ? 'New Proxy' : 'Edit Proxy' }}</h2>
+    </div>
+
+    <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Name</mat-label>
+            <input matInput formControlName="name" placeholder="My Proxy">
+            <mat-error *ngIf="form.get('name')?.hasError('required')">Name is required</mat-error>
+        </mat-form-field>
+    </div>
+
+    <div class="form-row">
+        <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Type</mat-label>
+            <mat-select formControlName="type">
+                <mat-option value="HTTP">HTTP</mat-option>
+                <mat-option value="SOCKS4">SOCKS4</mat-option>
+                <mat-option value="SOCKS5">SOCKS5</mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+
+    <div class="form-row">
+        <mat-form-field appearance="outline" class="host-field">
+            <mat-label>Host</mat-label>
+            <input matInput formControlName="host" placeholder="proxy.example.com">
+            <mat-error *ngIf="form.get('host')?.hasError('required')">Host is required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="port-field">
+            <mat-label>Port</mat-label>
+            <input matInput type="number" formControlName="port" placeholder="8080">
+            <mat-error *ngIf="form.get('port')?.hasError('required')">Port is required</mat-error>
+            <mat-error *ngIf="form.get('port')?.hasError('min') || form.get('port')?.hasError('max')">Invalid
+                port</mat-error>
+        </mat-form-field>
+    </div>
+
+    <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Authentication (Optional)</mat-label>
+            <mat-select formControlName="secretId">
+                <mat-option [value]="undefined">None</mat-option>
+                @for (secret of secretStorage.dataCopy.secrets; track secret.id) {
+                <mat-option [value]="secret.id">{{ secret.name }}</mat-option>
+                }
+            </mat-select>
+            <mat-hint>Select a secret for username/password authentication</mat-hint>
+        </mat-form-field>
+    </div>
+
+    <div class="form-actions">
+        <button mat-button type="button" (click)="onCancel()">Cancel</button>
+        <button mat-button color="warn" type="button" (click)="onDelete()" *ngIf="!proxy.isNew">Delete</button>
+        <button mat-raised-button color="primary" type="button" (click)="onSave()"
+            [disabled]="form.invalid || form.pristine">Save</button>
+    </div>
+</form>

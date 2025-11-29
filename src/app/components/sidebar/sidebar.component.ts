@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
@@ -26,12 +26,13 @@ import { TabService } from '../../services/tab.service';
     templateUrl: './sidebar.component.html',
     styleUrl: './sidebar.component.css'
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnDestroy {
 
     MENU_ADD: string = MenuConsts.MENU_ADD;
     MENU_PROFILE: string = MenuConsts.MENU_PROFILE;
     MENU_SECURE: string = MenuConsts.MENU_SECURE;
     MENU_CLOUD: string = MenuConsts.MENU_CLOUD;
+    MENU_PROXY: string = MenuConsts.MENU_PROXY;
     MENU_SETTING: string = MenuConsts.MENU_SETTING;
 
     subscriptions: Subscription[] = [];
@@ -66,6 +67,22 @@ export class SidebarComponent {
         this.requireMasterKey(() => this.toggleMenu(this.MENU_SECURE));
     }
 
+    profileMenu() {
+        this.requireMasterKey(() => this.toggleMenu(this.MENU_PROFILE));
+    }
+
+    cloudMenu() {
+        this.requireMasterKey(() => this.toggleMenu(this.MENU_CLOUD));
+    }
+
+    proxyMenu() {
+        this.requireMasterKey(() => this.toggleMenu(this.MENU_PROXY));
+    }
+
+    settingMenu() {
+        this.toggleMenu(this.MENU_SETTING);
+    }
+
     requireMasterKey(callback: () => void) {
         if (this.masterKeyService.hasMasterKey) {
             callback();
@@ -85,18 +102,6 @@ export class SidebarComponent {
         this.subscriptions.push(dialogRef.afterClosed().subscribe(result => {
             this.log.debug('Master key modal closed');
         }));
-    }
-
-    profileMenu() {
-        this.requireMasterKey(() => this.toggleMenu(this.MENU_PROFILE));
-    }
-
-    cloudMenu() {
-        this.requireMasterKey(() => this.toggleMenu(this.MENU_CLOUD));
-    }
-
-    settingMenu() {
-        this.toggleMenu(this.MENU_SETTING);
     }
 
     toggleMenu(menu: string) {

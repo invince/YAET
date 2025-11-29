@@ -1,0 +1,62 @@
+<div class="menu-container">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Proxies</h3>
+      <button mat-icon-button (click)="close()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="modal-content">
+      <mat-sidenav-container class="sidenav-container">
+        <!-- Sidebar -->
+        <mat-sidenav mode="side" opened class="menu-sidenav">
+          <div class="sidenav">
+            <div class="sidenav-filter">
+              <mat-form-field class="field">
+                <mat-label>Filter</mat-label>
+                <input matInput type="text" [(ngModel)]="filter" />
+                @if (filter) {
+                <button matSuffix mat-icon-button aria-label="Clear" (click)="filter = ''">
+                  <mat-icon>close</mat-icon>
+                </button>
+                }
+              </mat-form-field>
+            </div>
+
+            <div class="sidenav-add">
+              <button mat-button (click)="addTab()" [disabled]="lastChildFormDirtyState || hasNewProxy()"
+                      aria-label="Add Proxy">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+
+
+            <div class="sidenav-content">
+              @for (proxy of proxiesCopy.proxies | filterKeyword:keywordsProviders:filter; track proxy.id) {
+              <div class="sidenav-item">
+                <button mat-button [class.selected]="proxy.id === selectedId" (click)="onTabChange(proxy)">
+                  {{
+                  proxyTabLabel(proxy)
+                  }}
+                </button>
+              </div>
+              }
+            </div>
+          </div>
+        </mat-sidenav>
+
+        <!-- Main Content -->
+        <mat-sidenav-content class="one-form">
+          @if (selectedProxy) {
+          <ng-container>
+            <app-proxy-form [proxy]="selectedProxy" (onProxyCancel)="onCancel($event)"
+                             (onProxyDelete)="onDelete($event)" (onProxySave)="onSaveOne($event)"
+                             (invalidStateChange)="onChildFormInvalidStateChange($event)"
+                             (dirtyStateChange)="onChildFormDirtyStateChange($event)"></app-proxy-form>
+          </ng-container>
+          }
+        </mat-sidenav-content>
+      </mat-sidenav-container>
+    </div>
+  </div>
+</div>

@@ -1,6 +1,6 @@
-import {Injectable} from '@angular/core';
-import {Subject} from 'rxjs';
-import {MenuConsts} from '../domain/MenuConsts';
+import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs';
+import { MenuConsts } from '../domain/MenuConsts';
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +22,7 @@ export class ModalControllerService {
     return this._currentOpenedMenu;
   }
 
-  closeModal(possibleModal: string | string[] | undefined= undefined, closeByChild: boolean = false) {
+  closeModal(possibleModal: string | string[] | undefined = undefined, closeByChild: boolean = false) {
     if (!closeByChild) {
       this._isMenuModalOpen = false;
     }
@@ -39,9 +39,9 @@ export class ModalControllerService {
     if (this._currentOpenedMenu == menu) {
 
       if (this._isMenuModalOpen &&
-        [MenuConsts.MENU_PROFILE, MenuConsts.MENU_SECURE].includes(menu)) {
-          this.closeModal(menu, true);
-          return;
+        [MenuConsts.MENU_PROFILE, MenuConsts.MENU_SECURE, MenuConsts.MENU_PROXY].includes(menu)) {
+        this.closeModal(menu, true);
+        return;
       }
       this._isMenuModalOpen = !this._isMenuModalOpen;
     } else {

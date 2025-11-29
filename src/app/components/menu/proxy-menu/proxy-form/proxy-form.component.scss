@@ -1,0 +1,46 @@
+.proxy-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.form-header {
+    margin-bottom: 16px;
+
+    h2 {
+        margin: 0;
+        font-weight: 400;
+    }
+}
+
+.form-row {
+    display: flex;
+    gap: 16px;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.half-width {
+    width: 50%;
+}
+
+.host-field {
+    flex: 3;
+}
+
+.port-field {
+    flex: 1;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--mat-divider-color);
+}
