@@ -93,6 +93,9 @@ export class ProxyService implements OnDestroy {
         proxies.version = packageJson.version;
         proxies.compatibleVersion = Compatibility.proxies;
         proxies.revision = Date.now();
+        for (let one of proxies.proxies) {
+            one.isNew = false;
+        }
         this.proxyStorage.data = proxies;
         this.masterKeyService.encrypt(this.proxyStorage.data).then(
             encrypted => {
