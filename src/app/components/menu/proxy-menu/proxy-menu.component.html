@@ -1,4 +1,4 @@
-<div class="menu-container">
+<div class="modal-container">
   <div class="modal">
     <div class="modal-header">
       <h3>Proxies</h3>
@@ -6,6 +6,7 @@
         <mat-icon>close</mat-icon>
       </button>
     </div>
+
     <div class="modal-content">
       <mat-sidenav-container class="sidenav-container">
         <!-- Sidebar -->
@@ -25,7 +26,7 @@
 
             <div class="sidenav-add">
               <button mat-button (click)="addTab()" [disabled]="lastChildFormDirtyState || hasNewProxy()"
-                      aria-label="Add Proxy">
+                aria-label="Add Proxy">
                 <mat-icon>add</mat-icon>
               </button>
             </div>
@@ -50,9 +51,9 @@
           @if (selectedProxy) {
           <ng-container>
             <app-proxy-form [proxy]="selectedProxy" (onProxyCancel)="onCancel($event)"
-                             (onProxyDelete)="onDelete($event)" (onProxySave)="onSaveOne($event)"
-                             (invalidStateChange)="onChildFormInvalidStateChange($event)"
-                             (dirtyStateChange)="onChildFormDirtyStateChange($event)"></app-proxy-form>
+              (onProxyDelete)="onDelete($event)" (onProxySave)="onSaveOne($event)"
+              (invalidStateChange)="onChildFormInvalidStateChange($event)"
+              (dirtyStateChange)="onChildFormDirtyStateChange($event)"></app-proxy-form>
           </ng-container>
           }
         </mat-sidenav-content>

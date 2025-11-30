@@ -10,6 +10,7 @@ const SETTINGS_JSON = 'settings.json';
 const PROFILES_JSON = 'profiles.json';
 const SECRETS_JSON = 'secrets.json';
 const CLOUD_JSON = 'cloud.json';
+const PROXIES_JSON = 'proxies.json';
 const MANIFEST_JSON = 'manifest.json';
 
 
@@ -19,7 +20,7 @@ function load(log, mainWindow, jsonFileName, loadedEvent, isRaw) {
     try {
       const settingsPath = path.join(APP_CONFIG_PATH, jsonFileName); // same folder as exe
       log.info(settingsPath);
-      if (fs.existsSync(settingsPath)){
+      if (fs.existsSync(settingsPath)) {
         return fs.readFile(settingsPath, 'utf-8', (err, data) => {
           if (!err) {
             const settings = isRaw ? data : JSON.parse(data);
@@ -36,7 +37,7 @@ function load(log, mainWindow, jsonFileName, loadedEvent, isRaw) {
               mainWindow.webContents.send(loadedEvent, undefined);
               resolve(undefined);
             } else {
-              reject({error: 'Failed to load settings.'});
+              reject({ error: 'Failed to load settings.' });
             }
           }
         );
@@ -150,7 +151,8 @@ function hasConfig(log, configToCheck) {
 }
 
 
-module.exports = {load, save,
-  BACKUP_FOLDER, GIT_FOLDER, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON,
+module.exports = {
+  load, save,
+  BACKUP_FOLDER, GIT_FOLDER, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, PROXIES_JSON,
   updateManifest, APP_CONFIG_PATH
 };

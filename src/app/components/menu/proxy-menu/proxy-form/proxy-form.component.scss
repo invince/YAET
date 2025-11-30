@@ -1,46 +1,36 @@
-.proxy-form {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.form-header {
-    margin-bottom: 16px;
-
-    h2 {
-        margin: 0;
-        font-weight: 400;
-    }
-}
-
-.form-row {
-    display: flex;
-    gap: 16px;
-}
-
-.full-width {
+:host {
+    display: block;
+    height: 100%;
     width: 100%;
 }
 
-.half-width {
-    width: 50%;
+.field {
+    margin: 16px;
+    width: 280px;
 }
 
-.host-field {
-    flex: 3;
-}
-
-.port-field {
-    flex: 1;
-}
-
-.form-actions {
+.proxy-form {
     display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    margin-top: 24px;
-    padding-top: 16px;
-    border-top: 1px solid var(--mat-divider-color);
+    flex-direction: row;
+}
+
+.proxy-form-container h2 {
+    padding-left: 16px;
+}
+
+.proxy-form-container {
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.proxy-form-content {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.proxy-form-footer {
+    margin-top: auto;
+    margin-bottom: 0;
 }

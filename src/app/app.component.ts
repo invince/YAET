@@ -35,6 +35,7 @@ import { MasterKeyService } from './services/master-key.service';
 import { ModalControllerService } from './services/modal-controller.service';
 import { NotificationService } from './services/notification.service';
 import { ProfileService } from './services/profile.service';
+import { ProxyService } from './services/proxy.service';
 import { SecretService } from './services/secret.service';
 import { SessionService } from './services/session.service';
 import { SettingStorageService } from './services/setting-storage.service';
@@ -98,6 +99,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private sessionService: SessionService,
     private masterKeyService: MasterKeyService,
     private cloudService: CloudService,
+    private proxyService: ProxyService,
     public tabService: TabService,
 
     public modalControl: ModalControllerService,

@@ -18,5 +18,15 @@ export class Proxy {
 }
 
 export class Proxies {
-    proxies: Proxy[] = [];
+    revision: number;
+
+    public version: string = '';
+    public compatibleVersion: string = '';
+
+    proxies: Proxy[];
+
+    constructor() {
+        this.revision = Date.now();
+        this.proxies = [];
+    }
 }

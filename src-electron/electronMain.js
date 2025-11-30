@@ -1,21 +1,22 @@
 const path = require("path");
 const fs = require("fs");
-const {app, globalShortcut, BrowserWindow, Tray} = require('electron');
+const { app, globalShortcut, BrowserWindow, Tray } = require('electron');
 
-const {createMenu} = require('./ui/menu');
-const {SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON, APP_CONFIG_PATH} = require("./common");
-const {initConfigFilesIpcHandler} = require('./ipc/configFiles');
-const {initTerminalIpcHandler} = require('./ipc/terminal/terminal');
-const {initCloudIpcHandler} = require('./ipc/cloud');
-const {initSecurityIpcHandler} = require('./ipc/security');
-const {initRdpHandler} = require('./ipc/remote-desktop/rdp');
-const {initClipboard} = require('./ipc/clipboard');
-const {initVncHandler} = require("./ipc/remote-desktop/vnc");
-const {initCustomSessionHandler} = require("./ipc/customSession");
-const {initScpSftpHandler} = require("./ipc/file-explorer/scp");
-const {initAutoUpdater} = require("./ipc/autoUpdater");
-const {initBackend} = require("./ipc/backend");
-const {initFtpHandler} = require("./ipc/file-explorer/ftp");
+const { createMenu } = require('./ui/menu');
+const { SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON, APP_CONFIG_PATH, PROXIES_JSON } = require("./common");
+const { initConfigFilesIpcHandler } = require('./ipc/configFiles');
+const { initTerminalIpcHandler } = require('./ipc/terminal/terminal');
+const { initCloudIpcHandler } = require('./ipc/cloud');
+const { initSecurityIpcHandler } = require('./ipc/security');
+const { initRdpHandler } = require('./ipc/remote-desktop/rdp');
+const { initClipboard } = require('./ipc/clipboard');
+const { initVncHandler } = require("./ipc/remote-desktop/vnc");
+const { initCustomSessionHandler } = require("./ipc/customSession");
+const { initScpSftpHandler } = require("./ipc/file-explorer/scp");
+const { initAutoUpdater } = require("./ipc/autoUpdater");
+const { initBackend } = require("./ipc/backend");
+const { initFtpHandler } = require("./ipc/file-explorer/ftp");
+const { initProxiesIpcHandler } = require("./ipc/proxies");
 
 let tray;
 let expressApp;
@@ -28,12 +29,12 @@ let sambaMap = new Map();
 let initialized = false;
 
 const log = require("electron-log")
-const {initCommonIpc} = require("./ipc/commonIpc");
-const {initSSHTerminalIpcHandler} = require("./ipc/terminal/ssh");
-const {initTelnetIpcHandler} = require("./ipc/terminal/telnet");
-const {initLocalTerminalIpcHandler} = require("./ipc/terminal/localTerminal");
-const {initWinRmIpcHandler} = require("./ipc/terminal/winRM");
-const {initSambaHandler} = require("./ipc/file-explorer/samba");
+const { initCommonIpc } = require("./ipc/commonIpc");
+const { initSSHTerminalIpcHandler } = require("./ipc/terminal/ssh");
+const { initTelnetIpcHandler } = require("./ipc/terminal/telnet");
+const { initLocalTerminalIpcHandler } = require("./ipc/terminal/localTerminal");
+const { initWinRmIpcHandler } = require("./ipc/terminal/winRM");
+const { initSambaHandler } = require("./ipc/file-explorer/samba");
 
 const logPath = `${__dirname}/logs/main.log`;
 console.log(logPath);
@@ -48,7 +49,7 @@ app.on('ready', () => {
 
   const isDev = process.env.NODE_ENV === 'development';
 
-  tray = new Tray( __dirname + '/assets/icons/app-icon.png',);
+  tray = new Tray(__dirname + '/assets/icons/app-icon.png',);
   tray.setToolTip('Yet Another Electron Terminal');
 
   mainWindow = new BrowserWindow({
@@ -93,6 +94,9 @@ app.on('ready', () => {
     load(log, mainWindow, CLOUD_JSON, "cloud.loaded", true)
       .then(r => log.info(CLOUD_JSON + " loaded, event sent"))
       .catch(log.error);
+    load(log, mainWindow, PROXIES_JSON, "proxies.loaded", false)
+      .then(r => log.info(PROXIES_JSON + " loaded, event sent"))
+      .catch(log.error);
     load(log, mainWindow, SETTINGS_JSON, "settings.loaded", false)
       .then(settings => {
         initHandlerAfterSettingLoad(settings);
@@ -111,6 +115,7 @@ function initHandlerBeforeSettingLoad() {
   initConfigFilesIpcHandler(log, mainWindow);
   initCloudIpcHandler(log);
   initSecurityIpcHandler(log);
+  initProxiesIpcHandler(log);
   initTerminalIpcHandler(log, terminalMap);
   initSSHTerminalIpcHandler(log, terminalMap);
   initTelnetIpcHandler(log, terminalMap);
@@ -152,11 +157,11 @@ app.on('window-all-closed', () => {
         case 'local':
         case 'winrm':
           term.process?.removeAllListeners();
-          term.process?.kill() ;
+          term.process?.kill();
           break;
         case 'ssh':
         case 'telnet':
-          term.process?.end() ;
+          term.process?.end();
           break;
 
       }
