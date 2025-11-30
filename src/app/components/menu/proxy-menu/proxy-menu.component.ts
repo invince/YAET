@@ -8,6 +8,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatInput } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSidenavModule } from '@angular/material/sidenav';
+import { TranslateModule } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 
 import { MenuConsts } from '../../../domain/MenuConsts';
@@ -36,7 +37,8 @@ import { ProxyFormComponent } from './proxy-form/proxy-form.component';
         MatInput,
         MatIcon,
         FilterKeywordPipe,
-        ProxyFormComponent
+        ProxyFormComponent,
+        TranslateModule
     ],
     templateUrl: './proxy-menu.component.html',
     styleUrl: './proxy-menu.component.scss',
@@ -149,7 +151,7 @@ export class ProxyMenuComponent extends HasChildForm(MenuComponent) implements O
     }
 
     hasNewProxy() {
-        return this.selectedProxy?.isNew;
+        return this.proxiesCopy.proxies.some(p => p.isNew);
     }
 
     async commitChange() {

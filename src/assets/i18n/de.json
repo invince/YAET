@@ -11,7 +11,17 @@
         "CLEAR": "Löschen",
         "OK": "OK",
         "YES": "Ja",
-        "NO": "Nein"
+        "NO": "Nein",
+        "FILTER": "Filter",
+        "NAME": "Name",
+        "TYPE": "Typ",
+        "LOGIN": "Benutzername",
+        "PASSWORD": "Passwort",
+        "CONFIRM_PASSWORD": "Passwort bestätigen",
+        "HOST": "Host",
+        "HOST_NAME": "Hostname",
+        "PORT": "Port",
+        "SECRET": "Geheimnis"
     },
     "SETTINGS": {
         "TITLE": "Einstellungen",
@@ -38,7 +48,8 @@
         "REMOVE_MASTER_KEY": "Master-Schlüssel entfernen",
         "SIDEBAR_NAVIGATION": "Seitenleiste & Navigation",
         "PROFILE_LABEL_LENGTH": "Profil-Label-Länge",
-        "SIDE_NAV_TYPE": "Seitenleisten-Typ",
+        "SIDE_NAV_TYPE": "Seitennavigationstyp",
+        "THEME": "Design",
         "SECRETS_DISPLAY": "Geheimnisse-Anzeige",
         "SECRET_LABEL_LENGTH_SIDENAV": "Geheimnis-Label-Länge (Seitenleiste)",
         "SECRET_LABEL_LENGTH_DROPDOWN": "Geheimnis-Label-Länge (Dropdown)",
@@ -50,7 +61,8 @@
         "VNC_OPTIONS": "VNC-Optionen",
         "VNC_CLIPBOARD_COMPATIBLE": "VNC-Zwischenablage-Kompatibilitätsmodus aktivieren",
         "VNC_QUALITY": "Qualität (0-9)",
-        "VNC_COMPRESSION": "Kompression (0-9)"
+        "VNC_COMPRESSION": "Komprimierung (0-9)",
+        "ADD_NEW_GROUP": "Neue Gruppe hinzufügen"
     },
     "LANGUAGES": {
         "EN": "English",
@@ -58,6 +70,48 @@
         "FR": "Français",
         "ES": "Español",
         "ZH": "中文"
+    },
+    "PROXY": {
+        "TITLE": "Proxies",
+        "NAME": "Name",
+        "TYPE": "Typ",
+        "HOST": "Host",
+        "PORT": "Port",
+        "AUTH": "Authentifizierung (Optional)",
+        "AUTH_HINT": "Wählen Sie ein Geheimnis für Benutzername/Passwort-Authentifizierung",
+        "NONE": "Keine"
+    },
+    "SECRETS": {
+        "TITLE": "Geheimnisse",
+        "NAME": "Name",
+        "TYPE": "Typ",
+        "LOGIN": "Benutzername",
+        "PASSWORD": "Passwort",
+        "CONFIRM_PASSWORD": "Passwort bestätigen",
+        "SSH_KEY": "SSH-Schlüssel",
+        "KEY_PHRASE": "Schlüsselphrase",
+        "ERRORS": {
+            "DUPLICATE": "Geheimnis existiert bereits, bitte ändern Sie den Namen",
+            "PASSWORD_MISMATCH": "Passwörter stimmen nicht überein",
+            "LOGIN_REQUIRED": "Benutzername ist erforderlich",
+            "PASSWORD_REQUIRED": "Passwort ist erforderlich",
+            "SSH_KEY_REQUIRED": "SSH-Schlüssel ist erforderlich"
+        }
+    },
+    "PROFILES": {
+        "TITLE": "Profile",
+        "NAME": "Name",
+        "GROUP": "Gruppe",
+        "TAGS": "Tags",
+        "ICON": "Symbol",
+        "PROTOCOL": "Protokoll",
+        "SHARE_PATH": "Freigabepfad",
+        "DOMAIN": "Domäne",
+        "INIT_PATH": "Initialer Pfad",
+        "INIT_COMMAND": "Initialer Befehl"
+    },
+    "QUICKCONNECT": {
+        "TITLE": "Schnellverbindung"
     },
     "NOTIFICATIONS": {
         "SETTINGS_NOT_LOADED": "Einstellungen nicht geladen, wir laden sie neu, bitte schließen Sie das Einstellungsmenü und öffnen Sie es erneut",

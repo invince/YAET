@@ -2,13 +2,13 @@
     <div class="proxy-form">
         <div class="proxy-form-content">
             <mat-form-field class="field">
-                <mat-label>Name</mat-label>
+                <mat-label>{{ 'PROXY.NAME' | translate }}</mat-label>
                 <input matInput formControlName="name" placeholder="My Proxy">
                 <mat-error *ngIf="form.get('name')?.hasError('required')">Name is required</mat-error>
             </mat-form-field>
 
             <mat-form-field class="field">
-                <mat-label>Type</mat-label>
+                <mat-label>{{ 'PROXY.TYPE' | translate }}</mat-label>
                 <mat-select formControlName="type">
                     <mat-option value="HTTP">HTTP</mat-option>
                     <mat-option value="SOCKS4">SOCKS4</mat-option>
@@ -17,13 +17,13 @@
             </mat-form-field>
 
             <mat-form-field class="field">
-                <mat-label>Host</mat-label>
+                <mat-label>{{ 'PROXY.HOST' | translate }}</mat-label>
                 <input matInput formControlName="host" placeholder="proxy.example.com">
                 <mat-error *ngIf="form.get('host')?.hasError('required')">Host is required</mat-error>
             </mat-form-field>
 
             <mat-form-field class="field">
-                <mat-label>Port</mat-label>
+                <mat-label>{{ 'PROXY.PORT' | translate }}</mat-label>
                 <input matInput type="number" formControlName="port" placeholder="8080">
                 <mat-error *ngIf="form.get('port')?.hasError('required')">Port is required</mat-error>
                 <mat-error *ngIf="form.get('port')?.hasError('min') || form.get('port')?.hasError('max')">Invalid
@@ -31,22 +31,23 @@
             </mat-form-field>
 
             <mat-form-field class="field">
-                <mat-label>Authentication (Optional)</mat-label>
+                <mat-label>{{ 'PROXY.AUTH' | translate }}</mat-label>
                 <mat-select formControlName="secretId">
-                    <mat-option [value]="undefined">None</mat-option>
+                    <mat-option [value]="undefined">{{ 'PROXY.NONE' | translate }}</mat-option>
                     @for (secret of secretStorage.dataCopy.secrets; track secret.id) {
                     <mat-option [value]="secret.id">{{ secret.name }}</mat-option>
                     }
                 </mat-select>
-                <mat-hint>Select a secret for username/password authentication</mat-hint>
+                <mat-hint>{{ 'PROXY.AUTH_HINT' | translate }}</mat-hint>
             </mat-form-field>
         </div>
     </div>
 
     <div class="proxy-form-footer modal-footer">
-        <button mat-raised-button color="warn" (click)="onCancel()">Cancel</button>
-        <button mat-raised-button color="warn" (click)="onDelete()" *ngIf="!proxy.isNew">Delete</button>
-        <button mat-raised-button color="primary" (click)="onSaveOne()"
-            [disabled]="form.invalid || form.pristine">Save</button>
+        <button mat-raised-button color="warn" (click)="onCancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+        <button mat-raised-button color="warn" (click)="onDelete()" *ngIf="!proxy.isNew">{{ 'COMMON.DELETE' | translate
+            }}</button>
+        <button mat-raised-button color="primary" (click)="onSaveOne()" [disabled]="form.invalid || form.pristine">{{
+            'COMMON.SAVE' | translate }}</button>
     </div>
 </div>

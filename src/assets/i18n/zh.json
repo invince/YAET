@@ -11,7 +11,17 @@
         "CLEAR": "清除",
         "OK": "确定",
         "YES": "是",
-        "NO": "否"
+        "NO": "否",
+        "FILTER": "筛选",
+        "NAME": "名称",
+        "TYPE": "类型",
+        "LOGIN": "登录名",
+        "PASSWORD": "密码",
+        "CONFIRM_PASSWORD": "确认密码",
+        "HOST": "主机",
+        "HOST_NAME": "主机名",
+        "PORT": "端口",
+        "SECRET": "密钥"
     },
     "SETTINGS": {
         "TITLE": "设置",
@@ -39,6 +49,7 @@
         "SIDEBAR_NAVIGATION": "侧边栏和导航",
         "PROFILE_LABEL_LENGTH": "配置文件标签长度",
         "SIDE_NAV_TYPE": "侧边导航类型",
+        "THEME": "主题",
         "SECRETS_DISPLAY": "密钥显示",
         "SECRET_LABEL_LENGTH_SIDENAV": "密钥标签长度（侧边栏）",
         "SECRET_LABEL_LENGTH_DROPDOWN": "密钥标签长度（下拉菜单）",
@@ -50,7 +61,8 @@
         "VNC_OPTIONS": "VNC 选项",
         "VNC_CLIPBOARD_COMPATIBLE": "启用 VNC 剪贴板兼容模式",
         "VNC_QUALITY": "质量 (0-9)",
-        "VNC_COMPRESSION": "压缩 (0-9)"
+        "VNC_COMPRESSION": "压缩 (0-9)",
+        "ADD_NEW_GROUP": "添加新组"
     },
     "LANGUAGES": {
         "EN": "English",
@@ -58,6 +70,48 @@
         "FR": "Français",
         "ES": "Español",
         "ZH": "中文"
+    },
+    "PROXY": {
+        "TITLE": "代理",
+        "NAME": "名称",
+        "TYPE": "类型",
+        "HOST": "主机",
+        "PORT": "端口",
+        "AUTH": "身份验证（可选）",
+        "AUTH_HINT": "选择用于用户名/密码身份验证的密钥",
+        "NONE": "无"
+    },
+    "SECRETS": {
+        "TITLE": "密钥",
+        "NAME": "名称",
+        "TYPE": "类型",
+        "LOGIN": "登录名",
+        "PASSWORD": "密码",
+        "CONFIRM_PASSWORD": "确认密码",
+        "SSH_KEY": "SSH 密钥",
+        "KEY_PHRASE": "密钥短语",
+        "ERRORS": {
+            "DUPLICATE": "密钥名称重复，请更改名称",
+            "PASSWORD_MISMATCH": "密码不匹配",
+            "LOGIN_REQUIRED": "登录名为必填项",
+            "PASSWORD_REQUIRED": "密码为必填项",
+            "SSH_KEY_REQUIRED": "SSH 密钥为必填项"
+        }
+    },
+    "PROFILES": {
+        "TITLE": "配置文件",
+        "NAME": "名称",
+        "GROUP": "组",
+        "TAGS": "标签",
+        "ICON": "图标",
+        "PROTOCOL": "协议",
+        "SHARE_PATH": "共享路径",
+        "DOMAIN": "域",
+        "INIT_PATH": "初始路径",
+        "INIT_COMMAND": "初始命令"
+    },
+    "QUICKCONNECT": {
+        "TITLE": "快速连接"
     },
     "NOTIFICATIONS": {
         "SETTINGS_NOT_LOADED": "设置未加载，我们将重新加载，请关闭设置菜单并重新打开",

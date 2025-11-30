@@ -11,7 +11,17 @@
         "CLEAR": "Clear",
         "OK": "OK",
         "YES": "Yes",
-        "NO": "No"
+        "NO": "No",
+        "FILTER": "Filter",
+        "NAME": "Name",
+        "TYPE": "Type",
+        "LOGIN": "Login",
+        "PASSWORD": "Password",
+        "CONFIRM_PASSWORD": "Confirm Password",
+        "HOST": "Host",
+        "HOST_NAME": "Host Name",
+        "PORT": "Port",
+        "SECRET": "Secret"
     },
     "SETTINGS": {
         "TITLE": "Settings",
@@ -39,6 +49,7 @@
         "SIDEBAR_NAVIGATION": "Sidebar & Navigation",
         "PROFILE_LABEL_LENGTH": "Profile Label Length",
         "SIDE_NAV_TYPE": "Side Nav Type",
+        "THEME": "Theme",
         "SECRETS_DISPLAY": "Secrets Display",
         "SECRET_LABEL_LENGTH_SIDENAV": "Secret Label Length (Side Nav)",
         "SECRET_LABEL_LENGTH_DROPDOWN": "Secret Label Length (Dropdown)",
@@ -50,7 +61,8 @@
         "VNC_OPTIONS": "VNC Options",
         "VNC_CLIPBOARD_COMPATIBLE": "Enable VNC Clipboard Compatible Mode",
         "VNC_QUALITY": "Quality (0-9)",
-        "VNC_COMPRESSION": "Compression (0-9)"
+        "VNC_COMPRESSION": "Compression (0-9)",
+        "ADD_NEW_GROUP": "Add new Group"
     },
     "LANGUAGES": {
         "EN": "English",
@@ -58,6 +70,48 @@
         "FR": "Français",
         "ES": "Español",
         "ZH": "中文"
+    },
+    "PROXY": {
+        "TITLE": "Proxies",
+        "NAME": "Name",
+        "TYPE": "Type",
+        "HOST": "Host",
+        "PORT": "Port",
+        "AUTH": "Authentication (Optional)",
+        "AUTH_HINT": "Select a secret for username/password authentication",
+        "NONE": "None"
+    },
+    "SECRETS": {
+        "TITLE": "Secrets",
+        "NAME": "Name",
+        "TYPE": "Type",
+        "LOGIN": "Login",
+        "PASSWORD": "Password",
+        "CONFIRM_PASSWORD": "Confirm Password",
+        "SSH_KEY": "SSH Key",
+        "KEY_PHRASE": "Key Phrase",
+        "ERRORS": {
+            "DUPLICATE": "Duplicate Secret exists, please change name",
+            "PASSWORD_MISMATCH": "Passwords do not match",
+            "LOGIN_REQUIRED": "Login is required",
+            "PASSWORD_REQUIRED": "Password is required",
+            "SSH_KEY_REQUIRED": "SSH Key is required"
+        }
+    },
+    "PROFILES": {
+        "TITLE": "Profiles",
+        "NAME": "Name",
+        "GROUP": "Group",
+        "TAGS": "Tags",
+        "ICON": "Icon",
+        "PROTOCOL": "Protocol",
+        "SHARE_PATH": "Share Path",
+        "DOMAIN": "Domain",
+        "INIT_PATH": "Init Path",
+        "INIT_COMMAND": "Init Command"
+    },
+    "QUICKCONNECT": {
+        "TITLE": "Connection"
     },
     "NOTIFICATIONS": {
         "SETTINGS_NOT_LOADED": "Settings not loaded, we'll reload it, please close setting menu and reopen",

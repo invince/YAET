@@ -1,33 +1,35 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {Secret, SecretType} from '../../../../domain/Secret';
-import {CommonModule, KeyValuePipe} from '@angular/common';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatInput} from '@angular/material/input';
-import {MatIconModule} from '@angular/material/icon';
-import {MatButtonModule} from '@angular/material/button';
-import {MatSelectChange, MatSelectModule} from '@angular/material/select';
-import {MenuComponent} from '../../menu.component';
-import {IsAChildForm} from '../../../EnhancedFormMixin';
-import {ModelFormController} from '../../../../utils/ModelFormController';
-import {SecretStorageService} from '../../../../services/secret-storage.service';
-import {SecretFormMixin} from './secretFormMixin';
+import { CommonModule, KeyValuePipe } from '@angular/common';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInput } from '@angular/material/input';
+import { MatSelectChange, MatSelectModule } from '@angular/material/select';
+import { TranslateModule } from '@ngx-translate/core';
+import { Secret, SecretType } from '../../../../domain/Secret';
+import { SecretStorageService } from '../../../../services/secret-storage.service';
+import { ModelFormController } from '../../../../utils/ModelFormController';
+import { IsAChildForm } from '../../../EnhancedFormMixin';
+import { MenuComponent } from '../../menu.component';
+import { SecretFormMixin } from './secretFormMixin';
 
 @Component({
-    selector: 'app-secret-form',
-    imports: [
-        CommonModule,
-        FormsModule,
-        ReactiveFormsModule,
-        MatIconModule,
-        MatButtonModule,
-        MatFormFieldModule,
-        MatSelectModule,
-        KeyValuePipe,
-        MatInput,
-    ],
-    templateUrl: './secret-form.component.html',
-    styleUrl: './secret-form.component.scss'
+  selector: 'app-secret-form',
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatIconModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    KeyValuePipe,
+    MatInput,
+    TranslateModule
+  ],
+  templateUrl: './secret-form.component.html',
+  styleUrl: './secret-form.component.scss'
 })
 export class SecretFormComponent extends IsAChildForm(MenuComponent) implements OnInit {
   private _secret!: Secret;
@@ -37,7 +39,7 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
 
   SECRET_TYPE_OPTIONS = SecretType;
 
-  private modelFormController : ModelFormController<Secret>;
+  private modelFormController: ModelFormController<Secret>;
   get secret(): Secret {
     return this._secret;
   }

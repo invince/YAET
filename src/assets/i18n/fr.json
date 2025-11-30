@@ -11,21 +11,31 @@
         "CLEAR": "Effacer",
         "OK": "OK",
         "YES": "Oui",
-        "NO": "Non"
+        "NO": "Non",
+        "FILTER": "Filtre",
+        "NAME": "Nom",
+        "TYPE": "Type",
+        "LOGIN": "Identifiant",
+        "PASSWORD": "Mot de passe",
+        "CONFIRM_PASSWORD": "Confirmer le mot de passe",
+        "HOST": "Hôte",
+        "HOST_NAME": "Nom d'hôte",
+        "PORT": "Port",
+        "SECRET": "Secret"
     },
     "SETTINGS": {
         "TITLE": "Paramètres",
         "GENERAL": "Général",
         "UI": "Interface",
         "GROUPS": "Groupes",
-        "TAGS": "Étiquettes",
+        "TAGS": "Tags",
         "TERMINAL": "Terminal",
         "REMOTE_DESKTOP": "Bureau à distance",
         "FILE_EXPLORER": "Explorateur de fichiers",
         "GENERAL_SETTINGS": "Général",
         "UI_SETTINGS": "Interface utilisateur",
         "GROUPS_MANAGEMENT": "Gestion des groupes",
-        "TAGS_MANAGEMENT": "Gestion des étiquettes",
+        "TAGS_MANAGEMENT": "Gestion des tags",
         "TERMINAL_SETTINGS": "Terminal",
         "REMOTE_DESKTOP_SETTINGS": "Bureau à distance",
         "APPLICATION": "Application",
@@ -37,11 +47,12 @@
         "SET_MASTER_KEY": "Définir la clé principale",
         "REMOVE_MASTER_KEY": "Supprimer la clé principale",
         "SIDEBAR_NAVIGATION": "Barre latérale et navigation",
-        "PROFILE_LABEL_LENGTH": "Longueur du libellé de profil",
+        "PROFILE_LABEL_LENGTH": "Longueur du label de profil",
         "SIDE_NAV_TYPE": "Type de navigation latérale",
+        "THEME": "Thème",
         "SECRETS_DISPLAY": "Affichage des secrets",
-        "SECRET_LABEL_LENGTH_SIDENAV": "Longueur du libellé de secret (barre latérale)",
-        "SECRET_LABEL_LENGTH_DROPDOWN": "Longueur du libellé de secret (menu déroulant)",
+        "SECRET_LABEL_LENGTH_SIDENAV": "Longueur du label de secret (barre latérale)",
+        "SECRET_LABEL_LENGTH_DROPDOWN": "Longueur du label de secret (menu déroulant)",
         "STARTUP": "Démarrage",
         "OPEN_LOCAL_TERMINAL_STARTUP": "Ouvrir un terminal local au démarrage",
         "CONFIGURATION": "Configuration",
@@ -50,7 +61,8 @@
         "VNC_OPTIONS": "Options VNC",
         "VNC_CLIPBOARD_COMPATIBLE": "Activer le mode compatible presse-papiers VNC",
         "VNC_QUALITY": "Qualité (0-9)",
-        "VNC_COMPRESSION": "Compression (0-9)"
+        "VNC_COMPRESSION": "Compression (0-9)",
+        "ADD_NEW_GROUP": "Ajouter un nouveau groupe"
     },
     "LANGUAGES": {
         "EN": "English",
@@ -58,6 +70,48 @@
         "FR": "Français",
         "ES": "Español",
         "ZH": "中文"
+    },
+    "PROXY": {
+        "TITLE": "Proxies",
+        "NAME": "Nom",
+        "TYPE": "Type",
+        "HOST": "Hôte",
+        "PORT": "Port",
+        "AUTH": "Authentification (Optionnel)",
+        "AUTH_HINT": "Sélectionnez un secret pour l'authentification nom d'utilisateur/mot de passe",
+        "NONE": "Aucun"
+    },
+    "SECRETS": {
+        "TITLE": "Secrets",
+        "NAME": "Nom",
+        "TYPE": "Type",
+        "LOGIN": "Identifiant",
+        "PASSWORD": "Mot de passe",
+        "CONFIRM_PASSWORD": "Confirmer le mot de passe",
+        "SSH_KEY": "Clé SSH",
+        "KEY_PHRASE": "Phrase de clé",
+        "ERRORS": {
+            "DUPLICATE": "Le secret existe déjà, veuillez changer le nom",
+            "PASSWORD_MISMATCH": "Les mots de passe ne correspondent pas",
+            "LOGIN_REQUIRED": "L'identifiant est requis",
+            "PASSWORD_REQUIRED": "Le mot de passe est requis",
+            "SSH_KEY_REQUIRED": "La clé SSH est requise"
+        }
+    },
+    "PROFILES": {
+        "TITLE": "Profils",
+        "NAME": "Nom",
+        "GROUP": "Groupe",
+        "TAGS": "Tags",
+        "ICON": "Icône",
+        "PROTOCOL": "Protocole",
+        "SHARE_PATH": "Chemin de partage",
+        "DOMAIN": "Domaine",
+        "INIT_PATH": "Chemin initial",
+        "INIT_COMMAND": "Commande initiale"
+    },
+    "QUICKCONNECT": {
+        "TITLE": "Connexion rapide"
     },
     "NOTIFICATIONS": {
         "SETTINGS_NOT_LOADED": "Paramètres non chargés, nous allons les recharger, veuillez fermer le menu des paramètres et le rouvrir",

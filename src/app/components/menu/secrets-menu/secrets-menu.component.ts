@@ -1,46 +1,48 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {MenuComponent} from '../menu.component';
-import {SecretService} from '../../../services/secret.service';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatInput} from '@angular/material/input';
-import {MatIcon} from '@angular/material/icon';
-import {MatButtonModule} from '@angular/material/button';
-import {CommonModule} from '@angular/common';
-import {Secret, Secrets} from '../../../domain/Secret';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {MatSidenavModule} from '@angular/material/sidenav';
-import {MatSelectModule} from '@angular/material/select';
-import {SecretFormComponent} from './secret-form/secret-form.component';
-import {HasChildForm} from '../../EnhancedFormMixin';
-import {SecretStorageService} from '../../../services/secret-storage.service';
-import {SettingStorageService} from '../../../services/setting-storage.service';
-import {Subscription} from 'rxjs';
-import {FilterKeywordPipe} from '../../../pipes/filter-keyword.pipe';
-import {ConfirmationComponent} from '../../confirmation/confirmation.component';
-import {MatDialog} from '@angular/material/dialog';
-import {ModalControllerService} from '../../../services/modal-controller.service';
-import {MenuConsts} from '../../../domain/MenuConsts';
-import {NotificationService} from '../../../services/notification.service';
-import {ProfileService} from '../../../services/profile.service';
+import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIcon } from '@angular/material/icon';
+import { MatInput } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { TranslateModule } from '@ngx-translate/core';
+import { Subscription } from 'rxjs';
+import { MenuConsts } from '../../../domain/MenuConsts';
+import { Secret, Secrets } from '../../../domain/Secret';
+import { FilterKeywordPipe } from '../../../pipes/filter-keyword.pipe';
+import { ModalControllerService } from '../../../services/modal-controller.service';
+import { NotificationService } from '../../../services/notification.service';
+import { ProfileService } from '../../../services/profile.service';
+import { SecretStorageService } from '../../../services/secret-storage.service';
+import { SecretService } from '../../../services/secret.service';
+import { SettingStorageService } from '../../../services/setting-storage.service';
+import { ConfirmationComponent } from '../../confirmation/confirmation.component';
+import { HasChildForm } from '../../EnhancedFormMixin';
+import { MenuComponent } from '../menu.component';
+import { SecretFormComponent } from './secret-form/secret-form.component';
 
 @Component({
-    selector: 'app-secrets-menu',
-    imports: [
-        CommonModule,
-        FormsModule,
-        ReactiveFormsModule,
-        MatFormFieldModule,
-        MatButtonModule,
-        MatSidenavModule,
-        MatSelectModule,
-        MatInput,
-        MatIcon,
-        SecretFormComponent,
-        FilterKeywordPipe,
-    ],
-    templateUrl: './secrets-menu.component.html',
-    styleUrl: './secrets-menu.component.scss',
-    providers: [FilterKeywordPipe]
+  selector: 'app-secrets-menu',
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatButtonModule,
+    MatSidenavModule,
+    MatSelectModule,
+    MatInput,
+    MatIcon,
+    SecretFormComponent,
+    FilterKeywordPipe,
+    TranslateModule
+  ],
+  templateUrl: './secrets-menu.component.html',
+  styleUrl: './secrets-menu.component.scss',
+  providers: [FilterKeywordPipe]
 })
 export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
 
@@ -68,7 +70,7 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
     private dialog: MatDialog,
 
     private modalControl: ModalControllerService,
-    ) {
+  ) {
     super();
   }
   ngOnDestroy(): void {
@@ -112,7 +114,7 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
       return;
     }
     if (this.selectedId &&
-        (this.lastChildFormInvalidState || this.lastChildFormDirtyState)) {
+      (this.lastChildFormInvalidState || this.lastChildFormDirtyState)) {
       this.notification.info('Please finish current form');
       return;
     }
