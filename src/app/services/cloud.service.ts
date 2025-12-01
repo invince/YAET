@@ -1,25 +1,31 @@
-import {Injectable, OnDestroy} from '@angular/core';
-import {CloudSettings} from '../domain/setting/CloudSettings';
-import {ElectronService} from './electron/electron.service';
-import {MasterKeyService} from './master-key.service';
-import {CLOUD_LOADED} from './electron/ElectronConstant';
-import {CloudResponse} from '../domain/setting/CloudResponse';
-import {SettingService} from './setting.service';
-import {ProfileService} from './profile.service';
-import {SecretService} from './secret.service';
+import { Injectable, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import packageJson from '../../../package.json';
-import {Subscription} from 'rxjs';
-import {Compatibility} from '../../main';
-import {LogService} from './log.service';
-import {compareVersions} from '../utils/VersionUtils';
-import {NotificationService} from './notification.service';
+import { Compatibility } from '../../main';
+import { CloudResponse } from '../domain/setting/CloudResponse';
+import { CloudSettings } from '../domain/setting/CloudSettings';
+import { compareVersions } from '../utils/VersionUtils';
+import { ElectronService } from './electron/electron.service';
+import { CLOUD_LOADED } from './electron/ElectronConstant';
+import { LogService } from './log.service';
+import { MasterKeyService } from './master-key.service';
+import { NotificationService } from './notification.service';
+import { ProfileService } from './profile.service';
+import { ProxyService } from './proxy.service';
+import { SecretService } from './secret.service';
+import { SettingService } from './setting.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CloudService implements OnDestroy {
 
-  static OPTIONS = [SettingService.CLOUD_OPTION, ProfileService.CLOUD_OPTION, SecretService.CLOUD_OPTION];
+  static OPTIONS = [
+    SettingService.CLOUD_OPTION,
+    ProfileService.CLOUD_OPTION,
+    SecretService.CLOUD_OPTION,
+    ProxyService.CLOUD_OPTION
+  ];
 
   private _cloud!: CloudSettings;
   private _loaded: boolean = false;
@@ -30,10 +36,10 @@ export class CloudService implements OnDestroy {
     private electron: ElectronService,
     private masterKeyService: MasterKeyService,
     private notification: NotificationService,
-    ) {
+  ) {
     electron.onLoadedEvent(CLOUD_LOADED, data => this.apply(data));
     this.subscriptions.push(masterKeyService.updateEvent$.subscribe(event => {
-      if(event === 'invalid') {
+      if (event === 'invalid') {
         this._cloud = new CloudSettings();
         this.save();
         this.notification.info('Cloud Settings cleared');
@@ -71,7 +77,7 @@ export class CloudService implements OnDestroy {
             }
           }
 
-          this._cloud =  dataObj;
+          this._cloud = dataObj;
           this._loaded = true;
         }
       }
@@ -115,7 +121,7 @@ export class CloudService implements OnDestroy {
     return await this.electron.uploadCloud(cloudSettings);
   }
 
-  async download(cloudSettings: CloudSettings):  Promise<CloudResponse | undefined>  {
+  async download(cloudSettings: CloudSettings): Promise<CloudResponse | undefined> {
     return await this.electron.downloadCloud(cloudSettings); // after download a CLOUD_LOADED will be sent
   }
 }

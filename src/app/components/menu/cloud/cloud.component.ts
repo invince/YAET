@@ -18,8 +18,8 @@ import { CloudService } from '../../../services/cloud.service';
 import { MasterKeyService } from '../../../services/master-key.service';
 import { NotificationService } from '../../../services/notification.service';
 import { ProfileService } from '../../../services/profile.service';
-import { ProxyService } from '../../../services/proxy.service';
 import { ProxyStorageService } from '../../../services/proxy-storage.service';
+import { ProxyService } from '../../../services/proxy.service';
 import { SecretStorageService } from '../../../services/secret-storage.service';
 import { SecretService } from '../../../services/secret.service';
 import { SettingService } from '../../../services/setting.service';
@@ -197,6 +197,9 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
                   }
                   if (item.toLowerCase() == SecretService.CLOUD_OPTION.toLowerCase()) {
                     this.secretService.reload();
+                  }
+                  if (item.toLowerCase() == ProxyService.CLOUD_OPTION.toLowerCase()) {
+                    this.proxyService.reload();
                   }
                 }
               } else {

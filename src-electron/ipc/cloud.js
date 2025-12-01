@@ -1,7 +1,7 @@
 const { ipcMain } = require('electron');
 const path = require("path");
-const {SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, GIT_FOLDER, APP_CONFIG_PATH, BACKUP_FOLDER}= require("../common");
-const {promises: fsPromise} = require("fs");
+const { SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, PROXIES_JSON, GIT_FOLDER, APP_CONFIG_PATH, BACKUP_FOLDER } = require("../common");
+const { promises: fsPromise } = require("fs");
 const simpleGit = require("simple-git");
 
 function initCloudIpcHandler(log) {
@@ -35,7 +35,7 @@ function initCloudIpcHandler(log) {
 
       // Step 1: Delete existing Git folder
       log.info('Deleting existing Git folder...');
-      await fsPromise.rm(gitAbsDir, {recursive: true, force: true});
+      await fsPromise.rm(gitAbsDir, { recursive: true, force: true });
 
       // Step 2: Clone the Git repository
       log.info('Cloning repository...');
@@ -50,7 +50,7 @@ function initCloudIpcHandler(log) {
       for (const file of filesInRepo) {
         if (!fileToPush.includes(file) && file !== '.git') {
           const filePathToDelete = path.join(gitAbsDir, file);
-          await fsPromise.rm(filePathToDelete, {recursive: true, force: true});
+          await fsPromise.rm(filePathToDelete, { recursive: true, force: true });
           response.ok.push('-' + file);
           log.info(`Deleted: ${file}`);
         }
@@ -75,7 +75,7 @@ function initCloudIpcHandler(log) {
       response.ok.push('pushed');
 
       log.info('Successfully synchronized JSON files to the repository.');
-    } catch(error) {
+    } catch (error) {
       log.error('Error during operation:', error.message);
       response.ko.push(error.message);
       return response;
@@ -115,8 +115,8 @@ function initCloudIpcHandler(log) {
     try {
       // Step 1: Backup JSON files
       log.info('Backing up JSON files...');
-      await fsPromise.rm(backupAbsDir, {recursive: true, force: true});
-      await fsPromise.mkdir(backupAbsDir, {recursive: true});
+      await fsPromise.rm(backupAbsDir, { recursive: true, force: true });
+      await fsPromise.mkdir(backupAbsDir, { recursive: true });
 
       for (const file of jsonFiles) {
         const fileName = path.basename(file);
@@ -136,7 +136,7 @@ function initCloudIpcHandler(log) {
 
       // Step 2: Delete existing Git folder
       log.info('Deleting existing Git folder...');
-      await fsPromise.rm(gitAbsDir, {recursive: true, force: true});
+      await fsPromise.rm(gitAbsDir, { recursive: true, force: true });
 
       // Step 3: Clone the repository
       log.info('Cloning repository...');
@@ -184,13 +184,16 @@ function initCloudIpcHandler(log) {
     const result = [];
     for (const item of items) {
       if (item.toLowerCase() === 'Setting'.toLowerCase()) {
-        result.push(path.join(APP_CONFIG_PATH,SETTINGS_JSON));
+        result.push(path.join(APP_CONFIG_PATH, SETTINGS_JSON));
       }
       if (item.toLowerCase() === 'Profile'.toLowerCase()) {
-        result.push(path.join(APP_CONFIG_PATH,PROFILES_JSON));
+        result.push(path.join(APP_CONFIG_PATH, PROFILES_JSON));
       }
       if (item.toLowerCase() === 'Secret'.toLowerCase()) {
-        result.push(path.join(APP_CONFIG_PATH,SECRETS_JSON));
+        result.push(path.join(APP_CONFIG_PATH, SECRETS_JSON));
+      }
+      if (item.toLowerCase() === 'Proxy'.toLowerCase()) {
+        result.push(path.join(APP_CONFIG_PATH, PROXIES_JSON));
       }
     }
     return result;
