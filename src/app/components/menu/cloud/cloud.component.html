@@ -19,19 +19,6 @@
           }
         </mat-form-field>
 
-        <!-- Check All -->
-        <mat-checkbox (change)="toggleAll($event)" [checked]="allSelected" [indeterminate]="indeterminateState">
-          Check All
-        </mat-checkbox>
-
-        <mat-selection-list formControlName="items">
-          @for (item of SYNC_ITEMS; track item) {
-          <mat-list-option [value]="item" togglePosition='before'>
-            {{ item }}
-          </mat-list-option>
-          }
-        </mat-selection-list>
-
         <mat-form-field class="field">
           <mat-label>Proxy</mat-label>
           <mat-select formControlName="proxyId">
@@ -92,6 +79,18 @@
         </mat-form-field>
         }
         }
+        <!-- Check All -->
+        <mat-checkbox (change)="toggleAll($event)" [checked]="allSelected" [indeterminate]="indeterminateState">
+          Check All
+        </mat-checkbox>
+
+        <mat-selection-list formControlName="items">
+          @for (item of SYNC_ITEMS; track item) {
+          <mat-list-option [value]="item" togglePosition='before'>
+            {{ item }}
+          </mat-list-option>
+          }
+        </mat-selection-list>
         @if (form.hasError('passwordRequired')) {
         <mat-error>
           Password is required
