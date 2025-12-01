@@ -14,6 +14,7 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import { Subscription } from 'rxjs';
 import packageJson from '../../../../../package.json';
 import { LocalTerminalProfile, LocalTerminalType } from '../../../domain/profile/LocalTerminalProfile';
+import { Proxy } from '../../../domain/Proxy';
 import { SecretType } from '../../../domain/Secret';
 import { FileExplorerSettings } from '../../../domain/setting/FileExplorerSettings';
 import { GeneralSettings } from '../../../domain/setting/GeneralSettings';
@@ -24,6 +25,7 @@ import { SideNavType, UISettings } from '../../../domain/setting/UISettings';
 import { LogService } from '../../../services/log.service';
 import { MasterKeyService } from '../../../services/master-key.service';
 import { NotificationService } from '../../../services/notification.service';
+import { ProxyService } from '../../../services/proxy.service';
 import { SecretStorageService } from '../../../services/secret-storage.service';
 import { SecretService } from '../../../services/secret.service';
 import { SettingStorageService } from '../../../services/setting-storage.service';
@@ -92,6 +94,8 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     { value: 'deeppurple-amber', label: 'Deep Purple & Amber (Light)' },
   ];
 
+  proxies: Proxy[] = [];
+
   settingsCopy!: MySettings;
   private subscriptions: Subscription[] = [];
   currentTabIndex: number = 0;
@@ -119,6 +123,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     private settingStorage: SettingStorageService,
     private secretStorageService: SecretStorageService,
     public secretService: SecretService,
+    public proxyService: ProxyService,
     public masterKeyService: MasterKeyService,
     private cdr: ChangeDetectorRef,
     public dialog: MatDialog,
@@ -134,6 +139,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>([
         ['autoUpdate', 'autoUpdate'],
         ['language', { name: 'language', formControlOption: ['', Validators.required] }],
+        ['proxyId', 'proxyId'],
       ])
     );
 
@@ -189,6 +195,11 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       this.notification.info('Settings not loaded, we\'ll reload it, please close setting menu and reopen');
       this.settingService.reload();
     }
+
+    if (!this.proxyService.isLoaded) {
+      this.proxyService.reload();
+    }
+    this.proxies = this.proxyService.proxies;
 
     this.settingsCopy = this.settingStorage.settings;
 

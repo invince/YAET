@@ -39,6 +39,19 @@
                 translate }}:
                 <b>{{version}}</b></mat-label>
               <mat-checkbox formControlName="autoUpdate">{{ 'SETTINGS.AUTO_UPDATE' | translate }}</mat-checkbox>
+              @if (generalForm.get('autoUpdate')?.value) {
+              <div style="margin-top: 10px;">
+                <mat-form-field class="field" appearance="outline">
+                  <mat-label>{{ 'SETTINGS.PROXY' | translate }}</mat-label>
+                  <mat-select formControlName="proxyId">
+                    <mat-option value="">{{ 'COMMON.NONE' | translate }}</mat-option>
+                    @for (proxy of proxies; track proxy.id) {
+                    <mat-option [value]="proxy.id">{{ proxy.name }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+              }
             </div>
 
             <div class="form-section">

@@ -80,6 +80,10 @@ export class ProxyService implements OnDestroy {
         return this._loaded;
     }
 
+    get proxies() {
+        return this.proxyStorage.data?.proxies || [];
+    }
+
     reload() {
         console.log('ProxyService reloading...');
         this._loaded = false;

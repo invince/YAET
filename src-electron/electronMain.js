@@ -27,6 +27,7 @@ let scpMap = new Map();
 let ftpMap = new Map();
 let sambaMap = new Map();
 let initialized = false;
+let globalProxies = null;
 
 const log = require("electron-log")
 const { initCommonIpc } = require("./ipc/commonIpc");
@@ -95,7 +96,16 @@ app.on('ready', () => {
       .then(r => log.info(CLOUD_JSON + " loaded, event sent"))
       .catch(log.error);
     load(log, mainWindow, PROXIES_JSON, "proxies.loaded", false)
-      .then(r => log.info(PROXIES_JSON + " loaded, event sent"))
+      .then(r => {
+        log.info(PROXIES_JSON + " loaded, event sent");
+        if (r) {
+          try {
+            globalProxies = JSON.parse(r);
+          } catch (e) {
+            log.error("Failed to parse proxies", e);
+          }
+        }
+      })
       .catch(log.error);
     load(log, mainWindow, SETTINGS_JSON, "settings.loaded", false)
       .then(settings => {
@@ -140,7 +150,7 @@ function initHandlerAfterSettingLoad(settings) {
   if (!initialized) {
     const autoUpdate = settings?.general?.autoUpdate;
     if (autoUpdate) {
-      initAutoUpdater(log);
+      initAutoUpdater(log, settings, globalProxies);
     }
     initLocalTerminalIpcHandler(settings, log, terminalMap);
     initWinRmIpcHandler(settings, log, terminalMap);
