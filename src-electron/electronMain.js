@@ -123,7 +123,7 @@ function initHandlerBeforeSettingLoad() {
   expressApp = initBackend(log);
 
   initConfigFilesIpcHandler(log, mainWindow);
-  initCloudIpcHandler(log);
+  initCloudIpcHandler(log, () => globalProxies);
   initSecurityIpcHandler(log);
   initProxiesIpcHandler(log);
   initTerminalIpcHandler(log, terminalMap);

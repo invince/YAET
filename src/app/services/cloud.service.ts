@@ -11,9 +11,11 @@ import { LogService } from './log.service';
 import { MasterKeyService } from './master-key.service';
 import { NotificationService } from './notification.service';
 import { ProfileService } from './profile.service';
+import { ProxyStorageService } from './proxy-storage.service';
 import { ProxyService } from './proxy.service';
 import { SecretService } from './secret.service';
 import { SettingService } from './setting.service';
+
 
 @Injectable({
   providedIn: 'root'
@@ -32,6 +34,7 @@ export class CloudService implements OnDestroy {
   subscriptions: Subscription[] = []
 
   constructor(
+    private proxyStorage: ProxyStorageService,
     private log: LogService,
     private electron: ElectronService,
     private masterKeyService: MasterKeyService,
@@ -118,10 +121,14 @@ export class CloudService implements OnDestroy {
   }
 
   async upload(cloudSettings: CloudSettings): Promise<CloudResponse | undefined> {
-    return await this.electron.uploadCloud(cloudSettings);
+    var proxy = cloudSettings.proxyId ?
+      this.proxyStorage.dataCopy.proxies.find(p => p.id === cloudSettings.proxyId) : undefined;
+    return await this.electron.uploadCloud(cloudSettings, proxy);
   }
 
   async download(cloudSettings: CloudSettings): Promise<CloudResponse | undefined> {
-    return await this.electron.downloadCloud(cloudSettings); // after download a CLOUD_LOADED will be sent
+    var proxy = cloudSettings.proxyId ?
+      this.proxyStorage.dataCopy.proxies.find(p => p.id === cloudSettings.proxyId) : undefined;
+    return await this.electron.downloadCloud(cloudSettings, proxy); // after download a CLOUD_LOADED will be sent
   }
 }

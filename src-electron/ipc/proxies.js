@@ -3,13 +3,16 @@ const fs = require('fs');
 const path = require('path');
 const { APP_CONFIG_PATH, PROXIES_JSON } = require('../common');
 
-function initProxiesIpcHandler(log) {
+function initProxiesIpcHandler(log, onProxiesChanged) {
     const proxiesPath = path.join(APP_CONFIG_PATH, PROXIES_JSON);
     log.info('Initializing proxies IPC handler', proxiesPath);
 
     ipcMain.on('proxies.save', (event, arg) => {
         try {
             fs.writeFileSync(proxiesPath, JSON.stringify(arg.data));
+            if (onProxiesChanged) {
+                onProxiesChanged(arg.data);
+            }
         } catch (e) {
             log.error('Error saving proxies', e);
         }
