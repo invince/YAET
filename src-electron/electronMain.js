@@ -7,7 +7,7 @@ const { SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON, APP_CONFIG
 const { initConfigFilesIpcHandler } = require('./ipc/configFiles');
 const { initTerminalIpcHandler } = require('./ipc/terminal/terminal');
 const { initCloudIpcHandler } = require('./ipc/cloud');
-const { initSecurityIpcHandler } = require('./ipc/security');
+const { initSecurityIpcHandler, decrypt } = require('./ipc/security');
 const { initRdpHandler } = require('./ipc/remote-desktop/rdp');
 const { initClipboard } = require('./ipc/clipboard');
 const { initVncHandler } = require("./ipc/remote-desktop/vnc");
@@ -16,7 +16,6 @@ const { initScpSftpHandler } = require("./ipc/file-explorer/scp");
 const { initAutoUpdater } = require("./ipc/autoUpdater");
 const { initBackend } = require("./ipc/backend");
 const { initFtpHandler } = require("./ipc/file-explorer/ftp");
-const { initProxiesIpcHandler } = require("./ipc/proxies");
 
 let tray;
 let expressApp;
@@ -27,7 +26,8 @@ let scpMap = new Map();
 let ftpMap = new Map();
 let sambaMap = new Map();
 let initialized = false;
-let globalProxies = null;
+let allProxies = null;
+let allSecrets = null;
 
 const log = require("electron-log")
 const { initCommonIpc } = require("./ipc/commonIpc");
@@ -90,21 +90,24 @@ app.on('ready', () => {
       .then(r => log.info(PROFILES_JSON + " loaded, event sent"))
       .catch(log.error);
     load(log, mainWindow, SECRETS_JSON, "secrets.loaded", true)
-      .then(r => log.info(SECRETS_JSON + " loaded, event sent"))
+      .then(r => {
+        log.info(SECRETS_JSON + " loaded, event sent");
+        return decrypt(r);
+      })
+      .then(decrypted => {
+        allSecrets = JSON.parse(decrypted);
+      })
       .catch(log.error);
     load(log, mainWindow, CLOUD_JSON, "cloud.loaded", true)
       .then(r => log.info(CLOUD_JSON + " loaded, event sent"))
       .catch(log.error);
-    load(log, mainWindow, PROXIES_JSON, "proxies.loaded", false)
+    load(log, mainWindow, PROXIES_JSON, "proxies.loaded", true)
       .then(r => {
         log.info(PROXIES_JSON + " loaded, event sent");
-        if (r) {
-          try {
-            globalProxies = JSON.parse(r);
-          } catch (e) {
-            log.error("Failed to parse proxies", e);
-          }
-        }
+        return decrypt(r);
+      })
+      .then(decrypted => {
+        allProxies = JSON.parse(decrypted);
       })
       .catch(log.error);
     load(log, mainWindow, SETTINGS_JSON, "settings.loaded", false)
@@ -123,9 +126,8 @@ function initHandlerBeforeSettingLoad() {
   expressApp = initBackend(log);
 
   initConfigFilesIpcHandler(log, mainWindow);
-  initCloudIpcHandler(log, () => globalProxies);
+  initCloudIpcHandler(log, () => allProxies, () => allSecrets);
   initSecurityIpcHandler(log);
-  initProxiesIpcHandler(log);
   initTerminalIpcHandler(log, terminalMap);
   initSSHTerminalIpcHandler(log, terminalMap);
   initTelnetIpcHandler(log, terminalMap);
@@ -150,7 +152,7 @@ function initHandlerAfterSettingLoad(settings) {
   if (!initialized) {
     const autoUpdate = settings?.general?.autoUpdate;
     if (autoUpdate) {
-      initAutoUpdater(log, settings, globalProxies);
+      initAutoUpdater(log, settings, () => allProxies, () => allSecrets);
     }
     initLocalTerminalIpcHandler(settings, log, terminalMap);
     initWinRmIpcHandler(settings, log, terminalMap);

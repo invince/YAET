@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { IpcRenderer } from 'electron';
 import { Log } from '../../domain/Log';
-import { Proxy } from '../../domain/Proxy';
 import { AuthType, SecretType } from '../../domain/Secret';
 import { CloudResponse } from '../../domain/setting/CloudResponse';
 import { CloudSettings } from '../../domain/setting/CloudSettings';
@@ -126,22 +125,22 @@ export class ElectronService extends AbstractElectronService {
 
 
   //#region "Secrets"
-  async getPassword(service: string, account: string): Promise<string | undefined> {
+  async getPassword(): Promise<string | undefined> {
     if (this.ipc) {
-      return await this.ipc.invoke(GET_MASTERKEY, service, account);
+      return await this.ipc.invoke(GET_MASTERKEY);
     }
     return;
   }
 
-  async setPassword(service: string, account: string, masterKey: string) {
+  async setPassword(masterKey: string) {
     if (this.ipc) {
-      await this.ipc.invoke(SAVE_MASTERKEY, service, account, masterKey);
+      await this.ipc.invoke(SAVE_MASTERKEY, masterKey);
     }
   }
 
-  async deletePassword(service: string, account: string) {
+  async deletePassword() {
     if (this.ipc) {
-      await this.ipc.invoke(DELETE_MASTERKEY, service, account);
+      await this.ipc.invoke(DELETE_MASTERKEY);
     }
   }
 
@@ -174,7 +173,7 @@ export class ElectronService extends AbstractElectronService {
     }
   }
 
-  async downloadCloud(cloudSettings: CloudSettings, proxy: Proxy | undefined): Promise<CloudResponse | undefined> {
+  async downloadCloud(cloudSettings: CloudSettings): Promise<CloudResponse | undefined> {
     if (this.ipc) {
 
       let cloud = this.prepareCloudSettings(cloudSettings);
@@ -183,12 +182,12 @@ export class ElectronService extends AbstractElectronService {
         return undefined;
       }
 
-      return this.ipc.invoke(CLOUD_DOWNLOAD, { data: cloud, proxy });
+      return this.ipc.invoke(CLOUD_DOWNLOAD, { data: cloud });
     }
     return undefined;
   }
 
-  async uploadCloud(cloudSettings: CloudSettings, proxy: Proxy | undefined): Promise<CloudResponse | undefined> {
+  async uploadCloud(cloudSettings: CloudSettings): Promise<CloudResponse | undefined> {
     if (this.ipc) {
 
       let cloud = this.prepareCloudSettings(cloudSettings);
@@ -196,7 +195,7 @@ export class ElectronService extends AbstractElectronService {
         this.log({ level: 'error', message: "Invalid Cloud Settings" });
         return undefined;
       }
-      return await this.ipc.invoke(CLOUD_UPLOAD, { data: cloud, proxy });
+      return await this.ipc.invoke(CLOUD_UPLOAD, { data: cloud });
     }
     return undefined;
   }

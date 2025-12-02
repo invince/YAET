@@ -121,14 +121,10 @@ export class CloudService implements OnDestroy {
   }
 
   async upload(cloudSettings: CloudSettings): Promise<CloudResponse | undefined> {
-    var proxy = cloudSettings.proxyId ?
-      this.proxyStorage.dataCopy.proxies.find(p => p.id === cloudSettings.proxyId) : undefined;
-    return await this.electron.uploadCloud(cloudSettings, proxy);
+    return await this.electron.uploadCloud(cloudSettings);
   }
 
   async download(cloudSettings: CloudSettings): Promise<CloudResponse | undefined> {
-    var proxy = cloudSettings.proxyId ?
-      this.proxyStorage.dataCopy.proxies.find(p => p.id === cloudSettings.proxyId) : undefined;
-    return await this.electron.downloadCloud(cloudSettings, proxy); // after download a CLOUD_LOADED will be sent
+    return await this.electron.downloadCloud(cloudSettings); // after download a CLOUD_LOADED will be sent
   }
 }

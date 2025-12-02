@@ -3,67 +3,9 @@ const path = require("path");
 const { SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, PROXIES_JSON, GIT_FOLDER, APP_CONFIG_PATH, BACKUP_FOLDER } = require("../common");
 const { promises: fsPromise } = require("fs");
 const simpleGit = require("simple-git");
+const { getProxyUrl } = require("../utils/proxyUtils");
 
-function initCloudIpcHandler(log) {
-
-  function getProxyUrl(proxy) {
-    if (!proxy) {
-      return null;
-    }
-
-    let proxyUrl = `${proxy.host}:${proxy.port}`;
-    if (proxy.auth) {
-      // Assuming proxy.auth contains username and password if authentication is required
-      // You might need to adjust this based on your actual proxy object structure
-      // For example, if auth is a secret ID, you might need to resolve it.
-      // However, based on previous context, we might need to handle auth resolution if it's not directly available.
-      // For now, let's assume simple structure or no auth for simplicity if not fully defined.
-      // If auth is a secret, we might need to look it up.
-      // But wait, the proxy object in `globalProxies` might just have the ID.
-      // Let's check how autoUpdater does it.
-      // AutoUpdater uses `proxy.username` and `proxy.password` if available.
-      // Let's assume the proxy object here has those if they were resolved or stored.
-      // Actually, `globalProxies` are loaded from `PROXIES_JSON`.
-      // Let's look at `ProxyService` again. It seems `Proxy` interface has `auth` which is a secret ID.
-      // If so, we can't easily get the password here without `SecretStorage`.
-      // But `electronMain.js` loads secrets too.
-      // However, `getProxies` only returns proxies.
-      // If we need secrets, we might need to pass `getSecrets` too or similar.
-      // BUT, for now, let's stick to what we know.
-      // If the user selected a proxy, we should try to use it.
-      // If `proxy.auth` is set, it's likely a secret ID.
-      // We might need to handle this later if auth is required.
-      // For now, let's just use host:port if no auth info is readily available in the proxy object itself.
-      // Wait, `autoUpdater.js` used `proxy.username` and `proxy.password`.
-      // Where did those come from?
-      // Ah, `autoUpdater.js` logic was:
-      // const proxy = proxies.find(p => p.id === settings.general.proxyId);
-      // ...
-      // if (proxy.username && proxy.password) { ... }
-      // This implies `proxy` object has username/password.
-      // But `Proxy` interface in `ProxyService.ts` has `auth: string` (secret ID).
-      // Maybe `globalProxies` in `electronMain` are just the raw JSON.
-      // If so, we are missing the secret resolution.
-      // Let's check `electronMain.js` again.
-      // `load(..., PROXIES_JSON, ...)` loads the proxies.
-      // It doesn't seem to resolve secrets.
-      // So `autoUpdater.js` might be missing secret resolution too if it relies on `proxy.username`.
-      // OR, maybe I missed something.
-      // Let's assume for now we just support unauthenticated proxies or proxies where auth is not needed for this step,
-      // OR, we just construct the URL and let `simple-git` handle it? No, `simple-git` needs the full URL.
-      // Let's just implement the basic host:port for now, and if auth is needed, we'll see.
-      // Actually, if `proxy.auth` is a secret ID, we can't get the password without the secret.
-      // `electronMain.js` has `secrets` loaded in `initHandlerAfterSettingLoad`? No.
-      // `load(..., SECRETS_JSON, ...)` loads secrets.
-      // But we don't pass them to `initCloudIpcHandler`.
-      // To fully support auth, we'd need to pass secrets too.
-      // Let's just do host:port for now and add a TODO.
-      // Wait, the user said "when I use a proxy to upload cloud settings".
-      // If their proxy needs auth, this will fail.
-      // But let's start with the mechanism to set the proxy at all.
-    }
-    return `http://${proxy.host}:${proxy.port}`;
-  }
+function initCloudIpcHandler(log, getProxies, getSecrets) {
 
   ipcMain.handle('cloud.upload', async (event, data) => {
 
@@ -100,10 +42,14 @@ function initCloudIpcHandler(log) {
       log.info('Cloning repository...');
       const git = simpleGit();
 
-      // Configure Proxyproxy
-      const proxy = data.proxy;
-
-      const proxyUrl = getProxyUrl(proxy);
+      // Configure Proxy
+      let proxyId = cloudSettings.proxyId;
+      log.info(`Looking for proxy with ID: ${proxyId}`);
+      const proxies = getProxies();
+      log.info(`Available proxies: ${JSON.stringify(proxies?.proxies?.map(p => ({ id: p.id, name: p.name })))}`);
+      let proxy = proxies?.proxies?.find(p => p.id === proxyId);
+      log.info(`Found proxy: ${proxy ? proxy.name : 'undefined'}`);
+      const proxyUrl = getProxyUrl(proxy, getSecrets, log);
       if (proxyUrl) {
         log.info(`Using proxy: ${proxyUrl}`);
         await git.addConfig('http.proxy', proxyUrl);
@@ -218,8 +164,13 @@ function initCloudIpcHandler(log) {
       const git = simpleGit();
 
       // Configure Proxy
-      const proxy = data.proxy;
-      const proxyUrl = getProxyUrl(proxy);
+      let proxyId = cloudSettings.proxyId;
+      log.info(`Looking for proxy with ID: ${proxyId}`);
+      const proxies = getProxies();
+      log.info(`Available proxies: ${JSON.stringify(proxies?.proxies?.map(p => ({ id: p.id, name: p.name })))}`);
+      let proxy = proxies?.proxies?.find(p => p.id === proxyId);
+      log.info(`Found proxy: ${proxy ? proxy.name : 'undefined'}`);
+      const proxyUrl = getProxyUrl(proxy, getSecrets, log);
       if (proxyUrl) {
         log.info(`Using proxy: ${proxyUrl}`);
         await git.addConfig('http.proxy', proxyUrl);

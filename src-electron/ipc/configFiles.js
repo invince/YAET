@@ -1,5 +1,7 @@
 const { ipcMain } = require('electron');
-const {load, save, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, updateManifest }= require("../common");
+const { load, save,
+  SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, PROXIES_JSON
+  , updateManifest } = require("../common");
 function initConfigFilesIpcHandler(log, mainWindow) {
 
   ipcMain.on('settings.reload', (event, obj) => {
@@ -13,7 +15,7 @@ function initConfigFilesIpcHandler(log, mainWindow) {
     save(log, SETTINGS_JSON, obj.data, false)
       .then(() => {
         log.info('Setting saved successfully!');
-        updateManifest(log,'setting.json');
+        updateManifest(log, 'setting.json');
       })
       .catch((error) => log.error('Error saving file:', error));
   });
@@ -21,24 +23,24 @@ function initConfigFilesIpcHandler(log, mainWindow) {
 
   ipcMain.on('profiles.reload', (event, obj) => {
     log.info("reload " + PROFILES_JSON);
-    load(log, mainWindow, PROFILES_JSON, "profiles.loaded", false)
+    load(log, mainWindow, PROFILES_JSON, "profiles.loaded", true)
       .then(r => log.info(PROFILES_JSON + " reloaded"))
       .catch(err => log.error(err));
   });
 
 
   ipcMain.on('profiles.save', (event, obj) => {
-    save(log, PROFILES_JSON, obj.data, false)
+    save(log, PROFILES_JSON, obj.data, true)
       .then(() => {
         log.info('Profiles saved successfully!');
-        updateManifest(log,'profile.json');
+        updateManifest(log, 'profile.json');
       })
       .catch((error) => log.error('Error saving file:', error));
   });
 
   ipcMain.on('secrets.reload', (event, obj) => {
     log.info("reload " + SECRETS_JSON);
-    load( log, mainWindow,  SECRETS_JSON, "secrets.loaded", true)
+    load(log, mainWindow, SECRETS_JSON, "secrets.loaded", true)
       .then(r => log.info(SECRETS_JSON + " reloaded"))
       .catch(err => log.error(err));
   });
@@ -47,7 +49,7 @@ function initConfigFilesIpcHandler(log, mainWindow) {
     save(log, SECRETS_JSON, obj.data, true)
       .then(() => {
         log.info('Secrets saved successfully!');
-        updateManifest(log,'secrets.json');
+        updateManifest(log, 'secrets.json');
       })
       .catch((error) => log.error('Error saving file:', error));
   });
@@ -63,11 +65,26 @@ function initConfigFilesIpcHandler(log, mainWindow) {
     save(log, CLOUD_JSON, obj.data, true)
       .then(() => {
         log.info('Cloud saved successfully!');
-        updateManifest(log,'cloud.json');
+        updateManifest(log, 'cloud.json');
       })
       .catch((error) => log.error('Error saving file:', error));
   });
 
+  ipcMain.on('proxies.reload', (event, obj) => {
+    log.info("reload " + PROXIES_JSON);
+    load(log, mainWindow, PROXIES_JSON, "proxies.loaded", true)
+      .then(r => log.info(PROXIES_JSON + " reloaded"))
+      .catch(err => log.error(err));
+  });
+
+  ipcMain.on('proxies.save', (event, obj) => {
+    save(log, PROXIES_JSON, obj.data, true)
+      .then(() => {
+        log.info('Proxies saved successfully!');
+        updateManifest(log, 'proxies.json');
+      })
+      .catch((error) => log.error('Error saving file:', error));
+  });
 
 }
 

@@ -15,7 +15,7 @@ const MANIFEST_JSON = 'manifest.json';
 
 
 
-function load(log, mainWindow, jsonFileName, loadedEvent, isRaw) {
+function load(log, mainWindow, jsonFileName, loadedEvent, isEnrypted) {
   return new Promise((resolve, reject) => {
     try {
       const settingsPath = path.join(APP_CONFIG_PATH, jsonFileName); // same folder as exe
@@ -23,7 +23,7 @@ function load(log, mainWindow, jsonFileName, loadedEvent, isRaw) {
       if (fs.existsSync(settingsPath)) {
         return fs.readFile(settingsPath, 'utf-8', (err, data) => {
           if (!err) {
-            const settings = isRaw ? data : JSON.parse(data);
+            const settings = isEnrypted ? data : JSON.parse(data);
             mainWindow.webContents.send(loadedEvent, settings);
             resolve(settings);
           } else {
@@ -50,12 +50,12 @@ function load(log, mainWindow, jsonFileName, loadedEvent, isRaw) {
   });
 }
 
-function save(log, jsonFileName, data, isRaw) {
+function save(log, jsonFileName, data, isEnrypted) {
   return new Promise((resolve, reject) => {
     try {
       const settingsPath = path.join(APP_CONFIG_PATH, jsonFileName); // same folder as exe
       // Convert content to JSON string with pretty format
-      let jsonString = isRaw ? data : JSON.stringify(data, null, 2);
+      let jsonString = isEnrypted ? data : JSON.stringify(data, null, 2);
       // Write the JSON string to the specified file
       fs.writeFile(settingsPath, jsonString, 'utf8', (err) => {
         if (err) {
