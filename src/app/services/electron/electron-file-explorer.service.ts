@@ -1,11 +1,11 @@
-import {Injectable} from '@angular/core';
-import {SESSION_FTP_REGISTER, SESSION_SAMBA_REGISTER, SESSION_SCP_REGISTER,} from './ElectronConstant';
-import {AbstractElectronService} from './electron.service';
-import {RemoteTerminalProfile} from '../../domain/profile/RemoteTerminalProfile';
-import {SecretStorageService} from '../secret-storage.service';
-import {AuthType, SecretType} from '../../domain/Secret';
-import {FTPProfile} from '../../domain/profile/FTPProfile';
-import {SambaProfile} from '../../domain/profile/SambaProfile';
+import { Injectable } from '@angular/core';
+import { AuthType, SecretType } from '../../domain/Secret';
+import { FTPProfile } from '../../domain/profile/FTPProfile';
+import { RemoteTerminalProfile } from '../../domain/profile/RemoteTerminalProfile';
+import { SambaProfile } from '../../domain/profile/SambaProfile';
+import { SecretStorageService } from '../secret-storage.service';
+import { SESSION_FTP_REGISTER, SESSION_SAMBA_REGISTER, SESSION_SCP_REGISTER, } from './ElectronConstant';
+import { AbstractElectronService } from './electron.service';
 
 
 @Injectable({
@@ -20,9 +20,9 @@ export class ElectronFileExplorerService extends AbstractElectronService {
     super();
   }
 
-  async registerScpSession(id: string, sshProfile: RemoteTerminalProfile) {
+  async registerScpSession(id: string, sshProfile: RemoteTerminalProfile, proxyId?: string) {
     if (!id || !sshProfile) {
-      this.log({level: 'error', message : "Invalid configuration"});
+      this.log({ level: 'error', message: "Invalid configuration" });
       return;
     }
     let sshConfig: any = {
@@ -39,7 +39,7 @@ export class ElectronFileExplorerService extends AbstractElectronService {
     } else if (sshProfile.authType == AuthType.SECRET) {
       let secret = this.secretStorage.findById(sshProfile.secretId);
       if (!secret) {
-        this.log({level: 'error', message : "Invalid secret " + sshProfile.secretId});
+        this.log({ level: 'error', message: "Invalid secret " + sshProfile.secretId });
         return;
       }
       switch (secret.secretType) {
@@ -62,13 +62,13 @@ export class ElectronFileExplorerService extends AbstractElectronService {
         }
       }
     }
-    await this.ipc.invoke(SESSION_SCP_REGISTER, {id: id, config: sshConfig});
+    await this.ipc.invoke(SESSION_SCP_REGISTER, { id: id, config: sshConfig, proxyId: proxyId });
   }
 
 
-  async registerFtpSession(id: string, ftpProfile: FTPProfile) {
+  async registerFtpSession(id: string, ftpProfile: FTPProfile, proxyId?: string) {
     if (!id || !ftpProfile) {
-      this.log({level: 'error', message : "Invalid configuration"});
+      this.log({ level: 'error', message: "Invalid configuration" });
       return;
     }
     let ftpConfig: any = {
@@ -83,7 +83,7 @@ export class ElectronFileExplorerService extends AbstractElectronService {
     } else if (ftpProfile.authType == AuthType.SECRET) {
       let secret = this.secretStorage.findById(ftpProfile.secretId);
       if (!secret) {
-        this.log({level: 'error', message : "Invalid secret " + ftpProfile.secretId});
+        this.log({ level: 'error', message: "Invalid secret " + ftpProfile.secretId });
         return;
       }
       switch (secret.secretType) {
@@ -106,13 +106,13 @@ export class ElectronFileExplorerService extends AbstractElectronService {
         }
       }
     }
-    await this.ipc.invoke(SESSION_FTP_REGISTER, {id: id, config: ftpConfig});
+    await this.ipc.invoke(SESSION_FTP_REGISTER, { id: id, config: ftpConfig, proxyId: proxyId });
   }
 
 
-  async registerSambaSession(id: string, sambaProfile: SambaProfile) {
+  async registerSambaSession(id: string, sambaProfile: SambaProfile, proxyId?: string) {
     if (!id || !sambaProfile) {
-      this.log({level: 'error', message : "Invalid configuration"});
+      this.log({ level: 'error', message: "Invalid configuration" });
       return;
     }
     let sambaConfig: any = {
@@ -127,7 +127,7 @@ export class ElectronFileExplorerService extends AbstractElectronService {
     } else if (sambaProfile.authType == AuthType.SECRET) {
       let secret = this.secretStorage.findById(sambaProfile.secretId);
       if (!secret) {
-        this.log({level: 'error', message : "Invalid secret " + sambaProfile.secretId});
+        this.log({ level: 'error', message: "Invalid secret " + sambaProfile.secretId });
         return;
       }
       switch (secret.secretType) {
@@ -138,6 +138,6 @@ export class ElectronFileExplorerService extends AbstractElectronService {
         }
       }
     }
-    await this.ipc.invoke(SESSION_SAMBA_REGISTER, {id: id, config: sambaConfig});
+    await this.ipc.invoke(SESSION_SAMBA_REGISTER, { id: id, config: sambaConfig, proxyId: proxyId });
   }
 }
