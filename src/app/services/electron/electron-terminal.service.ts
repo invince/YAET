@@ -1,4 +1,13 @@
-import {Injectable} from '@angular/core';
+import { Injectable } from '@angular/core';
+import { CustomProfile } from '../../domain/profile/CustomProfile';
+import { LocalTerminalProfile } from '../../domain/profile/LocalTerminalProfile';
+import { Profile, } from '../../domain/profile/Profile';
+import { AuthType, SecretType } from '../../domain/Secret';
+import { Session } from '../../domain/session/Session';
+import { NotificationService } from '../notification.service';
+import { SecretStorageService } from '../secret-storage.service';
+import { TabService } from '../tab.service';
+import { AbstractElectronService } from './electron.service';
 import {
   ERROR,
   SESSION_CLOSE_LOCAL_TERMINAL,
@@ -15,15 +24,6 @@ import {
   TERMINAL_OUTPUT,
   TERMINAL_RESIZE
 } from './ElectronConstant';
-import {LocalTerminalProfile} from '../../domain/profile/LocalTerminalProfile';
-import {Profile,} from '../../domain/profile/Profile';
-import {AuthType, SecretType} from '../../domain/Secret';
-import {SecretStorageService} from '../secret-storage.service';
-import {TabService} from '../tab.service';
-import {Session} from '../../domain/session/Session';
-import {NotificationService} from '../notification.service';
-import {AbstractElectronService} from './electron.service';
-import {CustomProfile} from '../../domain/profile/CustomProfile';
 
 
 @Injectable({
@@ -51,7 +51,7 @@ export class ElectronTerminalService extends AbstractElectronService {
     });
 
     this.ipc.on(SESSION_DISCONNECT_SSH, (event, data) => {
-      this.log({level: 'info', message: 'SSH Disconnected:' + data.id});
+      this.log({ level: 'info', message: 'SSH Disconnected:' + data.id });
       if (data.error) {
         this.notification.error('SSH Disconnected, you can try reconnect later');
       }
@@ -62,32 +62,32 @@ export class ElectronTerminalService extends AbstractElectronService {
 
   closeTelnetTerminalSession(session: Session) {
     if (this.ipc) {
-      this.ipc.send(SESSION_CLOSE_TELNET_TERMINAL, {terminalId: session.id});
+      this.ipc.send(SESSION_CLOSE_TELNET_TERMINAL, { terminalId: session.id });
     }
   }
 
   closeSSHTerminalSession(session: Session) {
     if (this.ipc) {
-      this.ipc.send(SESSION_CLOSE_SSH_TERMINAL, {terminalId: session.id});
+      this.ipc.send(SESSION_CLOSE_SSH_TERMINAL, { terminalId: session.id });
     }
   }
 
   closeLocalTerminalSession(session: Session) {
     if (this.ipc) {
-      this.ipc.send(SESSION_CLOSE_LOCAL_TERMINAL, {terminalId: session.id});
+      this.ipc.send(SESSION_CLOSE_LOCAL_TERMINAL, { terminalId: session.id });
     }
   }
 
   closeWinRMTerminalSession(session: Session) {
     if (this.ipc) {
-      this.ipc.send(SESSION_CLOSE_WINRM_TERMINAL, {terminalId: session.id});
+      this.ipc.send(SESSION_CLOSE_WINRM_TERMINAL, { terminalId: session.id });
     }
   }
 
 
   openLocalTerminalSession(session: Session) {
     if (!this.ipc) {
-      this.log({level: 'error', message : "Invalid configuration"});
+      this.log({ level: 'error', message: "Invalid configuration" });
       return;
     }
     if (!session.profile) {
@@ -97,12 +97,12 @@ export class ElectronTerminalService extends AbstractElectronService {
       session.profile.localTerminal = new LocalTerminalProfile();
     }
     let localProfile: LocalTerminalProfile = session.profile.localTerminal;
-    this.ipc.send(SESSION_OPEN_LOCAL_TERMINAL, {terminalId: session.id, terminalExec: localProfile.execPath});
+    this.ipc.send(SESSION_OPEN_LOCAL_TERMINAL, { terminalId: session.id, terminalExec: localProfile.execPath });
   }
 
   openTelnetTerminalSession(session: Session) {
     if (!this.ipc || !session.profile || !session.profile.telnetProfile) {
-      this.log({level: 'error', message : "Invalid configuration"});
+      this.log({ level: 'error', message: "Invalid configuration" });
       return;
     }
     let telnetConfig: any = {
@@ -120,7 +120,7 @@ export class ElectronTerminalService extends AbstractElectronService {
     } else if (telnetProfile.authType == AuthType.SECRET) {
       let secret = this.secretStorage.findById(telnetProfile.secretId);
       if (!secret) {
-        this.log({level: 'error', message : "Invalid secret " + telnetProfile.secretId});
+        this.log({ level: 'error', message: "Invalid secret " + telnetProfile.secretId });
         return;
       }
       switch (secret.secretType) {
@@ -143,7 +143,7 @@ export class ElectronTerminalService extends AbstractElectronService {
         }
       }
     }
-    let data: {[key: string]: any;} = {terminalId: session.id, config: telnetConfig};
+    let data: { [key: string]: any; } = { terminalId: session.id, config: telnetConfig };
     if (telnetProfile.initPath) {
       data['initPath'] = telnetProfile.initPath;
     }
@@ -155,7 +155,7 @@ export class ElectronTerminalService extends AbstractElectronService {
 
   openSSHTerminalSession(session: Session) {
     if (!this.ipc || !session.profile || !session.profile.sshProfile) {
-      this.log({level: 'error', message : "Invalid configuration"});
+      this.log({ level: 'error', message: "Invalid configuration" });
       return;
     }
 
@@ -174,7 +174,7 @@ export class ElectronTerminalService extends AbstractElectronService {
     } else if (sshProfile.authType == AuthType.SECRET) {
       let secret = this.secretStorage.findById(sshProfile.secretId);
       if (!secret) {
-        this.log({level: 'error', message : "Invalid secret " + sshProfile.secretId});
+        this.log({ level: 'error', message: "Invalid secret " + sshProfile.secretId });
         return;
       }
       switch (secret.secretType) {
@@ -197,7 +197,10 @@ export class ElectronTerminalService extends AbstractElectronService {
         }
       }
     }
-    let data: {[key: string]: any;} = {terminalId: session.id, config: sshConfig};
+    let data: { [key: string]: any; } = { terminalId: session.id, config: sshConfig };
+    if (session.profile.proxyId) {
+      data['proxyId'] = session.profile.proxyId;
+    }
     if (sshProfile.initPath) {
       data['initPath'] = sshProfile.initPath;
     }
@@ -210,7 +213,7 @@ export class ElectronTerminalService extends AbstractElectronService {
 
   openWinRMTerminalSession(session: Session) {
     if (!this.ipc || !session.profile || !session.profile.sshProfile) {
-      this.log({level: 'error', message : "Invalid configuration"});
+      this.log({ level: 'error', message: "Invalid configuration" });
       return;
     }
 
@@ -228,7 +231,7 @@ export class ElectronTerminalService extends AbstractElectronService {
     } else if (profile.authType == AuthType.SECRET) {
       let secret = this.secretStorage.findById(profile.secretId);
       if (!secret) {
-        this.log({level: 'error', message : "Invalid secret " + profile.secretId});
+        this.log({ level: 'error', message: "Invalid secret " + profile.secretId });
         return;
       }
       switch (secret.secretType) {
@@ -251,7 +254,7 @@ export class ElectronTerminalService extends AbstractElectronService {
         }
       }
     }
-    let data: {[key: string]: any;} = {terminalId: session.id, config: config};
+    let data: { [key: string]: any; } = { terminalId: session.id, config: config };
     if (profile.initPath) {
       data['initPath'] = profile.initPath;
     }
@@ -263,13 +266,13 @@ export class ElectronTerminalService extends AbstractElectronService {
 
 
   sendTerminalInput(terminalId: string, input: string) {
-    if(this.ipc) {
-      this.ipc.send(TERMINAL_INPUT, {terminalId: terminalId, input: input});
+    if (this.ipc) {
+      this.ipc.send(TERMINAL_INPUT, { terminalId: terminalId, input: input });
     }
   }
 
-  onTerminalOutput(terminalId: string , callback: (data: TermOutput) => void) {
-    if(this.ipc) {
+  onTerminalOutput(terminalId: string, callback: (data: TermOutput) => void) {
+    if (this.ipc) {
       this.ipc.on(TERMINAL_OUTPUT, (event, data) => {
         if (data && data.id == terminalId) {
           callback(data);
@@ -285,10 +288,10 @@ export class ElectronTerminalService extends AbstractElectronService {
         return;
       }
       if (cmd.includes('$login') || cmd.includes('$password')) {
-        if(customProfile.authType == AuthType.SECRET) {
+        if (customProfile.authType == AuthType.SECRET) {
           let secret = this.secretStorage.findById(customProfile.secretId);
           if (!secret) {
-            this.log({level: 'error', message : "Invalid secret " + customProfile.secretId});
+            this.log({ level: 'error', message: "Invalid secret " + customProfile.secretId });
             return;
           }
           switch (secret.secretType) {
@@ -313,7 +316,7 @@ export class ElectronTerminalService extends AbstractElectronService {
     }
   }
 
-  sendTerminalResize(terminalId: string, cols: number | undefined, rows: number| undefined) {
+  sendTerminalResize(terminalId: string, cols: number | undefined, rows: number | undefined) {
     this.ipc.send(TERMINAL_RESIZE, {
       id: terminalId,
       cols: cols,

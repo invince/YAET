@@ -86,7 +86,7 @@ app.on('ready', () => {
 
   // Ensure `load` runs on every page reload
   mainWindow.webContents.on('did-finish-load', () => {
-    load(log, mainWindow, PROFILES_JSON, "profiles.loaded", false)
+    load(log, mainWindow, PROFILES_JSON, "profiles.loaded", true)
       .then(r => log.info(PROFILES_JSON + " loaded, event sent"))
       .catch(log.error);
     load(log, mainWindow, SECRETS_JSON, "secrets.loaded", true)
@@ -129,15 +129,15 @@ function initHandlerBeforeSettingLoad() {
   initCloudIpcHandler(log, () => allProxies, () => allSecrets);
   initSecurityIpcHandler(log);
   initTerminalIpcHandler(log, terminalMap);
-  initSSHTerminalIpcHandler(log, terminalMap);
-  initTelnetIpcHandler(log, terminalMap);
+  initSSHTerminalIpcHandler(log, terminalMap, () => allProxies, () => allSecrets);
+  initTelnetIpcHandler(log, terminalMap, () => allProxies, () => allSecrets);
 
-  initScpSftpHandler(log, scpMap, expressApp);
-  initFtpHandler(log, ftpMap, expressApp);
-  initSambaHandler(log, sambaMap, expressApp);
+  initScpSftpHandler(log, scpMap, expressApp, () => allProxies, () => allSecrets);
+  initFtpHandler(log, ftpMap, expressApp, () => allProxies, () => allSecrets);
+  initSambaHandler(log, sambaMap, expressApp, () => allProxies, () => allSecrets);
 
   initRdpHandler(log);
-  initVncHandler(log, vncMap);
+  initVncHandler(log, vncMap, () => allProxies, () => allSecrets);
 
   initClipboard(log, mainWindow);
   initCustomSessionHandler(log);
