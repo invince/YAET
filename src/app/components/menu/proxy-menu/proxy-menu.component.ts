@@ -122,7 +122,7 @@ export class ProxyMenuComponent extends HasChildForm(MenuComponent) implements O
 
         this.subscriptions.push(dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
-                this.proxyService.deleteOne($event);
+                this.proxiesCopy.proxies = this.proxiesCopy.proxies.filter(p => p.id !== $event.id);
                 await this.commitChange();
                 this.selectedId = undefined;
                 this.selectedProxy = undefined;
