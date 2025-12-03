@@ -1,4 +1,4 @@
-import {AuthType} from '../Secret';
+import { AuthType } from '../Secret';
 
 export class CloudSettings {
   public url!: string;
@@ -8,6 +8,7 @@ export class CloudSettings {
   public login: string = '';
   public password: string = '';
   public secretId!: string;
+  public proxyId?: string;
 
   public version: string = '';
   public compatibleVersion: string = '';

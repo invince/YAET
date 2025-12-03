@@ -1,12 +1,48 @@
 const { ipcMain } = require('electron');
 const {Telnet} = require("telnet-client");
+const { createProxyConnection } = require('../../utils/proxyUtils');
 
-function initTelnetIpcHandler(log, terminalMap) {
+function initTelnetIpcHandler(log, terminalMap, getProxies, getSecrets) {
 
-  ipcMain.on('session.open.terminal.telnet', (event, data) => {
+  ipcMain.on('session.open.terminal.telnet', async (event, data) => {
     const telnetClient = new Telnet();
     const config = data.config;
     const id = data.terminalId;
+    const proxyId = data.proxyId;
+
+    // Handle proxy if configured
+    if (proxyId) {
+      try {
+        log.info(`Telnet connection ${id}: Using proxy ${proxyId}`);
+        const proxies = getProxies();
+        if (proxies && proxies.proxies) {
+          const proxy = proxies.proxies.find(p => p.id === proxyId);
+          if (proxy) {
+            log.info(`Telnet connection ${id}: Found proxy ${proxy.name} (type: ${proxy.type})`);
+            // Create proxy connection to Telnet server
+            const sock = await createProxyConnection(
+              proxy,
+              config.host,
+              config.port || 23,
+              getSecrets,
+              log
+            );
+            config.sock = sock;
+            log.info(`Telnet connection ${id}: Proxy tunnel established`);
+          } else {
+            log.warn(`Telnet connection ${id}: Proxy ${proxyId} not found`);
+          }
+        }
+      } catch (error) {
+        log.error(`Telnet connection ${id}: Failed to establish proxy connection:`, error);
+        event.sender.send('error', {
+          category: 'telnet',
+          id,
+          error: `Proxy connection failed: ${error.message}`,
+        });
+        return;
+      }
+    }
 
     telnetClient
       .connect(config)

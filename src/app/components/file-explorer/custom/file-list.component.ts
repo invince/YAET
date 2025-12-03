@@ -12,6 +12,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { DragDropTransferService } from '../../../services/drag-drop-transfer.service';
 import { FileItem, FileSystemApiService } from '../../../services/file-system/file-system-api.service';
 import { FileCreatorDialogComponent } from './file-creator-dialog.component';
 import { FileEditorDialogComponent } from './file-editor-dialog.component';
@@ -53,12 +54,30 @@ export class FileListComponent implements OnInit {
     clipboardMode: 'copy' | 'cut' | null = null;
     clipboardSourcePath = '';
     isDraggingOver = false;
+    isDraggingFromAnotherTab = false;
     draggedItem: FileItem | null = null;
     dragOverFolder: FileItem | null = null;
 
+    // Column resizing
+    isResizing = false;
+    resizingColumn: string | null = null;
+    startX = 0;
+    startWidth = 0;
+    columnWidths: { [key: string]: number } = {
+        icon: 60,
+        name: 400,
+        size: 120,
+        dateModified: 180,
+        actions: 60
+    };
+
     @ViewChild(MatSort) sort!: MatSort;
 
-    constructor(private api: FileSystemApiService, private dialog: MatDialog) { }
+    constructor(
+        private api: FileSystemApiService,
+        private dialog: MatDialog,
+        private dragDropService: DragDropTransferService
+    ) { }
 
     ngOnInit(): void {
         this.refresh();
@@ -394,19 +413,35 @@ export class FileListComponent implements OnInit {
         event.preventDefault();
         event.stopPropagation();
         this.isDraggingOver = true;
+
+        // Check if dragging from another tab
+        const dragData = this.dragDropService.getDragData();
+        this.isDraggingFromAnotherTab = dragData !== null &&
+            this.dragDropService.canTransfer(this.ajaxSettings);
     }
 
     onDragLeave(event: DragEvent) {
         event.preventDefault();
         event.stopPropagation();
         this.isDraggingOver = false;
+        this.isDraggingFromAnotherTab = false;
     }
 
     onDrop(event: DragEvent) {
         event.preventDefault();
         event.stopPropagation();
         this.isDraggingOver = false;
+        this.isDraggingFromAnotherTab = false;
 
+        // Check if this is a cross-tab drop
+        const dragData = this.dragDropService.getDragData();
+        if (dragData && this.dragDropService.canTransfer(this.ajaxSettings)) {
+            // Cross-tab transfer
+            this.onCrossTabDrop(dragData);
+            return;
+        }
+
+        // Regular local file drop
         const files = event.dataTransfer?.files;
         if (files && files.length > 0) {
             this.uploadFiles(files);
@@ -449,15 +484,27 @@ export class FileListComponent implements OnInit {
     // Internal drag and drop for moving files/folders
     onRowDragStart(event: DragEvent, item: FileItem) {
         this.draggedItem = item;
+
+        // Store drag data in service for cross-tab transfers
+        this.dragDropService.startDrag(this.ajaxSettings, this.path, [item]);
+
         if (event.dataTransfer) {
             event.dataTransfer.effectAllowed = 'move';
             event.dataTransfer.setData('text/plain', item.name);
+            // Set a custom data type to identify cross-tab drags
+            event.dataTransfer.setData('application/x-yaet-file', JSON.stringify({
+                fileName: item.name,
+                fileType: item.type
+            }));
         }
     }
 
     onRowDragEnd() {
         this.draggedItem = null;
         this.dragOverFolder = null;
+
+        // Clear drag data from service
+        this.dragDropService.endDrag();
 
         // Extra safeguard: ensure cleanup happens even if events fire in unexpected order
         setTimeout(() => {
@@ -524,6 +571,107 @@ export class FileListComponent implements OnInit {
         }
 
         this.draggedItem = null;
+    }
+
+    // Cross-tab file transfer
+    private onCrossTabDrop(dragData: any) {
+        if (!dragData || !dragData.files || dragData.files.length === 0) return;
+        if (!this.ajaxSettings?.uploadUrl || !dragData.ajaxSettings?.downloadUrl) return;
+
+        const separator = this.path.endsWith('/') ? '' : '/';
+        const targetPath = `${this.path}${separator}`;
+        const sourceSeparator = dragData.path.endsWith('/') ? '' : '/';
+        const sourcePath = `${dragData.path}${sourceSeparator}`;
+
+        this.isSaving = true;
+        let transferCount = 0;
+        const totalFiles = dragData.files.filter((f: FileItem) => f.type === 'file').length;
+
+        if (totalFiles === 0) {
+            alert('Folder drag-and-drop is not supported yet. Please drag files only.');
+            this.isSaving = false;
+            return;
+        }
+
+        // Transfer each file
+        dragData.files.forEach((file: FileItem) => {
+            if (file.type !== 'file') {
+                transferCount++;
+                return; // Skip folders for now
+            }
+
+            // Download from source
+            this.api.download(dragData.ajaxSettings.downloadUrl, sourcePath, [file.name]).subscribe({
+                next: (blob) => {
+                    // Convert blob to File object
+                    const fileObj = new File([blob], file.name, { type: blob.type || 'application/octet-stream' });
+
+                    // Upload to target
+                    this.api.upload(this.ajaxSettings.uploadUrl, targetPath, fileObj).subscribe({
+                        next: () => {
+                            transferCount++;
+                            if (transferCount === totalFiles) {
+                                this.isSaving = false;
+                                this.refresh();
+                            }
+                        },
+                        error: (err: any) => {
+                            transferCount++;
+                            console.error(`Error uploading file ${file.name}`, err);
+                            if (transferCount === totalFiles) {
+                                this.isSaving = false;
+                                this.refresh();
+                            }
+                            alert(`Failed to upload ${file.name}: ` + (err.error?.error?.message || err.message));
+                        }
+                    });
+                },
+                error: (err: any) => {
+                    transferCount++;
+                    console.error(`Error downloading file ${file.name}`, err);
+                    if (transferCount === totalFiles) {
+                        this.isSaving = false;
+                    }
+                    alert(`Failed to download ${file.name}: ` + (err.error?.error?.message || err.message));
+                }
+            });
+        });
+    }
+
+    // Column resizing methods
+    onResizeStart(event: MouseEvent, column: string): void {
+        event.preventDefault();
+        event.stopPropagation();
+
+        this.isResizing = true;
+        this.resizingColumn = column;
+        this.startX = event.pageX;
+        this.startWidth = this.columnWidths[column];
+
+        // Add global mouse event listeners
+        document.addEventListener('mousemove', this.onResizeMove);
+        document.addEventListener('mouseup', this.onResizeEnd);
+    }
+
+    onResizeMove = (event: MouseEvent): void => {
+        if (!this.isResizing || !this.resizingColumn) return;
+
+        const diff = event.pageX - this.startX;
+        const newWidth = Math.max(50, this.startWidth + diff); // Minimum 50px
+        this.columnWidths[this.resizingColumn] = newWidth;
+    }
+
+    onResizeEnd = (): void => {
+        this.isResizing = false;
+        this.resizingColumn = null;
+
+        // Remove global mouse event listeners
+        document.removeEventListener('mousemove', this.onResizeMove);
+        document.removeEventListener('mouseup', this.onResizeEnd);
+    }
+
+    getColumnWidth(column: string): string {
+        return `${this.columnWidths[column]}px`;
     }
 }
 

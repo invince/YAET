@@ -214,7 +214,9 @@ function initSambaHandler(log, sambaMap, expressApp) {
     try {
       const result = await withSambaClient(configId, async (smbClient) => {
         const targetPath = await avoidDuplicateName(smbClient, path.join(targetDir, filename));  // the req.file.originalname may have encoding pb
-        await smbClient.writeFile(targetPath, req.file.buffer);
+        // Multer 2.0 changed req.file.buffer to req.file.data
+        const fileData = req.file.data || req.file.buffer;
+        await smbClient.writeFile(targetPath, fileData);
         return { success: true, message: `File uploaded to ${targetPath}` };
       });
 

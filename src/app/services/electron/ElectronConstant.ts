@@ -24,9 +24,9 @@ export const SESSION_OPEN_RDP = 'session.open.rd.rdp';
 export const SESSION_OPEN_VNC = 'session.open.rd.vnc';
 export const SESSION_DISCONNECT_VNC = 'session.disconnect.rd.vnc';
 
-export const SESSION_SCP_REGISTER= 'session.fe.scp.register';
-export const SESSION_FTP_REGISTER= 'session.fe.ftp.register';
-export const SESSION_SAMBA_REGISTER= 'session.fe.samba.register';
+export const SESSION_SCP_REGISTER = 'session.fe.scp.register';
+export const SESSION_FTP_REGISTER = 'session.fe.ftp.register';
+export const SESSION_SAMBA_REGISTER = 'session.fe.samba.register';
 
 export const SESSION_OPEN_CUSTOM = 'session.open.custom';
 
@@ -66,6 +66,12 @@ export const CLOUD_RELOAD = 'cloud.reload';
 export const CLOUD_UPLOAD = 'cloud.upload';
 export const CLOUD_DOWNLOAD = 'cloud.download';
 //#endregion "Cloud"
+
+//#region "Proxies"
+export const PROXIES_LOADED = 'proxies.loaded';
+export const PROXIES_SAVE = 'proxies.save';
+export const PROXIES_RELOAD = 'proxies.reload';
+//#endregion "Proxies"
 
 
 export const NODE_EXPRESS_API_ROOT = 'http://localhost:13012/api';

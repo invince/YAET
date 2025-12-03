@@ -1,0 +1,36 @@
+:host {
+    display: block;
+    height: 100%;
+    width: 100%;
+}
+
+.field {
+    margin: 16px;
+    width: 280px;
+}
+
+.proxy-form {
+    display: flex;
+    flex-direction: row;
+}
+
+.proxy-form-container h2 {
+    padding-left: 16px;
+}
+
+.proxy-form-container {
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.proxy-form-content {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.proxy-form-footer {
+    margin-top: auto;
+    margin-bottom: 0;
+}

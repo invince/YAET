@@ -1,18 +1,17 @@
-import {Injectable, OnDestroy} from '@angular/core';
-import {ElectronService} from './electron/electron.service';
+import { Injectable, OnDestroy } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import CryptoJS from 'crypto-js';
-import {Subject, Subscription} from 'rxjs';
-import {LogService} from './log.service';
-import {MatDialog} from '@angular/material/dialog';
-import {ConfirmationComponent} from '../components/confirmation/confirmation.component';
+import { Subject, Subscription } from 'rxjs';
+import { ConfirmationComponent } from '../components/confirmation/confirmation.component';
+import { ElectronService } from './electron/electron.service';
+import { LogService } from './log.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class MasterKeyService implements OnDestroy{
+export class MasterKeyService implements OnDestroy {
 
-  private static readonly service:string = 'io.github.invince.YAET';
-  private static readonly account:string = 'ac13ba1ac2f841d19a9f73bd8c335086';
+
   private _masterKeyLoaded: boolean = false;
 
   private _hasMasterKey?: boolean;
@@ -30,7 +29,7 @@ export class MasterKeyService implements OnDestroy{
   ) {
 
     this.refreshHasMasterKey();
-    this.intervalId = setInterval(()=> this.refreshHasMasterKey(), 30 * 1000)
+    this.intervalId = setInterval(() => this.refreshHasMasterKey(), 30 * 1000)
   }
 
 
@@ -41,7 +40,7 @@ export class MasterKeyService implements OnDestroy{
   }
 
   private refreshHasMasterKey() {
-    this.electron.getPassword(MasterKeyService.service, MasterKeyService.account).then(key => {
+    this.electron.getPassword().then(key => {
       if (key && key.length > 0) {
         this._hasMasterKey = true;
       } else {
@@ -52,7 +51,7 @@ export class MasterKeyService implements OnDestroy{
   }
 
   deleteMasterKey() {
-    this.electron.deletePassword(MasterKeyService.service, MasterKeyService.account).then(r => {
+    this.electron.deletePassword().then(r => {
       this.refreshHasMasterKey();
     });
   }
@@ -66,17 +65,17 @@ export class MasterKeyService implements OnDestroy{
   }
 
 
-  private async getMasterKey() : Promise<string|undefined> {
-    return await this.electron.getPassword(MasterKeyService.service, MasterKeyService.account);
+  private async getMasterKey(): Promise<string | undefined> {
+    return await this.electron.getPassword();
   }
 
-  async matchMasterKey(masterKey: string) : Promise<boolean> {
-    const key = await this.electron.getPassword(MasterKeyService.service, MasterKeyService.account);
+  async matchMasterKey(masterKey: string): Promise<boolean> {
+    const key = await this.electron.getPassword();
     return masterKey === key;
   }
 
   saveMasterKey(masterKey: string, suggestReencrypt: boolean = false) {
-    this.electron.setPassword(MasterKeyService.service, MasterKeyService.account, masterKey).then(r => {
+    this.electron.setPassword(masterKey).then(r => {
       this.refreshHasMasterKey();
       if (suggestReencrypt) {
         const dialogRef = this.dialog.open(ConfirmationComponent, {

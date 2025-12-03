@@ -1,49 +1,51 @@
-import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {MatIcon} from "@angular/material/icon";
-import {MatSidenavModule} from '@angular/material/sidenav';
-import {MenuComponent} from '../menu.component';
-import {ProfileService} from '../../../services/profile.service';
-import {Profile, Profiles} from '../../../domain/profile/Profile';
-import {CommonModule} from '@angular/common';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatInput} from '@angular/material/input';
-import {MatButtonModule} from '@angular/material/button';
-import {ProfileFormComponent} from '../profile-form/profile-form.component';
-import {HasChildForm} from '../../EnhancedFormMixin';
-import {SettingStorageService} from '../../../services/setting-storage.service';
-import {Subscription} from 'rxjs';
-import {SettingService} from '../../../services/setting.service';
-import {FilterKeywordPipe} from '../../../pipes/filter-keyword.pipe';
-import {MatTree, MatTreeModule, MatTreeNestedDataSource} from '@angular/material/tree'
-import {GroupNode, NODE_DEFAULT_NAME} from '../../../domain/GroupNode';
-import {NestedTreeControl} from '@angular/cdk/tree';
-import {SideNavType} from '../../../domain/setting/UISettings';
-import {MatDialog} from '@angular/material/dialog';
-import {ConfirmationComponent} from '../../confirmation/confirmation.component';
-import {ModalControllerService} from '../../../services/modal-controller.service';
-import {MenuConsts} from '../../../domain/MenuConsts';
-import {Tag} from '../../../domain/Tag';
-import {NotificationService} from '../../../services/notification.service';
+import { NestedTreeControl } from '@angular/cdk/tree';
+import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIcon } from "@angular/material/icon";
+import { MatInput } from '@angular/material/input';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatTree, MatTreeModule, MatTreeNestedDataSource } from '@angular/material/tree';
+import { TranslateModule } from '@ngx-translate/core';
+import { Subscription } from 'rxjs';
+import { GroupNode, NODE_DEFAULT_NAME } from '../../../domain/GroupNode';
+import { MenuConsts } from '../../../domain/MenuConsts';
+import { Profile, Profiles } from '../../../domain/profile/Profile';
+import { SideNavType } from '../../../domain/setting/UISettings';
+import { Tag } from '../../../domain/Tag';
+import { FilterKeywordPipe } from '../../../pipes/filter-keyword.pipe';
+import { ModalControllerService } from '../../../services/modal-controller.service';
+import { NotificationService } from '../../../services/notification.service';
+import { ProfileService } from '../../../services/profile.service';
+import { SettingStorageService } from '../../../services/setting-storage.service';
+import { SettingService } from '../../../services/setting.service';
+import { ConfirmationComponent } from '../../confirmation/confirmation.component';
+import { HasChildForm } from '../../EnhancedFormMixin';
+import { MenuComponent } from '../menu.component';
+import { ProfileFormComponent } from '../profile-form/profile-form.component';
 
 @Component({
-    selector: 'app-profiles-menu',
-    imports: [
-        CommonModule,
-        FormsModule,
-        ReactiveFormsModule,
-        MatFormFieldModule,
-        MatSidenavModule,
-        MatButtonModule,
-        MatTreeModule,
-        MatInput,
-        MatIcon,
-        ProfileFormComponent,
-        FilterKeywordPipe,
-    ],
-    templateUrl: './profiles-menu.component.html',
-    styleUrl: './profiles-menu.component.scss',
-    providers: [FilterKeywordPipe]
+  selector: 'app-profiles-menu',
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatSidenavModule,
+    MatButtonModule,
+    MatTreeModule,
+    MatInput,
+    MatIcon,
+    ProfileFormComponent,
+    FilterKeywordPipe,
+    TranslateModule
+  ],
+  templateUrl: './profiles-menu.component.html',
+  styleUrl: './profiles-menu.component.scss',
+  providers: [FilterKeywordPipe]
 })
 export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
 
@@ -215,13 +217,13 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     (profile: Profile) => profile.category,
     (profile: Profile) => profile.profileType,
     (profile: Profile) => {
-        if (profile.group) {
-          let group = this.settingService.findGroupById(profile.id);
-          if (group) {
-            return [group.name];
-          }
+      if (profile.group) {
+        let group = this.settingService.findGroupById(profile.id);
+        if (group) {
+          return [group.name];
         }
-        return [];
+      }
+      return [];
     },
     (profile: Profile) => {
       if (profile.tags) {

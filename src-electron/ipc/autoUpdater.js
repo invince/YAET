@@ -1,13 +1,25 @@
 const { autoUpdater } = require('electron-updater');
-const {dialog} = require("electron");
+const { dialog } = require("electron");
+const { getProxyUrl } = require("../utils/proxyUtils");
 
-function initAutoUpdater(log) {
+function initAutoUpdater(log, settings, getProxies, getSecrets) {
 
   log.info("AutoUpdate is active");
 
   autoUpdater.logger = log;
 
   const isDev = process.env.NODE_ENV === 'development';
+
+  if (settings?.general?.proxyId && getProxies()?.proxies) {
+    const proxy = getProxies()?.proxies.find(p => p.id === settings.general.proxyId);
+    if (proxy) {
+      const proxyUrl = getProxyUrl(proxy, getSecrets, log);
+      // Set environment variables for electron-updater
+      process.env.HTTP_PROXY = proxyUrl;
+      process.env.HTTPS_PROXY = proxyUrl;
+      process.env.NO_PROXY = '127.0.0.1,localhost';
+    }
+  }
 
   if (!isDev) {
     autoUpdater.checkForUpdatesAndNotify();

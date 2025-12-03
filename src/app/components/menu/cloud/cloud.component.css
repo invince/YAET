@@ -29,3 +29,36 @@
   background-color: coral;
 }
 
+/* Compact mat-selection-list */
+.cloud-form mat-selection-list {
+  padding-top: 4px !important;
+  margin-left: 16px;
+}
+
+.cloud-form mat-selection-list mat-list-option {
+  height: 32px !important;
+  min-height: 32px !important;
+  font-size: 13px !important;
+}
+
+/* Compact mat-checkbox */
+.cloud-form mat-checkbox {
+  margin-left: 16px;
+  margin-top: 8px;
+  margin-bottom: 4px;
+  font-size: 13px !important;
+}
+
+.cloud-form mat-checkbox .mdc-checkbox {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+/* Reduce spacing for form fields */
+.cloud-form mat-form-field {
+  margin-bottom: 4px !important;
+}
+
+.cloud-form mat-radio-group {
+  margin-bottom: 8px !important;
+}

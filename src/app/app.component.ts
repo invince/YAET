@@ -19,6 +19,7 @@ import { BottomToolbarComponent } from './components/bottom-toolbar/bottom-toolb
 import { FileExplorerComponent } from './components/file-explorer/file-explorer.component';
 import { CloudComponent } from './components/menu/cloud/cloud.component';
 import { ProfilesMenuComponent } from './components/menu/profiles-menu/profiles-menu.component';
+import { ProxyMenuComponent } from './components/menu/proxy-menu/proxy-menu.component';
 import { QuickconnectMenuComponent } from "./components/menu/quickconnect-menu/quickconnect-menu.component";
 import { SecretsMenuComponent } from './components/menu/secrets-menu/secrets-menu.component';
 import { SettingMenuComponent } from './components/menu/setting-menu/setting-menu.component';
@@ -34,6 +35,7 @@ import { MasterKeyService } from './services/master-key.service';
 import { ModalControllerService } from './services/modal-controller.service';
 import { NotificationService } from './services/notification.service';
 import { ProfileService } from './services/profile.service';
+import { ProxyService } from './services/proxy.service';
 import { SecretService } from './services/secret.service';
 import { SessionService } from './services/session.service';
 import { SettingStorageService } from './services/setting-storage.service';
@@ -41,36 +43,38 @@ import { SettingService } from './services/setting.service';
 import { TabService } from './services/tab.service';
 
 @Component({
-    selector: 'app-root',
-    imports: [
-        TerminalComponent,
-        MatSidenavModule,
-        MatTabsModule,
-        MatButtonModule,
-        NgxSpinnerModule,
-        MatIcon,
-        CommonModule,
-        SettingMenuComponent,
-        RemoteDesktopComponent,
-        FileExplorerComponent,
-        SecretsMenuComponent,
-        ProfilesMenuComponent,
-        QuickconnectMenuComponent,
-        CloudComponent,
-        SidebarComponent,
-        BottomToolbarComponent,
-    ],
-    templateUrl: './app.component.html',
-    styleUrl: './app.component.css',
-    animations: [
-        menuAnimation,
-    ]
+  selector: 'app-root',
+  imports: [
+    TerminalComponent,
+    MatSidenavModule,
+    MatTabsModule,
+    MatButtonModule,
+    NgxSpinnerModule,
+    MatIcon,
+    CommonModule,
+    SettingMenuComponent,
+    RemoteDesktopComponent,
+    FileExplorerComponent,
+    SecretsMenuComponent,
+    ProxyMenuComponent,
+    ProfilesMenuComponent,
+    QuickconnectMenuComponent,
+    CloudComponent,
+    SidebarComponent,
+    BottomToolbarComponent,
+  ],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.css',
+  animations: [
+    menuAnimation,
+  ]
 })
 export class AppComponent implements OnInit, OnDestroy {
 
   MENU_ADD: string = MenuConsts.MENU_ADD;
   MENU_PROFILE: string = MenuConsts.MENU_PROFILE;
   MENU_SECURE: string = MenuConsts.MENU_SECURE;
+  MENU_PROXY: string = MenuConsts.MENU_PROXY;
   MENU_CLOUD: string = MenuConsts.MENU_CLOUD;
   MENU_SETTING: string = MenuConsts.MENU_SETTING;
 
@@ -95,6 +99,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private sessionService: SessionService,
     private masterKeyService: MasterKeyService,
     private cloudService: CloudService,
+    private proxyService: ProxyService,
     public tabService: TabService,
 
     public modalControl: ModalControllerService,

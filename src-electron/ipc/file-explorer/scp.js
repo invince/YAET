@@ -9,9 +9,10 @@ const fsPromise = require('fs/promises');
 const os = require('os');
 const uuid = require('uuid');
 const { Readable } = require('stream');
+const { createProxyConnection } = require('../../utils/proxyUtils');
 
 
-function initScpSftpHandler(log, scpMap, expressApp) {
+function initScpSftpHandler(log, scpMap, expressApp, getProxies, getSecrets) {
 
   ipcMain.handle('session.fe.scp.register', async (event, { id, config }) => {
     scpMap.set(id, config);
@@ -19,9 +20,41 @@ function initScpSftpHandler(log, scpMap, expressApp) {
 
   //==================== Utils =================================================
   async function withSftpClient(configId, callback) {
-    const config = scpMap.get(configId);
-    if (!config) {
+    const configData = scpMap.get(configId);
+    if (!configData) {
       throw new Error('Error connection config not found');
+    }
+
+    const config = configData.config;
+    const proxyId = configData.proxyId;
+
+    // Handle proxy if configured
+    if (proxyId) {
+      try {
+        log.info(`SCP connection ${configId}: Using proxy ${proxyId}`);
+        const proxies = getProxies();
+        if (proxies && proxies.proxies) {
+          const proxy = proxies.proxies.find(p => p.id === proxyId);
+          if (proxy) {
+            log.info(`SCP connection ${configId}: Found proxy ${proxy.name} (type: ${proxy.type})`);
+            // Create proxy connection to SSH server
+            const sock = await createProxyConnection(
+              proxy,
+              config.host,
+              config.port || 22,
+              getSecrets,
+              log
+            );
+            config.sock = sock;
+            log.info(`SCP connection ${configId}: Proxy tunnel established`);
+          } else {
+            log.warn(`SCP connection ${configId}: Proxy ${proxyId} not found`);
+          }
+        }
+      } catch (error) {
+        log.error(`SCP connection ${configId}: Failed to establish proxy connection:`, error);
+        throw error;
+      }
     }
 
     const sftp = new SftpClient();
@@ -207,7 +240,9 @@ function initScpSftpHandler(log, scpMap, expressApp) {
     try {
       const result = await withSftpClient(configId, async (sftp) => {
         const remotePath = await avoidDuplicateName(sftp, `${path}/${filename}`);// the req.file.originalname may have encoding pb
-        await sftp.put(req.file.buffer, remotePath);
+        // Multer 2.0 changed req.file.buffer to req.file.data
+        const fileData = req.file.data || req.file.buffer;
+        await sftp.put(fileData, remotePath);
         return { success: true, message: `File uploaded to ${remotePath}` };
       });
 

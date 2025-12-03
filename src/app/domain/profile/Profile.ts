@@ -1,12 +1,12 @@
-import {LocalTerminalProfile} from './LocalTerminalProfile';
-import {v4 as uuidv4} from 'uuid';
-import {RemoteTerminalProfile} from './RemoteTerminalProfile';
-import {Secret} from '../Secret';
-import {RdpProfile} from './RdpProfile';
-import {VncProfile} from './VncProfile';
-import {CustomProfile} from './CustomProfile';
-import {FTPProfile} from './FTPProfile';
-import {SambaProfile} from './SambaProfile';
+import { v4 as uuidv4 } from 'uuid';
+import { Secret } from '../Secret';
+import { CustomProfile } from './CustomProfile';
+import { FTPProfile } from './FTPProfile';
+import { LocalTerminalProfile } from './LocalTerminalProfile';
+import { RdpProfile } from './RdpProfile';
+import { RemoteTerminalProfile } from './RemoteTerminalProfile';
+import { SambaProfile } from './SambaProfile';
+import { VncProfile } from './VncProfile';
 
 export enum ProfileCategory {
   TERMINAL = 'TERMINAL',
@@ -98,7 +98,7 @@ export class Profile {
   public name: string = '';
 
   public icon: string = '';
-  public comment:string = '';
+  public comment: string = '';
 
   public category!: ProfileCategory;
   public profileType!: ProfileType;
@@ -118,6 +118,7 @@ export class Profile {
 
   public group!: string
   public tags: string[] = [];
+  public proxyId?: string;
 
   isNew: boolean = true;
 
@@ -129,7 +130,7 @@ export class Profile {
     this.winRmProfile = new RemoteTerminalProfile(); // port is not important
 
     this.ftpProfile = new FTPProfile();
-    this.sambaProfile= new SambaProfile();
+    this.sambaProfile = new SambaProfile();
 
     this.rdpProfile = new RdpProfile();
     this.vncProfile = new VncProfile();
@@ -158,6 +159,7 @@ export class Profile {
     cloned.customProfile = base.customProfile;
     cloned.group = base.group;
     cloned.tags = base.tags;
+    cloned.proxyId = base.proxyId;
 
     return cloned;
   }

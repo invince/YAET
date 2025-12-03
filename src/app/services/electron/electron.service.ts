@@ -1,5 +1,13 @@
-import {Injectable} from '@angular/core';
-import {IpcRenderer} from 'electron';
+import { Injectable } from '@angular/core';
+import { IpcRenderer } from 'electron';
+import { Log } from '../../domain/Log';
+import { AuthType, SecretType } from '../../domain/Secret';
+import { CloudResponse } from '../../domain/setting/CloudResponse';
+import { CloudSettings } from '../../domain/setting/CloudSettings';
+import { MySettings } from '../../domain/setting/MySettings';
+import { NotificationService } from '../notification.service';
+import { SecretStorageService } from '../secret-storage.service';
+import { TabService } from '../tab.service';
 import {
   CLOUD_DOWNLOAD,
   CLOUD_RELOAD,
@@ -12,20 +20,14 @@ import {
   OPEN_URL,
   PROFILES_RELOAD,
   PROFILES_SAVE,
+  PROXIES_RELOAD,
+  PROXIES_SAVE,
   SAVE_MASTERKEY,
   SECRETS_RELOAD,
   SECRETS_SAVE,
   SETTINGS_RELOAD,
-  SETTINGS_SAVE,
+  SETTINGS_SAVE
 } from './ElectronConstant';
-import {MySettings} from '../../domain/setting/MySettings';
-import {AuthType, SecretType} from '../../domain/Secret';
-import {SecretStorageService} from '../secret-storage.service';
-import {CloudSettings} from '../../domain/setting/CloudSettings';
-import {CloudResponse} from '../../domain/setting/CloudResponse';
-import {TabService} from '../tab.service';
-import {Log} from '../../domain/Log';
-import {NotificationService} from '../notification.service';
 
 
 export class AbstractElectronService {
@@ -46,7 +48,7 @@ export class AbstractElectronService {
 
   openUrl(url: string) {
     if (this.ipc) {
-      this.ipc.send(OPEN_URL, {url: url});
+      this.ipc.send(OPEN_URL, { url: url });
     }
   }
 
@@ -68,7 +70,7 @@ export class ElectronService extends AbstractElectronService {
     this.initCommonListener();
   }
 
-//#region "Common"
+  //#region "Common"
   onLoadedEvent(eventName: string, callback: (data: string) => void) {
     if (this.ipc) {
       this.ipc.on(eventName, (event, data) => callback(data));
@@ -77,7 +79,7 @@ export class ElectronService extends AbstractElectronService {
 
   private initCommonListener() {
     this.ipc.on(ERROR, (event, data) => {
-      this.log({level: 'error:', message:  data});
+      this.log({ level: 'error:', message: data });
       this.notification.error('ERROR: ' + data.error);
       if (data.category === 'winrm' && data.id) {
         this.tabService.connected(data.id);
@@ -88,12 +90,12 @@ export class ElectronService extends AbstractElectronService {
   }
 
 
-//#endregion "Common"
+  //#endregion "Common"
 
-//#region "Settings"
+  //#region "Settings"
   saveSetting(settings: MySettings) {
-    if(this.ipc) {
-      this.ipc.send(SETTINGS_SAVE, {data: settings});
+    if (this.ipc) {
+      this.ipc.send(SETTINGS_SAVE, { data: settings });
     }
   }
 
@@ -102,14 +104,14 @@ export class ElectronService extends AbstractElectronService {
       this.ipc.send(SETTINGS_RELOAD, {});
     }
   }
-//#endregion "Settings"
+  //#endregion "Settings"
 
 
 
-//#region "Profiles"
+  //#region "Profiles"
   async saveProfiles(encryptedProfiles: string) {
-    if(this.ipc) {
-      await this.ipc.send(PROFILES_SAVE, {data: encryptedProfiles});
+    if (this.ipc) {
+      await this.ipc.send(PROFILES_SAVE, { data: encryptedProfiles });
     }
   }
 
@@ -119,32 +121,32 @@ export class ElectronService extends AbstractElectronService {
     }
   }
 
-//#endregion "Profiles"
+  //#endregion "Profiles"
 
 
-//#region "Secrets"
-  async getPassword(service: string, account: string): Promise<string|undefined>  {
-    if(this.ipc) {
-      return await this.ipc.invoke(GET_MASTERKEY,  service, account);
+  //#region "Secrets"
+  async getPassword(): Promise<string | undefined> {
+    if (this.ipc) {
+      return await this.ipc.invoke(GET_MASTERKEY);
     }
     return;
   }
 
-  async setPassword(service: string, account: string, masterKey: string) {
+  async setPassword(masterKey: string) {
     if (this.ipc) {
-      await this.ipc.invoke(SAVE_MASTERKEY,  service, account, masterKey);
+      await this.ipc.invoke(SAVE_MASTERKEY, masterKey);
     }
   }
 
-  async deletePassword(service: string, account: string) {
+  async deletePassword() {
     if (this.ipc) {
-      await this.ipc.invoke(DELETE_MASTERKEY,  service, account);
+      await this.ipc.invoke(DELETE_MASTERKEY);
     }
   }
 
   async saveSecrets(encryptedSecrets: string) {
     if (this.ipc) {
-      await this.ipc.send(SECRETS_SAVE, {data: encryptedSecrets});
+      await this.ipc.send(SECRETS_SAVE, { data: encryptedSecrets });
     }
   }
 
@@ -153,15 +155,15 @@ export class ElectronService extends AbstractElectronService {
       this.ipc.send(SECRETS_RELOAD, {});
     }
   }
-//#endregion "Secrets"
+  //#endregion "Secrets"
 
 
 
 
-//#region "Cloud"
+  //#region "Cloud"
   async saveCloud(encrypted: string) {
-    if(this.ipc) {
-      await this.ipc.send(CLOUD_SAVE, {data: encrypted});
+    if (this.ipc) {
+      await this.ipc.send(CLOUD_SAVE, { data: encrypted });
     }
   }
 
@@ -171,16 +173,16 @@ export class ElectronService extends AbstractElectronService {
     }
   }
 
-  async downloadCloud(cloudSettings: CloudSettings):  Promise<CloudResponse | undefined>  {
+  async downloadCloud(cloudSettings: CloudSettings): Promise<CloudResponse | undefined> {
     if (this.ipc) {
 
       let cloud = this.prepareCloudSettings(cloudSettings);
       if (!cloud) {
-        this.log({level: 'error', message : "Invalid Cloud Settings"});
+        this.log({ level: 'error', message: "Invalid Cloud Settings" });
         return undefined;
       }
 
-      return this.ipc.invoke(CLOUD_DOWNLOAD, {data: cloud});
+      return this.ipc.invoke(CLOUD_DOWNLOAD, { data: cloud });
     }
     return undefined;
   }
@@ -190,19 +192,19 @@ export class ElectronService extends AbstractElectronService {
 
       let cloud = this.prepareCloudSettings(cloudSettings);
       if (!cloud) {
-        this.log({level: 'error', message : "Invalid Cloud Settings"});
+        this.log({ level: 'error', message: "Invalid Cloud Settings" });
         return undefined;
       }
-      return  await this.ipc.invoke(CLOUD_UPLOAD, {data: cloud});
+      return await this.ipc.invoke(CLOUD_UPLOAD, { data: cloud });
     }
     return undefined;
   }
 
-  private prepareCloudSettings (cloudSettings: CloudSettings): CloudSettings | undefined {
+  private prepareCloudSettings(cloudSettings: CloudSettings): CloudSettings | undefined {
     if (cloudSettings.authType == AuthType.SECRET) {
       let secret = this.secretStorage.findById(cloudSettings.secretId);
       if (!secret) {
-        this.log({level: 'error', message : "Invalid secret " + cloudSettings.secretId});
+        this.log({ level: 'error', message: "Invalid secret " + cloudSettings.secretId });
         return undefined;
       }
       switch (secret.secretType) {
@@ -217,7 +219,21 @@ export class ElectronService extends AbstractElectronService {
 
   }
 
-//#endregion "Cloud"
+  //#endregion "Cloud"
+
+  //#region "Proxies"
+  async saveProxies(proxies: any) {
+    if (this.ipc) {
+      await this.ipc.send(PROXIES_SAVE, { data: proxies });
+    }
+  }
+
+  reloadProxies() {
+    if (this.ipc) {
+      this.ipc.send(PROXIES_RELOAD, {});
+    }
+  }
+  //#endregion "Proxies"
 
 
 

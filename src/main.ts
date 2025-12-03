@@ -8,6 +8,7 @@ export class Compatibility {
   static cloud = '1.0.0';
   static secrets = '1.0.0';
   static profiles = '1.0.0';
+  static proxies = '2.0.0';
 }
 
 bootstrapApplication(AppComponent, appConfig)
