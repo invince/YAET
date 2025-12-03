@@ -9,20 +9,20 @@ import { SecretStorageService } from '../secret-storage.service';
 import { TabService } from '../tab.service';
 import { AbstractElectronService } from './electron.service';
 import {
-  ERROR,
-  SESSION_CLOSE_LOCAL_TERMINAL,
-  SESSION_CLOSE_SSH_TERMINAL,
-  SESSION_CLOSE_TELNET_TERMINAL,
-  SESSION_CLOSE_WINRM_TERMINAL,
-  SESSION_DISCONNECT_SSH,
-  SESSION_OPEN_CUSTOM,
-  SESSION_OPEN_LOCAL_TERMINAL,
-  SESSION_OPEN_SSH_TERMINAL,
-  SESSION_OPEN_TELNET_TERMINAL,
-  SESSION_OPEN_WINRM_TERMINAL,
-  TERMINAL_INPUT,
-  TERMINAL_OUTPUT,
-  TERMINAL_RESIZE
+    ERROR,
+    SESSION_CLOSE_LOCAL_TERMINAL,
+    SESSION_CLOSE_SSH_TERMINAL,
+    SESSION_CLOSE_TELNET_TERMINAL,
+    SESSION_CLOSE_WINRM_TERMINAL,
+    SESSION_DISCONNECT_SSH,
+    SESSION_OPEN_CUSTOM,
+    SESSION_OPEN_LOCAL_TERMINAL,
+    SESSION_OPEN_SSH_TERMINAL,
+    SESSION_OPEN_TELNET_TERMINAL,
+    SESSION_OPEN_WINRM_TERMINAL,
+    TERMINAL_INPUT,
+    TERMINAL_OUTPUT,
+    TERMINAL_RESIZE
 } from './ElectronConstant';
 
 
@@ -144,6 +144,9 @@ export class ElectronTerminalService extends AbstractElectronService {
       }
     }
     let data: { [key: string]: any; } = { terminalId: session.id, config: telnetConfig };
+    if (session.profile.proxyId) {
+      data['proxyId'] = session.profile.proxyId;
+    }
     if (telnetProfile.initPath) {
       data['initPath'] = telnetProfile.initPath;
     }

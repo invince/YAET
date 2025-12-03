@@ -45,15 +45,16 @@
         </mat-autocomplete>
       </mat-form-field>
 
-      @if (['SSH_TERMINAL', 'SCP_FILE_EXPLORER'].includes(form.get('profileType')?.value)) {
+      @if (['SSH_TERMINAL', 'SCP_FILE_EXPLORER', 'TELNET_TERMINAL'].includes(form.get('profileType')?.value)) {
         <mat-form-field class="field">
           <mat-label>Proxy</mat-label>
           <mat-select formControlName="proxyId">
             <mat-option></mat-option>
             @for (proxy of proxyStorage.dataCopy.proxies; track proxy.id) {
-            <mat-option [value]="proxy.id">{{ proxy.name }}</mat-option>
+            <mat-option [value]="proxy.id">{{ proxy.name }} ({{ proxy.type }})</mat-option>
             }
           </mat-select>
+          <mat-hint>Only SOCKS proxies are supported</mat-hint>
         </mat-form-field>
       }
 
