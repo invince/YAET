@@ -1,0 +1,9 @@
+{
+    "debug.javascript.defaultRuntimeExecutable": {
+        "pwa-node": "node"
+    },
+    "launch": {
+        "configurations": [],
+        "compounds": []
+    }
+}
