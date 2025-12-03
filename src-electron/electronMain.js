@@ -89,27 +89,15 @@ app.on('ready', () => {
     load(log, mainWindow, PROFILES_JSON, "profiles.loaded", true)
       .then(r => log.info(PROFILES_JSON + " loaded, event sent"))
       .catch(log.error);
-    load(log, mainWindow, SECRETS_JSON, "secrets.loaded", true)
-      .then(r => {
-        log.info(SECRETS_JSON + " loaded, event sent");
-        return decrypt(r);
-      })
-      .then(decrypted => {
-        allSecrets = JSON.parse(decrypted);
-      })
-      .catch(log.error);
+    
+    reloadSecrets();
+    
     load(log, mainWindow, CLOUD_JSON, "cloud.loaded", true)
       .then(r => log.info(CLOUD_JSON + " loaded, event sent"))
       .catch(log.error);
-    load(log, mainWindow, PROXIES_JSON, "proxies.loaded", true)
-      .then(r => {
-        log.info(PROXIES_JSON + " loaded, event sent");
-        return decrypt(r);
-      })
-      .then(decrypted => {
-        allProxies = JSON.parse(decrypted);
-      })
-      .catch(log.error);
+      
+    reloadProxies();
+
     load(log, mainWindow, SETTINGS_JSON, "settings.loaded", false)
       .then(settings => {
         initHandlerAfterSettingLoad(settings);
@@ -125,7 +113,7 @@ function initHandlerBeforeSettingLoad() {
 
   expressApp = initBackend(log);
 
-  initConfigFilesIpcHandler(log, mainWindow);
+  initConfigFilesIpcHandler(log, mainWindow, reloadProxies, reloadSecrets);
   initCloudIpcHandler(log, () => allProxies, () => allSecrets);
   initSecurityIpcHandler(log);
   initTerminalIpcHandler(log, terminalMap);
@@ -214,3 +202,29 @@ process.on('uncaughtException', (error) => {
 
 
 
+
+function reloadSecrets() {
+  return load(log, mainWindow, SECRETS_JSON, "secrets.loaded", true)
+    .then(r => {
+      log.info(SECRETS_JSON + " loaded, event sent");
+      return decrypt(r);
+    })
+    .then(decrypted => {
+      allSecrets = JSON.parse(decrypted);
+      log.info("Secrets updated in backend memory");
+    })
+    .catch(log.error);
+}
+
+function reloadProxies() {
+  return load(log, mainWindow, PROXIES_JSON, "proxies.loaded", true)
+    .then(r => {
+      log.info(PROXIES_JSON + " loaded, event sent");
+      return decrypt(r);
+    })
+    .then(decrypted => {
+      allProxies = JSON.parse(decrypted);
+      log.info("Proxies updated in backend memory");
+    })
+    .catch(log.error);
+}

@@ -2,7 +2,7 @@ const { ipcMain } = require('electron');
 const { load, save,
   SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, PROXIES_JSON
   , updateManifest } = require("../common");
-function initConfigFilesIpcHandler(log, mainWindow) {
+function initConfigFilesIpcHandler(log, mainWindow, reloadProxies, reloadSecrets) {
 
   ipcMain.on('settings.reload', (event, obj) => {
     log.info("reload " + SETTINGS_JSON);
@@ -40,9 +40,13 @@ function initConfigFilesIpcHandler(log, mainWindow) {
 
   ipcMain.on('secrets.reload', (event, obj) => {
     log.info("reload " + SECRETS_JSON);
-    load(log, mainWindow, SECRETS_JSON, "secrets.loaded", true)
-      .then(r => log.info(SECRETS_JSON + " reloaded"))
-      .catch(err => log.error(err));
+    if (reloadSecrets) {
+      reloadSecrets();
+    } else {
+      load(log, mainWindow, SECRETS_JSON, "secrets.loaded", true)
+        .then(r => log.info(SECRETS_JSON + " reloaded"))
+        .catch(err => log.error(err));
+    }
   });
 
   ipcMain.on('secrets.save', (event, obj) => {
@@ -50,6 +54,9 @@ function initConfigFilesIpcHandler(log, mainWindow) {
       .then(() => {
         log.info('Secrets saved successfully!');
         updateManifest(log, 'secrets.json');
+        if (reloadSecrets) {
+          reloadSecrets();
+        }
       })
       .catch((error) => log.error('Error saving file:', error));
   });
@@ -72,9 +79,13 @@ function initConfigFilesIpcHandler(log, mainWindow) {
 
   ipcMain.on('proxies.reload', (event, obj) => {
     log.info("reload " + PROXIES_JSON);
-    load(log, mainWindow, PROXIES_JSON, "proxies.loaded", true)
-      .then(r => log.info(PROXIES_JSON + " reloaded"))
-      .catch(err => log.error(err));
+    if (reloadProxies) {
+      reloadProxies();
+    } else {
+      load(log, mainWindow, PROXIES_JSON, "proxies.loaded", true)
+        .then(r => log.info(PROXIES_JSON + " reloaded"))
+        .catch(err => log.error(err));
+    }
   });
 
   ipcMain.on('proxies.save', (event, obj) => {
@@ -82,6 +93,9 @@ function initConfigFilesIpcHandler(log, mainWindow) {
       .then(() => {
         log.info('Proxies saved successfully!');
         updateManifest(log, 'proxies.json');
+        if (reloadProxies) {
+          reloadProxies();
+        }
       })
       .catch((error) => log.error('Error saving file:', error));
   });
