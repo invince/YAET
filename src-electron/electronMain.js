@@ -37,7 +37,7 @@ const { initLocalTerminalIpcHandler } = require("./ipc/terminal/localTerminal");
 const { initWinRmIpcHandler } = require("./ipc/terminal/winRM");
 const { initSambaHandler } = require("./ipc/file-explorer/samba");
 
-const logPath = `${__dirname}/logs/main.log`;
+const logPath = path.join(app.getPath('userData'), 'logs/main.log');
 console.log(logPath);
 log.transports.file.resolvePathFn = () => logPath;
 log.transports.file.level = "debug"

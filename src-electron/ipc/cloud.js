@@ -52,10 +52,15 @@ function initCloudIpcHandler(log, getProxies, getSecrets) {
       const proxyUrl = getProxyUrl(proxy, getSecrets, log);
       if (proxyUrl) {
         log.info(`Using proxy: ${proxyUrl}`);
-        await git.addConfig('http.proxy', proxyUrl);
+        // await git.addConfig('http.proxy', proxyUrl);
       }
 
-      await git.clone(gitRepoUrl, gitAbsDir);
+      const cloneOptions = [];
+      if (proxyUrl) {
+        cloneOptions.push('-c', `http.proxy=${proxyUrl}`);
+      }
+
+      await git.clone(gitRepoUrl, gitAbsDir, cloneOptions);
 
       // Re-configure proxy in the cloned repo just in case
       if (proxyUrl) {
@@ -173,10 +178,15 @@ function initCloudIpcHandler(log, getProxies, getSecrets) {
       const proxyUrl = getProxyUrl(proxy, getSecrets, log);
       if (proxyUrl) {
         log.info(`Using proxy: ${proxyUrl}`);
-        await git.addConfig('http.proxy', proxyUrl);
+        // await git.addConfig('http.proxy', proxyUrl);
       }
 
-      await git.clone(gitRepoUrl, gitAbsDir);
+      const cloneOptions = [];
+      if (proxyUrl) {
+        cloneOptions.push('-c', `http.proxy=${proxyUrl}`);
+      }
+
+      await git.clone(gitRepoUrl, gitAbsDir, cloneOptions);
 
       // Step 4: Replace JSON files in the Git folder
       log.info('Replacing JSON files ...');
