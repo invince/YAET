@@ -26,7 +26,7 @@ function initScpSftpHandler(log, scpMap, expressApp, getProxies, getSecrets) {
       throw new Error('Error connection config not found');
     }
 
-    const config = configData.config;
+    const config = configData.config || configData;
     const proxyId = configData.proxyId;
 
     // Handle proxy if configured
@@ -56,6 +56,16 @@ function initScpSftpHandler(log, scpMap, expressApp, getProxies, getSecrets) {
         log.error(`SCP connection ${configId}: Failed to establish proxy connection:`, error);
         throw error;
       }
+    }
+
+    // Ensure debug function exists to prevent ssh2-sftp-client error
+    if (!config.debug) {
+      config.debug = (msg) => {
+        // Only log if it's an error or warning, or if verbose logging is enabled
+        if (msg.includes('Error') || msg.includes('Warning')) {
+          log.debug(`SFTP Debug: ${msg}`);
+        }
+      };
     }
 
     const sftp = new SftpClient();
