@@ -1,5 +1,5 @@
 @use 'sass:color';
-@use 'xterm/css/xterm.css';
+@import '@xterm/xterm/css/xterm.css';
 
 // Fix parent chain heights
 html,
