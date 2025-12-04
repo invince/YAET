@@ -1,6 +1,7 @@
 const { ipcMain, shell } = require('electron');
 const ftp = require('basic-ftp');
 const multer = require('multer');
+const _ = require('lodash');
 const upload = multer();
 const path = require('path');
 const yazl = require('yazl');
@@ -101,7 +102,10 @@ function initFtpHandler(log, ftpMap, expressApp) {
           case 'search': {
             const files = await client.list(pathParam);
             const regexFlags = req.body.caseSensitive ? '' : 'i';
-            const searchRegex = new RegExp(req.body.searchString.replace(/\*/g, '.*'), regexFlags);
+            // Escape regex metacharacters first, then replace a literal '*' with '.*' for wildcards.
+            let safeSearch = _.escapeRegExp(req.body.searchString);
+            safeSearch = safeSearch.replace(/\\\*/g, '.*'); // Replace escaped '*' (now '\\*') with '.*'
+            const searchRegex = new RegExp(safeSearch, regexFlags);
 
             const formattedFiles = files.filter(item => {
               const isHidden = item.name.startsWith('.');
