@@ -3,6 +3,7 @@ const SftpClient = require('ssh2-sftp-client');
 const multer = require('multer');
 const upload = multer();
 const path = require('path');
+const _ = require('lodash');
 const yazl = require('yazl');
 const fs = require('fs');
 const fsPromise = require('fs/promises');
@@ -135,8 +136,9 @@ function initScpSftpHandler(log, scpMap, expressApp, getProxies, getSecrets) {
           case 'search': {
             const files = await sftp.list(pathParam);
             const regexFlags = req.body.caseSensitive ? '' : 'i';
-            const searchRegex = new RegExp(req.body.searchString.replace(/\*/g, '.*'), regexFlags);
-
+            // Safely escape all regex meta-characters, then convert * (escaped as \*) into .*
+            const escapedSearchString = _.escapeRegExp(req.body.searchString).replace(/\\\*/g, '.*');
+            const searchRegex = new RegExp(escapedSearchString, regexFlags);
             const formattedFiles = files.filter(item => {
               const isHidden = item.name.startsWith('.');
               return (req.body.showHiddenItems || !isHidden) && searchRegex.test(item.name);
