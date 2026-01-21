@@ -1,3 +1,9 @@
+:host {
+    display: block;
+    height: 100%;
+    overflow: hidden;
+}
+
 .file-explorer-container {
     display: flex;
     flex-direction: column;
@@ -5,6 +11,8 @@
     position: relative;
     background-color: #1e1e1e;
     color: #e0e0e0;
+    overflow: hidden; 
+    min-height: 0; // Also helpful if nested in flex
 }
 
 .toolbar {
@@ -55,7 +63,8 @@
     flex: 1;
     overflow: auto;
     position: relative;
-    min-height: 400px;
+    // min-height: 400px; // remove or reduce rigid min-height if it causes issues
+    min-height: 0; // CRITICAL for flex containers to scroll internally
 
     table {
         width: 100%;
@@ -68,8 +77,8 @@
             border-bottom-color: #424242;
             position: sticky;
             top: 0;
-            z-index: 1;
-            position: relative; // For resize handle positioning
+            z-index: 100; // Increased to ensure it stays above content
+            // position: relative; // REMOVED: conflicting with sticky. Sticky creates context for absolute children.
             user-select: none; // Prevent text selection while resizing
             overflow: visible; // Allow handle to overlap if needed
             text-overflow: ellipsis;
@@ -93,6 +102,18 @@
         tr.mat-row:hover {
             background-color: #333;
             cursor: pointer;
+        }
+
+        tr.mat-row {
+            user-select: none; // Prevent text highlighting during Shift-Click
+        }
+
+        tr.mat-row.selected {
+            background-color: rgba(63, 81, 181, 0.4) !important;
+            
+            &:hover {
+                 background-color: rgba(63, 81, 181, 0.5) !important;
+            }
         }
     }
 }

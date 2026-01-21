@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -12,9 +12,10 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { Subscription } from 'rxjs';
 import { DragDropTransferService } from '../../../services/drag-drop-transfer.service';
+import { LocalFileWatcherService } from '../../../services/electron/local-file.watcher.service';
 import { FileItem, FileSystemApiService } from '../../../services/file-system/file-system-api.service';
-import { FileCreatorDialogComponent } from './file-creator-dialog.component';
 import { FileEditorDialogComponent } from './file-editor-dialog.component';
 import { FolderNameDialogComponent } from './folder-name-dialog.component';
 import { RenameDialogComponent } from './rename-dialog.component';
@@ -39,7 +40,7 @@ import { RenameDialogComponent } from './rename-dialog.component';
     templateUrl: './file-list.component.html',
     styleUrls: ['./file-list.component.scss']
 })
-export class FileListComponent implements OnInit {
+export class FileListComponent implements OnInit, OnDestroy {
     @Input() ajaxSettings: any;
     @Input() path: string = '/';
     @Output() pathChange = new EventEmitter<string>();
@@ -57,6 +58,15 @@ export class FileListComponent implements OnInit {
     isDraggingFromAnotherTab = false;
     draggedItem: FileItem | null = null;
     dragOverFolder: FileItem | null = null;
+    
+    // Selection (tracking paths strings to ensure stability across refreshes)
+    selection = new Set<string>();
+    lastSelected: FileItem | null = null; // We still keep the item object for lastSelected anchor, but need to handle staleness
+
+    // Watcher management
+    private watchedFiles = new Set<string>();
+    private activeWatchers = new Map<string, { uploadUrl: string, remotePath: string, item: FileItem, isNew?: boolean }>();
+    private fileChangeSub: Subscription | null = null;
 
     // Column resizing
     isResizing = false;
@@ -76,11 +86,24 @@ export class FileListComponent implements OnInit {
     constructor(
         private api: FileSystemApiService,
         private dialog: MatDialog,
-        private dragDropService: DragDropTransferService
+        private dragDropService: DragDropTransferService,
+        private localFileService: LocalFileWatcherService
     ) { }
 
     ngOnInit(): void {
         this.refresh();
+        this.fileChangeSub = this.localFileService.fileChanges$.subscribe(path => {
+            this.handleLocalFileChange(path);
+        });
+    }
+
+    ngOnDestroy() {
+        if (this.fileChangeSub) {
+            this.fileChangeSub.unsubscribe();
+        }
+        this.watchedFiles.forEach(path => this.localFileService.unwatchFile(path));
+        this.watchedFiles.clear();
+        this.activeWatchers.clear();
     }
 
     ngAfterViewInit() {
@@ -115,16 +138,7 @@ export class FileListComponent implements OnInit {
             this.pathChange.emit(this.path);
             this.refresh();
         } else if (item.type === 'file') {
-            // Check if it's a text-based file
-            const isTextFile = this.isTextBasedFile(item.name);
-
-            if (isTextFile) {
-                // Open in edit mode
-                this.editFile(item);
-            } else {
-                // Download the file
-                this.download(item);
-            }
+            this.handleFileDoubleClick(item);
         }
     }
 
@@ -235,7 +249,8 @@ export class FileListComponent implements OnInit {
 
     createFolder() {
         const dialogRef = this.dialog.open(FolderNameDialogComponent, {
-            width: '400px'
+            width: '400px',
+            data: { title: 'Create New Folder', label: 'Folder Name' }
         });
 
         dialogRef.afterClosed().subscribe(folderName => {
@@ -257,29 +272,66 @@ export class FileListComponent implements OnInit {
     }
 
     createFile() {
-        const dialogRef = this.dialog.open(FileCreatorDialogComponent, {
-            width: '500px',
-            data: { fileName: '', content: '' }
+        const dialogRef = this.dialog.open(FolderNameDialogComponent, {
+            width: '400px',
+            data: { title: 'Create New File', label: 'File Name' }
         });
 
-        dialogRef.afterClosed().subscribe(result => {
-            if (result && result.fileName) {
+        dialogRef.afterClosed().subscribe(async (fileName) => {
+            if (fileName) {
                 const separator = this.path.endsWith('/') ? '' : '/';
                 const fullPath = `${this.path}${separator}`;
 
-                this.isSaving = true;
-                const file = new File([result.content], result.fileName, { type: 'text/plain' });
-                this.api.upload(this.ajaxSettings.uploadUrl, fullPath, file).subscribe({
-                    next: () => {
-                        this.isSaving = false;
-                        this.refresh();
-                    },
-                    error: (err: any) => {
-                        this.isSaving = false;
-                        console.error('Error creating file', err);
-                        alert('Failed to create file');
+                // Create empty file locally
+                const safePath = 'downloads_' + btoa(this.path).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
+                // Create empty buffer
+                const buffer = new ArrayBuffer(0);
+                
+                try {
+                    const saveResult = await this.localFileService.saveToTemp(fileName, buffer, safePath);
+                    
+                    if (saveResult.success && saveResult.path) {
+                        const localPath = saveResult.path;
+                        
+                        // Fake a FileItem for the watcher
+                        const fakeItem: FileItem = {
+                            name: fileName,
+                            type: 'file',
+                            isFile: true,
+                            size: 0,
+                            dateModified: new Date().toISOString()
+                        };
+
+                        // Register watcher with "isNew" flag if I add that property, 
+                        // OR just handle upload.
+                        // Currently activeWatchers uses { uploadUrl, remotePath, item }
+                        // I will assume standard upload logic handles new files fine if it doesn't try to delete first.
+                        // Wait, I am about to change handleLocalFileChange to delete first.
+                        // So I need a flag to know if it's new. Use a special interface or extended type?
+                        // Or I can check if 'fakeItem' exists in dataSource.
+                        
+                        this.activeWatchers.set(localPath, {
+                            uploadUrl: this.ajaxSettings.uploadUrl,
+                            remotePath: fullPath,
+                            item: fakeItem,
+                            isNew: true // Assuming I add this property to the type
+                        } as any); // cast as any to avoid type error until I update the definition
+
+                        if (!this.watchedFiles.has(localPath)) {
+                            await this.localFileService.watchFile(localPath);
+                            this.watchedFiles.add(localPath);
+                        }
+
+                        // Open it
+                        await this.localFileService.openFile(localPath);
+
+                        // We don't upload immediately. We wait for user to save content.
+                    } else {
+                        alert('Failed to create local file: ' + saveResult.error);
                     }
-                });
+                } catch (e) {
+                     console.error('Error creating file:', e);
+                }
             }
         });
     }
@@ -635,6 +687,207 @@ export class FileListComponent implements OnInit {
                     alert(`Failed to download ${file.name}: ` + (err.error?.error?.message || err.message));
                 }
             });
+        });
+    }
+
+
+    // Selection methods
+    isSelected(item: FileItem): boolean {
+        return this.selection.has(item.name); // Using name as unique identifier in the current folder
+    }
+
+    onRowClick(event: MouseEvent, item: FileItem) {
+        // If meta key (Ctrl/Cmd) is pressed, toggle selection
+        if (event.ctrlKey || event.metaKey) {
+            if (this.selection.has(item.name)) {
+                this.selection.delete(item.name);
+            } else {
+                this.selection.add(item.name);
+                this.lastSelected = item;
+            }
+        }
+        // If shift key is pressed and we have a last selected item, select range
+        else if (event.shiftKey && this.lastSelected) {
+            // We need to find the index of the lastSelected item. 
+            // Since objects might change (refresh), we should find by name.
+            const index1 = this.dataSource.data.findIndex(f => f.name === this.lastSelected!.name);
+            const index2 = this.dataSource.data.indexOf(item);
+            
+            if (index1 !== -1 && index2 !== -1) {
+                const start = Math.min(index1, index2);
+                const end = Math.max(index1, index2);
+                
+                this.selection.clear();
+                
+                for (let i = start; i <= end; i++) {
+                    this.selection.add(this.dataSource.data[i].name);
+                }
+            } else {
+                // If anchor not found, just select current
+                this.selection.clear();
+                this.selection.add(item.name);
+                this.lastSelected = item;
+            }
+        }
+        // Normal click: just clear selection
+        else {
+            this.selection.clear();
+            this.lastSelected = item; // Keep anchor for subsequent Shift-Clicks
+        }
+    }
+
+    clearSelection() {
+        this.selection.clear();
+        this.lastSelected = null;
+    }
+
+    downloadSelected() {
+        if (!this.ajaxSettings?.downloadUrl || this.selection.size === 0) return;
+
+        const separator = this.path.endsWith('/') ? '' : '/';
+        const fullPath = `${this.path}${separator}`;
+        const names = Array.from(this.selection);
+
+        this.api.download(this.ajaxSettings.downloadUrl, fullPath, names).subscribe(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = names.length === 1 ? names[0] : 'download.zip'; 
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        });
+    }
+
+    deleteSelected() {
+        if (this.selection.size === 0) return;
+        
+        const count = this.selection.size;
+        const msg = count === 1 
+            ? `Are you sure you want to delete ${Array.from(this.selection)[0]}?`
+            : `Are you sure you want to delete ${count} items?`;
+
+        if (!confirm(msg)) return;
+
+        const separator = this.path.endsWith('/') ? '' : '/';
+        const fullPath = `${this.path}${separator}`;
+        const items = this.dataSource.data.filter(item => this.selection.has(item.name));
+
+        this.api.delete(this.ajaxSettings.url, fullPath, items).subscribe(() => {
+            this.clearSelection();
+            this.refresh();
+        });
+    }
+
+    private getSelectedItems(): FileItem[] {
+        return this.dataSource.data.filter(item => this.selection.has(item.name));
+    }
+
+    copySelected() {
+        const items = this.getSelectedItems();
+        if (items.length === 1) {
+            this.copyItems(items);
+            this.clearSelection();
+        }
+    }
+
+    cutSelected() {
+        const items = this.getSelectedItems();
+        if (items.length === 1) {
+            this.cutItems(items);
+            this.clearSelection();
+        }
+    }
+
+    renameSelected() {
+         const items = this.getSelectedItems();
+         if (items.length === 1) {
+             this.renameItem(items[0]);
+             this.clearSelection();
+         }
+    }
+
+    handleFileDoubleClick(item: FileItem) {
+        if (!this.ajaxSettings?.downloadUrl) return;
+
+        this.isLoading = true; // Show spinner during download
+
+        const separator = this.path.endsWith('/') ? '' : '/';
+        const fullPath = `${this.path}${separator}`;
+
+        this.api.download(this.ajaxSettings.downloadUrl, fullPath, [item.name]).subscribe({
+            next: async (blob) => {
+                try {
+                    const buffer = await blob.arrayBuffer();
+                    // Create a safe subfolder name based on current path to minimize collisions
+                    const safePath = 'downloads_' + btoa(this.path).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
+
+                    const saveResult = await this.localFileService.saveToTemp(item.name, buffer, safePath);
+
+                    if (saveResult.success && saveResult.path) {
+                        const localPath = saveResult.path;
+
+                        // Open with system default app
+                        await this.localFileService.openFile(localPath);
+
+                        // If it is a text-based file, watch for changes
+                        if (this.isTextBasedFile(item.name)) {
+                            this.activeWatchers.set(localPath, {
+                                uploadUrl: this.ajaxSettings.uploadUrl,
+                                remotePath: fullPath,
+                                item: item
+                            });
+
+                            if (!this.watchedFiles.has(localPath)) {
+                                await this.localFileService.watchFile(localPath);
+                                this.watchedFiles.add(localPath);
+                            }
+                        }
+                    } else {
+                        console.error('Failed to save file locally:', saveResult.error);
+                        alert('Failed to save file locally.');
+                    }
+                } catch (e) {
+                    console.error('Error handling file open:', e);
+                } finally {
+                    this.isLoading = false;
+                }
+            },
+            error: (err) => {
+                console.error('Download failed', err);
+                this.isLoading = false;
+                alert('Failed to download file.');
+            }
+        });
+    }
+
+    handleLocalFileChange(localPath: string) {
+        const meta = this.activeWatchers.get(localPath);
+        if (!meta) return;
+
+        // Debounce could be good, but for now direct upload
+        this.localFileService.readFile(localPath).then(res => {
+            if (res.success && typeof res.content === 'string') {
+                const file = new File([res.content], meta.item.name, { type: 'text/plain' });
+
+                this.isSaving = true;
+                
+                this.api.upload(meta.uploadUrl, meta.remotePath, file, true).subscribe({
+                    next: () => {
+                        this.isSaving = false;
+                        console.log('Auto-uploaded file change for', meta.item.name);
+                        if (meta.isNew) {
+                            meta.isNew = false; // It exists now
+                            this.refresh(); // Refresh to show the new file in list
+                        }
+                    },
+                    error: (err) => {
+                        this.isSaving = false;
+                        console.error('Auto-upload failed', err);
+                    }
+                });
+            }
         });
     }
 

@@ -251,7 +251,15 @@ function initScpSftpHandler(log, scpMap, expressApp, getProxies, getSecrets) {
 
     try {
       const result = await withSftpClient(configId, async (sftp) => {
-        const remotePath = await avoidDuplicateName(sftp, `${path}/${filename}`);// the req.file.originalname may have encoding pb
+        const { overwrite } = req.body;
+        let remotePath;
+        
+        if (overwrite === 'true' || overwrite === true) {
+            remotePath = `${path}/${filename}`;
+        } else {
+            remotePath = await avoidDuplicateName(sftp, `${path}/${filename}`);
+        }
+
         // Multer 2.0 changed req.file.buffer to req.file.data
         const fileData = req.file.data || req.file.buffer;
         await sftp.put(fileData, remotePath);

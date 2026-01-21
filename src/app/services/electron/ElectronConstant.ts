@@ -4,6 +4,13 @@ export const CLIPBOARD_PASTE = 'clipboard-paste';
 export const TRIGGER_NATIVE_CLIPBOARD_PASTE = 'trigger-native-clipboard-paste';
 export const LOG = 'log';
 export const OPEN_URL = 'open-url';
+
+export const LOCAL_FILE_SAVE_TEMP = 'local-file.save-temp';
+export const LOCAL_FILE_OPEN = 'local-file.open';
+export const LOCAL_FILE_WATCH = 'local-file.watch';
+export const LOCAL_FILE_UNWATCH = 'local-file.unwatch';
+export const LOCAL_FILE_CHANGED = 'local-file.changed';
+export const LOCAL_FILE_READ = 'local-file.read';
 //#endregion "Common"
 
 //#region "Sessions"

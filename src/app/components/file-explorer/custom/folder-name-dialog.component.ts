@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 
@@ -17,16 +17,16 @@ import { MatInputModule } from '@angular/material/input';
         MatInputModule
     ],
     template: `
-    <h2 mat-dialog-title>Create New Folder</h2>
+    <h2 mat-dialog-title>{{ data?.title || 'Create New Folder' }}</h2>
     <mat-dialog-content>
       <mat-form-field appearance="fill" class="full-width">
-        <mat-label>Folder Name</mat-label>
-        <input matInput [(ngModel)]="folderName" (keydown.enter)="create()" autofocus />
+        <mat-label>{{ data?.label || 'Folder Name' }}</mat-label>
+        <input matInput [(ngModel)]="name" (keydown.enter)="create()" autofocus />
       </mat-form-field>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button (click)="cancel()">Cancel</button>
-      <button mat-raised-button color="primary" (click)="create()" [disabled]="!folderName || !folderName.trim()">Create</button>
+      <button mat-raised-button color="primary" (click)="create()" [disabled]="!name || !name.trim()">Create</button>
     </mat-dialog-actions>
   `,
     styles: [`
@@ -37,10 +37,11 @@ import { MatInputModule } from '@angular/material/input';
   `]
 })
 export class FolderNameDialogComponent {
-    folderName = '';
+    name = '';
 
     constructor(
-        public dialogRef: MatDialogRef<FolderNameDialogComponent>
+        public dialogRef: MatDialogRef<FolderNameDialogComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: any
     ) { }
 
     cancel() {
@@ -48,8 +49,8 @@ export class FolderNameDialogComponent {
     }
 
     create() {
-        if (this.folderName && this.folderName.trim()) {
-            this.dialogRef.close(this.folderName.trim());
+        if (this.name && this.name.trim()) {
+            this.dialogRef.close(this.name.trim());
         }
     }
 }
