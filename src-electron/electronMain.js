@@ -16,6 +16,7 @@ const { initScpSftpHandler } = require("./ipc/file-explorer/scp");
 const { initAutoUpdater } = require("./ipc/autoUpdater");
 const { initBackend } = require("./ipc/backend");
 const { initFtpHandler } = require("./ipc/file-explorer/ftp");
+const { initLocalFileHandler } = require("./ipc/localFile");
 
 let tray;
 let expressApp;
@@ -129,6 +130,7 @@ function initHandlerBeforeSettingLoad() {
 
   initClipboard(log, mainWindow);
   initCustomSessionHandler(log);
+  initLocalFileHandler(log, mainWindow);
 
   // Start API
   expressApp.listen(13012, () => log.info('API listening on port 13012'));

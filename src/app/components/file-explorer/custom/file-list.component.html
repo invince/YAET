@@ -6,15 +6,47 @@
         <button mat-icon-button (click)="refresh()">
             <mat-icon>refresh</mat-icon>
         </button>
-        <button mat-icon-button (click)="createFolder()">
-            <mat-icon>create_new_folder</mat-icon>
-        </button>
-        <button mat-icon-button (click)="createFile()" title="Create File">
-            <mat-icon>note_add</mat-icon>
-        </button>
-        <button mat-icon-button (click)="pasteItems()" [disabled]="!canPaste()" title="Paste">
-            <mat-icon>content_paste</mat-icon>
-        </button>
+        
+        <!-- Selection Actions -->
+        <ng-container *ngIf="selection.size > 0; else defaultActions">
+            <!-- Single Select Actions -->
+            <ng-container *ngIf="selection.size === 1">
+                <button mat-icon-button (click)="renameSelected()" title="Rename">
+                    <mat-icon>drive_file_rename_outline</mat-icon>
+                </button>
+                <button mat-icon-button (click)="copySelected()" title="Copy">
+                    <mat-icon>content_copy</mat-icon>
+                </button>
+                <button mat-icon-button (click)="cutSelected()" title="Cut">
+                    <mat-icon>content_cut</mat-icon>
+                </button>
+            </ng-container>
+
+            <!-- Common Actions (Multi & Single) -->
+            <button mat-icon-button (click)="downloadSelected()" title="Download Selected">
+                <mat-icon>download</mat-icon>
+            </button>
+            <button mat-icon-button (click)="deleteSelected()" title="Delete Selected">
+                <mat-icon>delete</mat-icon>
+            </button>
+            
+            <span style="margin-left: 8px; font-size: 12px; color: #bdbdbd;">{{ selection.size }} selected</span>
+            <button mat-icon-button (click)="clearSelection()" title="Clear Selection">
+                 <mat-icon>close</mat-icon>
+            </button>
+        </ng-container>
+
+        <ng-template #defaultActions>
+            <button mat-icon-button (click)="createFolder()">
+                <mat-icon>create_new_folder</mat-icon>
+            </button>
+            <button mat-icon-button (click)="createFile()" title="Create File">
+                <mat-icon>note_add</mat-icon>
+            </button>
+            <button mat-icon-button (click)="pasteItems()" [disabled]="!canPaste()" title="Paste">
+                <mat-icon>content_paste</mat-icon>
+            </button>
+        </ng-template>
         <div class="path-breadcrumb" *ngIf="!isEditingPath" (click)="enablePathEdit()" title="Click to edit path">{{
             path }}</div>
         <input class="path-input" *ngIf="isEditingPath" [(ngModel)]="editPath" (keydown.enter)="navigateToPath()"
@@ -129,6 +161,8 @@
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.folder-row]="row.type === 'folder'"
+                [class.selected]="isSelected(row)"
+                (click)="onRowClick($event, row)"
                 draggable="true" (dragstart)="onRowDragStart($event, row)" (dragend)="onRowDragEnd()"
                 (dragover)="onFolderDragOver($event, row)" (dragleave)="onFolderDragLeave(row)"
                 (drop)="onFolderDrop($event, row)" (dblclick)="navigate(row)"></tr>

@@ -75,11 +75,14 @@ export class FileSystemApiService {
         return this.http.post(url, { downloadInput: JSON.stringify(payload) }, { responseType: 'blob' });
     }
 
-    upload(url: string, path: string, file: File): Observable<any> {
+    upload(url: string, path: string, file: File, overwrite: boolean = false): Observable<any> {
         const formData = new FormData();
         formData.append('data', JSON.stringify({ name: path }));
         formData.append('filename', file.name);
         formData.append('uploadFiles', file);
+        if (overwrite) {
+            formData.append('overwrite', 'true');
+        }
 
         return this.http.post(url, formData);
     }
