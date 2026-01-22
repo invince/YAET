@@ -61,7 +61,9 @@
 
 .table-container {
     flex: 1;
-    overflow: auto;
+    overflow-y: auto; // Explicitly y-axis
+    overflow-x: auto;
+    width: 100%; // Ensure it fills width
     position: relative;
     // min-height: 400px; // remove or reduce rigid min-height if it causes issues
     min-height: 0; // CRITICAL for flex containers to scroll internally
@@ -71,26 +73,32 @@
         background-color: transparent;
         table-layout: fixed; // Enable fixed table layout for resizing
 
-        th.mat-header-cell {
-            background-color: #1e1e1e;
+        // Use ::ng-deep to strongly override MDC styles
+        // We target both the old and new classes to cover bases, but MDC classes are priority for v15+
+        ::ng-deep .mat-mdc-header-row, ::ng-deep .mat-header-row {
+             background: #1e1e1e !important;
+             position: sticky !important;
+             // top: 0 !important; // MDC table handles sticky top usually
+             z-index: 100 !important; 
+        }
+
+        ::ng-deep th.mat-mdc-header-cell, ::ng-deep th.mat-header-cell {
+            background: #1e1e1e !important;
             color: #bdbdbd;
             border-bottom-color: #424242;
-            position: sticky;
-            top: 0;
-            z-index: 100; // Increased to ensure it stays above content
-            // position: relative; // REMOVED: conflicting with sticky. Sticky creates context for absolute children.
-            user-select: none; // Prevent text selection while resizing
-            overflow: visible; // Allow handle to overlap if needed
-            text-overflow: ellipsis;
+            z-index: 100 !important;
+            
+            user-select: none;
+            overflow: visible;
             white-space: nowrap;
-            border-right: 1px solid #333; // Visible separator
+            border-right: 1px solid #333;
 
             &:last-child {
                 border-right: none;
             }
         }
 
-        td.mat-cell {
+        td.mat-mdc-cell, td.mat-cell {
             color: #e0e0e0;
             border-bottom-color: #333;
             overflow: hidden;
@@ -99,16 +107,16 @@
             border-right: 1px solid transparent; // Placeholder to align with header
         }
 
-        tr.mat-row:hover {
+        tr.mat-mdc-row:hover, tr.mat-row:hover {
             background-color: #333;
             cursor: pointer;
         }
 
-        tr.mat-row {
+        tr.mat-mdc-row, tr.mat-row {
             user-select: none; // Prevent text highlighting during Shift-Click
         }
 
-        tr.mat-row.selected {
+        tr.mat-mdc-row.selected, tr.mat-row.selected {
             background-color: rgba(63, 81, 181, 0.4) !important;
             
             &:hover {

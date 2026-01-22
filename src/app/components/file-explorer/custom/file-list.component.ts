@@ -1,24 +1,24 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSort, MatSortModule } from '@angular/material/sort';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { Subscription } from 'rxjs';
-import { DragDropTransferService } from '../../../services/drag-drop-transfer.service';
-import { LocalFileWatcherService } from '../../../services/electron/local-file.watcher.service';
-import { FileItem, FileSystemApiService } from '../../../services/file-system/file-system-api.service';
-import { FileEditorDialogComponent } from './file-editor-dialog.component';
-import { FolderNameDialogComponent } from './folder-name-dialog.component';
-import { RenameDialogComponent } from './rename-dialog.component';
+import {CommonModule} from '@angular/common';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {MatButtonModule} from '@angular/material/button';
+import {MatDialog, MatDialogModule} from '@angular/material/dialog';
+import {MatDividerModule} from '@angular/material/divider';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatIconModule} from '@angular/material/icon';
+import {MatInputModule} from '@angular/material/input';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatSort, MatSortModule} from '@angular/material/sort';
+import {MatTableDataSource, MatTableModule} from '@angular/material/table';
+import {Subscription} from 'rxjs';
+import {DragDropTransferService} from '../../../services/drag-drop-transfer.service';
+import {LocalFileWatcherService} from '../../../services/electron/local-file.watcher.service';
+import {FileItem, FileSystemApiService} from '../../../services/file-system/file-system-api.service';
+import {FileEditorDialogComponent} from './file-editor-dialog.component';
+import {FolderNameDialogComponent} from './folder-name-dialog.component';
+import {RenameDialogComponent} from './rename-dialog.component';
 
 @Component({
     selector: 'app-file-list',
@@ -58,7 +58,7 @@ export class FileListComponent implements OnInit, OnDestroy {
     isDraggingFromAnotherTab = false;
     draggedItem: FileItem | null = null;
     dragOverFolder: FileItem | null = null;
-    
+
     // Selection (tracking paths strings to ensure stability across refreshes)
     selection = new Set<string>();
     lastSelected: FileItem | null = null; // We still keep the item object for lastSelected anchor, but need to handle staleness
@@ -286,13 +286,13 @@ export class FileListComponent implements OnInit, OnDestroy {
                 const safePath = 'downloads_' + btoa(this.path).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
                 // Create empty buffer
                 const buffer = new ArrayBuffer(0);
-                
+
                 try {
                     const saveResult = await this.localFileService.saveToTemp(fileName, buffer, safePath);
-                    
+
                     if (saveResult.success && saveResult.path) {
                         const localPath = saveResult.path;
-                        
+
                         // Fake a FileItem for the watcher
                         const fakeItem: FileItem = {
                             name: fileName,
@@ -302,14 +302,14 @@ export class FileListComponent implements OnInit, OnDestroy {
                             dateModified: new Date().toISOString()
                         };
 
-                        // Register watcher with "isNew" flag if I add that property, 
+                        // Register watcher with "isNew" flag if I add that property,
                         // OR just handle upload.
                         // Currently activeWatchers uses { uploadUrl, remotePath, item }
                         // I will assume standard upload logic handles new files fine if it doesn't try to delete first.
                         // Wait, I am about to change handleLocalFileChange to delete first.
                         // So I need a flag to know if it's new. Use a special interface or extended type?
                         // Or I can check if 'fakeItem' exists in dataSource.
-                        
+
                         this.activeWatchers.set(localPath, {
                             uploadUrl: this.ajaxSettings.uploadUrl,
                             remotePath: fullPath,
@@ -708,17 +708,17 @@ export class FileListComponent implements OnInit, OnDestroy {
         }
         // If shift key is pressed and we have a last selected item, select range
         else if (event.shiftKey && this.lastSelected) {
-            // We need to find the index of the lastSelected item. 
+            // We need to find the index of the lastSelected item.
             // Since objects might change (refresh), we should find by name.
             const index1 = this.dataSource.data.findIndex(f => f.name === this.lastSelected!.name);
             const index2 = this.dataSource.data.indexOf(item);
-            
+
             if (index1 !== -1 && index2 !== -1) {
                 const start = Math.min(index1, index2);
                 const end = Math.max(index1, index2);
-                
+
                 this.selection.clear();
-                
+
                 for (let i = start; i <= end; i++) {
                     this.selection.add(this.dataSource.data[i].name);
                 }
@@ -729,10 +729,12 @@ export class FileListComponent implements OnInit, OnDestroy {
                 this.lastSelected = item;
             }
         }
-        // Normal click: just clear selection
+        // Normal click: just clear selection (unless we want to support single-select without modifiers, but user requested otherwise)
+        // User requested to enable it back: "也可以选中它"
         else {
             this.selection.clear();
-            this.lastSelected = item; // Keep anchor for subsequent Shift-Clicks
+            this.selection.add(item.name); // Restore single selection
+            this.lastSelected = item;
         }
     }
 
@@ -752,7 +754,7 @@ export class FileListComponent implements OnInit, OnDestroy {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = names.length === 1 ? names[0] : 'download.zip'; 
+            a.download = names.length === 1 ? names[0] : 'download.zip';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -762,9 +764,9 @@ export class FileListComponent implements OnInit, OnDestroy {
 
     deleteSelected() {
         if (this.selection.size === 0) return;
-        
+
         const count = this.selection.size;
-        const msg = count === 1 
+        const msg = count === 1
             ? `Are you sure you want to delete ${Array.from(this.selection)[0]}?`
             : `Are you sure you want to delete ${count} items?`;
 
@@ -872,7 +874,7 @@ export class FileListComponent implements OnInit, OnDestroy {
                 const file = new File([res.content], meta.item.name, { type: 'text/plain' });
 
                 this.isSaving = true;
-                
+
                 this.api.upload(meta.uploadUrl, meta.remotePath, file, true).subscribe({
                     next: () => {
                         this.isSaving = false;
