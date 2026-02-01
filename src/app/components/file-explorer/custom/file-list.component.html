@@ -37,8 +37,10 @@
         </ng-container>
 
         <ng-template #defaultActions>
-            <ng-container *ngIf="extraActionsTemplate">
-                <ng-container *ngTemplateOutlet="extraActionsTemplate"></ng-container>
+            <ng-container *ngIf="session?.profileType === 'SCP_FILE_EXPLORER'">
+                <button mat-icon-button (click)="openSshTerminal()" title="Open SSH Terminal">
+                    <mat-icon>terminal</mat-icon>
+                </button>
             </ng-container>
             <button mat-icon-button (click)="createFolder()">
                 <mat-icon>create_new_folder</mat-icon>

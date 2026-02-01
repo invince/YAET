@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, TemplateRef, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -13,9 +13,15 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { Subscription } from 'rxjs';
+import { Profile, ProfileCategory, ProfileType } from '../../../domain/profile/Profile';
+import { Session } from '../../../domain/session/Session';
+import { SSHSession } from '../../../domain/session/SSHSession';
+import { TabInstance } from '../../../domain/TabInstance';
 import { DragDropTransferService } from '../../../services/drag-drop-transfer.service';
+import { ElectronTerminalService } from '../../../services/electron/electron-terminal.service';
 import { LocalFileWatcherService } from '../../../services/electron/local-file.watcher.service';
 import { FileItem, FileSystemApiService } from '../../../services/file-system/file-system-api.service';
+import { TabService } from '../../../services/tab.service';
 import { FileEditorDialogComponent } from './file-editor-dialog.component';
 import { FolderNameDialogComponent } from './folder-name-dialog.component';
 import { RenameDialogComponent } from './rename-dialog.component';
@@ -43,7 +49,7 @@ import { RenameDialogComponent } from './rename-dialog.component';
 export class FileListComponent implements OnInit, OnDestroy {
     @Input() ajaxSettings: any;
     @Input() path: string = '/';
-    @Input() extraActionsTemplate: TemplateRef<any> | null = null;
+    @Input() session: Session | null = null;
     @Output() pathChange = new EventEmitter<string>();
 
     dataSource = new MatTableDataSource<FileItem>([]);
@@ -88,7 +94,9 @@ export class FileListComponent implements OnInit, OnDestroy {
         private api: FileSystemApiService,
         private dialog: MatDialog,
         private dragDropService: DragDropTransferService,
-        private localFileService: LocalFileWatcherService
+        private localFileService: LocalFileWatcherService,
+        private tabService: TabService,
+        private electronTerminalService: ElectronTerminalService
     ) { }
 
     ngOnInit(): void {
@@ -789,19 +797,52 @@ export class FileListComponent implements OnInit, OnDestroy {
 
     copySelected() {
         const items = this.getSelectedItems();
-        if (items.length === 1) {
-            this.copyItems(items);
+        if (items.length > 0) {
+            this.clipboard = items;
+            this.clipboardMode = 'copy';
+            this.clipboardSourcePath = this.path;
             this.clearSelection();
         }
     }
 
     cutSelected() {
         const items = this.getSelectedItems();
-        if (items.length === 1) {
-            this.cutItems(items);
+        if (items.length > 0) {
+            this.clipboard = items;
+            this.clipboardMode = 'cut';
+            this.clipboardSourcePath = this.path;
             this.clearSelection();
         }
     }
+
+    openSshTerminal() {
+        if (!this.session?.profile) return;
+
+        // Clone the profile
+        const sshProfile = Profile.clone(this.session.profile);
+        sshProfile.category = ProfileCategory.TERMINAL;
+        sshProfile.profileType = ProfileType.SSH_TERMINAL;
+
+        // 1. Init path
+        if (sshProfile.sshProfile) {
+            sshProfile.sshProfile.initPath = this.path;
+        }
+
+        // 2. Split window
+        if (this.tabService.splitMode) {
+            this.tabService.activePane = this.tabService.activePane === 0 ? 1 : 0;
+        }
+
+        // Create new session
+        const session = new SSHSession(sshProfile, ProfileType.SSH_TERMINAL, this.tabService, this.electronTerminalService);
+
+        // Create new tab instance
+        const tabInstance = new TabInstance(ProfileCategory.TERMINAL, session);
+
+        // Add tab
+        this.tabService.addTab(tabInstance);
+    }
+
 
     renameSelected() {
          const items = this.getSelectedItems();
