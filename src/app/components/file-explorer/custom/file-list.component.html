@@ -37,6 +37,9 @@
         </ng-container>
 
         <ng-template #defaultActions>
+            <ng-container *ngIf="extraActionsTemplate">
+                <ng-container *ngTemplateOutlet="extraActionsTemplate"></ng-container>
+            </ng-container>
             <button mat-icon-button (click)="createFolder()">
                 <mat-icon>create_new_folder</mat-icon>
             </button>

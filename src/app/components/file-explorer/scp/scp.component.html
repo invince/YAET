@@ -1,3 +1,8 @@
 <div class="scp-container">
-  <app-file-list [ajaxSettings]="ajaxSettings" [path]="path" (pathChange)="path = $event"></app-file-list>
+  <ng-template #sshAction>
+    <button mat-icon-button (click)="openSshTerminal()" title="Open SSH Terminal">
+      <mat-icon>terminal</mat-icon>
+    </button>
+  </ng-template>
+  <app-file-list [ajaxSettings]="ajaxSettings" [path]="path" (pathChange)="path = $event" [extraActionsTemplate]="sshAction"></app-file-list>
 </div>

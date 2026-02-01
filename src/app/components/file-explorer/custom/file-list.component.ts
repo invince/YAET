@@ -1,24 +1,24 @@
-import {CommonModule} from '@angular/common';
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
-import {FormsModule} from '@angular/forms';
-import {MatButtonModule} from '@angular/material/button';
-import {MatDialog, MatDialogModule} from '@angular/material/dialog';
-import {MatDividerModule} from '@angular/material/divider';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatIconModule} from '@angular/material/icon';
-import {MatInputModule} from '@angular/material/input';
-import {MatMenuModule} from '@angular/material/menu';
-import {MatProgressBarModule} from '@angular/material/progress-bar';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
-import {MatSort, MatSortModule} from '@angular/material/sort';
-import {MatTableDataSource, MatTableModule} from '@angular/material/table';
-import {Subscription} from 'rxjs';
-import {DragDropTransferService} from '../../../services/drag-drop-transfer.service';
-import {LocalFileWatcherService} from '../../../services/electron/local-file.watcher.service';
-import {FileItem, FileSystemApiService} from '../../../services/file-system/file-system-api.service';
-import {FileEditorDialogComponent} from './file-editor-dialog.component';
-import {FolderNameDialogComponent} from './folder-name-dialog.component';
-import {RenameDialogComponent} from './rename-dialog.component';
+import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, TemplateRef, ViewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { Subscription } from 'rxjs';
+import { DragDropTransferService } from '../../../services/drag-drop-transfer.service';
+import { LocalFileWatcherService } from '../../../services/electron/local-file.watcher.service';
+import { FileItem, FileSystemApiService } from '../../../services/file-system/file-system-api.service';
+import { FileEditorDialogComponent } from './file-editor-dialog.component';
+import { FolderNameDialogComponent } from './folder-name-dialog.component';
+import { RenameDialogComponent } from './rename-dialog.component';
 
 @Component({
     selector: 'app-file-list',
@@ -43,6 +43,7 @@ import {RenameDialogComponent} from './rename-dialog.component';
 export class FileListComponent implements OnInit, OnDestroy {
     @Input() ajaxSettings: any;
     @Input() path: string = '/';
+    @Input() extraActionsTemplate: TemplateRef<any> | null = null;
     @Output() pathChange = new EventEmitter<string>();
 
     dataSource = new MatTableDataSource<FileItem>([]);
