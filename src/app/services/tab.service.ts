@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { TabInstance } from '../domain/TabInstance';
+import {Injectable} from '@angular/core';
+import {TabInstance} from '../domain/TabInstance';
 
 @Injectable({
   providedIn: 'root'
@@ -50,14 +50,15 @@ export class TabService {
 
     // Assign to active pane
     tabInstance.paneId = this.activePane;
+    const targetPaneId = this.activePane;
 
     this._tabs.push(tabInstance);
 
     // Switch to the new tab in the active pane
     setTimeout(() => {
-      const paneTabs = this.getTabsForPane(this.activePane);
-      this.paneTabIndices[this.activePane] = paneTabs.length - 1;
-    });
+      const paneTabs = this.getTabsForPane(targetPaneId);
+      this.paneTabIndices[targetPaneId] = paneTabs.length - 1;
+    }, 50);
   }
 
   getSelectedTab() {

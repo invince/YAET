@@ -1,30 +1,30 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSort, MatSortModule } from '@angular/material/sort';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { Subscription } from 'rxjs';
-import { Profile, ProfileCategory, ProfileType } from '../../../domain/profile/Profile';
-import { Session } from '../../../domain/session/Session';
-import { SSHSession } from '../../../domain/session/SSHSession';
-import { TabInstance } from '../../../domain/TabInstance';
-import { DragDropTransferService } from '../../../services/drag-drop-transfer.service';
-import { ElectronTerminalService } from '../../../services/electron/electron-terminal.service';
-import { LocalFileWatcherService } from '../../../services/electron/local-file.watcher.service';
-import { FileItem, FileSystemApiService } from '../../../services/file-system/file-system-api.service';
-import { TabService } from '../../../services/tab.service';
-import { FileEditorDialogComponent } from './file-editor-dialog.component';
-import { FolderNameDialogComponent } from './folder-name-dialog.component';
-import { RenameDialogComponent } from './rename-dialog.component';
+import {CommonModule} from '@angular/common';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {MatButtonModule} from '@angular/material/button';
+import {MatDialog, MatDialogModule} from '@angular/material/dialog';
+import {MatDividerModule} from '@angular/material/divider';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatIconModule} from '@angular/material/icon';
+import {MatInputModule} from '@angular/material/input';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatSort, MatSortModule} from '@angular/material/sort';
+import {MatTableDataSource, MatTableModule} from '@angular/material/table';
+import {Subscription} from 'rxjs';
+import {Profile, ProfileCategory, ProfileType} from '../../../domain/profile/Profile';
+import {Session} from '../../../domain/session/Session';
+import {SSHSession} from '../../../domain/session/SSHSession';
+import {TabInstance} from '../../../domain/TabInstance';
+import {DragDropTransferService} from '../../../services/drag-drop-transfer.service';
+import {ElectronTerminalService} from '../../../services/electron/electron-terminal.service';
+import {LocalFileWatcherService} from '../../../services/electron/local-file.watcher.service';
+import {FileItem, FileSystemApiService} from '../../../services/file-system/file-system-api.service';
+import {TabService} from '../../../services/tab.service';
+import {FileEditorDialogComponent} from './file-editor-dialog.component';
+import {FolderNameDialogComponent} from './folder-name-dialog.component';
+import {RenameDialogComponent} from './rename-dialog.component';
 
 @Component({
     selector: 'app-file-list',
@@ -815,7 +815,10 @@ export class FileListComponent implements OnInit, OnDestroy {
         }
     }
 
-    openSshTerminal() {
+    openSshTerminal(event?: MouseEvent) {
+        if (event) {
+            event.stopPropagation();
+        }
         if (!this.session?.profile) return;
 
         // Clone the profile
@@ -830,7 +833,12 @@ export class FileListComponent implements OnInit, OnDestroy {
 
         // 2. Split window
         if (this.tabService.splitMode) {
-            this.tabService.activePane = this.tabService.activePane === 0 ? 1 : 0;
+            const currentTab = this.tabService.tabs.find(t => t.id === this.session?.id);
+            if (currentTab) {
+                this.tabService.activePane = currentTab.paneId === 0 ? 1 : 0;
+            } else {
+                this.tabService.activePane = this.tabService.activePane === 0 ? 1 : 0;
+            }
         }
 
         // Create new session

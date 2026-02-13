@@ -1,3 +1,4 @@
+import {CommonModule} from '@angular/common';
 import {
   AfterViewInit,
   Component,
@@ -9,18 +10,25 @@ import {
   ViewChild,
   ViewEncapsulation
 } from '@angular/core';
-import { FitAddon } from '@xterm/addon-fit';
-import { WebLinksAddon } from '@xterm/addon-web-links';
-import { Terminal } from '@xterm/xterm';
-import { Session } from '../../domain/session/Session';
-import { ElectronTerminalService } from '../../services/electron/electron-terminal.service';
-import { TabService } from '../../services/tab.service';
+import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
+import {FitAddon} from '@xterm/addon-fit';
+import {WebLinksAddon} from '@xterm/addon-web-links';
+import {Terminal} from '@xterm/xterm';
+import {Profile, ProfileCategory, ProfileType} from '../../domain/profile/Profile';
+import {ScpSession} from '../../domain/session/ScpSession';
+import {Session} from '../../domain/session/Session';
+import {TabInstance} from '../../domain/TabInstance';
+import {ElectronTerminalService} from '../../services/electron/electron-terminal.service';
+import {ScpService} from '../../services/file-explorer/scp.service';
+import {TabService} from '../../services/tab.service';
 
 @Component({
   selector: 'app-terminal',
   templateUrl: './terminal.component.html',
   styleUrls: ['./terminal.component.scss'],
   standalone: true,
+  imports: [CommonModule, MatButtonModule, MatIconModule],
   encapsulation: ViewEncapsulation.None
 })
 export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
@@ -37,6 +45,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   constructor(
     private electron: ElectronTerminalService,
     private tabService: TabService,
+    private scpService: ScpService,
   ) {
     this.xtermUnderlying = new Terminal({
       fontFamily: '"Cascadia Code", Menlo, monospace',
@@ -135,6 +144,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.session.open();
 
     // Listen to output from Electron and display in xterm
+    // Listen to output from Electron and display in xterm
     this.electron.onTerminalOutput(this.session.id, (data) => {
       this.xtermUnderlying?.write(data.data);
     });
@@ -156,5 +166,37 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     this.fitAddon?.dispose();
     this.resizeObserver?.disconnect();
+  }
+
+  get isSsh(): boolean {
+    return this.session?.profileType === ProfileType.SSH_TERMINAL;
+  }
+
+  openScpExplorer(event?: MouseEvent) {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (!this.session?.profile) return;
+
+    // Clone the profile
+    const scpProfile = Profile.clone(this.session.profile);
+    scpProfile.category = ProfileCategory.FILE_EXPLORER;
+    scpProfile.profileType = ProfileType.SCP_FILE_EXPLORER;
+
+    if (this.tabService.splitMode) {
+      const currentTab = this.tabService.tabs.find(t => t.id === this.session?.id);
+      if (currentTab) {
+        this.tabService.activePane = currentTab.paneId === 0 ? 1 : 0;
+      } else {
+        this.tabService.activePane = this.tabService.activePane === 0 ? 1 : 0;
+      }
+    }
+
+    // Create new session
+    const session = new ScpSession(scpProfile, ProfileType.SCP_FILE_EXPLORER, this.tabService, this.scpService);
+
+    // Create and add new tab instance
+    const tabInstance = new TabInstance(ProfileCategory.FILE_EXPLORER, session);
+    this.tabService.addTab(tabInstance);
   }
 }

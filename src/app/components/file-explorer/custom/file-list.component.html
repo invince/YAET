@@ -38,7 +38,7 @@
 
         <ng-template #defaultActions>
             <ng-container *ngIf="session?.profileType === 'SCP_FILE_EXPLORER'">
-                <button mat-icon-button (click)="openSshTerminal()" title="Open SSH Terminal">
+                <button mat-icon-button (click)="openSshTerminal($event)" title="Open SSH Terminal">
                     <mat-icon>terminal</mat-icon>
                 </button>
             </ng-container>
