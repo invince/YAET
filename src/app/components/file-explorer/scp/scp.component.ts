@@ -47,4 +47,6 @@ export class ScpComponent extends AbstractFileManager implements OnInit, OnDestr
   getCurrentPath(): string | undefined {
     return this.path;
   }
+
+
 }
