@@ -113,23 +113,26 @@ This creates a distributable installer in the `dist` folder.
 
 ### Release to GitHub
 
-```bash
-npm run release
-```
+Releases are now automated via **GitHub Actions**.
+
+1.  **Update version**: Update the `version` in `package.json`.
+2.  **Tag and Push**:
+    ```bash
+    git add .
+    git commit -m "Release v2.1.8"
+    git tag v2.1.8
+    git push origin main --tags
+    ```
 
 **Prerequisites:**
-- Set `GH_TOKEN` environment variable with your GitHub personal access token
-- Ensure you have push access to the repository
+- Ensure you have configured a `GH_TOKEN` secret in your repository (**Settings > Secrets and variables > Actions**).
+- The workflow triggers automatically on any tag push matching `v*`.
 
 **What it does:**
-1. Increments the version number
-2. Builds the installer
-3. Creates a GitHub release (as pre-release)
-4. Uploads the installer for auto-updater
-
-**Post-release steps:**
-- Manually push code changes to GitHub
-- Approve the pre-release on GitHub to make it public
+1. Triggers parallel builds on Windows and Linux (Ubuntu) runners.
+2. Compiles the Angular frontend.
+3. Builds the Electron installers (`.exe`, `.AppImage`, `.deb`).
+4. Creates/Updates a GitHub Release and uploads all artifacts.
 
 **Released packages:** https://github.com/invince/YAET-RELEASE
 

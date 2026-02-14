@@ -1,6 +1,6 @@
 {
   "name": "yet-another-electron-term",
-  "version": "2.1.7",
+  "version": "3.0.0",
   "author": {
     "name": "invince",
     "email": "invincezero@gmail.com"
@@ -18,8 +18,7 @@
     "electron:dev": "wait-on http://localhost:4200 && cross-env NODE_ENV=development electron .",
     "postinstall": "patch-package",
     "rebuild-native": "electron-builder install-app-deps",
-    "build:release": "npm run clean && patch-package && ng build --base-href ./ && electron-builder --windows --linux --publish always",
-    "release": "npm version patch && npm run build:release"
+    "build:release-win-local": "npm run clean && patch-package && ng build --base-href ./ && electron-builder --windows --publish always"
   },
   "build": {
     "appId": "io.github.invince",
