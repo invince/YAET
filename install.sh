@@ -1,10 +1,11 @@
 #!/bin/bash
 
 # Configuration
-REPO="invince/YAET"
+REPO="invince/YAET-RELEASE"
+SRC_REPO="invince/YAET"
 APP_NAME="YetAnotherElectronTerm"
 BINARY_NAME="yet-another-electron-term"
-ICON_URL="https://raw.githubusercontent.com/$REPO/main/src-electron/assets/icons/app-icon.png"
+ICON_URL="https://raw.githubusercontent.com/$SRC_REPO/master/src-electron/assets/icons/app-icon.png"
 
 # Colors for output
 RED='\033[0;31m'
@@ -30,11 +31,21 @@ mkdir -p "$HOME/.local/share/applications"
 mkdir -p "$HOME/.local/share/icons"
 
 # Fetch latest release data
-echo "Fetching latest release information..."
-LATEST_RELEASE_URL=$(curl -s https://api.github.com/repos/$REPO/releases/latest | grep "browser_download_url.*AppImage" | cut -d '"' -f 4)
+echo "Fetching latest release information from GitHub..."
+RELEASE_JSON=$(curl -s "https://api.github.com/repos/$REPO/releases/latest")
+
+# Check if the repository has releases
+if echo "$RELEASE_JSON" | grep -q "Not Found"; then
+    echo -e "${RED}Error: No releases found for $REPO.${NC}"
+    echo -e "Please ensure you have pushed a tag (e.g., v3.0.0) to trigger the GitHub Actions build first."
+    exit 1
+fi
+
+LATEST_RELEASE_URL=$(echo "$RELEASE_JSON" | grep "browser_download_url.*AppImage" | cut -d '"' -f 4 | head -n 1)
 
 if [ -z "$LATEST_RELEASE_URL" ]; then
-    echo -e "${RED}Error: Could not find the latest AppImage release.${NC}"
+    echo -e "${RED}Error: Could not find an AppImage in the latest release.${NC}"
+    echo -e "Wait for the GitHub Action build to finish or check your release page."
     exit 1
 fi
 
