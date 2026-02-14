@@ -1,6 +1,11 @@
 {
   "name": "yet-another-electron-term",
   "version": "2.1.7",
+  "author": {
+    "name": "invince",
+    "email": "invincezero@gmail.com"
+  },
+  "description": "Yet Another Electron Terminal",
   "main": "src-electron/electronMain.js",
   "scripts": {
     "ng": "ng",
@@ -42,7 +47,6 @@
     },
     "linux": {
       "target": [
-        "AppImage",
         "deb"
       ],
       "category": "Utility",
