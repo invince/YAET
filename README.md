@@ -24,9 +24,12 @@ YAET is a comprehensive remote connection and management tool built with Angular
 ### 🖼️ Remote Desktop
 - **VNC**: Virtual Network Computing for remote desktop access
 - **RDP**: Remote Desktop Protocol (Windows)
+- <img width="1000" height="800" alt="屏幕截图 2026-02-15 002447" src="https://github.com/user-attachments/assets/0fc0ca62-eb2e-4c07-8cb5-8a8b18788025" />
 
 ### ⚡ Custom Commands
 - Create your own custom commands/connections
+-  <img width="1400" height="700" alt="image" src="https://github.com/user-attachments/assets/596dedb1-e11b-4b8f-af12-aa989ef010cb" />
+
 
 ### 🔐 Secrets Management
 - Secure password storage using system keychain
