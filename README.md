@@ -72,7 +72,7 @@ YAET is a comprehensive remote connection and management tool built with Angular
 For Linux users who just want to use the application, you can use the following command to download the latest AppImage and integrate it into your desktop environment:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/invince/YAET/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/invince/YAET/master/install.sh | bash
 ```
 
 3. **Rebuild native modules** (if installation fails)
