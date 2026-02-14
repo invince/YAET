@@ -13,7 +13,7 @@
     "electron:dev": "wait-on http://localhost:4200 && cross-env NODE_ENV=development electron .",
     "postinstall": "patch-package",
     "rebuild-native": "electron-builder install-app-deps",
-    "build:release": "npm run clean && patch-package && ng build --base-href ./ && electron-builder --publish always",
+    "build:release": "npm run clean && patch-package && ng build --base-href ./ && electron-builder --windows --linux --publish always",
     "release": "npm version patch && npm run build:release"
   },
   "build": {
@@ -41,7 +41,12 @@
       "icon": "src-electron/assets/icons/app-icon.ico"
     },
     "linux": {
-      "icon": "src-electron/assets/icons/"
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "icon": "src-electron/assets/icons/app-icon.png"
     },
     "mac": {
       "icon": "src-electron/assets/icons/app-icon.icns"
