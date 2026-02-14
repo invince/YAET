@@ -80,10 +80,6 @@ curl -sSL https://raw.githubusercontent.com/invince/YAET/main/install.sh | bash
    npm run rebuild-native
    ```
 
-4. **Configure Syncfusion** (required for file explorer UI)
-   - Create `config/config.json`
-   - Add your Syncfusion license key
-
 ## Development
 
 ### Local Development
