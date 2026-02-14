@@ -35,17 +35,32 @@ echo "Fetching latest release information from GitHub..."
 RELEASE_JSON=$(curl -s "https://api.github.com/repos/$REPO/releases/latest")
 
 # Check if the repository has releases
-if echo "$RELEASE_JSON" | grep -q "Not Found"; then
+if echo "$RELEASE_JSON" | grep -q "message.*Not Found"; then
     echo -e "${RED}Error: No releases found for $REPO.${NC}"
-    echo -e "Please ensure you have pushed a tag (e.g., v3.0.0) to trigger the GitHub Actions build first."
+    echo -e "Please ensure you have pushed a tag (e.g., v3.0.0) and the GitHub build is complete."
     exit 1
 fi
 
-LATEST_RELEASE_URL=$(echo "$RELEASE_JSON" | grep "browser_download_url.*AppImage" | cut -d '"' -f 4 | head -n 1)
+TAG=$(echo "$RELEASE_JSON" | grep -m 1 '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
 
+# Method 1: Try to find AppImage URL directly in assets
+LATEST_RELEASE_URL=$(echo "$RELEASE_JSON" | grep "browser_download_url" | grep -i "\.AppImage" | cut -d '"' -f 4 | head -n 1)
+
+# Method 2: Fallback to latest-linux.yml (as suggested by user)
 if [ -z "$LATEST_RELEASE_URL" ]; then
-    echo -e "${RED}Error: Could not find an AppImage in the latest release.${NC}"
-    echo -e "Wait for the GitHub Action build to finish or check your release page."
+    echo "Direct AppImage link not found, checking latest-linux.yml..."
+    YML_URL=$(echo "$RELEASE_JSON" | grep "browser_download_url" | grep "latest-linux\.yml" | cut -d '"' -f 4 | head -n 1)
+    if [ -n "$YML_URL" ]; then
+        APPIMAGE_FILE=$(curl -sL "$YML_URL" | grep "^path: " | cut -d ' ' -f 2 | tr -d '\r')
+        if [ -n "$APPIMAGE_FILE" ]; then
+            LATEST_RELEASE_URL="https://github.com/$REPO/releases/download/$TAG/$APPIMAGE_FILE"
+        fi
+    fi
+fi
+
+if [ -z "$LATEST_RELEASE_URL" ] || [[ "$LATEST_RELEASE_URL" == *"null"* ]]; then
+    echo -e "${RED}Error: Could not find an AppImage for version $TAG.${NC}"
+    echo -e "Wait for the GitHub Action build to finish or check: https://github.com/$REPO/releases"
     exit 1
 fi
 
