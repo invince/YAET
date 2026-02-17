@@ -1,45 +1,38 @@
-import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { CdkTextareaAutosize } from '@angular/cdk/text-field';
-import { CommonModule, KeyValuePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { MatButtonModule } from '@angular/material/button';
-import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIcon } from '@angular/material/icon';
-import { MatInput } from '@angular/material/input';
-import { MatSelectChange, MatSelectModule } from '@angular/material/select';
-import { CustomProfile } from '../../../domain/profile/CustomProfile';
-import { FTPProfile } from '../../../domain/profile/FTPProfile';
-import { Profile, ProfileCategory, ProfileCategoryTypeMap, ProfileType } from '../../../domain/profile/Profile';
-import { RdpProfile } from '../../../domain/profile/RdpProfile';
-import { RemoteTerminalProfile } from '../../../domain/profile/RemoteTerminalProfile';
-import { SambaProfile } from '../../../domain/profile/SambaProfile';
-import { VncProfile } from '../../../domain/profile/VncProfile';
-import { SecretType } from '../../../domain/Secret';
-import { Tag } from '../../../domain/Tag';
-import { LogService } from '../../../services/log.service';
-import { MasterKeyService } from '../../../services/master-key.service';
-import { NotificationService } from '../../../services/notification.service';
-import { ProfileService } from '../../../services/profile.service';
-import { SettingStorageService } from '../../../services/setting-storage.service';
-import { SettingService } from '../../../services/setting.service';
-import { IsAChildForm } from '../../EnhancedFormMixin';
-import { MenuComponent } from '../menu.component';
-import { CustomProfileFormComponent } from './custom-profile-form/custom-profile-form.component';
-import { FtpProfileFormComponent } from './ftp-profile-form/ftp-profile-form.component';
-import { RdpProfileFormComponent } from './rdp-profile-form/rdp-profile-form.component';
+import {COMMA, ENTER} from '@angular/cdk/keycodes';
+import {CdkTextareaAutosize} from '@angular/cdk/text-field';
+import {CommonModule, KeyValuePipe} from '@angular/common';
+import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
+import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
+import {MatButtonModule} from '@angular/material/button';
+import {MatChipInputEvent, MatChipsModule} from '@angular/material/chips';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatIcon} from '@angular/material/icon';
+import {MatInput} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import {Profile, ProfileCategory, ProfileCategoryTypeMap, ProfileType} from '../../../domain/profile/Profile';
+import {SecretType} from '../../../domain/Secret';
+import {Tag} from '../../../domain/Tag';
+import {LogService} from '../../../services/log.service';
+import {MasterKeyService} from '../../../services/master-key.service';
+import {ProfileService} from '../../../services/profile.service';
+import {ProxyStorageService} from '../../../services/proxy-storage.service';
+import {SettingStorageService} from '../../../services/setting-storage.service';
+import {SettingService} from '../../../services/setting.service';
+import {IsAChildForm} from '../../EnhancedFormMixin';
+import {MenuComponent} from '../menu.component';
+import {CustomProfileFormComponent} from './custom-profile-form/custom-profile-form.component';
+import {FtpProfileFormComponent} from './ftp-profile-form/ftp-profile-form.component';
+import {RdpProfileFormComponent} from './rdp-profile-form/rdp-profile-form.component';
 import {
   RemoteTerminalProfileFormComponent
 } from './remote-terminal-profile-form/remote-terminal-profile-form.component';
-import { SambaFormComponent } from './samba-form/samba-form.component';
-import { VncProfileFormComponent } from './vnc-profile-form/vnc-profile-form.component';
-import { ProxyService } from '../../../services/proxy.service';
-import { ProxyStorageService } from '../../../services/proxy-storage.service';
+import {SambaFormComponent} from './samba-form/samba-form.component';
+import {VncProfileFormComponent} from './vnc-profile-form/vnc-profile-form.component';
 
 @Component({
   selector: 'app-profile-form',
+  standalone: true,
   imports: [
     CommonModule,
     FormsModule,
@@ -67,7 +60,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
 
   private _profile!: Profile;
 
-  @Input() buttons = ['close', 'delete', 'save', 'connect']; // 'clone', 'reload'
+  @Input() buttons = ['close', 'delete', 'save', 'connect'];
   @Output() onProfileSave = new EventEmitter<Profile>();
   @Output() onProfileClone = new EventEmitter<Profile>();
   @Output() onProfileDelete = new EventEmitter<Profile>();
@@ -75,36 +68,50 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
 
   CATEGORY_OPTIONS = ProfileCategory;
   CATEGORY_TYPE_MAP = ProfileCategoryTypeMap;
+  SecretType = SecretType;
+  TELNET_SUPPORTED_SECRETS = [SecretType.LOGIN_PASSWORD];
+  WINRM_SUPPORTED_SECRETS = [SecretType.LOGIN_PASSWORD];
 
   groupColor: string | undefined = '';
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
-  @ViewChild('tagsAutoCompleteInput') tagsAutoCompleteInput!: ElementRef;
-  filteredTags!: Tag[];
-
-  @ViewChild(RemoteTerminalProfileFormComponent) remoteTerminalChild!: RemoteTerminalProfileFormComponent;
-  @ViewChild(RdpProfileFormComponent) rdpChild!: RdpProfileFormComponent;
-  @ViewChild(VncProfileFormComponent) vncChild!: VncProfileFormComponent;
-  @ViewChild(CustomProfileFormComponent) customChild!: CustomProfileFormComponent;
-  @ViewChild(FtpProfileFormComponent) ftpChild!: FtpProfileFormComponent;
-  @ViewChild(SambaFormComponent) sambaChild!: SambaFormComponent;
+  @ViewChild('tagsAutoCompleteInput') tagsAutoCompleteInput!: ElementRef<HTMLInputElement>;
+  filteredTags: Tag[] = [];
 
   constructor(
     private log: LogService,
     private fb: FormBuilder,
     private profileService: ProfileService,
-    public masterKeyService: MasterKeyService, // in html
-    public settingStorage: SettingStorageService, // in html
+    public masterKeyService: MasterKeyService,
+    public settingStorage: SettingStorageService,
+    public proxyStorage: ProxyStorageService,
     private settingService: SettingService,
-    private notification: NotificationService,
-    private cdr: ChangeDetectorRef,
-    public proxyService: ProxyService,
-    public proxyStorage: ProxyStorageService
   ) {
     super();
+  }
 
-    if (!this.profileService.isLoaded) {
-      this.notification.info('Profiles not loaded, we\'ll reload it, please close setting menu and reopen');
-      this.profileService.reload();
+  override onInitForm(): FormGroup {
+    return this.fb.group({
+      name: ['', Validators.required],
+      group: [''],
+      tags: [[]],
+      proxyId: [''],
+      comment: [''],
+      category: [ProfileCategory.TERMINAL, Validators.required],
+      profileType: [ProfileType.LOCAL_TERMINAL, Validators.required],
+      remoteTerminalProfileForm: [null],
+      rdpProfileForm: [null],
+      vncProfileForm: [null],
+      ftpProfileForm: [null],
+      sambaProfileForm: [null],
+      customProfileForm: [null],
+    });
+  }
+
+  @Input()
+  set profile(value: Profile) {
+    this._profile = value;
+    if (this._profile) {
+      this.refreshForm(this._profile);
     }
   }
 
@@ -112,298 +119,154 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     return this._profile;
   }
 
-  @Input()
-  set profile(value: Profile) {
-    this._profile = value;
-    this.refreshForm(value);
+  override refreshForm(profile: Profile) {
+    if (!profile || !this.form) return;
+    this.groupColor = profile.group ? (this.settingStorage.settings.groups.find(g => g.id === profile.group)?.color || '') : '';
+
+    // Convert tag IDs to Tag objects for the chip grid if necessary,
+    // but usually tags in Profile are IDs. Let's assume they are IDs and we need to show names.
+    const tags = (profile.tags || []).map(tagId => this.settingStorage.settings.tags.find(t => t.id === tagId)).filter(t => !!t) as Tag[];
+
+    this.form.patchValue({
+      name: profile.name,
+      comment: profile.comment,
+      category: profile.category,
+      profileType: profile.profileType,
+      group: profile.group,
+      tags: tags,
+      proxyId: profile.proxyId,
+      remoteTerminalProfileForm: ['SSH_TERMINAL', 'TELNET_TERMINAL', 'WIN_RM_TERMINAL', 'SCP_FILE_EXPLORER'].includes(profile.profileType) ?
+                                 (profile.profileType === ProfileType.SSH_TERMINAL || profile.profileType === ProfileType.SCP_FILE_EXPLORER ? profile.sshProfile :
+                                  profile.profileType === ProfileType.TELNET_TERMINAL ? profile.telnetProfile : profile.winRmProfile) : null,
+      rdpProfileForm: profile.profileType === ProfileType.RDP_REMOTE_DESKTOP ? profile.rdpProfile : null,
+      vncProfileForm: profile.profileType === ProfileType.VNC_REMOTE_DESKTOP ? profile.vncProfile : null,
+      ftpProfileForm: profile.profileType === ProfileType.FTP_FILE_EXPLORER ? profile.ftpProfile : null,
+      sambaProfileForm: profile.profileType === ProfileType.SAMBA_FILE_EXPLORER ? profile.sambaProfile : null,
+      customProfileForm: profile.category === ProfileCategory.CUSTOM ? profile.customProfile : null,
+    });
+    this.form.markAsPristine();
+    this.updateFilteredTag(null);
   }
 
-  override afterFormInitialization() { // we cannot relay only on setter, because 1st set it before ngOnInit
-    this.refreshForm(this.profile);
-  }
+  override formToModel(): void {
+    if (!this.profile) return;
+    const val = this.form.value;
+    this.profile.name = val.name;
+    this.profile.comment = val.comment;
+    this.profile.category = val.category;
+    this.profile.profileType = val.profileType;
+    this.profile.group = typeof val.group === 'string' ? val.group : (val.group?.id || '');
+    this.profile.tags = (val.tags as Tag[]).map(t => t.id);
+    this.profile.proxyId = val.proxyId;
 
-
-  onInitForm(): FormGroup {
-    return this.fb.group(
-      {
-        name: [this._profile.name, [Validators.required, Validators.minLength(3)]], // we shall avoid use ngModel and formControl at same time
-        comment: [this._profile.comment],
-        category: [this._profile.category, Validators.required],
-        group: [],
-        tags: [[]],
-        proxyId: [this._profile.proxyId],
-        profileType: [this._profile.profileType, Validators.required],
-        remoteTerminalProfileForm: [],
-
-        ftpProfileForm: [this._profile.ftpProfile],
-        sambaProfileForm: [this._profile.sambaProfile],
-
-        rdpProfileForm: [this._profile.rdpProfile],
-        vncProfileForm: [this._profile.vncProfile],
-        customProfileForm: [this._profile.customProfile],
-
-      },
-      { validators: [] }
-    );
-  }
-
-  onSelectCategory($event: MatSelectChange) {
-    let cat = $event.value;
-    if (cat == ProfileCategory.CUSTOM) {
-      this.form.get('customProfileForm')?.setValue(new CustomProfile());
-      this.form.patchValue({
-        profileType: 'CUSTOM', // Reset dependent fields if needed
-      });
-    } else {
-      this.form.patchValue({
-        profileType: null, // Reset dependent fields if needed
-      });
-    }
-  }
-
-  onSelectType($event: MatSelectChange) {
-    // this.profile.profileType = $event;
-    switch ($event.value) {
-      case ProfileType.SSH_TERMINAL:
-      case ProfileType.SCP_FILE_EXPLORER:
-        this.form.get('remoteTerminalProfileForm')?.setValue(new RemoteTerminalProfile());
-        break;
-      case ProfileType.TELNET_TERMINAL:
-        this.form.get('remoteTerminalProfileForm')?.setValue(new RemoteTerminalProfile(23));
-        break;
-      case ProfileType.WIN_RM_TERMINAL:
-        this.form.get('remoteTerminalProfileForm')?.setValue(new RemoteTerminalProfile()); // port is not important
-        break;
-
-      case ProfileType.FTP_FILE_EXPLORER:
-        this.form.get('ftpProfileForm')?.setValue(new FTPProfile());
-        break;
-      case ProfileType.SAMBA_FILE_EXPLORER:
-        this.form.get('sambaProfileForm')?.setValue(new SambaProfile());
-        break;
-
-      case ProfileType.RDP_REMOTE_DESKTOP:
-        this.form.get('rdpProfileForm')?.setValue(new RdpProfile());
-        break;
-      case ProfileType.VNC_REMOTE_DESKTOP:
-        this.form.get('vncProfileForm')?.setValue(new VncProfile());
-        break;
-    }
-  }
-
-  override refreshForm(profile: any) {
-    if (this.form) {
-      this.form.reset();
-
-
-      this.form.get('name')?.setValue(profile?.name);
-      this.form.get('comment')?.setValue(profile?.comment);
-      if (profile?.group) {
-        let group = this.settingService.findGroupById(profile.group);
-        this.form.get('group')?.setValue(group);
-        this.groupColor = group?.color;
-      } else {
-        this.groupColor = '';
-      }
-
-      this.form.get('tags')?.setValue([]);
-      if (profile?.tags) {
-        for (let tagId of profile.tags) {
-          let tag = this.settingService.findTagById(tagId);
-          if (tag) {
-            this.form.get('tags')?.value.push(tag);
-          }
-        }
-        this.form.get('tags')?.updateValueAndValidity();
-      }
-      this.form.get('category')?.setValue(profile?.category);
-      this.form.get('proxyId')?.setValue(profile?.proxyId);
-      this.form.get('profileType')?.setValue(profile?.profileType);
-
-      if (profile?.category == ProfileCategory.CUSTOM) {
-        this.updateFormValue('customProfileForm', profile?.customProfile);
-      } else if (profile?.profileType) {
-        switch (profile.profileType) {
-          case ProfileType.SSH_TERMINAL:
-          case ProfileType.SCP_FILE_EXPLORER:
-            this.updateFormValue('remoteTerminalProfileForm', profile?.sshProfile);
-            break;
-          case ProfileType.TELNET_TERMINAL:
-            this.updateFormValue('remoteTerminalProfileForm', profile?.telnetProfile);
-            break;
-          case ProfileType.WIN_RM_TERMINAL:
-            this.updateFormValue('remoteTerminalProfileForm', profile?.winRmProfile);
-            break;
-
-          case ProfileType.FTP_FILE_EXPLORER:
-            this.updateFormValue('ftpProfileForm', profile?.ftpProfile);
-            break;
-          case ProfileType.SAMBA_FILE_EXPLORER:
-            this.updateFormValue('sambaProfileForm', profile?.sambaProfile);
-            break;
-
-          case ProfileType.RDP_REMOTE_DESKTOP:
-            this.updateFormValue('rdpProfileForm', profile?.rdpProfile);
-            break;
-          case ProfileType.VNC_REMOTE_DESKTOP:
-            this.updateFormValue('vncProfileForm', profile?.vncProfile);
-            break;
-        }
-      }
-
-      this.onSubmit(); // Reset the dirty state
-      // this.filteredTags = this.settingStorage.settings.tags;
-    }
-  }
-
-  formToModel(): Profile {
-    this._profile.name = this.form.get('name')?.value;
-    this._profile.comment = this.form.get('comment')?.value;
-    this._profile.group = this.form.get('group')?.value?.id;
-    let tags = this.form.get('tags')?.value;
-    if (tags && Array.isArray(tags)) {
-      this._profile.tags = tags.map(one => one.id);
-    }
-    this._profile.proxyId = this.form.get('proxyId')?.value;
-
-    this._profile.category = this.form.get('category')?.value;
-    if (this._profile.category == ProfileCategory.CUSTOM) {
-      this._profile.profileType = ProfileType.CUSTOM;
-      this._profile.customProfile = this.customChild?.formToModel();
-    } else {
-      this._profile.profileType = this.form.get('profileType')?.value;
-    }
-
-    switch (this._profile.profileType) {
-      case ProfileType.SSH_TERMINAL:
-      case ProfileType.SCP_FILE_EXPLORER:
-        this._profile.sshProfile = this.remoteTerminalChild?.formToModel();
-        break;
-      case ProfileType.TELNET_TERMINAL:
-        this._profile.telnetProfile = this.remoteTerminalChild?.formToModel();
-        break;
-      case ProfileType.WIN_RM_TERMINAL:
-        this._profile.winRmProfile = this.remoteTerminalChild?.formToModel();
-        break;
-
-      case ProfileType.FTP_FILE_EXPLORER:
-        this._profile.ftpProfile = this.ftpChild?.formToModel();
-        break;
-      case ProfileType.SAMBA_FILE_EXPLORER:
-        this._profile.sambaProfile = this.sambaChild?.formToModel();
-        break;
-
-      case ProfileType.RDP_REMOTE_DESKTOP:
-        this._profile.rdpProfile = this.rdpChild?.formToModel();
-        break;
-      case ProfileType.VNC_REMOTE_DESKTOP:
-        this._profile.vncProfile = this.vncChild?.formToModel();
-        break;
-    }
-    return this._profile;
-  }
-
-
-  getTypeOptions() {
-    const selectedCategory = this.form.get('category')?.value; // we work with formGroup, so ngModel to bind profile doesn't work
-    return this.CATEGORY_TYPE_MAP.get(selectedCategory);
+    const profileType = val.profileType;
+    if (profileType === ProfileType.SSH_TERMINAL || profileType === ProfileType.SCP_FILE_EXPLORER) this.profile.sshProfile = val.remoteTerminalProfileForm;
+    else if (profileType === ProfileType.TELNET_TERMINAL) this.profile.telnetProfile = val.remoteTerminalProfileForm;
+    else if (profileType === ProfileType.WIN_RM_TERMINAL) this.profile.winRmProfile = val.remoteTerminalProfileForm;
+    else if (profileType === ProfileType.FTP_FILE_EXPLORER) this.profile.ftpProfile = val.ftpProfileForm;
+    else if (profileType === ProfileType.SAMBA_FILE_EXPLORER) this.profile.sambaProfile = val.sambaProfileForm;
+    else if (profileType === ProfileType.RDP_REMOTE_DESKTOP) this.profile.rdpProfile = val.rdpProfileForm;
+    else if (profileType === ProfileType.VNC_REMOTE_DESKTOP) this.profile.vncProfile = val.vncProfileForm;
+    else if (val.category === ProfileCategory.CUSTOM) this.profile.customProfile = val.customProfileForm;
   }
 
   override onSave() {
     if (this.form.valid) {
-      this.onSubmit(); // Reset the dirty state
-      this.onProfileSave.emit(this.formToModel());
+      this.formToModel();
+      this.onProfileSave.emit(this.profile);
     }
   }
 
+  onDelete() {
+    this.onProfileDelete.emit(this.profile);
+  }
+
   onClone() {
-    if (this.form.valid) {
-      this.onSubmit(); // Reset the dirty state
-      this.onProfileClone.emit(this.formToModel());
-    }
+    this.formToModel();
+    this.onProfileClone.emit(this.profile);
+  }
+
+  onClose() {
+    this.onProfileCancel.emit(this.profile);
+  }
+
+  onReload() {
+     this.refreshForm(this.profile);
   }
 
   onConnect() {
     if (this.form.valid) {
-      this.profileService.onProfileConnect(this.formToModel());
-
-      this.onSubmit(); // Reset the dirty state
-      this.closeEvent.emit();
+      this.formToModel();
+      this.profileService.onProfileConnect(this.profile);
     }
   }
 
-
-  updateFormValue(formName: string, value: any) {
-    this.form.get(formName)?.setValue(value);
-    this.form.get(formName)?.markAsUntouched();
-    this.form.get(formName)?.markAsPristine();
-  }
-
-
-  onDelete() {
-    this.onProfileDelete.emit(this.formToModel());
-  }
-
-  onClose() {
-    this.onProfileCancel.emit();
-  }
-
-
-  addTag($event: MatChipInputEvent) {
-  }
-
-  onSelectGroup($event: MatSelectChange) {
-    this.groupColor = $event?.value?.color;
-  }
-
-  removeTag(tag: Tag) {
-    if (!tag) {
-      return;
+  onSelectCategory($event: any) {
+    const cat = $event.value as ProfileCategory;
+    const types = ProfileCategoryTypeMap.get(cat);
+    if (types && types.length > 0) {
+      this.form.get('profileType')?.setValue(types[0]);
     }
-    const currentTags = this.form.get('tags')?.value || [];
-    this.form.get('tags')?.setValue(currentTags.filter((one: Tag) => one.id != tag.id));
-    this.form.get('tags')?.markAsDirty(); // force to dirty
-    this.form.get('tags')?.updateValueAndValidity();
   }
 
-  selectTag($event: MatAutocompleteSelectedEvent) {
-    const selectedTag = $event.option.value;
-    this.log.debug('Selected Tag:' + selectedTag);
+  onSelectType($event: any) {
+    // Logic for type selection if needed
+  }
 
-    const currentTags = this.form.get('tags')?.value || [];
-    this.form.get('tags')?.setValue([...currentTags, selectedTag]);
+  onSelectGroup($event: any) {
+    this.groupColor = $event.value?.color || '';
+  }
+
+  addTag(event: MatChipInputEvent): void {
+    const value = (event.value || '').trim();
+    if (value) {
+      const existingTag = this.settingStorage.settings.tags.find(t => t.name.toLowerCase() === value.toLowerCase());
+      if (existingTag) {
+        const currentTags = this.form.get('tags')?.value as Tag[];
+        if (!currentTags.find(t => t.id === existingTag.id)) {
+            this.form.get('tags')?.setValue([...currentTags, existingTag]);
+            this.form.get('tags')?.markAsDirty();
+        }
+      }
+    }
+    event.chipInput!.clear();
+    this.updateFilteredTag(null);
+  }
+
+  removeTag(tag: Tag): void {
+    const currentTags = this.form.get('tags')?.value as Tag[];
+    const index = currentTags.indexOf(tag);
+    if (index >= 0) {
+      currentTags.splice(index, 1);
+      this.form.get('tags')?.setValue([...currentTags]);
+      this.form.get('tags')?.markAsDirty();
+    }
+  }
+
+  selectTag(event: MatAutocompleteSelectedEvent): void {
+    const currentTags = this.form.get('tags')?.value as Tag[];
+    if (!currentTags.find(t => t.id === event.option.value.id)) {
+        this.form.get('tags')?.setValue([...currentTags, event.option.value]);
+        this.form.get('tags')?.markAsDirty();
+    }
     this.tagsAutoCompleteInput.nativeElement.value = '';
-    $event.option.deselect();
+    this.updateFilteredTag(null);
   }
 
-
-  updateFilteredTag($event: Event) {
-    const inputElement = $event.target as HTMLInputElement;
-    const inputValue = inputElement.value;
-    if (!inputValue) {
-      return;
-    }
-    const currentFilter = inputValue.toLowerCase();
-    const selected = this.form.get('tags')?.value;
-
-    let excludeAlreadySelected = this.settingStorage.settings.tags;
-    if (selected) {
-      const selectedId = selected.map((one: Tag) => one.id);
-      excludeAlreadySelected = excludeAlreadySelected.filter(one => !selectedId.includes(one.id));
-    }
-
-    this.filteredTags = currentFilter
-      ? excludeAlreadySelected.filter(one => one.name.toLowerCase().includes(currentFilter))
-      : excludeAlreadySelected.slice();
-
-    // Force change detection
-    this.cdr.detectChanges();
+  updateFilteredTag(event: any): void {
+    const value = typeof event === 'string' ? event : event?.target?.value || '';
+    const filterValue = value.toLowerCase();
+    this.filteredTags = this.settingStorage.settings.tags.filter(tag => tag.name.toLowerCase().includes(filterValue));
   }
 
-
-  onReload() {
-    this.profileService.reload();
+  getTypeOptions() {
+    return ProfileCategoryTypeMap.get(this.form.get('category')?.value) || [];
   }
 
-  protected readonly SecretType = SecretType;
+  override unordered = (a: any, b: any) => 0;
+
+  override clear(form: any, field: string) {
+    form.get(field)?.setValue('');
+    form.get(field)?.markAsDirty();
+  }
 }

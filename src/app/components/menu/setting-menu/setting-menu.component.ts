@@ -1,45 +1,46 @@
-import { CommonModule, KeyValuePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButton, MatIconButton } from '@angular/material/button';
-import { MatCheckbox } from '@angular/material/checkbox';
-import { MatDialog } from '@angular/material/dialog';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatFormField, MatLabel, MatSuffix } from '@angular/material/form-field';
-import { MatIcon } from '@angular/material/icon';
-import { MatInput } from '@angular/material/input';
-import { MatOption, MatSelect } from '@angular/material/select';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { NgxSpinnerService } from 'ngx-spinner';
-import { Subscription } from 'rxjs';
+import {CommonModule, KeyValuePipe} from '@angular/common';
+import {ChangeDetectorRef, Component, Inject, OnDestroy, OnInit} from '@angular/core';
+import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {MatButton, MatIconButton} from '@angular/material/button';
+import {MatCheckbox} from '@angular/material/checkbox';
+import {MatDialog} from '@angular/material/dialog';
+import {MatExpansionModule} from '@angular/material/expansion';
+import {MatFormField, MatLabel, MatSuffix} from '@angular/material/form-field';
+import {MatIcon} from '@angular/material/icon';
+import {MatInput} from '@angular/material/input';
+import {MatOption, MatSelect} from '@angular/material/select';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {NgxSpinnerService} from 'ngx-spinner';
+import {Subscription} from 'rxjs';
 import packageJson from '../../../../../package.json';
-import { LocalTerminalProfile, LocalTerminalType } from '../../../domain/profile/LocalTerminalProfile';
-import { Proxy } from '../../../domain/Proxy';
-import { SecretType } from '../../../domain/Secret';
-import { FileExplorerSettings } from '../../../domain/setting/FileExplorerSettings';
-import { GeneralSettings } from '../../../domain/setting/GeneralSettings';
-import { MySettings } from '../../../domain/setting/MySettings';
-import { RemoteDesktopSettings } from '../../../domain/setting/RemoteDesktopSettings';
-import { TerminalSettings } from '../../../domain/setting/TerminalSettings';
-import { SideNavType, UISettings } from '../../../domain/setting/UISettings';
-import { LogService } from '../../../services/log.service';
-import { MasterKeyService } from '../../../services/master-key.service';
-import { NotificationService } from '../../../services/notification.service';
-import { ProxyService } from '../../../services/proxy.service';
-import { SecretStorageService } from '../../../services/secret-storage.service';
-import { SecretService } from '../../../services/secret.service';
-import { SettingStorageService } from '../../../services/setting-storage.service';
-import { SettingService } from '../../../services/setting.service';
+import {LocalTerminalProfile, LocalTerminalType} from '../../../domain/profile/LocalTerminalProfile';
+import {Proxy} from '../../../domain/Proxy';
+import {SecretType} from '../../../domain/Secret';
+import {AiSettings} from '../../../domain/setting/AiSettings';
+import {FileExplorerSettings} from '../../../domain/setting/FileExplorerSettings';
+import {GeneralSettings} from '../../../domain/setting/GeneralSettings';
+import {MySettings} from '../../../domain/setting/MySettings';
+import {RemoteDesktopSettings} from '../../../domain/setting/RemoteDesktopSettings';
+import {TerminalSettings} from '../../../domain/setting/TerminalSettings';
+import {SideNavType, UISettings} from '../../../domain/setting/UISettings';
+import {LogService} from '../../../services/log.service';
+import {MasterKeyService} from '../../../services/master-key.service';
+import {NotificationService} from '../../../services/notification.service';
+import {ProxyService} from '../../../services/proxy.service';
+import {SecretStorageService} from '../../../services/secret-storage.service';
+import {SecretService} from '../../../services/secret.service';
+import {SettingStorageService} from '../../../services/setting-storage.service';
+import {SettingService} from '../../../services/setting.service';
 import {
   FormFieldWithPrecondition,
   ModelFieldWithPrecondition,
   ModelFormController
 } from '../../../utils/ModelFormController';
-import { ConfirmationComponent } from '../../confirmation/confirmation.component';
-import { MasterKeyComponent } from '../../dialog/master-key/master-key.component';
-import { MenuComponent } from '../menu.component';
-import { GroupsFormComponent } from './groups-form/groups-form.component';
-import { TagsFormComponent } from './tags-form/tags-form.component';
+import {ConfirmationComponent} from '../../confirmation/confirmation.component';
+import {MasterKeyComponent} from '../../dialog/master-key/master-key.component';
+import {MenuComponent} from '../menu.component';
+import {GroupsFormComponent} from './groups-form/groups-form.component';
+import {TagsFormComponent} from './tags-form/tags-form.component';
 
 
 @Component({
@@ -74,6 +75,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   terminalForm!: FormGroup;
   remoteDesktopForm!: FormGroup;
   fileExplorerForm!: FormGroup;
+  aiForm!: FormGroup;
 
   LOCAL_TERM_OPTIONS: LocalTerminalType[] = this.getLocalTermOptions();
 
@@ -107,6 +109,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   TERM_FORM_TAB_INDEX = 4;
   REMOTE_DESKTOP_FORM_TAB_INDEX = 5;
   FILE_EXPLORER_FORM_TAB_INDEX = 6;
+  AI_FORM_TAB_INDEX = 7;
 
   version = '';
 
@@ -115,6 +118,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   private mfcRemoteDesktop: ModelFormController<RemoteDesktopSettings>;
   private mfcLocalTerminal: ModelFormController<LocalTerminalProfile>;
   private mfcFileExplorer: ModelFormController<FileExplorerSettings>;
+  private mfcAi: ModelFormController<AiSettings>;
 
   constructor(
     private log: LogService,
@@ -173,6 +177,14 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     this.mfcFileExplorer = new ModelFormController<FileExplorerSettings>(
       new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>()
     );
+
+    this.mfcAi = new ModelFormController<AiSettings>(
+      new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>([
+        ['apiUrl', { name: 'aiApiUrl', formControlOption: ['', Validators.required] }],
+        ['token', { name: 'aiToken', formControlOption: ['', Validators.required] }],
+        ['model', { name: 'aiModel', formControlOption: ['', Validators.required] }],
+      ])
+    );
   }
 
 
@@ -208,6 +220,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     this.terminalForm = this.initTerminalForm();
     this.remoteDesktopForm = this.initRemoteDesktopForm();
     this.fileExplorerForm = this.initFileExplorerForm();
+    this.aiForm = this.initAiForm();
 
     this.refreshForm(this.settingsCopy);
 
@@ -237,6 +250,10 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
   private initTerminalForm() {
     return this.mfcLocalTerminal.onInitForm(this.fb);
+  }
+
+  private initAiForm() {
+    return this.mfcAi.onInitForm(this.fb);
   }
 
   ngOnDestroy(): void {
@@ -270,6 +287,10 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       this.settingsCopy.fileExplorer = this.fileExplorerFormToModel();
       await this.commitChange();
     }
+    if (this.currentTabIndex == this.AI_FORM_TAB_INDEX && this.aiForm.valid) {
+      this.settingsCopy.ai = this.aiFormToModel();
+      await this.commitChange();
+    }
   }
 
   currentFormValid(): boolean {
@@ -284,6 +305,9 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     }
     if (this.currentTabIndex == this.REMOTE_DESKTOP_FORM_TAB_INDEX) {
       return this.remoteDesktopForm.valid;
+    }
+    if (this.currentTabIndex == this.AI_FORM_TAB_INDEX) {
+      return this.aiForm.valid;
     }
     return false;
   }
@@ -361,6 +385,14 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       }
       this.mfcFileExplorer.refreshForm(value.fileExplorer, this.fileExplorerForm);
     }
+
+    if (this.aiForm) {
+      this.aiForm.reset();
+      if (!value.ai) {
+        value.ai = new AiSettings();
+      }
+      this.mfcAi.refreshForm(value.ai, this.aiForm);
+    }
   }
 
   shouldDisableSave() {
@@ -388,6 +420,10 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
   private fileExplorerFormToModel() {
     return this.mfcFileExplorer.formToModel(new FileExplorerSettings(), this.fileExplorerForm);
+  }
+
+  private aiFormToModel() {
+    return this.mfcAi.formToModel(new AiSettings(), this.aiForm);
   }
 
   async commitChange() {

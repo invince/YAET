@@ -1,0 +1,101 @@
+import {CommonModule} from '@angular/common';
+import {Component, OnInit} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {MatButtonModule} from '@angular/material/button';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatIconModule} from '@angular/material/icon';
+import {MatInputModule} from '@angular/material/input';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
+import {AiChatService} from '../../services/ai-chat.service';
+import {AiService} from '../../services/ai.service';
+import {SettingStorageService} from '../../services/setting-storage.service';
+import {TabService} from '../../services/tab.service';
+import {TerminalInstanceService} from '../../services/terminal-instance.service';
+
+@Component({
+  selector: 'app-ai-chat',
+  templateUrl: './ai-chat.component.html',
+  styleUrls: ['./ai-chat.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatButtonModule,
+    MatIconModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatProgressSpinnerModule,
+    MatSlideToggleModule
+  ]
+})
+export class AiChatComponent implements OnInit {
+  isOpen = false;
+  userInput = '';
+  messages: { role: string, content: string }[] = [];
+  isLoading = false;
+  useContext = true;
+
+  constructor(
+    private aiService: AiService,
+    private settingStorage: SettingStorageService,
+    private tabService: TabService,
+    private terminalInstanceService: TerminalInstanceService,
+    public aiChatService: AiChatService
+  ) { }
+
+  ngOnInit(): void {
+    this.messages.push({ role: 'assistant', content: 'Hello! How can I help you today?' });
+  }
+
+  toggleChat() {
+    this.aiChatService.toggle();
+  }
+
+  sendMessage() {
+    if (!this.userInput.trim() || this.isLoading) return;
+
+    const aiSettings = this.settingStorage.settings.ai;
+    if (!aiSettings || !aiSettings.token) {
+      this.messages.push({ role: 'assistant', content: 'Please configure AI settings with a valid token in the Settings menu first.' });
+      this.userInput = '';
+      return;
+    }
+
+    const userMessage = this.userInput;
+    this.messages.push({ role: 'user', content: userMessage });
+    this.userInput = '';
+    this.isLoading = true;
+
+    let context = '';
+    if (this.useContext) {
+      const activeTab = this.tabService.getSelectedTab();
+      if (activeTab && activeTab.category === 'TERMINAL') {
+        context = this.terminalInstanceService.getTerminalContent(activeTab.id);
+      }
+    }
+
+    const payload = [...this.messages];
+    if (context) {
+        payload.push({ role: 'system', content: `Current terminal context:\n${context}` });
+    }
+
+    this.aiService.sendMessage(
+      aiSettings.apiUrl,
+      aiSettings.token,
+      aiSettings.model,
+      payload
+    ).subscribe({
+      next: (resp) => {
+        const aiResponse = resp.choices[0].message.content;
+        this.messages.push({ role: 'assistant', content: aiResponse });
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.messages.push({ role: 'assistant', content: 'Error communicating with AI. Please check your configuration.' });
+        this.isLoading = false;
+      }
+    });
+  }
+}

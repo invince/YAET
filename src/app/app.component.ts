@@ -1,46 +1,41 @@
-import { CommonModule, DOCUMENT } from '@angular/common';
-import {
-  Component,
-  Inject,
-  OnDestroy,
-  OnInit,
-  Renderer2
-} from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
-import { MatIcon } from '@angular/material/icon';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatTabsModule } from '@angular/material/tabs';
-import { TranslateService } from '@ngx-translate/core';
-import { NgxSpinnerModule } from 'ngx-spinner';
-import { Subscription } from 'rxjs';
-import { menuAnimation } from './animations/menuAnimation';
-import { BottomToolbarComponent } from './components/bottom-toolbar/bottom-toolbar.component';
-import { FileExplorerComponent } from './components/file-explorer/file-explorer.component';
-import { CloudComponent } from './components/menu/cloud/cloud.component';
-import { ProfilesMenuComponent } from './components/menu/profiles-menu/profiles-menu.component';
-import { ProxyMenuComponent } from './components/menu/proxy-menu/proxy-menu.component';
-import { QuickconnectMenuComponent } from "./components/menu/quickconnect-menu/quickconnect-menu.component";
-import { SecretsMenuComponent } from './components/menu/secrets-menu/secrets-menu.component';
-import { SettingMenuComponent } from './components/menu/setting-menu/setting-menu.component';
-import { RemoteDesktopComponent } from './components/remote-desktop/remote-desktop.component';
-import { SidebarComponent } from './components/sidebar/sidebar.component';
-import { TerminalComponent } from './components/terminal/terminal.component';
-import { MenuConsts } from './domain/MenuConsts';
-import { Profile, ProfileCategory, ProfileType } from './domain/profile/Profile';
-import { TabInstance } from './domain/TabInstance';
-import { CloudService } from './services/cloud.service';
-import { LogService } from './services/log.service';
-import { MasterKeyService } from './services/master-key.service';
-import { ModalControllerService } from './services/modal-controller.service';
-import { NotificationService } from './services/notification.service';
-import { ProfileService } from './services/profile.service';
-import { ProxyService } from './services/proxy.service';
-import { SecretService } from './services/secret.service';
-import { SessionService } from './services/session.service';
-import { SettingStorageService } from './services/setting-storage.service';
-import { SettingService } from './services/setting.service';
-import { TabService } from './services/tab.service';
+import {CommonModule, DOCUMENT} from '@angular/common';
+import {Component, Inject, OnDestroy, OnInit, Renderer2} from '@angular/core';
+import {MatButtonModule} from '@angular/material/button';
+import {MatDialog} from '@angular/material/dialog';
+import {MatIcon} from '@angular/material/icon';
+import {MatSidenavModule} from '@angular/material/sidenav';
+import {MatTabsModule} from '@angular/material/tabs';
+import {TranslateService} from '@ngx-translate/core';
+import {NgxSpinnerModule} from 'ngx-spinner';
+import {Subscription} from 'rxjs';
+import {menuAnimation} from './animations/menuAnimation';
+import {AiChatComponent} from './components/ai-chat/ai-chat.component';
+import {BottomToolbarComponent} from './components/bottom-toolbar/bottom-toolbar.component';
+import {FileExplorerComponent} from './components/file-explorer/file-explorer.component';
+import {CloudComponent} from './components/menu/cloud/cloud.component';
+import {ProfilesMenuComponent} from './components/menu/profiles-menu/profiles-menu.component';
+import {ProxyMenuComponent} from './components/menu/proxy-menu/proxy-menu.component';
+import {QuickconnectMenuComponent} from "./components/menu/quickconnect-menu/quickconnect-menu.component";
+import {SecretsMenuComponent} from './components/menu/secrets-menu/secrets-menu.component';
+import {SettingMenuComponent} from './components/menu/setting-menu/setting-menu.component';
+import {RemoteDesktopComponent} from './components/remote-desktop/remote-desktop.component';
+import {SidebarComponent} from './components/sidebar/sidebar.component';
+import {TerminalComponent} from './components/terminal/terminal.component';
+import {MenuConsts} from './domain/MenuConsts';
+import {Profile, ProfileCategory, ProfileType} from './domain/profile/Profile';
+import {TabInstance} from './domain/TabInstance';
+import {CloudService} from './services/cloud.service';
+import {LogService} from './services/log.service';
+import {MasterKeyService} from './services/master-key.service';
+import {ModalControllerService} from './services/modal-controller.service';
+import {NotificationService} from './services/notification.service';
+import {ProfileService} from './services/profile.service';
+import {ProxyService} from './services/proxy.service';
+import {SecretService} from './services/secret.service';
+import {SessionService} from './services/session.service';
+import {SettingStorageService} from './services/setting-storage.service';
+import {SettingService} from './services/setting.service';
+import {TabService} from './services/tab.service';
 
 @Component({
   selector: 'app-root',
@@ -62,6 +57,7 @@ import { TabService } from './services/tab.service';
     CloudComponent,
     SidebarComponent,
     BottomToolbarComponent,
+    AiChatComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',

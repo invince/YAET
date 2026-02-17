@@ -101,13 +101,13 @@
           }
           @case ('TELNET_TERMINAL') {
           <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm" [type]="'telnet'"
-            [supportedSecretType]="[SecretType.LOGIN_PASSWORD]">
+            [supportedSecretType]="TELNET_SUPPORTED_SECRETS">
 
           </app-remote-terminal-profile-form>
           }
           @case ('WIN_RM_TERMINAL') {
           <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm" [type]="'winrm'"
-            [supportedSecretType]="[SecretType.LOGIN_PASSWORD]">
+            [supportedSecretType]="WINRM_SUPPORTED_SECRETS">
 
           </app-remote-terminal-profile-form>
           }

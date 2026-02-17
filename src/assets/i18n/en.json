@@ -64,6 +64,7 @@
         "VNC_CLIPBOARD_COMPATIBLE": "Enable VNC Clipboard Compatible Mode",
         "VNC_QUALITY": "Quality (0-9)",
         "VNC_COMPRESSION": "Compression (0-9)",
+        "AI_ASSISTANT": "AI Assistant",
         "ADD_NEW_GROUP": "Add new Group"
     },
     "LANGUAGES": {
