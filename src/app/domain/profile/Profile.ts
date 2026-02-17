@@ -1,12 +1,10 @@
-import { v4 as uuidv4 } from 'uuid';
-import { Secret } from '../Secret';
-import { CustomProfile } from './CustomProfile';
-import { FTPProfile } from './FTPProfile';
-import { LocalTerminalProfile } from './LocalTerminalProfile';
-import { RdpProfile } from './RdpProfile';
-import { RemoteTerminalProfile } from './RemoteTerminalProfile';
-import { SambaProfile } from './SambaProfile';
-import { VncProfile } from './VncProfile';
+import {CustomProfile} from './CustomProfile';
+import {FTPProfile} from './FTPProfile';
+import {LocalTerminalProfile} from './LocalTerminalProfile';
+import {RdpProfile} from './RdpProfile';
+import {RemoteTerminalProfile} from './RemoteTerminalProfile';
+import {SambaProfile} from './SambaProfile';
+import {VncProfile} from './VncProfile';
 
 export enum ProfileCategory {
   TERMINAL = 'TERMINAL',
@@ -32,17 +30,15 @@ export enum ProfileType {
 
 export const ProfileCategoryTypeMap = new Map<ProfileCategory, any>([
   [ProfileCategory.TERMINAL, [
+    ProfileType.LOCAL_TERMINAL,
     ProfileType.SSH_TERMINAL,
     ProfileType.TELNET_TERMINAL,
     ProfileType.WIN_RM_TERMINAL,
   ]],
-
   [ProfileCategory.REMOTE_DESKTOP, [
     ProfileType.VNC_REMOTE_DESKTOP,
     ProfileType.RDP_REMOTE_DESKTOP,
   ]],
-
-
   [ProfileCategory.FILE_EXPLORER, [
     ProfileType.SCP_FILE_EXPLORER,
     ProfileType.FTP_FILE_EXPLORER,
@@ -57,91 +53,81 @@ export const ProfileCategoryTypeMap = new Map<ProfileCategory, any>([
 export class Profiles {
 
   revision: number;
-
-  public version: string = '';
-  public compatibleVersion: string = '';
-
   profiles: Profile[];
+  version: string = '';
+  compatibleVersion: string = '';
 
   constructor() {
     this.revision = Date.now();
     this.profiles = [];
   }
 
-  delete($event: Profile) {
-    if (!$event) {
-      return;
+  update(profile: Profile) {
+    const index = this.profiles.findIndex(p => p.id === profile.id);
+    if (index >= 0) {
+      this.profiles[index] = profile;
+    } else {
+      this.profiles.push(profile);
     }
-    if (!this.profiles) {
-      this.profiles = [];
-    }
-    this.profiles = this.profiles.filter(one => one.id != $event.id);
   }
 
-  update($event: Profile) {
-    if ($event) {
-      let index = this.profiles.findIndex(one => one.id == $event.id);
-      if (index >= 0) {
-        this.profiles[index] = $event;
-      } else {
-        console.warn("Profile not found, we'll add new profile");
-        this.profiles.push($event);
-      }
+  delete(profile: Profile) {
+    const index = this.profiles.findIndex(p => p.id === profile.id);
+    if (index >= 0) {
+      this.profiles.splice(index, 1);
     }
   }
 }
 
-
 export class Profile {
 
-  readonly id: string = uuidv4(); // uuid
+  public id: string = '';
   public name: string = '';
-
-  public icon: string = '';
   public comment: string = '';
-
-  public category!: ProfileCategory;
-  public profileType!: ProfileType;
-
-  public localTerminal!: LocalTerminalProfile;
-  public sshProfile!: RemoteTerminalProfile;
-  public telnetProfile!: RemoteTerminalProfile;
-  public winRmProfile!: RemoteTerminalProfile;
-
-  public ftpProfile!: FTPProfile;
-  public sambaProfile!: SambaProfile;
-
-  public rdpProfile!: RdpProfile;
-  public vncProfile!: VncProfile;
-
-  public customProfile!: CustomProfile;
-
-  public group!: string
+  public icon: string = 'terminal';
+  public category: ProfileCategory = ProfileCategory.TERMINAL;
+  public profileType: ProfileType = ProfileType.LOCAL_TERMINAL;
+  public group: string = '';
   public tags: string[] = [];
-  public proxyId?: string;
+  public proxyId: string = '';
 
-  isNew: boolean = true;
+  public localTerminal: LocalTerminalProfile;
+  public sshProfile: RemoteTerminalProfile;
+  public telnetProfile: RemoteTerminalProfile;
+  public winRmProfile: RemoteTerminalProfile;
+
+  public ftpProfile: FTPProfile;
+  public sambaProfile: SambaProfile;
+
+  public rdpProfile: RdpProfile;
+  public vncProfile: VncProfile;
+
+  public customProfile: CustomProfile;
+
+  public isNew: boolean = true;
 
 
   constructor() {
+    this.id = Math.random().toString(36).substring(2);
     this.localTerminal = new LocalTerminalProfile();
     this.sshProfile = new RemoteTerminalProfile();
     this.telnetProfile = new RemoteTerminalProfile(23);
-    this.winRmProfile = new RemoteTerminalProfile(); // port is not important
+    this.winRmProfile = new RemoteTerminalProfile();
 
     this.ftpProfile = new FTPProfile();
     this.sambaProfile = new SambaProfile();
 
     this.rdpProfile = new RdpProfile();
     this.vncProfile = new VncProfile();
+
     this.customProfile = new CustomProfile();
   }
 
   static clone(base: Profile): Profile {
-    let cloned = new Profile();
-
+    const cloned = new Profile();
+    cloned.id = base.id; // Usually we want a new ID, but some logic might need it
     cloned.name = base.name;
-    cloned.icon = base.icon;
+    cloned.comment = base.comment;
     cloned.category = base.category;
     cloned.profileType = base.profileType;
 
@@ -153,8 +139,8 @@ export class Profile {
     cloned.ftpProfile = base.ftpProfile;
     cloned.sambaProfile = base.sambaProfile;
 
-    cloned.vncProfile = base.vncProfile;
     cloned.rdpProfile = base.rdpProfile;
+    cloned.vncProfile = base.vncProfile;
 
     cloned.customProfile = base.customProfile;
     cloned.group = base.group;
@@ -169,38 +155,22 @@ export class Profile {
       .includes(profile.profileType);
   }
 
-  static useSecret(profile: Profile, secret: Secret) {
-    if (profile && secret) {
-      switch (profile.profileType) {
-        case ProfileType.SCP_FILE_EXPLORER:
-        case ProfileType.SSH_TERMINAL: return profile.sshProfile.secretId == secret.id;
-        case ProfileType.TELNET_TERMINAL: return profile.telnetProfile.secretId == secret.id;
-        case ProfileType.FTP_FILE_EXPLORER: return profile.ftpProfile.secretId == secret.id;
-
-        case ProfileType.VNC_REMOTE_DESKTOP: return profile.vncProfile.secretId == secret.id;
-        case ProfileType.CUSTOM: return profile.customProfile.secretId == secret.id;
-      }
-    }
+  static useSecret(one: Profile, secret: any) {
+    if (one.sshProfile?.secretId == secret?.id) return true;
+    if (one.telnetProfile?.secretId == secret?.id) return true;
+    if (one.winRmProfile?.secretId == secret?.id) return true;
+    if (one.ftpProfile?.secretId == secret?.id) return true;
+    if (one.sambaProfile?.secretId == secret?.id) return true;
+    if (one.vncProfile?.secretId == secret?.id) return true;
     return false;
   }
 
-
-  static clearSecret(profile: Profile, secret: Secret) {
-    if (profile && secret) {
-      switch (profile.profileType) {
-        case ProfileType.SCP_FILE_EXPLORER:
-        case ProfileType.SSH_TERMINAL:
-          profile.sshProfile.secretId = ''; break;
-        case ProfileType.TELNET_TERMINAL:
-          profile.telnetProfile.secretId = ''; break;
-        case ProfileType.FTP_FILE_EXPLORER:
-          profile.ftpProfile.secretId = ''; break;
-        case ProfileType.VNC_REMOTE_DESKTOP:
-          profile.vncProfile.secretId = ''; break;
-        case ProfileType.CUSTOM:
-          profile.customProfile.secretId = ''; break;
-      }
-    }
+  static clearSecret(one: Profile, secret: any) {
+    if (one.sshProfile?.secretId == secret.id) one.sshProfile.secretId = '';
+    if (one.telnetProfile?.secretId == secret.id) one.telnetProfile.secretId = '';
+    if (one.winRmProfile?.secretId == secret.id) one.winRmProfile.secretId = '';
+    if (one.ftpProfile?.secretId == secret.id) one.ftpProfile.secretId = '';
+    if (one.sambaProfile?.secretId == secret.id) one.sambaProfile.secretId = '';
+    if (one.vncProfile?.secretId == secret.id) one.vncProfile.secretId = '';
   }
-
 }
