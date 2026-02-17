@@ -15,7 +15,7 @@ import {TabService} from '../../services/tab.service';
 export class BottomToolbarComponent {
     constructor(
         public tabService: TabService,
-        private aiChatService: AiChatService
+        public aiChatService: AiChatService
     ) { }
 
     toggleSplit(direction: 'vertical' | 'horizontal' = 'vertical', ratio: number = 50) {

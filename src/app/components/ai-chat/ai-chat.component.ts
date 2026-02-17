@@ -1,17 +1,17 @@
-import {CommonModule} from '@angular/common';
-import {Component, OnInit} from '@angular/core';
-import {FormsModule} from '@angular/forms';
-import {MatButtonModule} from '@angular/material/button';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatIconModule} from '@angular/material/icon';
-import {MatInputModule} from '@angular/material/input';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
-import {MatSlideToggleModule} from '@angular/material/slide-toggle';
-import {AiChatService} from '../../services/ai-chat.service';
-import {AiService} from '../../services/ai.service';
-import {SettingStorageService} from '../../services/setting-storage.service';
-import {TabService} from '../../services/tab.service';
-import {TerminalInstanceService} from '../../services/terminal-instance.service';
+import { CommonModule } from '@angular/common';
+import { AfterViewChecked, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { AiChatService } from '../../services/ai-chat.service';
+import { AiService } from '../../services/ai.service';
+import { SettingStorageService } from '../../services/setting-storage.service';
+import { TabService } from '../../services/tab.service';
+import { TerminalInstanceService } from '../../services/terminal-instance.service';
 
 @Component({
   selector: 'app-ai-chat',
@@ -29,7 +29,8 @@ import {TerminalInstanceService} from '../../services/terminal-instance.service'
     MatSlideToggleModule
   ]
 })
-export class AiChatComponent implements OnInit {
+export class AiChatComponent implements OnInit, AfterViewChecked {
+  @ViewChild('scrollMe') private myScrollContainer!: ElementRef;
   isOpen = false;
   userInput = '';
   messages: { role: string, content: string }[] = [];
@@ -48,6 +49,26 @@ export class AiChatComponent implements OnInit {
     this.messages.push({ role: 'assistant', content: 'Hello! How can I help you today?' });
   }
 
+  ngAfterViewChecked() {
+    this.scrollToBottom();
+  }
+
+  scrollToBottom(): void {
+    try {
+      this.myScrollContainer.nativeElement.scrollTop = this.myScrollContainer.nativeElement.scrollHeight;
+    } catch (err) { }
+  }
+
+  parseMarkdown(content: string): SafeHtml {
+    if (!content) return '';
+    try {
+      const html = marked.parse(content) as string;
+      return this.sanitizer.bypassSecurityTrustHtml(html);
+    } catch (e) {
+      return content;
+    }
+  }
+
   toggleChat() {
     this.aiChatService.toggle();
   }
@@ -63,7 +84,7 @@ export class AiChatComponent implements OnInit {
     }
 
     const userMessage = this.userInput;
-    this.messages.push({ role: 'user', content: userMessage });
+    this.messages.push({ role: 'user', content: `User's question is:\n${userMessage}` });
     this.userInput = '';
     this.isLoading = true;
 
@@ -77,7 +98,7 @@ export class AiChatComponent implements OnInit {
 
     const payload = [...this.messages];
     if (context) {
-        payload.push({ role: 'system', content: `Current terminal context:\n${context}` });
+        payload.push({ role: 'user', content: `Current terminal context:\n${context}` });
     }
 
     this.aiService.sendMessage(

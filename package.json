@@ -87,6 +87,7 @@
     "https-proxy-agent": "^7.0.6",
     "keytar": "^7.9.0",
     "lodash": "^4.17.21",
+    "marked": "^17.0.3",
     "multer": "^2.0.2",
     "ngx-spinner": "^17.0.0",
     "node-fstab": "^1.0.16",
