@@ -23,6 +23,9 @@
       <div class="sidebar-item" [class.active]="currentTabIndex === 5" (click)="currentTabIndex = 5">
         <mat-icon>desktop_windows</mat-icon> {{ 'SETTINGS.REMOTE_DESKTOP' | translate }}
       </div>
+      <div class="sidebar-item" [class.active]="currentTabIndex === 7" (click)="currentTabIndex = 7">
+        <mat-icon>smart_toy</mat-icon> {{ 'SETTINGS.AI_ASSISTANT' | translate }}
+      </div>
     </div>
 
     <!-- Main Content Area -->
@@ -199,6 +202,35 @@
                   <input matInput type="number" formControlName="vncCompressionLevel" required min="0" max="9" />
                 </mat-form-field>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Assistant Settings -->
+        <div *ngIf="currentTabIndex === 7">
+          <div class="settings-header">{{ 'SETTINGS.AI_ASSISTANT' | translate }}</div>
+          <div class="setting-form" [formGroup]="aiForm">
+            <div class="form-section" style="display: flex; flex-direction: column; gap: 12px;">
+              <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
+                OpenAI Configuration
+                <button mat-stroked-button color="warn" size="small" (click)="onClearAiSettings()">
+                  <mat-icon>clear_all</mat-icon> Clear
+                </button>
+              </div>
+              <mat-form-field class="field" appearance="outline">
+                <mat-label>API URL</mat-label>
+                <input matInput type="text" formControlName="aiApiUrl" />
+              </mat-form-field>
+
+              <mat-form-field class="field" appearance="outline">
+                <mat-label>API Token</mat-label>
+                <input matInput type="password" formControlName="aiToken" />
+              </mat-form-field>
+
+              <mat-form-field class="field" appearance="outline">
+                <mat-label>Model</mat-label>
+                <input matInput type="text" formControlName="aiModel" />
+              </mat-form-field>
             </div>
           </div>
         </div>

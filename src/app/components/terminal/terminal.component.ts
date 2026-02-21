@@ -22,6 +22,7 @@ import {TabInstance} from '../../domain/TabInstance';
 import {ElectronTerminalService} from '../../services/electron/electron-terminal.service';
 import {ScpService} from '../../services/file-explorer/scp.service';
 import {TabService} from '../../services/tab.service';
+import {TerminalInstanceService} from '../../services/terminal-instance.service';
 
 @Component({
   selector: 'app-terminal',
@@ -46,6 +47,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     private electron: ElectronTerminalService,
     private tabService: TabService,
     private scpService: ScpService,
+    private terminalInstanceService: TerminalInstanceService,
   ) {
     this.xtermUnderlying = new Terminal({
       fontFamily: '"Cascadia Code", Menlo, monospace',
@@ -61,6 +63,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   ngAfterViewInit(): void {
     this.xtermUnderlying.open(this.terminalDiv.nativeElement);
+    this.terminalInstanceService.register(this.session.id, this.xtermUnderlying);
 
     this.xtermUnderlying.loadAddon(new WebLinksAddon((event: MouseEvent, uri: string) => {
       if (event.button === 0 && event.ctrlKey) { // ctrl + click = open link in web browser
@@ -162,6 +165,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     const isTabStillActive = this.tabService.tabs.some(t => t.id === this.session.id);
     if (!isTabStillActive) {
       this.session.close();
+      this.terminalInstanceService.unregister(this.session.id);
     }
 
     this.fitAddon?.dispose();

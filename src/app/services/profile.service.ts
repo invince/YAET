@@ -1,17 +1,17 @@
 import {Injectable, OnDestroy} from '@angular/core';
+import {Subject, Subscription} from 'rxjs';
+import packageJson from '../../../package.json';
+import {Compatibility} from '../../main';
+import {Group} from '../domain/Group';
 import {Profile, Profiles, ProfileType} from '../domain/profile/Profile';
+import {Secret} from '../domain/Secret';
+import {Tag} from '../domain/Tag';
+import {compareVersions} from '../utils/VersionUtils';
 import {ElectronService} from './electron/electron.service';
 import {PROFILES_LOADED} from './electron/ElectronConstant';
-import {Subject, Subscription} from 'rxjs';
-import {MasterKeyService} from './master-key.service';
-import {Tag} from '../domain/Tag';
-import {Group} from '../domain/Group';
-import packageJson from '../../../package.json';
 import {LogService} from './log.service';
-import {Compatibility} from '../../main';
-import {compareVersions} from '../utils/VersionUtils';
+import {MasterKeyService} from './master-key.service';
 import {NotificationService} from './notification.service';
-import {Secret} from '../domain/Secret';
 
 @Injectable({
   providedIn: 'root'
@@ -91,6 +91,10 @@ export class ProfileService implements OnDestroy{
       result.compatibleVersion = this._profiles.compatibleVersion;
     }
     return result;
+  }
+
+  get profiles(): Profiles {
+    return this._profiles;
   }
 
   async save(profiles: Profiles = this._profiles) {

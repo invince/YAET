@@ -1,0 +1,40 @@
+<div class="chat-container" [class.open]="aiChatService.isOpen$ | async">
+  <div class="chat-header">
+    <div class="header-title">
+      <mat-icon>smart_toy</mat-icon>
+      <span>AI Assistant</span>
+    </div>
+    <div class="header-actions">
+      <mat-slide-toggle [(ngModel)]="agentMode" title="Agent Mode (execute commands instantly)"></mat-slide-toggle>
+      <mat-slide-toggle [(ngModel)]="useContext" title="Use active terminal context"></mat-slide-toggle>
+      <button mat-icon-button (click)="toggleChat()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <div class="chat-messages" #scrollMe [scrollTop]="scrollMe.scrollHeight">
+    @for (msg of messages; track msg) {
+    <div class="message" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'" [class.system]="msg.role === 'system'">
+      <div class="message-content" [innerHTML]="parseMarkdown(msg.content)"></div>
+    </div>
+    }
+    @if (isLoading) {
+    <div class="message assistant">
+      <div class="message-content">
+        <mat-spinner diameter="20"></mat-spinner>
+      </div>
+    </div>
+    }
+  </div>
+
+  <div class="chat-input-area">
+    <mat-form-field class="chat-input" appearance="outline">
+      <input matInput placeholder="Ask AI..." [(ngModel)]="userInput" (keyup.enter)="sendMessage()" [disabled]="isLoading">
+      <button matSuffix mat-icon-button (click)="sendMessage()" [disabled]="isLoading">
+        <mat-icon>send</mat-icon>
+      </button>
+    </mat-form-field>
+  </div>
+</div>
+

@@ -1,0 +1,25 @@
+[33m鉂?[39m Building...
+[32m鉁?[39m Building...
+Application bundle generation failed. [23.708 seconds] - 2026-02-17T21:50:38.752Z
+
+X [ERROR] TS4114: This member must have an 'override' modifier because it overrides a member in the base class 'IsAChildForm<typeof MenuComponent>.IsAChildFormClazz & MenuComponent'. [plugin angular-compiler]
+
+    src/app/components/menu/profile-form/profile-form.component.ts:173:2:
+      173 鈹?  onSave() {
+          鈺?  ~~~~~~
+
+
+X [ERROR] TS4114: This member must have an 'override' modifier because it overrides a member in the base class 'IsAChildForm<typeof MenuComponent>.IsAChildFormClazz & MenuComponent'. [plugin angular-compiler]
+
+    src/app/components/menu/profile-form/profile-form.component.ts:266:2:
+      266 鈹?  unordered = (a: any, b: any) => 0;
+          鈺?  ~~~~~~~~~
+
+
+X [ERROR] TS4114: This member must have an 'override' modifier because it overrides a member in the base class 'IsAChildForm<typeof MenuComponent>.IsAChildFormClazz & MenuComponent'. [plugin angular-compiler]
+
+    src/app/components/menu/profile-form/profile-form.component.ts:268:2:
+      268 鈹?  clear(form: any, field: string) {
+          鈺?  ~~~~~
+
+

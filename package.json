@@ -1,6 +1,11 @@
 {
   "name": "yet-another-electron-term",
-  "version": "2.1.6",
+  "version": "3.0.0",
+  "author": {
+    "name": "invince",
+    "email": "invincezero@gmail.com"
+  },
+  "description": "Yet Another Electron Terminal",
   "main": "src-electron/electronMain.js",
   "scripts": {
     "ng": "ng",
@@ -13,8 +18,7 @@
     "electron:dev": "wait-on http://localhost:4200 && cross-env NODE_ENV=development electron .",
     "postinstall": "patch-package",
     "rebuild-native": "electron-builder install-app-deps",
-    "build:release": "npm run clean && patch-package && ng build --base-href ./ && electron-builder --publish always",
-    "release": "npm version patch && npm run build:release"
+    "build:release-win-local": "npm run clean && patch-package && ng build --base-href ./ && electron-builder --windows --publish always"
   },
   "build": {
     "appId": "io.github.invince",
@@ -41,7 +45,12 @@
       "icon": "src-electron/assets/icons/app-icon.ico"
     },
     "linux": {
-      "icon": "src-electron/assets/icons/"
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "icon": "src-electron/assets/icons/app-icon.png"
     },
     "mac": {
       "icon": "src-electron/assets/icons/app-icon.icns"
@@ -78,6 +87,7 @@
     "https-proxy-agent": "^7.0.6",
     "keytar": "^7.9.0",
     "lodash": "^4.17.21",
+    "marked": "^17.0.3",
     "multer": "^2.0.2",
     "ngx-spinner": "^17.0.0",
     "node-fstab": "^1.0.16",
