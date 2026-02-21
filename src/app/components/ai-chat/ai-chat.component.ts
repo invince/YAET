@@ -1,19 +1,20 @@
-import { CommonModule } from '@angular/common';
-import { AfterViewChecked, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { marked } from 'marked';
-import { AiChatService } from '../../services/ai-chat.service';
-import { AiService } from '../../services/ai.service';
-import { SettingStorageService } from '../../services/setting-storage.service';
-import { TabService } from '../../services/tab.service';
-import { TerminalInstanceService } from '../../services/terminal-instance.service';
+import {CommonModule} from '@angular/common';
+import {AfterViewChecked, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {MatButtonModule} from '@angular/material/button';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatIconModule} from '@angular/material/icon';
+import {MatInputModule} from '@angular/material/input';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
+import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
+import {marked} from 'marked';
+import {AiChatService} from '../../services/ai-chat.service';
+import {AiService} from '../../services/ai.service';
+import {ElectronTerminalService} from '../../services/electron/electron-terminal.service';
+import {SettingStorageService} from '../../services/setting-storage.service';
+import {TabService} from '../../services/tab.service';
+import {TerminalInstanceService} from '../../services/terminal-instance.service';
 
 @Component({
   selector: 'app-ai-chat',
@@ -38,12 +39,14 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   messages: { role: string, content: string }[] = [];
   isLoading = false;
   useContext = true;
+  agentMode = false;
 
   constructor(
     private aiService: AiService,
     private settingStorage: SettingStorageService,
     private tabService: TabService,
     private terminalInstanceService: TerminalInstanceService,
+    private electronTerminalService: ElectronTerminalService,
     public aiChatService: AiChatService,
     private sanitizer: DomSanitizer
   ) { }
@@ -91,9 +94,9 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     this.userInput = '';
     this.isLoading = true;
 
+    const activeTab = this.tabService.getSelectedTab();
     let context = '';
     if (this.useContext) {
-      const activeTab = this.tabService.getSelectedTab();
       if (activeTab && activeTab.category === 'TERMINAL') {
         context = this.terminalInstanceService.getTerminalContent(activeTab.id);
       }
@@ -104,6 +107,10 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
         payload.push({ role: 'user', content: `Current terminal context:\n${context}` });
     }
 
+    if (this.agentMode) {
+      payload.push({ role: 'user', content: `You are in Agent Mode. Please respond ONLY with the raw command to execute in the shell. Do NOT wrap it in markdown block. Do NOT include any other text.` });
+    }
+
     this.aiService.sendMessage(
       aiSettings.apiUrl,
       aiSettings.token,
@@ -111,8 +118,25 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
       payload
     ).subscribe({
       next: (resp) => {
-        const aiResponse = resp.choices[0].message.content;
+        let aiResponse = resp.choices[0].message.content;
+
+        if (this.agentMode) {
+            // Strip any markdown code blocks if the AI ignored instructions
+            const codeBlockRegex = /```[\s\S]*?\n([\s\S]*?)```/g;
+            const match = codeBlockRegex.exec(aiResponse);
+            if (match) {
+                aiResponse = match[1].trim();
+            } else {
+                aiResponse = aiResponse.trim();
+            }
+        }
+
         this.messages.push({ role: 'assistant', content: aiResponse });
+
+        if (this.agentMode && activeTab && activeTab.category === 'TERMINAL') {
+            this.electronTerminalService.sendTerminalInput(activeTab.id, aiResponse + '\r');
+        }
+
         this.isLoading = false;
       },
       error: (err) => {

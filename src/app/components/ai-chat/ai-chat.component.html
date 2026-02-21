@@ -5,6 +5,7 @@
       <span>AI Assistant</span>
     </div>
     <div class="header-actions">
+      <mat-slide-toggle [(ngModel)]="agentMode" title="Agent Mode (execute commands instantly)"></mat-slide-toggle>
       <mat-slide-toggle [(ngModel)]="useContext" title="Use active terminal context"></mat-slide-toggle>
       <button mat-icon-button (click)="toggleChat()">
         <mat-icon>close</mat-icon>
