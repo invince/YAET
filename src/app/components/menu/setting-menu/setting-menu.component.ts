@@ -1,46 +1,46 @@
-import {CommonModule, KeyValuePipe} from '@angular/common';
-import {ChangeDetectorRef, Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {MatButton, MatIconButton} from '@angular/material/button';
-import {MatCheckbox} from '@angular/material/checkbox';
-import {MatDialog} from '@angular/material/dialog';
-import {MatExpansionModule} from '@angular/material/expansion';
-import {MatFormField, MatLabel, MatSuffix} from '@angular/material/form-field';
-import {MatIcon} from '@angular/material/icon';
-import {MatInput} from '@angular/material/input';
-import {MatOption, MatSelect} from '@angular/material/select';
-import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {NgxSpinnerService} from 'ngx-spinner';
-import {Subscription} from 'rxjs';
+import { CommonModule, KeyValuePipe } from '@angular/common';
+import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatButton, MatIconButton } from '@angular/material/button';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatDialog } from '@angular/material/dialog';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormField, MatLabel, MatSuffix } from '@angular/material/form-field';
+import { MatIcon } from '@angular/material/icon';
+import { MatInput } from '@angular/material/input';
+import { MatOption, MatSelect } from '@angular/material/select';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { NgxSpinnerService } from 'ngx-spinner';
+import { Subscription } from 'rxjs';
 import packageJson from '../../../../../package.json';
-import {LocalTerminalProfile, LocalTerminalType} from '../../../domain/profile/LocalTerminalProfile';
-import {Proxy} from '../../../domain/Proxy';
-import {SecretType} from '../../../domain/Secret';
-import {AiSettings} from '../../../domain/setting/AiSettings';
-import {FileExplorerSettings} from '../../../domain/setting/FileExplorerSettings';
-import {GeneralSettings} from '../../../domain/setting/GeneralSettings';
-import {MySettings} from '../../../domain/setting/MySettings';
-import {RemoteDesktopSettings} from '../../../domain/setting/RemoteDesktopSettings';
-import {TerminalSettings} from '../../../domain/setting/TerminalSettings';
-import {SideNavType, UISettings} from '../../../domain/setting/UISettings';
-import {LogService} from '../../../services/log.service';
-import {MasterKeyService} from '../../../services/master-key.service';
-import {NotificationService} from '../../../services/notification.service';
-import {ProxyService} from '../../../services/proxy.service';
-import {SecretStorageService} from '../../../services/secret-storage.service';
-import {SecretService} from '../../../services/secret.service';
-import {SettingStorageService} from '../../../services/setting-storage.service';
-import {SettingService} from '../../../services/setting.service';
+import { LocalTerminalProfile, LocalTerminalType } from '../../../domain/profile/LocalTerminalProfile';
+import { Proxy } from '../../../domain/Proxy';
+import { SecretType } from '../../../domain/Secret';
+import { AiSettings } from '../../../domain/setting/AiSettings';
+import { FileExplorerSettings } from '../../../domain/setting/FileExplorerSettings';
+import { GeneralSettings } from '../../../domain/setting/GeneralSettings';
+import { MySettings } from '../../../domain/setting/MySettings';
+import { RemoteDesktopSettings } from '../../../domain/setting/RemoteDesktopSettings';
+import { TerminalSettings } from '../../../domain/setting/TerminalSettings';
+import { SideNavType, UISettings } from '../../../domain/setting/UISettings';
+import { LogService } from '../../../services/log.service';
+import { MasterKeyService } from '../../../services/master-key.service';
+import { NotificationService } from '../../../services/notification.service';
+import { ProxyService } from '../../../services/proxy.service';
+import { SecretStorageService } from '../../../services/secret-storage.service';
+import { SecretService } from '../../../services/secret.service';
+import { SettingStorageService } from '../../../services/setting-storage.service';
+import { SettingService } from '../../../services/setting.service';
 import {
-  FormFieldWithPrecondition,
-  ModelFieldWithPrecondition,
-  ModelFormController
+    FormFieldWithPrecondition,
+    ModelFieldWithPrecondition,
+    ModelFormController
 } from '../../../utils/ModelFormController';
-import {ConfirmationComponent} from '../../confirmation/confirmation.component';
-import {MasterKeyComponent} from '../../dialog/master-key/master-key.component';
-import {MenuComponent} from '../menu.component';
-import {GroupsFormComponent} from './groups-form/groups-form.component';
-import {TagsFormComponent} from './tags-form/tags-form.component';
+import { ConfirmationComponent } from '../../confirmation/confirmation.component';
+import { MasterKeyComponent } from '../../dialog/master-key/master-key.component';
+import { MenuComponent } from '../menu.component';
+import { GroupsFormComponent } from './groups-form/groups-form.component';
+import { TagsFormComponent } from './tags-form/tags-form.component';
 
 
 @Component({
@@ -180,9 +180,9 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
     this.mfcAi = new ModelFormController<AiSettings>(
       new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>([
-        ['apiUrl', { name: 'aiApiUrl', formControlOption: ['', Validators.required] }],
-        ['token', { name: 'aiToken', formControlOption: ['', Validators.required] }],
-        ['model', { name: 'aiModel', formControlOption: ['', Validators.required] }],
+        ['apiUrl', { name: 'aiApiUrl', formControlOption: [''] }],
+        ['token', { name: 'aiToken', formControlOption: [''] }],
+        ['model', { name: 'aiModel', formControlOption: [''] }],
       ])
     );
   }
@@ -428,6 +428,11 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
   async commitChange() {
     await this.settingService.save(this.settingsCopy);
+  }
+
+  onClearAiSettings() {
+    this.aiForm.reset(new AiSettings());
+    this.aiForm.markAsDirty();
   }
 
   filterSecret() {

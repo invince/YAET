@@ -7,6 +7,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { marked } from 'marked';
 import { AiChatService } from '../../services/ai-chat.service';
 import { AiService } from '../../services/ai.service';
 import { SettingStorageService } from '../../services/setting-storage.service';
@@ -42,7 +44,8 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     private settingStorage: SettingStorageService,
     private tabService: TabService,
     private terminalInstanceService: TerminalInstanceService,
-    public aiChatService: AiChatService
+    public aiChatService: AiChatService,
+    private sanitizer: DomSanitizer
   ) { }
 
   ngOnInit(): void {
@@ -84,7 +87,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     }
 
     const userMessage = this.userInput;
-    this.messages.push({ role: 'user', content: `User's question is:\n${userMessage}` });
+    this.messages.push({ role: 'user', content: `${userMessage}` });
     this.userInput = '';
     this.isLoading = true;
 

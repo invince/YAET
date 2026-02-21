@@ -211,20 +211,25 @@
           <div class="settings-header">{{ 'SETTINGS.AI_ASSISTANT' | translate }}</div>
           <div class="setting-form" [formGroup]="aiForm">
             <div class="form-section" style="display: flex; flex-direction: column; gap: 12px;">
-              <div class="section-title">OpenAI Configuration</div>
+              <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
+                OpenAI Configuration
+                <button mat-stroked-button color="warn" size="small" (click)="onClearAiSettings()">
+                  <mat-icon>clear_all</mat-icon> Clear
+                </button>
+              </div>
               <mat-form-field class="field" appearance="outline">
                 <mat-label>API URL</mat-label>
-                <input matInput type="text" formControlName="aiApiUrl" required />
+                <input matInput type="text" formControlName="aiApiUrl" />
               </mat-form-field>
 
               <mat-form-field class="field" appearance="outline">
                 <mat-label>API Token</mat-label>
-                <input matInput type="password" formControlName="aiToken" required />
+                <input matInput type="password" formControlName="aiToken" />
               </mat-form-field>
 
               <mat-form-field class="field" appearance="outline">
                 <mat-label>Model</mat-label>
-                <input matInput type="text" formControlName="aiModel" required />
+                <input matInput type="text" formControlName="aiModel" />
               </mat-form-field>
             </div>
           </div>

@@ -8,7 +8,7 @@
         [color]="tabService.splitMode && tabService.splitDirection === 'horizontal' && tabService.splitRatio === 60 ? 'accent' : ''">
         <mat-icon>horizontal_split</mat-icon>
     </button>
-    <button mat-icon-button (click)="toggleAi()" aria-label="Toggle AI Assistant"
+    <button [disabled]="!isAiConfigured" mat-icon-button (click)="toggleAi()" aria-label="Toggle AI Assistant"
         [color]="(aiChatService.isOpen$ | async) ? 'accent' : ''">
         <mat-icon>smart_toy</mat-icon>
     </button>

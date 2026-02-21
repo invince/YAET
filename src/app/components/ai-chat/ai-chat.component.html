@@ -15,7 +15,7 @@
   <div class="chat-messages" #scrollMe [scrollTop]="scrollMe.scrollHeight">
     @for (msg of messages; track msg) {
     <div class="message" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'" [class.system]="msg.role === 'system'">
-      <div class="message-content">{{ msg.content }}</div>
+      <div class="message-content" [innerHTML]="parseMarkdown(msg.content)"></div>
     </div>
     }
     @if (isLoading) {

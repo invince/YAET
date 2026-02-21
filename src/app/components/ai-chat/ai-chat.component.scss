@@ -87,7 +87,7 @@
 }
 
 .chat-input-area {
-  padding: 12px 16px;
+  padding: 8px 16px 16px 16px;
   background: #252526;
   border-top: 1px solid #333;
   border-radius: 0 0 12px 12px;
@@ -97,10 +97,57 @@
   width: 100%;
   ::ng-deep .mat-mdc-text-field-wrapper {
     background-color: #1e1e1e !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
   }
 }
 
+.message-content {
+  word-break: break-word;
 
+  ::ng-deep {
+    p {
+      margin: 8px 0;
+      &:first-child { margin-top: 0; }
+      &:last-child { margin-bottom: 0; }
+    }
+
+    code {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-family: 'Cascadia Code', 'Consolas', monospace;
+      font-size: 0.9em;
+    }
+
+    pre {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 10px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 8px 0;
+
+      code {
+        background: transparent;
+        padding: 0;
+      }
+    }
+
+    ul, ol {
+      margin: 8px 0;
+      padding-left: 20px;
+    }
+
+    li {
+      margin: 4px 0;
+    }
+
+    a {
+      color: var(--mat-sys-primary);
+      text-decoration: underline;
+    }
+  }
+}
 
 ::ng-deep .mat-mdc-form-field-subscript-wrapper {
   display: none;
