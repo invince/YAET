@@ -151,6 +151,9 @@ export class FileListComponent implements OnInit, OnDestroy {
             // Ensure path ends with / before appending if not root
             const separator = this.path.endsWith('/') ? '' : '/';
             this.path = `${this.path}${separator}${item.name}`;
+            this.selection.clear();
+            this.lastSelected = null;
+            this.isEditingPath = false;
             this.pathChange.emit(this.path);
             this.refresh();
         } else if (item.type === 'file') {
@@ -195,6 +198,9 @@ export class FileListComponent implements OnInit, OnDestroy {
         const parts = this.path.split('/').filter(p => p);
         parts.pop();
         this.path = parts.length > 0 ? '/' + parts.join('/') : '/';
+        this.selection.clear();
+        this.lastSelected = null;
+        this.isEditingPath = false;
         this.pathChange.emit(this.path);
         this.refresh();
     }
@@ -410,6 +416,8 @@ export class FileListComponent implements OnInit, OnDestroy {
     navigateToPath() {
         if (this.editPath && this.editPath.trim()) {
             this.path = this.editPath.trim();
+            this.selection.clear();
+            this.lastSelected = null;
             this.pathChange.emit(this.path);
             this.isEditingPath = false;
             this.refresh();
@@ -444,6 +452,11 @@ export class FileListComponent implements OnInit, OnDestroy {
             this.session.profile.favoritePaths.push(this.path);
         }
 
+        const originalProfile = this.profileService.profiles.profiles.find(p => p.id === this.session!.profile.id);
+        if (originalProfile) {
+            originalProfile.favoritePaths = [...this.session.profile.favoritePaths];
+        }
+
         await this.profileService.save();
         this.filterFavorites();
     }
@@ -472,6 +485,12 @@ export class FileListComponent implements OnInit, OnDestroy {
         const index = this.session.profile.favoritePaths.indexOf(pathToRemove);
         if (index >= 0) {
             this.session.profile.favoritePaths.splice(index, 1);
+            
+            const originalProfile = this.profileService.profiles.profiles.find(p => p.id === this.session!.profile.id);
+            if (originalProfile) {
+                originalProfile.favoritePaths = [...this.session.profile.favoritePaths];
+            }
+
             await this.profileService.save();
             this.filterFavorites();
         }

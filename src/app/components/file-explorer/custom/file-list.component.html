@@ -64,6 +64,8 @@
                    [(ngModel)]="editPath" 
                    (ngModelChange)="filterFavorites()"
                    (keydown.enter)="navigateToPath()"
+                   (keydown.escape)="cancelPathEdit()"
+                   (blur)="cancelPathEdit()"
                    autofocus 
                    [matAutocomplete]="auto" />
             <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onFavoriteSelected($event)">

@@ -1,6 +1,14 @@
 .file-explorer-container {
-  display: block; /* Or flex if required */
-  height: calc(100vh - 48px);   /* Full height of the parent container */
-  width: 100%;    /* Optional, full width if required */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
 }
 
+app-scp, app-ftp, app-samba {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
