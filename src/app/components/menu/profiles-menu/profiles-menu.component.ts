@@ -15,7 +15,6 @@ import {GroupNode, NODE_DEFAULT_NAME} from '../../../domain/GroupNode';
 import {MenuConsts} from '../../../domain/MenuConsts';
 import {Profile, Profiles} from '../../../domain/profile/Profile';
 import {SideNavType} from '../../../domain/setting/UISettings';
-import {Tag} from '../../../domain/Tag';
 import {FilterKeywordPipe} from '../../../pipes/filter-keyword.pipe';
 import {ModalControllerService} from '../../../services/modal-controller.service';
 import {NotificationService} from '../../../services/notification.service';
@@ -206,9 +205,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   }
 
   public tagsColor(profile: Profile): string[] {
-    return profile.tags.map(one => this.settingService.findTagById(one))
-      .filter((one): one is Tag => !!one)// filter undefined
-      .map(tag => tag.color);
+    return [];
   }
 
 
@@ -227,11 +224,6 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
       return [];
     },
     (profile: Profile) => {
-      if (profile.tags) {
-        return profile.tags.map(one => this.settingService.findTagById(one))
-          .filter((one): one is Tag => !!one)// filter undefined
-          .map(one => one.name);
-      }
       return [];
     },
   ];

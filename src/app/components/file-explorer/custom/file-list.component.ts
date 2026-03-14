@@ -5,13 +5,14 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 import {MatDividerModule} from '@angular/material/divider';
 import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
 import {MatMenuModule} from '@angular/material/menu';
+import {MatIconModule} from '@angular/material/icon';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSort, MatSortModule} from '@angular/material/sort';
 import {MatTableDataSource, MatTableModule} from '@angular/material/table';
+import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {Subscription} from 'rxjs';
 import {Profile, ProfileCategory, ProfileType} from '../../../domain/profile/Profile';
 import {Session} from '../../../domain/session/Session';
@@ -21,10 +22,11 @@ import {DragDropTransferService} from '../../../services/drag-drop-transfer.serv
 import {ElectronTerminalService} from '../../../services/electron/electron-terminal.service';
 import {LocalFileWatcherService} from '../../../services/electron/local-file.watcher.service';
 import {FileItem, FileSystemApiService} from '../../../services/file-system/file-system-api.service';
-import {TabService} from '../../../services/tab.service';
 import {FileEditorDialogComponent} from './file-editor-dialog.component';
 import {FolderNameDialogComponent} from './folder-name-dialog.component';
 import {RenameDialogComponent} from './rename-dialog.component';
+import {ProfileService} from '../../../services/profile.service';
+import {TabService} from '../../../services/tab.service';
 
 @Component({
     selector: 'app-file-list',
@@ -41,7 +43,8 @@ import {RenameDialogComponent} from './rename-dialog.component';
         MatDividerModule,
         FormsModule,
         MatInputModule,
-        MatFormFieldModule
+        MatFormFieldModule,
+        MatAutocompleteModule
     ],
     templateUrl: './file-list.component.html',
     styleUrls: ['./file-list.component.scss']
@@ -65,10 +68,13 @@ export class FileListComponent implements OnInit, OnDestroy {
     isDraggingFromAnotherTab = false;
     draggedItem: FileItem | null = null;
     dragOverFolder: FileItem | null = null;
-
+    
     // Selection (tracking paths strings to ensure stability across refreshes)
     selection = new Set<string>();
     lastSelected: FileItem | null = null; // We still keep the item object for lastSelected anchor, but need to handle staleness
+
+    // Favorites
+    filteredFavorites: string[] = [];
 
     // Watcher management
     private watchedFiles = new Set<string>();
@@ -92,11 +98,12 @@ export class FileListComponent implements OnInit, OnDestroy {
 
     constructor(
         private api: FileSystemApiService,
-        private dialog: MatDialog,
         private dragDropService: DragDropTransferService,
         private localFileService: LocalFileWatcherService,
         private tabService: TabService,
-        private electronTerminalService: ElectronTerminalService
+        private electronTerminalService: ElectronTerminalService,
+        private profileService: ProfileService,
+        private dialog: MatDialog
     ) { }
 
     ngOnInit(): void {
@@ -397,6 +404,7 @@ export class FileListComponent implements OnInit, OnDestroy {
     enablePathEdit() {
         this.editPath = this.path;
         this.isEditingPath = true;
+        this.filterFavorites();
     }
 
     navigateToPath() {
@@ -409,8 +417,64 @@ export class FileListComponent implements OnInit, OnDestroy {
     }
 
     cancelPathEdit() {
-        this.isEditingPath = false;
-        this.editPath = '';
+        // use setTimeout so click on dropdown doesn't get canceled by blur
+        setTimeout(() => {
+            if (this.isEditingPath) {
+                this.isEditingPath = false;
+                this.editPath = '';
+            }
+        }, 150);
+    }
+
+    isFavorite(): boolean {
+        return !!this.session?.profile?.favoritePaths?.includes(this.path);
+    }
+
+    async toggleFavorite() {
+        if (!this.session?.profile) return;
+        
+        if (!this.session.profile.favoritePaths) {
+            this.session.profile.favoritePaths = [];
+        }
+
+        const index = this.session.profile.favoritePaths.indexOf(this.path);
+        if (index >= 0) {
+            this.session.profile.favoritePaths.splice(index, 1);
+        } else {
+            this.session.profile.favoritePaths.push(this.path);
+        }
+
+        await this.profileService.save();
+        this.filterFavorites();
+    }
+
+    filterFavorites() {
+        if (!this.session?.profile?.favoritePaths) {
+            this.filteredFavorites = [];
+            return;
+        }
+        
+        const search = (this.editPath || '').toLowerCase();
+        this.filteredFavorites = this.session.profile.favoritePaths.filter(p => p.toLowerCase().includes(search));
+    }
+
+    onFavoriteSelected(event: any) {
+        if (event.option.value) {
+            this.editPath = event.option.value;
+            this.navigateToPath();
+        }
+    }
+
+    async removeFavorite(pathToRemove: string, event: Event) {
+        event.stopPropagation();
+        if (!this.session?.profile?.favoritePaths) return;
+        
+        const index = this.session.profile.favoritePaths.indexOf(pathToRemove);
+        if (index >= 0) {
+            this.session.profile.favoritePaths.splice(index, 1);
+            await this.profileService.save();
+            this.filterFavorites();
+        }
     }
 
     copyItems(items: FileItem[]) {
