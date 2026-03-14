@@ -1,31 +1,31 @@
-import { NestedTreeControl } from '@angular/cdk/tree';
-import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIcon } from "@angular/material/icon";
-import { MatInput } from '@angular/material/input';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatTree, MatTreeModule, MatTreeNestedDataSource } from '@angular/material/tree';
-import { TranslateModule } from '@ngx-translate/core';
-import { Subscription } from 'rxjs';
-import { GroupNode, NODE_DEFAULT_NAME } from '../../../domain/GroupNode';
-import { MenuConsts } from '../../../domain/MenuConsts';
-import { Profile, Profiles } from '../../../domain/profile/Profile';
-import { SideNavType } from '../../../domain/setting/UISettings';
-import { Tag } from '../../../domain/Tag';
-import { FilterKeywordPipe } from '../../../pipes/filter-keyword.pipe';
-import { ModalControllerService } from '../../../services/modal-controller.service';
-import { NotificationService } from '../../../services/notification.service';
-import { ProfileService } from '../../../services/profile.service';
-import { SettingStorageService } from '../../../services/setting-storage.service';
-import { SettingService } from '../../../services/setting.service';
-import { ConfirmationComponent } from '../../confirmation/confirmation.component';
-import { HasChildForm } from '../../EnhancedFormMixin';
-import { MenuComponent } from '../menu.component';
-import { ProfileFormComponent } from '../profile-form/profile-form.component';
+import {NestedTreeControl} from '@angular/cdk/tree';
+import {CommonModule} from '@angular/common';
+import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {MatButtonModule} from '@angular/material/button';
+import {MatDialog} from '@angular/material/dialog';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatIcon} from "@angular/material/icon";
+import {MatInput} from '@angular/material/input';
+import {MatSidenavModule} from '@angular/material/sidenav';
+import {MatTree, MatTreeModule, MatTreeNestedDataSource} from '@angular/material/tree';
+import {TranslateModule} from '@ngx-translate/core';
+import {Subscription} from 'rxjs';
+import {GroupNode, NODE_DEFAULT_NAME} from '../../../domain/GroupNode';
+import {MenuConsts} from '../../../domain/MenuConsts';
+import {Profile, Profiles} from '../../../domain/profile/Profile';
+import {SideNavType} from '../../../domain/setting/UISettings';
+import {Tag} from '../../../domain/Tag';
+import {FilterKeywordPipe} from '../../../pipes/filter-keyword.pipe';
+import {ModalControllerService} from '../../../services/modal-controller.service';
+import {NotificationService} from '../../../services/notification.service';
+import {ProfileService} from '../../../services/profile.service';
+import {SettingStorageService} from '../../../services/setting-storage.service';
+import {SettingService} from '../../../services/setting.service';
+import {ConfirmationComponent} from '../../confirmation/confirmation.component';
+import {HasChildForm} from '../../EnhancedFormMixin';
+import {MenuComponent} from '../menu.component';
+import {ProfileFormComponent} from '../profile-form/profile-form.component';
 
 @Component({
   selector: 'app-profiles-menu',
@@ -177,6 +177,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   async onSaveOne($event: Profile) {
     this.profilesCopy.update($event);
     await this.commitChange();
+    this.notification.info('Profile saved');
     this.refreshForm();
   }
 

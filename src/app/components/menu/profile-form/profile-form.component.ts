@@ -107,6 +107,12 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     });
   }
 
+  override afterFormInitialization() {
+    if (this._profile) {
+      this.refreshForm(this._profile);
+    }
+  }
+
   @Input()
   set profile(value: Profile) {
     this._profile = value;
@@ -174,6 +180,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     if (this.form.valid) {
       this.formToModel();
       this.onProfileSave.emit(this.profile);
+      this.onSubmit(); // Reset the dirty form state
     }
   }
 
