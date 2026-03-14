@@ -107,6 +107,12 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     });
   }
 
+  override afterFormInitialization() {
+    if (this._profile) {
+      this.refreshForm(this._profile);
+    }
+  }
+
   @Input()
   set profile(value: Profile) {
     this._profile = value;
@@ -123,9 +129,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     if (!profile || !this.form) return;
     this.groupColor = profile.group ? (this.settingStorage.settings.groups.find(g => g.id === profile.group)?.color || '') : '';
 
-    // Convert tag IDs to Tag objects for the chip grid if necessary,
-    // but usually tags in Profile are IDs. Let's assume they are IDs and we need to show names.
-    const tags = (profile.tags || []).map(tagId => this.settingStorage.settings.tags.find(t => t.id === tagId)).filter(t => !!t) as Tag[];
+    // No tags needed.
 
     this.form.patchValue({
       name: profile.name,
@@ -133,7 +137,6 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       category: profile.category,
       profileType: profile.profileType,
       group: profile.group,
-      tags: tags,
       proxyId: profile.proxyId,
       remoteTerminalProfileForm: ['SSH_TERMINAL', 'TELNET_TERMINAL', 'WIN_RM_TERMINAL', 'SCP_FILE_EXPLORER'].includes(profile.profileType) ?
                                  (profile.profileType === ProfileType.SSH_TERMINAL || profile.profileType === ProfileType.SCP_FILE_EXPLORER ? profile.sshProfile :
@@ -156,7 +159,6 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     this.profile.category = val.category;
     this.profile.profileType = val.profileType;
     this.profile.group = typeof val.group === 'string' ? val.group : (val.group?.id || '');
-    this.profile.tags = (val.tags as Tag[]).map(t => t.id);
     this.profile.proxyId = val.proxyId;
 
     const profileType = val.profileType;
@@ -174,6 +176,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     if (this.form.valid) {
       this.formToModel();
       this.onProfileSave.emit(this.profile);
+      this.onSubmit(); // Reset the dirty form state
     }
   }
 

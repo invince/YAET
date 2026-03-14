@@ -90,6 +90,7 @@ export class Profile {
   public group: string = '';
   public tags: string[] = [];
   public proxyId: string = '';
+  public favoritePaths: string[] = [];
 
   public localTerminal: LocalTerminalProfile;
   public sshProfile: RemoteTerminalProfile;
@@ -144,8 +145,8 @@ export class Profile {
 
     cloned.customProfile = base.customProfile;
     cloned.group = base.group;
-    cloned.tags = base.tags;
     cloned.proxyId = base.proxyId;
+    cloned.favoritePaths = base.favoritePaths ? [...base.favoritePaths] : [];
 
     return cloned;
   }

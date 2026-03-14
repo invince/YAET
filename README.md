@@ -130,13 +130,15 @@ This creates a distributable installer in the `dist` folder.
 
 Releases are now automated via **GitHub Actions**.
 
-1.  **Update version**: Update the `version` in `package.json`.
-2.  **Tag and Push**:
+**Important**: You MUST manually upgrade the version in `package.json` before creating a release tag. The GitHub Action uses the version from `package.json` to build and name the release artifacts.
+
+1.  **Update version**: Update the `"version"` field in `package.json`.
+2.  **Commit, Tag, and Push**:
     ```bash
-    git add .
-    git commit -m "Release v2.1.8"
-    git tag v2.1.8
-    git push origin main --tags
+    git add package.json
+    git commit -m "chore: bump version to v3.x.x"
+    git tag v3.x.x
+    git push && git push --tags
     ```
 
 **Prerequisites:**

@@ -109,11 +109,17 @@ export function ChildFormAsFormControl<TBase extends Constructor>(Base: TBase) {
     abstract refreshForm(obj:any): void;
     abstract formToModel(): any;
 
+    private _isWritingValue = false;
+
     ngOnInit(): void {
       this.form = this.onInitForm();
       // Propagate changes to parent form
-      this.subscriptions.push(this.form.valueChanges.subscribe(value => this.onChange(value)));
-      this.subscriptions.push(this.form.statusChanges.subscribe(() => this.onChange(this.form.value)));
+      this.subscriptions.push(this.form.valueChanges.subscribe(value => {
+        if (!this._isWritingValue) this.onChange(value);
+      }));
+      this.subscriptions.push(this.form.statusChanges.subscribe(() => {
+        if (!this._isWritingValue) this.onChange(this.form.value);
+      }));
     }
 
     ngOnDestroy(): void {
@@ -134,7 +140,9 @@ export function ChildFormAsFormControl<TBase extends Constructor>(Base: TBase) {
 
     writeValue(value: any): void {
       if (value) {
+        this._isWritingValue = true;
         this.refreshForm(value);
+        this._isWritingValue = false;
       }
     }
 

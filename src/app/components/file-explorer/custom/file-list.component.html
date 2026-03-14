@@ -54,8 +54,29 @@
         </ng-template>
         <div class="path-breadcrumb" *ngIf="!isEditingPath" (click)="enablePathEdit()" title="Click to edit path">{{
             path }}</div>
-        <input class="path-input" *ngIf="isEditingPath" [(ngModel)]="editPath" (keydown.enter)="navigateToPath()"
-            (keydown.escape)="cancelPathEdit()" (blur)="cancelPathEdit()" autofocus />
+        
+        <div class="path-input-container" *ngIf="isEditingPath">
+            <button mat-icon-button class="favorite-button" (click)="toggleFavorite()" 
+                    [title]="isFavorite() ? 'Remove from favorites' : 'Add to favorites'">
+                <mat-icon [class.is-favorite]="isFavorite()">{{ isFavorite() ? 'star' : 'star_border' }}</mat-icon>
+            </button>
+            <input class="path-input" 
+                   [(ngModel)]="editPath" 
+                   (ngModelChange)="filterFavorites()"
+                   (keydown.enter)="navigateToPath()"
+                   (keydown.escape)="cancelPathEdit()"
+                   (blur)="cancelPathEdit()"
+                   autofocus 
+                   [matAutocomplete]="auto" />
+            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onFavoriteSelected($event)">
+                <mat-option *ngFor="let fav of filteredFavorites" [value]="fav" class="favorite-option">
+                    <span class="favorite-path-text" [title]="fav">{{fav}}</span>
+                    <button mat-icon-button (click)="removeFavorite(fav, $event)" title="Remove" class="remove-fav-btn">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </mat-option>
+            </mat-autocomplete>
+        </div>
     </div>
 
     <!-- Linear Progress Bar for Folder Loading -->
