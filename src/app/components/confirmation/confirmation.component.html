@@ -1,12 +1,18 @@
-<h1 mat-dialog-title>Confirm</h1>
-<div mat-dialog-content>
-  <p>{{ data.message }}</p>
-</div>
-<div mat-dialog-actions align="end">
-  <button mat-button (click)="onAbort()">
-    {{ data.abortBtnLabel? data.abortBtnLabel : 'Abort'}}
-  </button>
-  <button mat-raised-button color="primary" (click)="onContinue()">
-    {{ data.okBtnLabel? data.okBtnLabel : 'OK'}}
-  </button>
+<div class="confirmation-dialog">
+  <h2 class="dialog-title">Confirm</h2>
+  <div class="dialog-content">
+    <p>{{ data.message }}</p>
+  </div>
+  <div class="dialog-actions">
+    <p-button
+      [label]="data.abortBtnLabel || 'Abort'"
+      (onClick)="onAbort()"
+      styleClass="p-button-text">
+    </p-button>
+    <p-button
+      [label]="data.okBtnLabel || 'OK'"
+      (onClick)="onContinue()"
+      styleClass="p-button-raised p-button-primary">
+    </p-button>
+  </div>
 </div>

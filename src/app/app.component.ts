@@ -1,10 +1,11 @@
 import {CommonModule, DOCUMENT} from '@angular/common';
 import {Component, Inject, OnDestroy, OnInit, Renderer2} from '@angular/core';
-import {MatButtonModule} from '@angular/material/button';
-import {MatDialog} from '@angular/material/dialog';
-import {MatIcon} from '@angular/material/icon';
-import {MatSidenavModule} from '@angular/material/sidenav';
+import {ButtonModule} from 'primeng/button';
+import {DrawerModule} from 'primeng/drawer';
 import {MatTabsModule} from '@angular/material/tabs';
+import {ToastModule} from 'primeng/toast';
+import {DialogService, DynamicDialogModule} from 'primeng/dynamicdialog';
+import {MessageService} from 'primeng/api';
 import {TranslateService} from '@ngx-translate/core';
 import {NgxSpinnerModule} from 'ngx-spinner';
 import {Subscription} from 'rxjs';
@@ -41,11 +42,10 @@ import {TabService} from './services/tab.service';
   selector: 'app-root',
   imports: [
     TerminalComponent,
-    MatSidenavModule,
+    DrawerModule,
     MatTabsModule,
-    MatButtonModule,
+    ButtonModule,
     NgxSpinnerModule,
-    MatIcon,
     CommonModule,
     SettingMenuComponent,
     RemoteDesktopComponent,
@@ -58,11 +58,17 @@ import {TabService} from './services/tab.service';
     SidebarComponent,
     BottomToolbarComponent,
     AiChatComponent,
+    ToastModule,
+    DynamicDialogModule,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   animations: [
     menuAnimation,
+  ],
+  providers: [
+    DialogService,
+    MessageService
   ]
 })
 export class AppComponent implements OnInit, OnDestroy {
@@ -79,6 +85,8 @@ export class AppComponent implements OnInit, OnDestroy {
   subscriptions: Subscription[] = [];
 
   settingInitialized = false;
+
+  sidebarVisible = true;
 
   // Drag and drop state
   draggedTab: { tab: TabInstance, index: number, paneId: number } | null = null;
@@ -101,7 +109,7 @@ export class AppComponent implements OnInit, OnDestroy {
     public modalControl: ModalControllerService,
 
     private notification: NotificationService,
-    public dialog: MatDialog,
+    public dialogService: DialogService,
     @Inject(TranslateService) private translate: TranslateService,
     @Inject(DOCUMENT) private document: Document,
     private renderer: Renderer2

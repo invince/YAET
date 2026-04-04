@@ -1,29 +1,22 @@
 <div class="sidebar-buttons">
     <br>
     <div class="sidebar-buttons-top">
-        <button mat-mini-fab color="primary" (click)="addLocalTerminal()" aria-label="Add Local Terminal">
-            <mat-icon>terminal</mat-icon>
-        </button>
-        <button mat-mini-fab color="primary" (click)="addMenu()" aria-label="Add Profile">
-            <mat-icon>add</mat-icon>
-        </button>
-        <button mat-mini-fab color="primary" (click)="profileMenu()" aria-label="Favorite">
-            <mat-icon>favorite</mat-icon>
-        </button>
-        <button mat-mini-fab color="primary" (click)="secureMenu()" aria-label="Save">
-            <mat-icon>password</mat-icon>
-        </button>
+        <p-button icon="pi pi-terminal" styleClass="p-button-rounded p-button-primary p-button-sm"
+            (onClick)="addLocalTerminal()" aria-label="Add Local Terminal"></p-button>
+        <p-button icon="pi pi-plus" styleClass="p-button-rounded p-button-primary p-button-sm"
+            (onClick)="addMenu()" aria-label="Add Profile"></p-button>
+        <p-button icon="pi pi-heart" styleClass="p-button-rounded p-button-primary p-button-sm"
+            (onClick)="profileMenu()" aria-label="Favorite"></p-button>
+        <p-button icon="pi pi-key" styleClass="p-button-rounded p-button-primary p-button-sm"
+            (onClick)="secureMenu()" aria-label="Save"></p-button>
     </div>
     <div class="sidebar-buttons-bottom">
-        <button mat-mini-fab color="primary" (click)="proxyMenu()" aria-label="Proxy">
-            <mat-icon>dns</mat-icon>
-        </button>
-        <button mat-mini-fab color="primary" (click)="cloudMenu()" aria-label="Cloud">
-            <mat-icon>cloud</mat-icon>
-        </button>
+        <p-button icon="pi pi-server" styleClass="p-button-rounded p-button-primary p-button-sm"
+            (onClick)="proxyMenu()" aria-label="Proxy"></p-button>
+        <p-button icon="pi pi-cloud" styleClass="p-button-rounded p-button-primary p-button-sm"
+            (onClick)="cloudMenu()" aria-label="Cloud"></p-button>
 
-        <button mat-mini-fab color="primary" (click)="settingMenu()" aria-label="Settings">
-            <mat-icon>settings</mat-icon>
-        </button>
+        <p-button icon="pi pi-cog" styleClass="p-button-rounded p-button-primary p-button-sm"
+            (onClick)="settingMenu()" aria-label="Settings"></p-button>
     </div>
 </div>

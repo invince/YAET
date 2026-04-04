@@ -1,30 +1,31 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnDestroy } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
-import { MatIcon } from '@angular/material/icon';
-import { Subscription } from 'rxjs';
-import { MasterKeyComponent } from '../../components/dialog/master-key/master-key.component';
-import { MenuConsts } from '../../domain/MenuConsts';
-import { ProfileCategory, ProfileType } from '../../domain/profile/Profile';
-import { TabInstance } from '../../domain/TabInstance';
-import { LogService } from '../../services/log.service';
-import { MasterKeyService } from '../../services/master-key.service';
-import { ModalControllerService } from '../../services/modal-controller.service';
-import { NotificationService } from '../../services/notification.service';
-import { SessionService } from '../../services/session.service';
-import { SettingService } from '../../services/setting.service';
-import { TabService } from '../../services/tab.service';
+import {CommonModule} from '@angular/common';
+import {Component, OnDestroy} from '@angular/core';
+import {ButtonModule} from 'primeng/button';
+import {DialogService, DynamicDialogRef} from 'primeng/dynamicdialog';
+import {Subscription} from 'rxjs';
+import {MasterKeyComponent} from '../../components/dialog/master-key/master-key.component';
+import {MenuConsts} from '../../domain/MenuConsts';
+import {ProfileCategory, ProfileType} from '../../domain/profile/Profile';
+import {TabInstance} from '../../domain/TabInstance';
+import {LogService} from '../../services/log.service';
+import {MasterKeyService} from '../../services/master-key.service';
+import {ModalControllerService} from '../../services/modal-controller.service';
+import {NotificationService} from '../../services/notification.service';
+import {SessionService} from '../../services/session.service';
+import {SettingService} from '../../services/setting.service';
+import {TabService} from '../../services/tab.service';
 
 @Component({
     selector: 'app-sidebar',
     imports: [
         CommonModule,
-        MatButtonModule,
-        MatIcon,
+        ButtonModule,
     ],
     templateUrl: './sidebar.component.html',
-    styleUrl: './sidebar.component.css'
+    styleUrl: './sidebar.component.css',
+    providers: [
+        DialogService
+    ]
 })
 export class SidebarComponent implements OnDestroy {
 
@@ -36,6 +37,7 @@ export class SidebarComponent implements OnDestroy {
     MENU_SETTING: string = MenuConsts.MENU_SETTING;
 
     subscriptions: Subscription[] = [];
+    private dialogRef: DynamicDialogRef | null = null;
 
     constructor(
         private log: LogService,
@@ -45,7 +47,7 @@ export class SidebarComponent implements OnDestroy {
         public tabService: TabService,
         public modalControl: ModalControllerService,
         private notification: NotificationService,
-        public dialog: MatDialog,
+        public dialogService: DialogService,
     ) { }
 
     ngOnDestroy() {
@@ -94,14 +96,17 @@ export class SidebarComponent implements OnDestroy {
     }
 
     openMasterKeyModal() {
-        const dialogRef = this.dialog.open(MasterKeyComponent, {
+        this.dialogRef = this.dialogService.open(MasterKeyComponent, {
+            header: 'Master Key',
             width: '260px',
             data: {}
         });
 
-        this.subscriptions.push(dialogRef.afterClosed().subscribe(result => {
-            this.log.debug('Master key modal closed');
-        }));
+        if (this.dialogRef) {
+            this.subscriptions.push(this.dialogRef.onClose.subscribe(result => {
+                this.log.debug('Master key modal closed');
+            }));
+        }
     }
 
     toggleMenu(menu: string) {

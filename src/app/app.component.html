@@ -1,9 +1,9 @@
-<mat-sidenav-container fullscreen>
-    <mat-sidenav #sidenav mode="side" opened class="main-app-sidenav">
+<div class="app-container">
+    <p-drawer [(visible)]="sidebarVisible" position="left" styleClass="main-app-drawer">
         <app-sidebar></app-sidebar>
-    </mat-sidenav>
+    </p-drawer>
 
-    <mat-sidenav-content style="display: flex; flex-direction: column; overflow: hidden;">
+    <div class="app-content" style="display: flex; flex-direction: column; overflow: hidden;">
         <div class="split-container" [style.display]="tabService.splitMode ? 'flex' : 'block'"
             [style.flex-direction]="tabService.splitDirection === 'vertical' ? 'row' : 'column'"
             style="flex: 1; overflow: hidden;">
@@ -67,16 +67,14 @@
                 <span class="tab-drag-handle" draggable="true" (dragstart)="onTabDragStart($event, tab, i, paneId)"
                     (dragend)="onTabDragEnd()">
                     @if (!tab.connected) {
-                    <button mat-icon-button (click)="reconnect(tab)" aria-label="Reconnect tab">
-                        <mat-icon>refresh</mat-icon>
-                    </button>
+                    <p-button icon="pi pi-refresh" styleClass="p-button-text p-button-sm"
+                        (onClick)="reconnect(tab)" aria-label="Reconnect tab"></p-button>
                     }
                     {{ tab.name }}
                 </span>
-                <button mat-icon-button (click)="removeTab(i, paneId)"
-                    (mousedown)="onTabLabelMouseDown($event, i, paneId)" aria-label="Remove tab">
-                    <mat-icon>close</mat-icon>
-                </button>
+                <p-button icon="pi pi-times" styleClass="p-button-text p-button-sm"
+                    (onClick)="removeTab(i, paneId)"
+                    aria-label="Remove tab"></p-button>
             </div>
         </ng-template>
 
@@ -127,9 +125,13 @@
         </div>
         }
         <app-bottom-toolbar></app-bottom-toolbar>
-    </mat-sidenav-content>
-</mat-sidenav-container>
+    </div>
+</div>
 <ngx-spinner bdColor="rgba(0, 0, 0, 0.8)" size="medium" color="#fff" type="ball-scale-multiple" [fullScreen]="true">
     <p style="color: white"> Loading... </p>
 </ngx-spinner>
 <app-ai-chat></app-ai-chat>
+
+<!-- PrimeNG Global Components -->
+<p-toast></p-toast>
+<p-dynamicDialog></p-dynamicDialog>

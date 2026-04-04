@@ -10,8 +10,7 @@ import {
   ViewChild,
   ViewEncapsulation
 } from '@angular/core';
-import {MatButtonModule} from '@angular/material/button';
-import {MatIconModule} from '@angular/material/icon';
+import {ButtonModule} from 'primeng/button';
 import {FitAddon} from '@xterm/addon-fit';
 import {WebLinksAddon} from '@xterm/addon-web-links';
 import {Terminal} from '@xterm/xterm';
@@ -29,7 +28,7 @@ import {TerminalInstanceService} from '../../services/terminal-instance.service'
   templateUrl: './terminal.component.html',
   styleUrls: ['./terminal.component.scss'],
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule],
+  imports: [CommonModule, ButtonModule],
   encapsulation: ViewEncapsulation.None
 })
 export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {

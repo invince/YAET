@@ -1,15 +1,17 @@
-<mat-toolbar color="primary" class="bottom-toolbar">
-    <span class="spacer"></span>
-    <button mat-icon-button (click)="toggleSplit('vertical', 50)" aria-label="Split View 50/50 Vertical"
-        [color]="tabService.splitMode && tabService.splitDirection === 'vertical' && tabService.splitRatio === 50 ? 'accent' : ''">
-        <mat-icon>vertical_split</mat-icon>
-    </button>
-    <button mat-icon-button (click)="toggleSplit('horizontal', 60)" aria-label="Split View 60/40 Horizontal"
-        [color]="tabService.splitMode && tabService.splitDirection === 'horizontal' && tabService.splitRatio === 60 ? 'accent' : ''">
-        <mat-icon>horizontal_split</mat-icon>
-    </button>
-    <button [disabled]="!isAiConfigured" mat-icon-button (click)="toggleAi()" aria-label="Toggle AI Assistant"
-        [color]="(aiChatService.isOpen$ | async) ? 'accent' : ''">
-        <mat-icon>smart_toy</mat-icon>
-    </button>
-</mat-toolbar>
+<p-toolbar class="bottom-toolbar">
+    <div class="p-toolbar-group-end">
+        <p-button icon="pi pi-bars" styleClass="p-button-text p-button-rounded"
+            (onClick)="toggleSplit('vertical', 50)"
+            [ngClass]="{'p-button-highlight': tabService.splitMode && tabService.splitDirection === 'vertical' && tabService.splitRatio === 50}"
+            aria-label="Split View 50/50 Vertical"></p-button>
+        <p-button icon="pi pi-window-maximize" styleClass="p-button-text p-button-rounded"
+            (onClick)="toggleSplit('horizontal', 60)"
+            [ngClass]="{'p-button-highlight': tabService.splitMode && tabService.splitDirection === 'horizontal' && tabService.splitRatio === 60}"
+            aria-label="Split View 60/40 Horizontal"></p-button>
+        <p-button icon="pi pi-sparkles" styleClass="p-button-text p-button-rounded"
+            [disabled]="!isAiConfigured"
+            (onClick)="toggleAi()"
+            [ngClass]="{'p-button-highlight': (aiChatService.isOpen$ | async)}"
+            aria-label="Toggle AI Assistant"></p-button>
+    </div>
+</p-toolbar>

@@ -1,11 +1,11 @@
 import {Injectable, OnDestroy} from '@angular/core';
-import {MatSnackBar, MatSnackBarConfig} from '@angular/material/snack-bar';
-import {Subscription} from 'rxjs';
+import {MessageService} from 'primeng/api';
 
 interface Notification {
   message: string;
   btnLabel: string;
-  options: MatSnackBarConfig;
+  severity: 'success' | 'info' | 'warn' | 'error';
+  duration: number;
   onAction: () => void;
 }
 
@@ -15,22 +15,27 @@ interface Notification {
 export class NotificationService implements OnDestroy {
   private messages: Notification[] = [];
   private isProcessingQueue = false;
-  private subscriptions: Subscription[] = [];
 
-  constructor(private _snackBar: MatSnackBar) {}
+  constructor(private messageService: MessageService) {}
 
 
   public queue(
     message: string,
     btnLabel: string,
-    options: MatSnackBarConfig,
+    options: { duration?: number; severity?: 'success' | 'info' | 'warn' | 'error' },
     onAction: () => void
   ): void {
     if (!message) {
       return;
     }
 
-    const notification: Notification = { message, btnLabel, options, onAction };
+    const notification: Notification = {
+      message,
+      btnLabel,
+      severity: options.severity || 'info',
+      duration: options.duration || 3000,
+      onAction
+    };
     this.messages.push(notification);
     this.startQueueRunner();
   }
@@ -49,7 +54,7 @@ export class NotificationService implements OnDestroy {
     btnLabel: string = 'OK',
     onAction: () => void = () => {}
   ): void {
-    this.queue(message, btnLabel, { duration: 3000, panelClass: [ 'error-snackbar' ] },  onAction);
+    this.queue(message, btnLabel, { duration: 3000, severity: 'error' },  onAction);
   }
 
   /**
@@ -81,28 +86,30 @@ export class NotificationService implements OnDestroy {
    */
   private showNotification(notification: Notification): Promise<void> {
     return new Promise((resolve) => {
-      const snackBarRef = this._snackBar.open(
-        notification.message,
-        notification.btnLabel,
-        notification.options
-      );
+      // PrimeNG Toast API
+      this.messageService.add({
+        severity: notification.severity,
+        summary: notification.message,
+        detail: notification.btnLabel !== 'OK' ? notification.btnLabel : '',
+        life: notification.duration
+      });
 
-      const actionSub = snackBarRef.onAction().subscribe(() => {
+      // Execute the action callback if provided
+      if (notification.onAction) {
         notification.onAction();
-      });
+      }
 
-      const afterDismissSub = snackBarRef.afterDismissed().subscribe(() => {
-        resolve(); // Resolve the promise after dismissal.
-      });
-
-      this.subscriptions.push(actionSub, afterDismissSub);
+      // Resolve after the duration
+      setTimeout(() => {
+        resolve();
+      }, notification.duration);
     });
   }
 
   /**
-   * Cleans up subscriptions on service destruction.
+   * Cleans up on service destruction.
    */
   ngOnDestroy(): void {
-    this.subscriptions.forEach((subscription) => subscription.unsubscribe());
+    this.messageService.clear();
   }
 }

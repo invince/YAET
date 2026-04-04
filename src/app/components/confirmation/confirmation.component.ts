@@ -1,12 +1,11 @@
-import {Component, Inject} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
-import {MatButton} from '@angular/material/button';
+import {Component} from '@angular/core';
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
+import {ButtonModule} from 'primeng/button';
 
 @Component({
     selector: 'app-confirmation',
     imports: [
-        MatDialogModule,
-        MatButton
+        ButtonModule
     ],
     templateUrl: './confirmation.component.html',
     styleUrl: './confirmation.component.css'
@@ -14,19 +13,19 @@ import {MatButton} from '@angular/material/button';
 export class ConfirmationComponent {
 
   constructor(
-    public dialogRef: MatDialogRef<ConfirmationComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: {
-      message: string,
-      okBtnLabel: string,
-      abortBtnLabel: string,
-    }
+    public ref: DynamicDialogRef,
+    public config: DynamicDialogConfig
   ) {}
 
+  get data(): { message: string; okBtnLabel: string; abortBtnLabel: string } {
+    return this.config.data || {} as any;
+  }
+
   onAbort(): void {
-    this.dialogRef.close(false);
+    this.ref.close(false);
   }
 
   onContinue(): void {
-    this.dialogRef.close(true);
+    this.ref.close(true);
   }
 }

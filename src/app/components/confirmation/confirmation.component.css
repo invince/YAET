@@ -1,0 +1,21 @@
+.confirmation-dialog {
+  padding: 1rem;
+  min-width: 300px;
+}
+
+.dialog-title {
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.dialog-content {
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
