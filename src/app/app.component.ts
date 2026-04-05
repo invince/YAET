@@ -67,8 +67,7 @@ import {TabService} from './services/tab.service';
     menuAnimation,
   ],
   providers: [
-    DialogService,
-    MessageService
+    MessageService,
   ]
 })
 export class AppComponent implements OnInit, OnDestroy {
@@ -266,6 +265,15 @@ export class AppComponent implements OnInit, OnDestroy {
     toRemove.forEach(c => this.renderer.removeClass(this.document.body, c));
 
     // add new theme class
-    this.renderer.addClass(this.document.body, 'theme-' + theme);
+    const themeClass = 'theme-' + theme;
+    this.renderer.addClass(this.document.body, themeClass);
+
+    // add/remove PrimeNG dark mode class
+    const darkThemes = ['theme-pink-bluegrey', 'theme-purple-green'];
+    if (darkThemes.includes(themeClass)) {
+      this.renderer.addClass(this.document.body, 'p-dark');
+    } else {
+      this.renderer.removeClass(this.document.body, 'p-dark');
+    }
   }
 }

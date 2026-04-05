@@ -1,10 +1,14 @@
-import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { provideRouter } from '@angular/router';
-import { provideTranslateService, TranslateLoader } from '@ngx-translate/core';
-import { Observable } from 'rxjs';
-import { routes } from './app.routes';
+import {HttpClient, provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
+import {ApplicationConfig, provideZoneChangeDetection} from '@angular/core';
+import {provideAnimationsAsync} from '@angular/platform-browser/animations/async';
+import {provideRouter} from '@angular/router';
+import {provideTranslateService, TranslateLoader} from '@ngx-translate/core';
+import {MessageService} from 'primeng/api';
+import {providePrimeNG} from 'primeng/config';
+import Aura from '@primeng/themes/aura';
+import {DialogService} from 'primeng/dynamicdialog';
+import {Observable} from 'rxjs';
+import {routes} from './app.routes';
 
 export class CustomTranslateLoader implements TranslateLoader {
   constructor(private http: HttpClient) { }
@@ -23,6 +27,16 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideAnimationsAsync(),
     provideHttpClient(withInterceptorsFromDi()),
+    MessageService,
+    DialogService,
+    providePrimeNG({
+        theme: {
+            preset: Aura,
+            options: {
+                darkModeSelector: '.p-dark'
+            }
+        }
+    }),
     provideTranslateService({
       defaultLanguage: 'en',
       loader: {

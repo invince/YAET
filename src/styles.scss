@@ -53,6 +53,9 @@ $deeppurple-amber-theme: mat.m2-define-light-theme((color: (primary: $deeppurple
   --app-border-color: #333;
   --app-hover-bg-color: #2a2d2e;
   --app-active-bg-color: #37373d;
+  
+  background-color: var(--app-bg-color);
+  color: var(--app-text-color);
 }
 
 .theme-purple-green {
@@ -64,6 +67,8 @@ $deeppurple-amber-theme: mat.m2-define-light-theme((color: (primary: $deeppurple
   --app-border-color: #333;
   --app-hover-bg-color: #2a2d2e;
   --app-active-bg-color: #37373d;
+
+  background-color: var(--app-bg-color);
 }
 
 .theme-indigo-pink {
@@ -97,6 +102,18 @@ body {
 body {
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: var(--app-bg-color, #fff);
+  color: var(--app-text-color, rgba(0, 0, 0, 0.87));
+}
+
+p-toolbar.bottom-toolbar {
+  background-color: var(--app-bg-color) !important;
+  border-width: 1px 0 0 0 !important;
+  border-color: var(--app-border-color) !important;
+}
+
+.p-dark p-toolbar.bottom-toolbar {
+  background-color: var(--app-bg-color) !important;
 }
 
 

@@ -1,8 +1,5 @@
 <div class="app-container">
-    <p-drawer [(visible)]="sidebarVisible" position="left" styleClass="main-app-drawer">
-        <app-sidebar></app-sidebar>
-    </p-drawer>
-
+    <app-sidebar class="app-sidebar"></app-sidebar>
     <div class="app-content" style="display: flex; flex-direction: column; overflow: hidden;">
         <div class="split-container" [style.display]="tabService.splitMode ? 'flex' : 'block'"
             [style.flex-direction]="tabService.splitDirection === 'vertical' ? 'row' : 'column'"
@@ -27,7 +24,7 @@
                             <ng-container
                                 *ngTemplateOutlet="tabLabel; context: {tab: tab, i: i, paneId: 0}"></ng-container>
                         </ng-template>
-                        <div style="height: 100%">
+                        <div class="tab-content-wrapper">
                             <ng-container *ngTemplateOutlet="tabContent; context: {tab: tab}"></ng-container>
                         </div>
                     </mat-tab>
@@ -51,7 +48,7 @@
                             <ng-container
                                 *ngTemplateOutlet="tabLabel; context: {tab: tab, i: i, paneId: 1}"></ng-container>
                         </ng-template>
-                        <div style="height: 100%">
+                        <div class="tab-content-wrapper">
                             <ng-container *ngTemplateOutlet="tabContent; context: {tab: tab}"></ng-container>
                         </div>
                     </mat-tab>
@@ -134,4 +131,3 @@
 
 <!-- PrimeNG Global Components -->
 <p-toast></p-toast>
-<p-dynamicDialog></p-dynamicDialog>

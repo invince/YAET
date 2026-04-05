@@ -1,11 +1,12 @@
-import {Component} from '@angular/core';
-import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
+import {Component, Optional} from '@angular/core';
+import {DynamicDialogConfig, DynamicDialogModule, DynamicDialogRef} from 'primeng/dynamicdialog';
 import {ButtonModule} from 'primeng/button';
 
 @Component({
     selector: 'app-confirmation',
     imports: [
-        ButtonModule
+        ButtonModule,
+        DynamicDialogModule
     ],
     templateUrl: './confirmation.component.html',
     styleUrl: './confirmation.component.css'
@@ -13,8 +14,8 @@ import {ButtonModule} from 'primeng/button';
 export class ConfirmationComponent {
 
   constructor(
-    public ref: DynamicDialogRef,
-    public config: DynamicDialogConfig
+    @Optional() public ref: DynamicDialogRef,
+    @Optional() public config: DynamicDialogConfig
   ) {}
 
   get data(): { message: string; okBtnLabel: string; abortBtnLabel: string } {
@@ -22,10 +23,10 @@ export class ConfirmationComponent {
   }
 
   onAbort(): void {
-    this.ref.close(false);
+    this.ref?.close(false);
   }
 
   onContinue(): void {
-    this.ref.close(true);
+    this.ref?.close(true);
   }
 }

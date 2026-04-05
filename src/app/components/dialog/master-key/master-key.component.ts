@@ -1,8 +1,7 @@
-import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
-import {MatError, MatFormFieldModule} from '@angular/material/form-field';
-import {MatInput} from '@angular/material/input';
-import {MatButton} from '@angular/material/button';
+import {Component, OnDestroy, OnInit, Optional} from '@angular/core';
+import {DialogService, DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
+import {ButtonModule} from 'primeng/button';
+import {InputTextModule} from 'primeng/inputtext';
 import {CommonModule} from '@angular/common';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ConfirmationComponent} from '../../confirmation/confirmation.component';
@@ -12,14 +11,11 @@ import {Subscription} from 'rxjs';
 @Component({
     selector: 'app-master-key',
     imports: [
-        MatDialogModule,
-        MatFormFieldModule,
-        MatInput,
-        MatButton,
+        ButtonModule,
+        InputTextModule,
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
-        MatError,
     ],
     templateUrl: './master-key.component.html',
     styleUrl: './master-key.component.css'
@@ -30,10 +26,10 @@ export class MasterKeyComponent implements OnInit, OnDestroy{
 
   constructor(
     public masterKeyService: MasterKeyService,
-    public dialogRef: MatDialogRef<MasterKeyComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any,
+    @Optional() public ref: DynamicDialogRef,
+    @Optional() public config: DynamicDialogConfig,
     private fb: FormBuilder,
-    private dialog: MatDialog,
+    public dialogService: DialogService,
   ) {
     this.resetPasswordForm = this.fb.group(
       {
@@ -83,11 +79,11 @@ export class MasterKeyComponent implements OnInit, OnDestroy{
           this.openConfirmationDialog();
         } else {
           this.doSubmit();
-          this.dialogRef.close();
+          this.ref?.close();
         }
       } else {
         this.doSubmit(false);
-        this.dialogRef.close();
+        this.ref?.close();
       }
     }
   }
@@ -100,12 +96,13 @@ export class MasterKeyComponent implements OnInit, OnDestroy{
   }
 
   close() {
-    this.dialogRef.close();
+    this.ref?.close();
   }
 
 
   openConfirmationDialog(): void {
-    const dialogRef = this.dialog.open(ConfirmationComponent, {
+    const dialogRef = this.dialogService.open(ConfirmationComponent, {
+      header: 'Confirm',
       width: '300px',
       data: {
         message: 'Old password is incorrect, if you continue, all existing secrets will be invalid. Do you want continue ?',
@@ -113,13 +110,15 @@ export class MasterKeyComponent implements OnInit, OnDestroy{
       },
     });
 
-    this.subscriptions.push(dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.doSubmit(false);
-        this.masterKeyService.invalidSettings();
-        this.dialogRef.close();
-      }
-    }));
+    if (dialogRef) {
+        this.subscriptions.push(dialogRef.onClose.subscribe((result) => {
+          if (result) {
+            this.doSubmit(false);
+            this.masterKeyService.invalidSettings();
+            this.ref?.close();
+          }
+        }));
+    }
   }
 
   ngOnDestroy(): void {

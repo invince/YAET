@@ -1,3 +1,27 @@
+/* Main app container */
+.app-container {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Content area */
+.app-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Permanent Sidebar Layout */
+.app-sidebar {
+  width: 60px;
+  flex-shrink: 0;
+  background-color: var(--app-sidebar-bg-color, #252526);
+  border-right: 1px solid var(--app-border-color, #333);
+}
+
 /* Angular Material 21 sidenav sizing - Scoped to main app sidebar */
 .main-app-sidenav {
   width: 50px !important;
@@ -34,9 +58,18 @@ mat-tab-group {
 }
 
 /* Split View Styles */
+.split-container {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+}
+
 .split-pane {
   position: relative;
   transition: width 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* Visual indicator for active pane */
@@ -48,4 +81,27 @@ mat-tab-group {
 .split-pane.drag-over {
   background-color: rgba(63, 81, 181, 0.1);
   box-shadow: inset 0 0 0 2px #3f51b5;
+}
+
+/* Tab content wrapper */
+.tab-content-wrapper {
+  flex: 1;
+  overflow: hidden;
+  height: 100%;
+}
+
+/* Bottom toolbar should stick to bottom */
+app-bottom-toolbar {
+  flex-shrink: 0;
+}
+
+/* Menu modal container */
+app-quickconnect-menu,
+app-profiles-menu,
+app-secrets-menu,
+app-proxy-menu,
+app-cloud-menu,
+app-setting-menu {
+  position: fixed;
+  z-index: 1000;
 }

@@ -22,10 +22,7 @@ import {TabService} from '../../services/tab.service';
         ButtonModule,
     ],
     templateUrl: './sidebar.component.html',
-    styleUrl: './sidebar.component.css',
-    providers: [
-        DialogService
-    ]
+    styleUrl: './sidebar.component.css'
 })
 export class SidebarComponent implements OnDestroy {
 
