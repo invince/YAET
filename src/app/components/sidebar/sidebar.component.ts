@@ -1,7 +1,7 @@
 import {CommonModule} from '@angular/common';
 import {Component, OnDestroy} from '@angular/core';
 import {ButtonModule} from 'primeng/button';
-import {DialogService, DynamicDialogRef} from 'primeng/dynamicdialog';
+import {DialogService, DynamicDialogModule, DynamicDialogRef} from 'primeng/dynamicdialog';
 import {Subscription} from 'rxjs';
 import {MasterKeyComponent} from '../../components/dialog/master-key/master-key.component';
 import {MenuConsts} from '../../domain/MenuConsts';
@@ -20,6 +20,7 @@ import {TabService} from '../../services/tab.service';
     imports: [
         CommonModule,
         ButtonModule,
+        DynamicDialogModule,
     ],
     templateUrl: './sidebar.component.html',
     styleUrl: './sidebar.component.css'

@@ -15,6 +15,7 @@ interface Notification {
 export class NotificationService implements OnDestroy {
   private messages: Notification[] = [];
   private isProcessingQueue = false;
+  private currentNotification: Notification | null = null;
 
   constructor(private messageService: MessageService) {}
 
@@ -74,8 +75,9 @@ export class NotificationService implements OnDestroy {
    */
   private async processQueue(): Promise<void> {
     while (this.messages.length > 0) {
-      const notification = this.messages.shift()!;
-      await this.showNotification(notification);
+      this.currentNotification = this.messages.shift()!;
+      await this.showNotification(this.currentNotification);
+      this.currentNotification = null;
     }
 
     this.isProcessingQueue = false; // Stop the queue runner when the queue is empty.
@@ -94,16 +96,18 @@ export class NotificationService implements OnDestroy {
         life: notification.duration
       });
 
-      // Execute the action callback if provided
-      if (notification.onAction) {
-        notification.onAction();
-      }
-
       // Resolve after the duration
       setTimeout(() => {
         resolve();
       }, notification.duration);
     });
+  }
+
+  public triggerAction(message: string): void {
+    if (this.currentNotification && this.currentNotification.message === message) {
+      this.currentNotification.onAction();
+      this.messageService.clear();
+    }
   }
 
   /**

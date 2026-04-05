@@ -91,43 +91,54 @@
             </ng-container>
         </ng-template>
 
-        @if (modalControl.isMenuModalOpen) {
-        <div>
-            @switch(modalControl.currentOpenedMenu) {
-            @case(MENU_ADD) {
-            <app-quickconnect-menu [@slideInOut]="'in'"
-                (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-quickconnect-menu>
-            }
-            @case(MENU_PROFILE) {
-            <app-profiles-menu [@slideInOut]="'in'"
-                (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-profiles-menu>
-            }
-            @case(MENU_SECURE) {
-            <app-secrets-menu [@slideInOut]="'in'"
-                (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-secrets-menu>
-            }
-            @case(MENU_PROXY) {
-            <app-proxy-menu [@slideInOut]="'in'"
-                (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-proxy-menu>
-            }
-            @case(MENU_CLOUD) {
-            <app-cloud-menu [@slideInOut]="'in'"
-                (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-cloud-menu>
-            }
-            @case(MENU_SETTING) {
-            <app-setting-menu [@slideInOut]="'in'"
-                (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-setting-menu>
-            }
-            }
-        </div>
-        }
         <app-bottom-toolbar></app-bottom-toolbar>
     </div>
 </div>
+
+@if (modalControl.isMenuModalOpen) {
+<div class="menu-modal-overlay">
+    <div class="menu-modal-container">
+        @switch(modalControl.currentOpenedMenu) {
+        @case(MENU_ADD) {
+        <app-quickconnect-menu [@slideInOut]="'in'"
+            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-quickconnect-menu>
+        }
+        @case(MENU_PROFILE) {
+        <app-profiles-menu [@slideInOut]="'in'"
+            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-profiles-menu>
+        }
+        @case(MENU_SECURE) {
+        <app-secrets-menu [@slideInOut]="'in'"
+            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-secrets-menu>
+        }
+        @case(MENU_PROXY) {
+        <app-proxy-menu [@slideInOut]="'in'"
+            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-proxy-menu>
+        }
+        @case(MENU_CLOUD) {
+        <app-cloud-menu [@slideInOut]="'in'"
+            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-cloud-menu>
+        }
+        @case(MENU_SETTING) {
+        <app-setting-menu [@slideInOut]="'in'"
+            (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-setting-menu>
+        }
+        }
+    </div>
+</div>
+}
+
 <ngx-spinner bdColor="rgba(0, 0, 0, 0.8)" size="medium" color="#fff" type="ball-scale-multiple" [fullScreen]="true">
     <p style="color: white"> Loading... </p>
 </ngx-spinner>
 <app-ai-chat></app-ai-chat>
 
 <!-- PrimeNG Global Components -->
-<p-toast></p-toast>
+<p-toast>
+    <ng-template pTemplate="message" let-message>
+        <div class="flex flex-column align-items-start" style="flex: 1">
+            <div class="font-medium text-lg my-1">{{ message.summary }}</div>
+            <p-button *ngIf="message.detail" [label]="message.detail" size="small" (onClick)="onNotificationAction(message)"></p-button>
+        </div>
+    </ng-template>
+</p-toast>

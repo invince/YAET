@@ -276,4 +276,8 @@ export class AppComponent implements OnInit, OnDestroy {
       this.renderer.removeClass(this.document.body, 'p-dark');
     }
   }
+
+  onNotificationAction(message: any) {
+    this.notification.triggerAction(message.summary);
+  }
 }
