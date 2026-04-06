@@ -109,15 +109,29 @@ export class SecretsMenuComponent extends MenuComponent implements OnInit, OnDes
     }
 
     const currentSelectedSecret = this.selectedSecretControl.value;
-    if (currentSelectedSecret?.id == secret.id) {
+
+    if (currentSelectedSecret === secret || (currentSelectedSecret?.id && currentSelectedSecret.id === secret.id)) {
       this.selectedSecretControl.setValue(secret);
       return;
     }
-    if (currentSelectedSecret?.id &&
-      (this.selectedSecretControl.invalid || this.selectedSecretControl.dirty)) {
-      this.notification.info('Please finish current form');
-      return;
+
+    if (currentSelectedSecret) {
+      if (currentSelectedSecret.id) {
+        if (this.selectedSecretControl.invalid || this.selectedSecretControl.dirty) {
+          this.notification.info('Please finish current form');
+          return;
+        }
+      } else {
+        if (this.selectedSecretControl.dirty) {
+          this.notification.info('Please finish current form');
+          return;
+        } else {
+          // Remove the untouched new tab to prevent empty tabs from accumulating
+          this.secretsCopy.secrets = this.secretsCopy.secrets.filter(s => s !== currentSelectedSecret);
+        }
+      }
     }
+
     this.selectedSecretControl.reset(secret);
   }
 
@@ -157,7 +171,8 @@ export class SecretsMenuComponent extends MenuComponent implements OnInit, OnDes
   async onSaveOne($event: Secret) {
     this.secretService.updateOne($event);
     await this.commitChange();
-    // this.refreshSecretForm();
+    this.selectedSecretControl.markAsPristine();
+    this.selectedSecretControl.markAsUntouched();
   }
 
   onCancel($event: Secret) {
