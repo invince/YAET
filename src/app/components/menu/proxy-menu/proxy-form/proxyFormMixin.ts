@@ -6,7 +6,6 @@ import {
 import {Proxy} from '../../../../domain/Proxy';
 import {FormGroup, Validators} from '@angular/forms';
 import {ProxyStorageService} from '../../../../services/proxy-storage.service';
-import {MatSelectChange} from '@angular/material/select';
 
 export class ProxyFormMixin {
 
@@ -23,9 +22,10 @@ export class ProxyFormMixin {
 
   }
 
-  static proxyNameShouldBeUnique(proxyStorageService: ProxyStorageService, proxy: Proxy | undefined = undefined) { // NOTE: inside validatorFn, we cannot use inject thing
+  static proxyNameShouldBeUnique(proxyStorageService: ProxyStorageService, getProxy: () => Proxy | undefined) { // NOTE: inside validatorFn, we cannot use inject thing
     return (group: FormGroup) => {
       let name = group.get("name")?.value;
+      const proxy = getProxy();
       if (name && proxyStorageService.dataCopy.proxies?.find(one => one.name === name && one.id !== proxy?.id)) {
         return {duplicateProxy: true};
       }

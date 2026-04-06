@@ -36,9 +36,10 @@ export class SecretFormMixin {
     return null;
   }
 
-  static secretNameShouldBeUnique(secretStorageService: SecretStorageService, secret: Secret | undefined = undefined) { // NOTE: inside validatorFn, we cannot use inject thing
+  static secretNameShouldBeUnique(secretStorageService: SecretStorageService, getSecret: () => Secret | undefined) { // NOTE: inside validatorFn, we cannot use inject thing
     return (group: FormGroup) => {
       let name = group.get("name")?.value;
+      const secret = getSecret();
       if (name && secretStorageService.dataCopy.secrets?.find(one => one.name === name && one.id !== secret?.id)) {
         return {duplicateSecret: true};
       }

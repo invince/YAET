@@ -8,7 +8,7 @@
     </div>
 
     <div class="modal-content">
-      <app-profile-form [profile]="profile" (onProfileCancel)="onCancel($event)"
+      <app-profile-form [formControl]="profileControl" (onProfileCancel)="onCancel($event)"
         (onProfileSave)="onSaveOne($event)"></app-profile-form>
 
     </div>

@@ -1,8 +1,16 @@
 import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import {CdkTextareaAutosize} from '@angular/cdk/text-field';
 import {CommonModule, KeyValuePipe} from '@angular/common';
-import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
-import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {Component, ElementRef, EventEmitter, forwardRef, Input, OnInit, Output, ViewChild} from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  NG_VALIDATORS,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
 import {MatButtonModule} from '@angular/material/button';
 import {MatChipInputEvent, MatChipsModule} from '@angular/material/chips';
@@ -19,7 +27,7 @@ import {ProfileService} from '../../../services/profile.service';
 import {ProxyStorageService} from '../../../services/proxy-storage.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';
 import {SettingService} from '../../../services/setting.service';
-import {IsAChildForm} from '../../EnhancedFormMixin';
+import {ChildFormAsFormControl} from '../../EnhancedFormMixin';
 import {MenuComponent} from '../menu.component';
 import {CustomProfileFormComponent} from './custom-profile-form/custom-profile-form.component';
 import {FtpProfileFormComponent} from './ftp-profile-form/ftp-profile-form.component';
@@ -54,9 +62,13 @@ import {VncProfileFormComponent} from './vnc-profile-form/vnc-profile-form.compo
     SambaFormComponent,
   ],
   templateUrl: './profile-form.component.html',
-  styleUrl: './profile-form.component.scss'
+  styleUrl: './profile-form.component.scss',
+  providers: [
+    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => ProfileFormComponent), multi: true },
+    { provide: NG_VALIDATORS, useExisting: forwardRef(() => ProfileFormComponent), multi: true }
+  ]
 })
-export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements OnInit {
+export class ProfileFormComponent extends ChildFormAsFormControl(MenuComponent) implements OnInit {
 
   private _profile!: Profile;
 
@@ -107,17 +119,11 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     });
   }
 
-  override afterFormInitialization() {
-    if (this._profile) {
-      this.refreshForm(this._profile);
-    }
-  }
-
-  @Input()
-  set profile(value: Profile) {
-    this._profile = value;
-    if (this._profile) {
-      this.refreshForm(this._profile);
+  // CVA overrides Instead of @Input
+  override writeValue(value: Profile): void {
+    if (value) {
+      this._profile = value;
+      super.writeValue(value);
     }
   }
 
@@ -136,7 +142,8 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       comment: profile.comment,
       category: profile.category,
       profileType: profile.profileType,
-      group: profile.group,
+      group: this.settingStorage.settings.groups.find(g => g.id === profile.group) || '',
+      tags: (profile.tags || []).map((tId: any) => typeof tId === 'string' ? this.settingStorage.settings.tags.find(t => t.id === tId) : tId).filter(t => t),
       proxyId: profile.proxyId,
       remoteTerminalProfileForm: ['SSH_TERMINAL', 'TELNET_TERMINAL', 'WIN_RM_TERMINAL', 'SCP_FILE_EXPLORER'].includes(profile.profileType) ?
                                  (profile.profileType === ProfileType.SSH_TERMINAL || profile.profileType === ProfileType.SCP_FILE_EXPLORER ? profile.sshProfile :
@@ -160,6 +167,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     this.profile.profileType = val.profileType;
     this.profile.group = typeof val.group === 'string' ? val.group : (val.group?.id || '');
     this.profile.proxyId = val.proxyId;
+    this.profile.tags = (val.tags || []).map((t: any) => typeof t === 'string' ? t : (t?.id || t));
 
     const profileType = val.profileType;
     if (profileType === ProfileType.SSH_TERMINAL || profileType === ProfileType.SCP_FILE_EXPLORER) this.profile.sshProfile = val.remoteTerminalProfileForm;
@@ -198,6 +206,14 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   }
 
   onConnect() {
+    console.log("Form valid:", this.form.valid);
+    Object.keys(this.form.controls).forEach(key => {
+      const controlErrors = this.form.get(key)?.errors;
+      if (controlErrors != null) {
+        console.log('Key control: ' + key + ', errors: ', controlErrors);
+      }
+    });
+
     if (this.form.valid) {
       this.formToModel();
       this.profileService.onProfileConnect(this.profile);

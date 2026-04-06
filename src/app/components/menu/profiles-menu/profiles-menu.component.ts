@@ -1,7 +1,7 @@
 import {NestedTreeControl} from '@angular/cdk/tree';
 import {CommonModule} from '@angular/common';
 import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatDialog} from '@angular/material/dialog';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -22,7 +22,6 @@ import {ProfileService} from '../../../services/profile.service';
 import {SettingStorageService} from '../../../services/setting-storage.service';
 import {SettingService} from '../../../services/setting.service';
 import {ConfirmationComponent} from '../../confirmation/confirmation.component';
-import {HasChildForm} from '../../EnhancedFormMixin';
 import {MenuComponent} from '../menu.component';
 import {ProfileFormComponent} from '../profile-form/profile-form.component';
 
@@ -46,10 +45,9 @@ import {ProfileFormComponent} from '../profile-form/profile-form.component';
   styleUrl: './profiles-menu.component.scss',
   providers: [FilterKeywordPipe]
 })
-export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
+export class ProfilesMenuComponent extends MenuComponent implements OnInit, OnDestroy {
 
-  selectedProfileId: string | undefined;
-  selectedProfile: Profile | undefined;
+  profileControl = new FormControl<Profile | undefined>(undefined);
 
   profilesCopy!: Profiles;
 
@@ -114,8 +112,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
 
   doAddTabOfProfile(newProfile: Profile) {
     this.profilesCopy.profiles.push(newProfile);
-    this.selectedProfileId = newProfile.id;// Focus on the newly added tab
-    this.selectedProfile = newProfile;
+    this.profileControl.reset(newProfile);
     this.refreshForm();
     if (this.sideNavType == SideNavType.TREE) {
       this.treeControl.dataNodes?.forEach((node) => {
@@ -139,17 +136,17 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     if (!profile) {
       return;
     }
-    if (this.selectedProfileId == profile.id) {
-      this.selectedProfile = profile;
+    const currentProfile = this.profileControl.value;
+    if (currentProfile?.id == profile.id) {
+      this.profileControl.setValue(profile);
       return;
     }
-    if (this.selectedProfileId &&
-      (this.lastChildFormInvalidState || this.lastChildFormDirtyState)) {
+    if (currentProfile?.id &&
+      (this.profileControl.invalid || this.profileControl.dirty)) {
       this.notification.info('Please finish current form');
       return;
     }
-    this.selectedProfile = profile;
-    this.selectedProfileId = profile.id;
+    this.profileControl.reset(profile);
 
     this.cdr.detectChanges();
     // this.refreshSecretForm();
@@ -166,8 +163,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
       if (result) {
         this.profilesCopy.delete($event);
         await this.commitChange();
-        this.selectedProfileId = undefined;
-        this.selectedProfile = undefined;
+        this.profileControl.reset(undefined);
         this.refreshForm();
       }
     }));
@@ -194,18 +190,22 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
         label = label.slice(0, LIMIT) + '...';
       }
     }
-    if (profile.id == this.selectedProfileId && this.lastChildFormDirtyState) {
+    if (profile.id == this.profileControl.value?.id && this.profileControl.dirty) {
       label += '*'
     }
     return label;
   }
 
   hasNewProfile() {
-    return this.selectedProfile?.isNew;
+    return this.profileControl.value?.isNew;
   }
 
   public tagsColor(profile: Profile): string[] {
-    return [];
+    if (!profile || !profile.tags) return [];
+    return profile.tags.map(tId => {
+      let tag = this.settingStorage.settings.tags.find(t => t.id === tId);
+      return tag ? tag.color : '';
+    }).filter(c => c !== '');
   }
 
 

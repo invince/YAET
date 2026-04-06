@@ -1,28 +1,28 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIcon } from '@angular/material/icon';
-import { MatInput } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { TranslateModule } from '@ngx-translate/core';
-import { Subscription } from 'rxjs';
-import { MenuConsts } from '../../../domain/MenuConsts';
-import { Secret, Secrets } from '../../../domain/Secret';
-import { FilterKeywordPipe } from '../../../pipes/filter-keyword.pipe';
-import { ModalControllerService } from '../../../services/modal-controller.service';
-import { NotificationService } from '../../../services/notification.service';
-import { ProfileService } from '../../../services/profile.service';
-import { SecretStorageService } from '../../../services/secret-storage.service';
-import { SecretService } from '../../../services/secret.service';
-import { SettingStorageService } from '../../../services/setting-storage.service';
-import { ConfirmationComponent } from '../../confirmation/confirmation.component';
-import { HasChildForm } from '../../EnhancedFormMixin';
-import { MenuComponent } from '../menu.component';
-import { SecretFormComponent } from './secret-form/secret-form.component';
+import {CommonModule} from '@angular/common';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {MatButtonModule} from '@angular/material/button';
+import {MatDialog} from '@angular/material/dialog';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatIcon} from '@angular/material/icon';
+import {MatInput} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import {MatSidenavModule} from '@angular/material/sidenav';
+import {TranslateModule} from '@ngx-translate/core';
+import {Subscription} from 'rxjs';
+import {MenuConsts} from '../../../domain/MenuConsts';
+import {Secret, Secrets} from '../../../domain/Secret';
+import {FilterKeywordPipe} from '../../../pipes/filter-keyword.pipe';
+import {ModalControllerService} from '../../../services/modal-controller.service';
+import {NotificationService} from '../../../services/notification.service';
+import {ProfileService} from '../../../services/profile.service';
+import {SecretStorageService} from '../../../services/secret-storage.service';
+import {SecretService} from '../../../services/secret.service';
+import {SettingStorageService} from '../../../services/setting-storage.service';
+import {ConfirmationComponent} from '../../confirmation/confirmation.component';
+
+import {MenuComponent} from '../menu.component';
+import {SecretFormComponent} from './secret-form/secret-form.component';
 
 @Component({
   selector: 'app-secrets-menu',
@@ -44,10 +44,9 @@ import { SecretFormComponent } from './secret-form/secret-form.component';
   styleUrl: './secrets-menu.component.scss',
   providers: [FilterKeywordPipe]
 })
-export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
+export class SecretsMenuComponent extends MenuComponent implements OnInit, OnDestroy {
 
-  selectedId!: string | undefined;
-  selectedSecret!: Secret | undefined;
+  selectedSecretControl = new FormControl<Secret | undefined>(undefined);
   subscriptions: Subscription[] = [];
   filter!: string;
 
@@ -98,9 +97,9 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
   addTab() {
     let secret = new Secret();
     this.secretsCopy.secrets.push(secret);
-    this.selectedId = secret.id;
-    this.selectedSecret = secret;
-    // this.refreshSecretForm();
+
+    // Instead of directly setting selectedSecret, reset control
+    this.selectedSecretControl.reset(secret);
   }
 
 
@@ -109,18 +108,17 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
       return;
     }
 
-    if (this.selectedId == secret.id) {
-      this.selectedSecret = secret;
+    const currentSelectedSecret = this.selectedSecretControl.value;
+    if (currentSelectedSecret?.id == secret.id) {
+      this.selectedSecretControl.setValue(secret);
       return;
     }
-    if (this.selectedId &&
-      (this.lastChildFormInvalidState || this.lastChildFormDirtyState)) {
+    if (currentSelectedSecret?.id &&
+      (this.selectedSecretControl.invalid || this.selectedSecretControl.dirty)) {
       this.notification.info('Please finish current form');
       return;
     }
-    this.selectedId = secret.id;
-    this.selectedSecret = secret;
-    // this.refreshSecretForm();
+    this.selectedSecretControl.reset(secret);
   }
 
   async onDelete($event: Secret) {
@@ -137,9 +135,7 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
           this.profileService.clearSecret($event);
           this.secretsCopy.secrets = this.secretsCopy.secrets.filter(s => s.id !== $event.id);
           await this.commitChange();
-          this.selectedId = undefined;
-          this.selectedSecret = undefined;
-          // this.refreshSecretForm();
+          this.selectedSecretControl.reset(undefined);
         }
       }));
     } else {
@@ -152,9 +148,7 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
         if (result) {
           this.secretsCopy.secrets = this.secretsCopy.secrets.filter(s => s.id !== $event.id);
           await this.commitChange();
-          this.selectedId = undefined;
-          this.selectedSecret = undefined;
-          // this.refreshSecretForm();
+          this.selectedSecretControl.reset(undefined);
         }
       }));
     }
@@ -179,14 +173,14 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
         label = label.slice(0, LIMIT) + '...';
       }
     }
-    if (secret.id == this.selectedId && this.lastChildFormDirtyState) {
+    if (secret.id == this.selectedSecretControl.value?.id && this.selectedSecretControl.dirty) {
       label += '*'
     }
     return label;
   }
 
   hasNewSecret() {
-    return this.selectedSecret?.isNew;
+    return this.selectedSecretControl.value?.isNew;
   }
 
   async commitChange() {

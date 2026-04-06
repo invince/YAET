@@ -1,27 +1,26 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIcon } from '@angular/material/icon';
-import { MatInput } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { TranslateModule } from '@ngx-translate/core';
-import { Subscription } from 'rxjs';
+import {CommonModule} from '@angular/common';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {MatButtonModule} from '@angular/material/button';
+import {MatDialog} from '@angular/material/dialog';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatIcon} from '@angular/material/icon';
+import {MatInput} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import {MatSidenavModule} from '@angular/material/sidenav';
+import {TranslateModule} from '@ngx-translate/core';
+import {Subscription} from 'rxjs';
 
-import { MenuConsts } from '../../../domain/MenuConsts';
-import { Proxies, Proxy } from '../../../domain/Proxy';
-import { FilterKeywordPipe } from '../../../pipes/filter-keyword.pipe';
-import { ModalControllerService } from '../../../services/modal-controller.service';
-import { NotificationService } from '../../../services/notification.service';
-import { ProxyStorageService } from '../../../services/proxy-storage.service';
-import { ProxyService } from '../../../services/proxy.service';
-import { ConfirmationComponent } from '../../confirmation/confirmation.component';
-import { HasChildForm } from '../../EnhancedFormMixin';
-import { MenuComponent } from '../menu.component';
-import { ProxyFormComponent } from './proxy-form/proxy-form.component';
+import {MenuConsts} from '../../../domain/MenuConsts';
+import {Proxies, Proxy} from '../../../domain/Proxy';
+import {FilterKeywordPipe} from '../../../pipes/filter-keyword.pipe';
+import {ModalControllerService} from '../../../services/modal-controller.service';
+import {NotificationService} from '../../../services/notification.service';
+import {ProxyStorageService} from '../../../services/proxy-storage.service';
+import {ProxyService} from '../../../services/proxy.service';
+import {ConfirmationComponent} from '../../confirmation/confirmation.component';
+import {MenuComponent} from '../menu.component';
+import {ProxyFormComponent} from './proxy-form/proxy-form.component';
 
 @Component({
     selector: 'app-proxy-menu',
@@ -44,10 +43,9 @@ import { ProxyFormComponent } from './proxy-form/proxy-form.component';
     styleUrl: './proxy-menu.component.scss',
     providers: [FilterKeywordPipe]
 })
-export class ProxyMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
+export class ProxyMenuComponent extends MenuComponent implements OnInit, OnDestroy {
 
-    selectedId!: string | undefined;
-    selectedProxy!: Proxy | undefined;
+    proxyControl = new FormControl<Proxy | undefined>(undefined);
     subscriptions: Subscription[] = [];
     filter!: string;
 
@@ -95,23 +93,22 @@ export class ProxyMenuComponent extends HasChildForm(MenuComponent) implements O
     addTab() {
         let proxy = new Proxy();
         this.proxiesCopy.proxies.push(proxy);
-        this.selectedId = proxy.id;
-        this.selectedProxy = proxy;
+        this.proxyControl.reset(proxy);
     }
 
     onTabChange(proxy: Proxy) {
         if (!proxy) return;
 
-        if (this.selectedId == proxy.id) {
-            this.selectedProxy = proxy;
+        const currentProxy = this.proxyControl.value;
+        if (currentProxy?.id == proxy.id) {
+            this.proxyControl.setValue(proxy);
             return;
         }
-        if (this.selectedId && (this.lastChildFormInvalidState || this.lastChildFormDirtyState)) {
+        if (currentProxy?.id && (this.proxyControl.invalid || this.proxyControl.dirty)) {
             this.notification.info('Please finish current form');
             return;
         }
-        this.selectedId = proxy.id;
-        this.selectedProxy = proxy;
+        this.proxyControl.reset(proxy);
     }
 
     async onDelete($event: Proxy) {
@@ -124,8 +121,7 @@ export class ProxyMenuComponent extends HasChildForm(MenuComponent) implements O
             if (result) {
                 this.proxiesCopy.proxies = this.proxiesCopy.proxies.filter(p => p.id !== $event.id);
                 await this.commitChange();
-                this.selectedId = undefined;
-                this.selectedProxy = undefined;
+                this.proxyControl.reset(undefined);
             }
         }));
     }
@@ -144,7 +140,7 @@ export class ProxyMenuComponent extends HasChildForm(MenuComponent) implements O
         if (proxy && proxy.name) {
             label = proxy.name;
         }
-        if (proxy.id == this.selectedId && this.lastChildFormDirtyState) {
+        if (proxy.id == this.proxyControl.value?.id && this.proxyControl.dirty) {
             label += '*'
         }
         return label;

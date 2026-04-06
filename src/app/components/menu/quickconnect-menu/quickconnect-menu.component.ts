@@ -1,16 +1,16 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIcon } from '@angular/material/icon';
-import { MatSelectModule } from '@angular/material/select';
-import { TranslateModule } from '@ngx-translate/core';
-import { Profile, Profiles } from '../../../domain/profile/Profile';
-import { NotificationService } from '../../../services/notification.service';
-import { ProfileService } from '../../../services/profile.service';
-import { MenuComponent } from '../menu.component';
-import { ProfileFormComponent } from "../profile-form/profile-form.component";
+import {CommonModule} from '@angular/common';
+import {Component, OnInit} from '@angular/core';
+import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {MatButtonModule} from '@angular/material/button';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatIcon} from '@angular/material/icon';
+import {MatSelectModule} from '@angular/material/select';
+import {TranslateModule} from '@ngx-translate/core';
+import {Profile, Profiles} from '../../../domain/profile/Profile';
+import {NotificationService} from '../../../services/notification.service';
+import {ProfileService} from '../../../services/profile.service';
+import {MenuComponent} from '../menu.component';
+import {ProfileFormComponent} from "../profile-form/profile-form.component";
 
 @Component({
   selector: 'app-quickconnect-menu',
@@ -30,7 +30,7 @@ import { ProfileFormComponent } from "../profile-form/profile-form.component";
 })
 export class QuickconnectMenuComponent extends MenuComponent implements OnInit {
 
-  profile: Profile = new Profile();
+  profileControl = new FormControl<Profile>(new Profile());
   profilesCopy!: Profiles;
   constructor(
     private profileService: ProfileService,

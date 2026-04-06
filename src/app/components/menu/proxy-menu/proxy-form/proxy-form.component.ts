@@ -1,20 +1,27 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { TranslateModule } from '@ngx-translate/core';
+import {CommonModule} from '@angular/common';
+import {Component, EventEmitter, forwardRef, OnInit, Output} from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  NG_VALIDATORS,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule
+} from '@angular/forms';
+import {MatButtonModule} from '@angular/material/button';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatIconModule} from '@angular/material/icon';
+import {MatInputModule} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import {TranslateModule} from '@ngx-translate/core';
 
-import { Proxy } from '../../../../domain/Proxy';
-import { ProxyStorageService } from '../../../../services/proxy-storage.service';
-import { SecretStorageService } from '../../../../services/secret-storage.service';
-import { ModelFormController } from '../../../../utils/ModelFormController';
-import { IsAChildForm } from '../../../EnhancedFormMixin';
-import { MenuComponent } from '../../menu.component';
-import { ProxyFormMixin } from './proxyFormMixin';
+import {Proxy} from '../../../../domain/Proxy';
+import {ProxyStorageService} from '../../../../services/proxy-storage.service';
+import {SecretStorageService} from '../../../../services/secret-storage.service';
+import {ModelFormController} from '../../../../utils/ModelFormController';
+import {ChildFormAsFormControl} from '../../../EnhancedFormMixin';
+import {MenuComponent} from '../../menu.component';
+import {ProxyFormMixin} from './proxyFormMixin';
 
 @Component({
   selector: 'app-proxy-form',
@@ -31,9 +38,13 @@ import { ProxyFormMixin } from './proxyFormMixin';
     TranslateModule
   ],
   templateUrl: './proxy-form.component.html',
-  styleUrl: './proxy-form.component.scss'
+  styleUrl: './proxy-form.component.scss',
+  providers: [
+    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => ProxyFormComponent), multi: true },
+    { provide: NG_VALIDATORS, useExisting: forwardRef(() => ProxyFormComponent), multi: true }
+  ]
 })
-export class ProxyFormComponent extends IsAChildForm(MenuComponent) implements OnInit {
+export class ProxyFormComponent extends ChildFormAsFormControl(MenuComponent) implements OnInit {
   private _proxy!: Proxy;
 
   @Output() onProxySave = new EventEmitter<Proxy>();
@@ -45,14 +56,12 @@ export class ProxyFormComponent extends IsAChildForm(MenuComponent) implements O
     return this._proxy;
   }
 
-  @Input() // input on setter, so we can combine trigger, it's easier than ngOnChange
-  set proxy(value: Proxy) {
-    this._proxy = value;
-    this.refreshForm(value);
-  }
-
-  override afterFormInitialization() { // we cannot relay only on setter, because 1st set it before ngOnInit
-    this.refreshForm(this._proxy);
+  // CVA overrides Instead of @Input
+  override writeValue(value: Proxy): void {
+    if (value) {
+      this._proxy = value;
+      super.writeValue(value);
+    }
   }
 
   constructor(
@@ -69,7 +78,7 @@ export class ProxyFormComponent extends IsAChildForm(MenuComponent) implements O
     return this.modelFormController.onInitForm(this.fb,
       {
         validators: [
-          ProxyFormMixin.proxyNameShouldBeUnique(this.proxyStorage, this._proxy),
+          ProxyFormMixin.proxyNameShouldBeUnique(this.proxyStorage, () => this._proxy),
         ]
       });
 
@@ -95,8 +104,6 @@ export class ProxyFormComponent extends IsAChildForm(MenuComponent) implements O
   override refreshForm(value: any) {
     if (this.form) {
       this.modelFormController.refreshForm(this._proxy, this.form);
-      this.dirtyStateChange.emit(false);
-      this.invalidStateChange.emit(this.form.invalid);
     }
   }
 
