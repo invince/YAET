@@ -80,5 +80,8 @@ export const PROXIES_SAVE = 'proxies.save';
 export const PROXIES_RELOAD = 'proxies.reload';
 //#endregion "Proxies"
 
+//#region "Backend"
+export const BACKEND_READY = 'backend.ready';
+export const BACKEND_GET_CONFIG = 'backend.get-config';
+//#endregion "Backend"
 
-export const NODE_EXPRESS_API_ROOT = 'http://localhost:13012/api';

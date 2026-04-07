@@ -27,6 +27,7 @@ import {FolderNameDialogComponent} from './folder-name-dialog.component';
 import {RenameDialogComponent} from './rename-dialog.component';
 import {ProfileService} from '../../../services/profile.service';
 import {TabService} from '../../../services/tab.service';
+import {BackendConfigService} from '../../../services/electron/backend-config.service';
 
 @Component({
     selector: 'app-file-list',
@@ -96,6 +97,12 @@ export class FileListComponent implements OnInit, OnDestroy {
 
     @ViewChild(MatSort) sort!: MatSort;
 
+    private get auth(): string | undefined {
+        // Always read the live token from BackendConfigService, never from the stale ajaxSettings snapshot
+        const token = this.backendConfig.authorizationHeader;
+        return token || undefined;
+    }
+
     constructor(
         private api: FileSystemApiService,
         private dragDropService: DragDropTransferService,
@@ -103,7 +110,8 @@ export class FileListComponent implements OnInit, OnDestroy {
         private tabService: TabService,
         private electronTerminalService: ElectronTerminalService,
         private profileService: ProfileService,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private backendConfig: BackendConfigService
     ) { }
 
     ngOnInit(): void {
@@ -129,7 +137,7 @@ export class FileListComponent implements OnInit, OnDestroy {
     refresh() {
         if (!this.ajaxSettings?.url) return;
         this.isLoading = true;
-        this.api.read(this.ajaxSettings.url, this.path).subscribe({
+        this.api.read(this.ajaxSettings.url, this.path, this.auth).subscribe({
             next: (res) => {
                 this.dataSource.data = res.files;
                 this.isLoading = false;
@@ -219,7 +227,7 @@ export class FileListComponent implements OnInit, OnDestroy {
         const separator = this.path.endsWith('/') ? '' : '/';
         const fullPath = `${this.path}${separator}`;
 
-        this.api.download(this.ajaxSettings.downloadUrl, fullPath, [item.name]).subscribe(blob => {
+        this.api.download(this.ajaxSettings.downloadUrl, fullPath, [item.name], this.auth).subscribe(blob => {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -237,7 +245,7 @@ export class FileListComponent implements OnInit, OnDestroy {
         const separator = this.path.endsWith('/') ? '' : '/';
         const fullPath = `${this.path}${separator}`;
 
-        this.api.delete(this.ajaxSettings.url, fullPath, [item]).subscribe(() => {
+        this.api.delete(this.ajaxSettings.url, fullPath, [item], this.auth).subscribe(() => {
             this.refresh();
         });
     }
@@ -254,7 +262,7 @@ export class FileListComponent implements OnInit, OnDestroy {
                 const fullPath = `${this.path}${separator}`;
 
                 this.isSaving = true;
-                this.api.rename(this.ajaxSettings.url, fullPath, item.name, newName).subscribe({
+                this.api.rename(this.ajaxSettings.url, fullPath, item.name, newName, this.auth).subscribe({
                     next: () => {
                         this.isSaving = false;
                         this.refresh();
@@ -280,7 +288,7 @@ export class FileListComponent implements OnInit, OnDestroy {
                 const separator = this.path.endsWith('/') ? '' : '/';
                 const fullPath = `${this.path}${separator}`;
 
-                this.api.create(this.ajaxSettings.url, fullPath, folderName, 'folder').subscribe({
+                this.api.create(this.ajaxSettings.url, fullPath, folderName, 'folder', this.auth).subscribe({
                     next: () => {
                         this.refresh();
                     },
@@ -365,7 +373,7 @@ export class FileListComponent implements OnInit, OnDestroy {
         const separator = this.path.endsWith('/') ? '' : '/';
         const fullPath = `${this.path}${separator}`;
 
-        this.api.download(this.ajaxSettings.downloadUrl, fullPath, [item.name]).subscribe(blob => {
+        this.api.download(this.ajaxSettings.downloadUrl, fullPath, [item.name], this.auth).subscribe(blob => {
             const reader = new FileReader();
             reader.onload = () => {
                 const content = reader.result as string;
@@ -378,11 +386,11 @@ export class FileListComponent implements OnInit, OnDestroy {
                     if (result !== null && result !== undefined) {
                         this.isSaving = true;
                         // Delete the original file first to prevent duplicates
-                        this.api.delete(this.ajaxSettings.url, fullPath, [item]).subscribe({
+                        this.api.delete(this.ajaxSettings.url, fullPath, [item], this.auth).subscribe({
                             next: () => {
                                 // Then upload the new version
                                 const file = new File([result], item.name, { type: 'text/plain' });
-                                this.api.upload(this.ajaxSettings.uploadUrl, fullPath, file).subscribe({
+                                this.api.upload(this.ajaxSettings.uploadUrl, fullPath, file, false, this.auth).subscribe({
                                     next: () => {
                                         this.isSaving = false;
                                         this.refresh();
@@ -519,7 +527,7 @@ export class FileListComponent implements OnInit, OnDestroy {
 
         if (this.clipboardMode === 'copy') {
             this.isSaving = true;
-            this.api.copy(this.ajaxSettings.url, sourcePath, targetPath, names).subscribe({
+            this.api.copy(this.ajaxSettings.url, sourcePath, targetPath, names, this.auth).subscribe({
                 next: () => {
                     this.isSaving = false;
                     this.refresh();
@@ -532,7 +540,7 @@ export class FileListComponent implements OnInit, OnDestroy {
             });
         } else if (this.clipboardMode === 'cut') {
             this.isSaving = true;
-            this.api.move(this.ajaxSettings.url, sourcePath, targetPath, names).subscribe({
+            this.api.move(this.ajaxSettings.url, sourcePath, targetPath, names, this.auth).subscribe({
                 next: () => {
                     this.isSaving = false;
                     this.clipboard = [];
@@ -604,7 +612,7 @@ export class FileListComponent implements OnInit, OnDestroy {
 
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
-            this.api.upload(this.ajaxSettings.uploadUrl, fullPath, file).subscribe({
+            this.api.upload(this.ajaxSettings.uploadUrl, fullPath, file, false, this.auth).subscribe({
                 next: () => {
                     uploadCount++;
                     if (uploadCount === totalFiles) {
@@ -701,7 +709,7 @@ export class FileListComponent implements OnInit, OnDestroy {
             const targetPath = `${this.path}${separator}${targetFolder.name}/`;
 
             this.isSaving = true;
-            this.api.move(this.ajaxSettings.url, this.path + separator, targetPath, [this.draggedItem.name]).subscribe({
+            this.api.move(this.ajaxSettings.url, this.path + separator, targetPath, [this.draggedItem.name], this.auth).subscribe({
                 next: () => {
                     this.isSaving = false;
                     this.refresh();
@@ -745,13 +753,13 @@ export class FileListComponent implements OnInit, OnDestroy {
             }
 
             // Download from source
-            this.api.download(dragData.ajaxSettings.downloadUrl, sourcePath, [file.name]).subscribe({
+            this.api.download(dragData.ajaxSettings.downloadUrl, sourcePath, [file.name], this.auth).subscribe({
                 next: (blob) => {
                     // Convert blob to File object
                     const fileObj = new File([blob], file.name, { type: blob.type || 'application/octet-stream' });
 
                     // Upload to target
-                    this.api.upload(this.ajaxSettings.uploadUrl, targetPath, fileObj).subscribe({
+                    this.api.upload(this.ajaxSettings.uploadUrl, targetPath, fileObj, false, this.auth).subscribe({
                         next: () => {
                             transferCount++;
                             if (transferCount === totalFiles) {

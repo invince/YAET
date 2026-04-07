@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core';
 import {ElectronFileExplorerService} from '../electron/electron-file-explorer.service';
 import {SambaProfile} from '../../domain/profile/SambaProfile';
-import {NODE_EXPRESS_API_ROOT} from '../electron/ElectronConstant';
 import {AbstractFileExplorerService} from './AbstractFileExplorerService';
 
 @Injectable({
@@ -13,8 +12,8 @@ export class SambaService extends AbstractFileExplorerService{
     super();
   }
 
-  apiUrl() {
-    return NODE_EXPRESS_API_ROOT + '/v1/samba';
+  apiPath() {
+    return '/v1/samba';
   }
 
   async connect(id:string , sambaProfile: SambaProfile) {

@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core';
 import {FTPProfile} from '../../domain/profile/FTPProfile';
 import {ElectronFileExplorerService} from '../electron/electron-file-explorer.service';
-import {NODE_EXPRESS_API_ROOT} from '../electron/ElectronConstant';
 import {AbstractFileExplorerService} from './AbstractFileExplorerService';
 
 @Injectable({
@@ -13,8 +12,8 @@ export class FtpService extends AbstractFileExplorerService {
     super();
   }
 
-  apiUrl() {
-    return NODE_EXPRESS_API_ROOT + '/v1/ftp';
+  apiPath() {
+    return '/v1/ftp';
   }
 
   async connect(id:string , ftpProfile: FTPProfile) {

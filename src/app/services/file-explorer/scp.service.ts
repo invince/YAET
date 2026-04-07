@@ -1,8 +1,7 @@
-import { Injectable } from '@angular/core';
-import { RemoteTerminalProfile } from '../../domain/profile/RemoteTerminalProfile';
-import { ElectronFileExplorerService } from '../electron/electron-file-explorer.service';
-import { NODE_EXPRESS_API_ROOT } from '../electron/ElectronConstant';
-import { AbstractFileExplorerService } from './AbstractFileExplorerService';
+import {Injectable} from '@angular/core';
+import {RemoteTerminalProfile} from '../../domain/profile/RemoteTerminalProfile';
+import {ElectronFileExplorerService} from '../electron/electron-file-explorer.service';
+import {AbstractFileExplorerService} from './AbstractFileExplorerService';
 
 @Injectable({
   providedIn: 'root'
@@ -13,8 +12,8 @@ export class ScpService extends AbstractFileExplorerService {
     super();
   }
 
-  apiUrl() {
-    return NODE_EXPRESS_API_ROOT + '/v1/scp';
+  apiPath() {
+    return '/v1/scp';
   }
 
   async connect(id: string, sshProfile: RemoteTerminalProfile, proxyId?: string) {

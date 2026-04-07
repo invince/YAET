@@ -52,3 +52,4 @@ config
 src-electron/logs
 build.log
 
+docs/ai

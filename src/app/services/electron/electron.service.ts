@@ -1,14 +1,16 @@
-import { Injectable } from '@angular/core';
-import { IpcRenderer } from 'electron';
-import { Log } from '../../domain/Log';
-import { AuthType, SecretType } from '../../domain/Secret';
-import { CloudResponse } from '../../domain/setting/CloudResponse';
-import { CloudSettings } from '../../domain/setting/CloudSettings';
-import { MySettings } from '../../domain/setting/MySettings';
-import { NotificationService } from '../notification.service';
-import { SecretStorageService } from '../secret-storage.service';
-import { TabService } from '../tab.service';
+import {Injectable} from '@angular/core';
+import {IpcRenderer} from 'electron';
+import {Log} from '../../domain/Log';
+import {AuthType, SecretType} from '../../domain/Secret';
+import {CloudResponse} from '../../domain/setting/CloudResponse';
+import {CloudSettings} from '../../domain/setting/CloudSettings';
+import {MySettings} from '../../domain/setting/MySettings';
+import {NotificationService} from '../notification.service';
+import {SecretStorageService} from '../secret-storage.service';
+import {TabService} from '../tab.service';
 import {
+  BACKEND_GET_CONFIG,
+  BACKEND_READY,
   CLOUD_DOWNLOAD,
   CLOUD_RELOAD,
   CLOUD_SAVE,
@@ -28,6 +30,7 @@ import {
   SETTINGS_RELOAD,
   SETTINGS_SAVE
 } from './ElectronConstant';
+import {BackendConfigService} from './backend-config.service';
 
 
 export class AbstractElectronService {
@@ -63,11 +66,12 @@ export class ElectronService extends AbstractElectronService {
   constructor(
     private secretStorage: SecretStorageService,
     private notification: NotificationService,
-
     private tabService: TabService,
+    private backendConfig: BackendConfigService,
   ) {
     super();
     this.initCommonListener();
+    this.initBackendConfigListener();
   }
 
   //#region "Common"
@@ -86,7 +90,20 @@ export class ElectronService extends AbstractElectronService {
       }
       return;
     });
+  }
 
+  private initBackendConfigListener() {
+    if (!this.ipc) return;
+    // Listen for push event (fires when Express server is ready)
+    this.ipc.on(BACKEND_READY, (event, { port, token }) => {
+      this.backendConfig.setConfig(port, token);
+    });
+    // Also proactively pull config in case backend.ready already fired before Angular was ready
+    this.ipc.invoke(BACKEND_GET_CONFIG).then(({ port, token }) => {
+      if (port && token) {
+        this.backendConfig.setConfig(port, token);
+      }
+    }).catch(() => { /* not yet available */ });
   }
 
 

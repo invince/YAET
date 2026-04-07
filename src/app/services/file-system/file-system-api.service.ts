@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
+import {Injectable} from '@angular/core';
+import {Observable} from 'rxjs';
 
 export interface FileItem {
     name: string;
@@ -30,52 +30,57 @@ export class FileSystemApiService {
 
     constructor(private http: HttpClient) { }
 
-    read(url: string, path: string): Observable<FileSystemResponse> {
+    private headers(authHeader?: string): { headers?: HttpHeaders } {
+        if (!authHeader) return {};
+        return { headers: new HttpHeaders({ Authorization: authHeader }) };
+    }
+
+    read(url: string, path: string, authHeader?: string): Observable<FileSystemResponse> {
         return this.http.post<FileSystemResponse>(url, {
             action: 'read',
             path: path,
             showHiddenItems: true,
             data: []
-        });
+        }, this.headers(authHeader));
     }
 
-    create(url: string, path: string, name: string, type: 'folder' | 'file'): Observable<FileSystemResponse> {
+    create(url: string, path: string, name: string, type: 'folder' | 'file', authHeader?: string): Observable<FileSystemResponse> {
         return this.http.post<FileSystemResponse>(url, {
             action: 'create',
             path: path,
             name: name,
             type: type,
             data: []
-        });
+        }, this.headers(authHeader));
     }
 
-    delete(url: string, path: string, items: FileItem[]): Observable<FileSystemResponse> {
+    delete(url: string, path: string, items: FileItem[], authHeader?: string): Observable<FileSystemResponse> {
         return this.http.post<FileSystemResponse>(url, {
             action: 'delete',
             path: path,
             data: items
-        });
+        }, this.headers(authHeader));
     }
 
-    rename(url: string, path: string, name: string, newName: string): Observable<FileSystemResponse> {
+    rename(url: string, path: string, name: string, newName: string, authHeader?: string): Observable<FileSystemResponse> {
         return this.http.post<FileSystemResponse>(url, {
             action: 'rename',
             path: path,
             name: name,
             newName: newName,
             data: []
+        }, this.headers(authHeader));
+    }
+
+    download(url: string, path: string, names: string[], authHeader?: string): Observable<Blob> {
+        const payload = { path, names };
+        return this.http.post(url, { downloadInput: JSON.stringify(payload) }, {
+            responseType: 'blob',
+            ...this.headers(authHeader)
         });
     }
 
-    download(url: string, path: string, names: string[]): Observable<Blob> {
-        const payload = {
-            path: path,
-            names: names
-        };
-        return this.http.post(url, { downloadInput: JSON.stringify(payload) }, { responseType: 'blob' });
-    }
-
-    upload(url: string, path: string, file: File, overwrite: boolean = false): Observable<any> {
+    upload(url: string, path: string, file: File, overwrite: boolean = false, authHeader?: string): Observable<any> {
         const formData = new FormData();
         formData.append('data', JSON.stringify({ name: path }));
         formData.append('filename', file.name);
@@ -83,27 +88,26 @@ export class FileSystemApiService {
         if (overwrite) {
             formData.append('overwrite', 'true');
         }
-
-        return this.http.post(url, formData);
+        return this.http.post(url, formData, this.headers(authHeader));
     }
 
-    copy(url: string, sourcePath: string, targetPath: string, names: string[]): Observable<FileSystemResponse> {
+    copy(url: string, sourcePath: string, targetPath: string, names: string[], authHeader?: string): Observable<FileSystemResponse> {
         return this.http.post<FileSystemResponse>(url, {
             action: 'copy',
             path: sourcePath,
             targetPath: targetPath,
             names: names,
             data: []
-        });
+        }, this.headers(authHeader));
     }
 
-    move(url: string, sourcePath: string, targetPath: string, names: string[]): Observable<FileSystemResponse> {
+    move(url: string, sourcePath: string, targetPath: string, names: string[], authHeader?: string): Observable<FileSystemResponse> {
         return this.http.post<FileSystemResponse>(url, {
             action: 'move',
             path: sourcePath,
             targetPath: targetPath,
             names: names,
             data: []
-        });
+        }, this.headers(authHeader));
     }
 }

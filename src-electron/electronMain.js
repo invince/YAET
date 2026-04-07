@@ -1,6 +1,8 @@
 const path = require("path");
 const fs = require("fs");
-const { app, globalShortcut, BrowserWindow, Tray } = require('electron');
+const crypto = require("crypto");
+const { app, globalShortcut, BrowserWindow, Tray, ipcMain } = require('electron');
+const findFreePorts = require('find-free-ports');
 
 const { createMenu } = require('./ui/menu');
 const { SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON, APP_CONFIG_PATH, PROXIES_JSON } = require("./common");
@@ -29,6 +31,8 @@ let sambaMap = new Map();
 let initialized = false;
 let allProxies = null;
 let allSecrets = null;
+let backendPort = 13012; // default fallback
+let bearerToken = crypto.randomBytes(32).toString('hex'); // generated once at startup
 
 const log = require("electron-log")
 const { initCommonIpc } = require("./ipc/commonIpc");
@@ -112,7 +116,7 @@ function initHandlerBeforeSettingLoad() {
 
   initCommonIpc(log);
 
-  expressApp = initBackend(log);
+  expressApp = initBackend(log, bearerToken);
 
   initConfigFilesIpcHandler(log, mainWindow, reloadProxies, reloadSecrets);
   initCloudIpcHandler(log, () => allProxies, () => allSecrets);
@@ -132,8 +136,26 @@ function initHandlerBeforeSettingLoad() {
   initCustomSessionHandler(log);
   initLocalFileHandler(log, mainWindow);
 
-  // Start API
-  expressApp.listen(13012, () => log.info('API listening on port 13012'));
+  // IPC: allow renderer to request the backend config (port + token)
+  ipcMain.handle('backend.get-config', () => ({
+    port: backendPort,
+    token: bearerToken
+  }));
+
+  // Find a free port and start the API
+  findFreePorts(1, { startPort: 13012 }).then(([port]) => {
+    backendPort = port;
+    expressApp.listen(backendPort, () => {
+      log.info(`API listening on port ${backendPort}`);
+      // Notify the renderer once the backend is ready
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('backend.ready', { port: backendPort, token: bearerToken });
+      }
+    });
+  }).catch(err => {
+    log.error('Failed to find a free port, falling back to 13012', err);
+    expressApp.listen(13012, () => log.info('API listening on fallback port 13012'));
+  });
 }
 
 
