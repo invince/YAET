@@ -57,7 +57,7 @@ export class ModelFormController<Model> {
   }
 
   refreshForm(model: Model, form: FormGroup) {
-    form.reset();
+    form.reset({}, { emitEvent: false });
     this.mappings.forEach((formField: string | FormFieldWithPrecondition, modelField: string | ModelFieldWithPrecondition) => {
       let modelFieldName = typeof modelField === 'string' ? modelField : modelField.name;
       // let modelFieldPrecondition = typeof modelField === 'string' ?  ()=> true : modelField.precondition || (()=> true);
@@ -67,7 +67,7 @@ export class ModelFormController<Model> {
       if (formFieldPrecondition(form)) {
         const formControl = form.get(formFieldName);
         if (formControl) {
-          formControl.setValue(model[modelFieldName as keyof Model] );
+          formControl.setValue(model[modelFieldName as keyof Model], { emitEvent: false });
         }
       }
     });

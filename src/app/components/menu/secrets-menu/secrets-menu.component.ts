@@ -1,5 +1,5 @@
 import {CommonModule} from '@angular/common';
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, DestroyRef, inject, OnInit} from '@angular/core';
 import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatDialog} from '@angular/material/dialog';
@@ -9,7 +9,7 @@ import {MatInput} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {TranslateModule} from '@ngx-translate/core';
-import {Subscription} from 'rxjs';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MenuConsts} from '../../../domain/MenuConsts';
 import {Secret, Secrets} from '../../../domain/Secret';
 import {FilterKeywordPipe} from '../../../pipes/filter-keyword.pipe';
@@ -23,6 +23,7 @@ import {ConfirmationComponent} from '../../confirmation/confirmation.component';
 
 import {MenuComponent} from '../menu.component';
 import {SecretFormComponent} from './secret-form/secret-form.component';
+import {TruncatePipe} from '../../../pipes/truncate.pipe';
 
 @Component({
   selector: 'app-secrets-menu',
@@ -38,16 +39,17 @@ import {SecretFormComponent} from './secret-form/secret-form.component';
     MatIcon,
     SecretFormComponent,
     FilterKeywordPipe,
+    TruncatePipe,
     TranslateModule
   ],
   templateUrl: './secrets-menu.component.html',
   styleUrl: './secrets-menu.component.scss',
   providers: [FilterKeywordPipe]
 })
-export class SecretsMenuComponent extends MenuComponent implements OnInit, OnDestroy {
+export class SecretsMenuComponent extends MenuComponent implements OnInit {
 
   selectedSecretControl = new FormControl<Secret | undefined>(undefined);
-  subscriptions: Subscription[] = [];
+  protected destroyRef = inject(DestroyRef);
   filter!: string;
 
   secretsCopy!: Secrets;
@@ -72,19 +74,13 @@ export class SecretsMenuComponent extends MenuComponent implements OnInit, OnDes
   ) {
     super();
   }
-  ngOnDestroy(): void {
-    if (this.subscriptions) {
-      this.subscriptions.forEach(one => one.unsubscribe());
-    }
-  }
-
 
   ngOnInit(): void {
-    this.subscriptions.push(this.modalControl.modalCloseEvent.subscribe(one => {
+    this.modalControl.modalCloseEvent.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(one => {
       if (one && one.includes(MenuConsts.MENU_SECURE)) {
         this.modalControl.closeModal();
       }
-    }));
+    });
     if (!this.secretService.isLoaded) {
       this.notification.info('Secure not loaded, we\'ll reload it, please close secure menu and reopen');
       this.secretService.reload();
@@ -143,7 +139,7 @@ export class SecretsMenuComponent extends MenuComponent implements OnInit, OnDes
         data: { message: 'This secret is still used by some profiles. Do you want to delete this secret: ' + $event.name + '?' },
       });
 
-      this.subscriptions.push(dialogRef.afterClosed().subscribe(async (result) => {
+      dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (result) => {
         if (result) {
 
           this.profileService.clearSecret($event);
@@ -151,20 +147,20 @@ export class SecretsMenuComponent extends MenuComponent implements OnInit, OnDes
           await this.commitChange();
           this.selectedSecretControl.reset(undefined);
         }
-      }));
+      });
     } else {
       const dialogRef = this.dialog.open(ConfirmationComponent, {
         width: '300px',
         data: { message: 'Do you want to delete this secret: ' + $event.name + '?' },
       });
 
-      this.subscriptions.push(dialogRef.afterClosed().subscribe(async (result) => {
+      dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (result) => {
         if (result) {
           this.secretsCopy.secrets = this.secretsCopy.secrets.filter(s => s.id !== $event.id);
           await this.commitChange();
           this.selectedSecretControl.reset(undefined);
         }
-      }));
+      });
     }
   }
 
@@ -179,19 +175,8 @@ export class SecretsMenuComponent extends MenuComponent implements OnInit, OnDes
     this.close();
   }
 
-  secretTabLabel(secret: Secret) {
-    let LIMIT = this.settingStorage.settings?.ui?.secretLabelLength || 10;
-    let label = 'New';
-    if (secret && secret.name) {
-      label = secret.name;
-      if (secret.name.length > LIMIT) {
-        label = label.slice(0, LIMIT) + '...';
-      }
-    }
-    if (secret.id == this.selectedSecretControl.value?.id && this.selectedSecretControl.dirty) {
-      label += '*'
-    }
-    return label;
+  get labelLimit() {
+    return this.settingStorage.settings?.ui?.secretLabelLength || 10;
   }
 
   hasNewSecret() {

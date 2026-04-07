@@ -1,6 +1,6 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, DestroyRef, inject, OnInit} from '@angular/core';
 import {AbstractControl, ControlValueAccessor, FormGroup, ValidationErrors, Validator} from '@angular/forms';
-import {Subscription} from 'rxjs';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 type Constructor<T = {}> = new (...args: any[]) => T;
 
@@ -11,34 +11,29 @@ export function ChildFormAsFormControl<TBase extends Constructor>(Base: TBase) {
     imports: [],
     template: `<p>Abstract Menu</p>`
 })
-  abstract class ChildFormAsFormClazz extends Base implements OnInit, OnDestroy, ControlValueAccessor, Validator   {
+  abstract class ChildFormAsFormClazz extends Base implements OnInit, ControlValueAccessor, Validator   {
 
     form!: FormGroup;
 
-    private subscriptions: Subscription[] = [];
+    protected destroyRef = inject(DestroyRef);
 
     abstract onInitForm(): FormGroup;
 
     abstract refreshForm(obj:any): void;
     abstract formToModel(): any;
 
-    private _isWritingValue = false;
     private onValidatorChange: () => void = () => {};
 
     ngOnInit(): void {
       this.form = this.onInitForm();
       // Propagate changes to parent form
-      this.subscriptions.push(this.form.valueChanges.subscribe(value => {
-        if (!this._isWritingValue && this.form.dirty) this.onChange(value);
-      }));
-      this.subscriptions.push(this.form.statusChanges.subscribe(() => {
+      this.form.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(value => {
+        if (this.form.dirty) this.onChange(value);
+      });
+      this.form.statusChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
         this.onValidatorChange(); // notify parent of validity change
-        if (!this._isWritingValue && this.form.dirty) this.onChange(this.form.value);
-      }));
-    }
-
-    ngOnDestroy(): void {
-      this.subscriptions.forEach(one => one.unsubscribe());
+        if (this.form.dirty) this.onChange(this.form.value);
+      });
     }
 
     onSubmit() {
@@ -55,9 +50,7 @@ export function ChildFormAsFormControl<TBase extends Constructor>(Base: TBase) {
 
     writeValue(value: any): void {
       if (value) {
-        this._isWritingValue = true;
         this.refreshForm(value);
-        this._isWritingValue = false;
       }
     }
 
@@ -80,9 +73,9 @@ export function ChildFormAsFormControl<TBase extends Constructor>(Base: TBase) {
     // Add validation logic
     validate(control: AbstractControl): ValidationErrors | null {
       if (!this.form) {
-        return null; // Not initialized yet, valid by default until ngOnInit
+        return { invalidChildForm: true, reason: 'uninitialized' };
       }
-      return this.form.valid ? null : { invalidChildForm: true };
+      return this.form.valid ? null : { invalidChildForm: true, errors: this.form.errors };
     }
 
   }
