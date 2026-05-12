@@ -126,24 +126,25 @@ export class Profile {
 
   static clone(base: Profile): Profile {
     const cloned = new Profile();
-    cloned.id = base.id; // Usually we want a new ID, but some logic might need it
-    cloned.name = base.name;
+    // Do not copy the ID, let the new Profile keep its generated ID
+    cloned.name = base.name + ' Clone';
     cloned.comment = base.comment;
     cloned.category = base.category;
     cloned.profileType = base.profileType;
 
-    cloned.localTerminal = base.localTerminal;
-    cloned.sshProfile = base.sshProfile;
-    cloned.telnetProfile = base.telnetProfile;
-    cloned.winRmProfile = base.winRmProfile;
+    Object.assign(cloned.localTerminal, base.localTerminal);
+    Object.assign(cloned.sshProfile, base.sshProfile);
+    Object.assign(cloned.telnetProfile, base.telnetProfile);
+    Object.assign(cloned.winRmProfile, base.winRmProfile);
 
-    cloned.ftpProfile = base.ftpProfile;
-    cloned.sambaProfile = base.sambaProfile;
+    Object.assign(cloned.ftpProfile, base.ftpProfile);
+    Object.assign(cloned.sambaProfile, base.sambaProfile);
 
-    cloned.rdpProfile = base.rdpProfile;
-    cloned.vncProfile = base.vncProfile;
+    Object.assign(cloned.rdpProfile, base.rdpProfile);
+    Object.assign(cloned.vncProfile, base.vncProfile);
 
-    cloned.customProfile = base.customProfile;
+    Object.assign(cloned.customProfile, base.customProfile);
+
     cloned.group = base.group;
     cloned.proxyId = base.proxyId;
     cloned.favoritePaths = base.favoritePaths ? [...base.favoritePaths] : [];
