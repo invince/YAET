@@ -123,7 +123,8 @@ export class SettingService {
         case LocalTerminalType.POWERSHELL_7:
           terminalSettings.localTerminal.execPath = 'pwsh.exe'; break;
         case LocalTerminalType.BASH: {
-          if (process.platform === 'win32') {
+          const isWin32 = (window as any).electronAPI?.platform === 'win32';
+          if (isWin32) {
             terminalSettings.localTerminal.execPath = 'wsl.exe';
           } else {
             terminalSettings.localTerminal.execPath = 'bash';

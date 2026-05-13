@@ -1,13 +1,19 @@
-import { Injectable } from '@angular/core';
-import { IpcRenderer } from 'electron';
-import { Log } from '../../domain/Log';
-import { AuthType, SecretType } from '../../domain/Secret';
-import { CloudResponse } from '../../domain/setting/CloudResponse';
-import { CloudSettings } from '../../domain/setting/CloudSettings';
-import { MySettings } from '../../domain/setting/MySettings';
-import { NotificationService } from '../notification.service';
-import { SecretStorageService } from '../secret-storage.service';
-import { TabService } from '../tab.service';
+interface ElectronAPI {
+  send(channel: string, data?: any): void;
+  invoke(channel: string, data?: any): Promise<any>;
+  on(channel: string, callback: (...args: any[]) => void): void;
+  removeAllListeners(channel: string): void;
+}
+
+import {Injectable} from '@angular/core';
+import {Log} from '../../domain/Log';
+import {AuthType, SecretType} from '../../domain/Secret';
+import {CloudResponse} from '../../domain/setting/CloudResponse';
+import {CloudSettings} from '../../domain/setting/CloudSettings';
+import {MySettings} from '../../domain/setting/MySettings';
+import {NotificationService} from '../notification.service';
+import {SecretStorageService} from '../secret-storage.service';
+import {TabService} from '../tab.service';
 import {
   CLOUD_DOWNLOAD,
   CLOUD_RELOAD,
@@ -32,11 +38,11 @@ import {
 
 export class AbstractElectronService {
 
-  protected readonly ipc!: IpcRenderer;
+  protected readonly ipc!: ElectronAPI;
 
   constructor() {
-    if (window.require) {
-      this.ipc = window.require('electron').ipcRenderer;
+    if ((window as any).electronAPI) {
+      this.ipc = (window as any).electronAPI;
     }
   }
 

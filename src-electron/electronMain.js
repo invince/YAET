@@ -59,11 +59,11 @@ app.on('ready', () => {
     height: 800,
     icon: __dirname + '/assets/icons/app-icon.png', // Path to your icon
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      enableRemoteModule: true,
+      nodeIntegration: false,
+      contextIsolation: true,
+      enableRemoteModule: false,
       enableBlinkFeatures: 'Accelerated2dCanvas',
-      // preload: path.join(__dirname, 'preload.js'), // FIXME: preload need contextIsolation, but xterm.js won't work with that
+      preload: path.join(__dirname, 'preload.js'),
     },
   });
 
