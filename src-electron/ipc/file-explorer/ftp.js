@@ -224,7 +224,14 @@ function initFtpHandler(log, ftpMap, expressApp) {
 
   expressApp.post('/api/v1/ftp/upload/:id', upload.single('uploadFiles'), async (req, res) => {
     const { data, filename } = req.body;
-    const directoryPath = JSON.parse(data).name;
+    let directoryPath;
+    try {
+      directoryPath = JSON.parse(data).name;
+    } catch (error) {
+      log.error('Error parsing upload data JSON:', error);
+      res.status(400).send({ error: { code: 400, message: 'Invalid JSON: ' + error.message } });
+      return;
+    }
     const configId = req.params['id'];
 
     if (!req.file) {
@@ -258,7 +265,14 @@ function initFtpHandler(log, ftpMap, expressApp) {
   });
 
   expressApp.post('/api/v1/ftp/download/:id', upload.none(), async (req, res) => {
-    const downloadInput = JSON.parse(req.body.downloadInput);
+    let downloadInput;
+    try {
+      downloadInput = JSON.parse(req.body.downloadInput);
+    } catch (error) {
+      log.error('Error parsing downloadInput JSON:', error);
+      res.status(400).send({ error: { code: 400, message: 'Invalid JSON: ' + error.message } });
+      return;
+    }
     const directoryPath = downloadInput.path;
     const names = downloadInput.names;
     const configId = req.params['id'];
@@ -316,7 +330,14 @@ function initFtpHandler(log, ftpMap, expressApp) {
   });
 
   expressApp.post('/api/v1/ftp/open/:id', upload.none(), async (req, res) => {
-    const downloadInput = JSON.parse(req.body.downloadInput);
+    let downloadInput;
+    try {
+      downloadInput = JSON.parse(req.body.downloadInput);
+    } catch (error) {
+      log.error('Error parsing downloadInput JSON:', error);
+      res.status(400).send({ error: { code: 400, message: 'Invalid JSON: ' + error.message } });
+      return;
+    }
     const remotePath = downloadInput.path;
     const fileName = downloadInput.names[0];
     const configId = req.params['id'];

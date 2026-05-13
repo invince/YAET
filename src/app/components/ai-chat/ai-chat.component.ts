@@ -8,6 +8,7 @@ import {MatInputModule} from '@angular/material/input';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
+import DOMPurify from 'dompurify';
 import {marked} from 'marked';
 import {AiChatService} from '../../services/ai-chat.service';
 import {AiService} from '../../services/ai.service';
@@ -68,8 +69,9 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   parseMarkdown(content: string): SafeHtml {
     if (!content) return '';
     try {
-      const html = marked.parse(content) as string;
-      return this.sanitizer.bypassSecurityTrustHtml(html);
+      const rawHtml = marked.parse(content) as string;
+      const cleanHtml = DOMPurify.sanitize(rawHtml);
+      return this.sanitizer.bypassSecurityTrustHtml(cleanHtml);
     } catch (e) {
       return content;
     }

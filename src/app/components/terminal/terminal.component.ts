@@ -42,6 +42,8 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   // private webglAddon = new WebglAddon();
   private fitAddon = new FitAddon();
   private resizeObserver: ResizeObserver | undefined;
+  private contextMenuHandler: ((event: MouseEvent) => void) | null = null;
+  private terminalOutputCleanup: (() => void) | null = null;
 
   constructor(
     private electron: ElectronTerminalService,
@@ -111,7 +113,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     });
 
     // right click for paste. NOTE: ctrl + v should work natively
-    this.termContainer.nativeElement.addEventListener('contextmenu', (event: MouseEvent) => {
+    this.contextMenuHandler = (event: MouseEvent) => {
       event.preventDefault(); // Prevent the default context menu
       const selection = this.xtermUnderlying?.getSelection();
       if (selection) {
@@ -122,7 +124,8 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
             this.electron.sendTerminalInput(this.session.id, text);
           })
       }
-    });
+    };
+    this.termContainer.nativeElement.addEventListener('contextmenu', this.contextMenuHandler);
 
 
     this.initTab();
@@ -147,8 +150,8 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.session.open();
 
     // Listen to output from Electron and display in xterm
-    // Listen to output from Electron and display in xterm
-    this.electron.onTerminalOutput(this.session.id, (data) => {
+    this.terminalOutputCleanup?.();
+    this.terminalOutputCleanup = this.electron.onTerminalOutput(this.session.id, (data) => {
       this.xtermUnderlying?.write(data.data);
     });
 
@@ -160,6 +163,16 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   ngOnDestroy() {
+    // Cleanup contextmenu listener
+    if (this.contextMenuHandler && this.termContainer?.nativeElement) {
+      this.termContainer.nativeElement.removeEventListener('contextmenu', this.contextMenuHandler);
+      this.contextMenuHandler = null;
+    }
+
+    // Cleanup terminal output listener
+    this.terminalOutputCleanup?.();
+    this.terminalOutputCleanup = null;
+
     // Only close the session if the tab is actually removed from the service
     // If the tab still exists (e.g. moving between panes), don't close the session
     const isTabStillActive = this.tabService.tabs.some(t => t.id === this.session.id);

@@ -15,7 +15,7 @@ function initConfigFilesIpcHandler(log, mainWindow, reloadProxies, reloadSecrets
     save(log, SETTINGS_JSON, obj.data, false)
       .then(() => {
         log.info('Setting saved successfully!');
-        updateManifest(log, 'setting.json');
+        updateManifest(log, 'settings.json');
       })
       .catch((error) => log.error('Error saving file:', error));
   });
@@ -33,7 +33,7 @@ function initConfigFilesIpcHandler(log, mainWindow, reloadProxies, reloadSecrets
     save(log, PROFILES_JSON, obj.data, true)
       .then(() => {
         log.info('Profiles saved successfully!');
-        updateManifest(log, 'profile.json');
+        updateManifest(log, 'profiles.json');
       })
       .catch((error) => log.error('Error saving file:', error));
   });
