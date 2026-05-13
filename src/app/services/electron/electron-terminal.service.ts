@@ -274,14 +274,36 @@ export class ElectronTerminalService extends AbstractElectronService {
     }
   }
 
-  onTerminalOutput(terminalId: string, callback: (data: TermOutput) => void) {
-    if (this.ipc) {
-      this.ipc.on(TERMINAL_OUTPUT, (event, data) => {
-        if (data && data.id == terminalId) {
-          callback(data);
+  private terminalOutputHandlers = new Map<string, Set<(data: TermOutput) => void>>();
+  private terminalOutputListenerInit = false;
+
+  onTerminalOutput(terminalId: string, callback: (data: TermOutput) => void): () => void {
+    if (!this.ipc) return () => {};
+
+    if (!this.terminalOutputHandlers.has(terminalId)) {
+      this.terminalOutputHandlers.set(terminalId, new Set());
+    }
+    this.terminalOutputHandlers.get(terminalId)!.add(callback);
+
+    if (!this.terminalOutputListenerInit) {
+      this.terminalOutputListenerInit = true;
+      this.ipc.on(TERMINAL_OUTPUT, (event, data: TermOutput) => {
+        const cbs = this.terminalOutputHandlers.get(data?.id);
+        if (cbs) {
+          cbs.forEach(cb => cb(data));
         }
       });
     }
+
+    return () => {
+      const cbs = this.terminalOutputHandlers.get(terminalId);
+      if (cbs) {
+        cbs.delete(callback);
+        if (cbs.size === 0) {
+          this.terminalOutputHandlers.delete(terminalId);
+        }
+      }
+    };
   }
 
   openCustomSession(customProfile: CustomProfile) {

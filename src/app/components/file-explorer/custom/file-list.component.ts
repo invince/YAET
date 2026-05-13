@@ -117,6 +117,12 @@ export class FileListComponent implements OnInit, OnDestroy {
         if (this.fileChangeSub) {
             this.fileChangeSub.unsubscribe();
         }
+        // Cleanup global resize listeners if component destroyed mid-resize
+        if (this.isResizing) {
+            document.removeEventListener('mousemove', this.onResizeMove);
+            document.removeEventListener('mouseup', this.onResizeEnd);
+            this.isResizing = false;
+        }
         this.watchedFiles.forEach(path => this.localFileService.unwatchFile(path));
         this.watchedFiles.clear();
         this.activeWatchers.clear();
