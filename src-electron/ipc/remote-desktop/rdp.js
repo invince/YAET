@@ -1,5 +1,12 @@
 const { ipcMain } = require('electron');
-const { exec } = require('child_process');
+const { spawn } = require('child_process');
+
+function isValidHostname(hostname) {
+  return typeof hostname === 'string' &&
+    hostname.length > 0 &&
+    hostname.length <= 253 &&
+    /^[a-zA-Z0-9.\-_:]+$/.test(hostname);
+}
 
 function initRdpHandler(log) {
 
@@ -8,24 +15,21 @@ function initRdpHandler(log) {
   });
 
   function launchMSTSC(hostname, options = {}) {
+    if (!isValidHostname(hostname)) {
+      log.error(`Invalid hostname rejected: ${hostname}`);
+      return;
+    }
     log.info('Starting mstsc...');
-    // Construct the mstsc command
-    let command = `mstsc /v:${hostname}`;
+    const args = [`/v:${hostname}`];
+    if (options.fullscreen) args.push('/f');
+    if (options.admin) args.push('/admin');
 
-    // Optional parameters
-    if (options.fullscreen) command += ' /f';
-    if (options.admin) command += ' /admin';
-
-    // Execute MSTSC
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        log.error(`Error launching MSTSC: ${error.message}`);
-        return;
-      }
-      if (stderr) {
-        log.error(`MSTSC Error: ${stderr}`);
-      }
-      log.info(`MSTSC Output: ${stdout}`);
+    const child = spawn('mstsc', args, {
+      stdio: 'ignore',
+      shell: false,
+    });
+    child.on('error', (error) => {
+      log.error(`Error launching MSTSC: ${error.message}`);
     });
   }
 

@@ -70,12 +70,12 @@ function initSSHTerminalIpcHandler(log, terminalMap, getProxies, getSecrets) {
         log.info('Shell started for id:', id);
 
         if (data.initPath) {
-          const initPath = data.initPath;
+          const initPath = data.initPath.replace(/[\r\n]/g, '');
           stream.write(`cd ${initPath}\n`);
         }
 
         if (data.initCmd) {
-          const initCmd = data.initCmd;
+          const initCmd = data.initCmd.replace(/[\r\n]/g, '');
           stream.write(`${initCmd}\n`);
         }
 

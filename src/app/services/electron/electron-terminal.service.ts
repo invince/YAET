@@ -1,28 +1,28 @@
-import { Injectable } from '@angular/core';
-import { CustomProfile } from '../../domain/profile/CustomProfile';
-import { LocalTerminalProfile } from '../../domain/profile/LocalTerminalProfile';
-import { Profile, } from '../../domain/profile/Profile';
-import { AuthType, SecretType } from '../../domain/Secret';
-import { Session } from '../../domain/session/Session';
-import { NotificationService } from '../notification.service';
-import { SecretStorageService } from '../secret-storage.service';
-import { TabService } from '../tab.service';
-import { AbstractElectronService } from './electron.service';
+import {Injectable} from '@angular/core';
+import {CustomProfile} from '../../domain/profile/CustomProfile';
+import {LocalTerminalProfile} from '../../domain/profile/LocalTerminalProfile';
+import {Profile,} from '../../domain/profile/Profile';
+import {AuthType, SecretType} from '../../domain/Secret';
+import {Session} from '../../domain/session/Session';
+import {NotificationService} from '../notification.service';
+import {SecretStorageService} from '../secret-storage.service';
+import {TabService} from '../tab.service';
+import {AbstractElectronService} from './electron.service';
 import {
-    ERROR,
-    SESSION_CLOSE_LOCAL_TERMINAL,
-    SESSION_CLOSE_SSH_TERMINAL,
-    SESSION_CLOSE_TELNET_TERMINAL,
-    SESSION_CLOSE_WINRM_TERMINAL,
-    SESSION_DISCONNECT_SSH,
-    SESSION_OPEN_CUSTOM,
-    SESSION_OPEN_LOCAL_TERMINAL,
-    SESSION_OPEN_SSH_TERMINAL,
-    SESSION_OPEN_TELNET_TERMINAL,
-    SESSION_OPEN_WINRM_TERMINAL,
-    TERMINAL_INPUT,
-    TERMINAL_OUTPUT,
-    TERMINAL_RESIZE
+  ERROR,
+  SESSION_CLOSE_LOCAL_TERMINAL,
+  SESSION_CLOSE_SSH_TERMINAL,
+  SESSION_CLOSE_TELNET_TERMINAL,
+  SESSION_CLOSE_WINRM_TERMINAL,
+  SESSION_DISCONNECT_SSH,
+  SESSION_OPEN_CUSTOM,
+  SESSION_OPEN_LOCAL_TERMINAL,
+  SESSION_OPEN_SSH_TERMINAL,
+  SESSION_OPEN_TELNET_TERMINAL,
+  SESSION_OPEN_WINRM_TERMINAL,
+  TERMINAL_INPUT,
+  TERMINAL_OUTPUT,
+  TERMINAL_RESIZE
 } from './ElectronConstant';
 
 
@@ -311,8 +311,13 @@ export class ElectronTerminalService extends AbstractElectronService {
           }
         }
 
-        cmd = cmd.replaceAll('$login', customProfile.login);
-        cmd = cmd.replaceAll('$password', customProfile.password);
+        const escapeArg = (val: string | undefined) => {
+          if (!val) return '';
+          const escaped = val.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+          return `"${escaped}"`;
+        };
+        cmd = cmd.replaceAll('$login', escapeArg(customProfile.login));
+        cmd = cmd.replaceAll('$password', escapeArg(customProfile.password));
       }
 
       this.ipc.send(SESSION_OPEN_CUSTOM, { command: cmd });
