@@ -16,13 +16,18 @@ function initLocalFileHandler(log, mainWindow) {
     ipcMain.handle(LOCAL_FILE_SAVE_TEMP, async (event, { filename, buffer, folder }) => {
         try {
             const tempDir = app.getPath('temp');
-            const targetDir = path.join(tempDir, 'yaet', folder || ''); // 'yaet' subfolder to keep things clean
+            const targetDir = path.join(tempDir, 'yaet', folder || '');
             
             if (!fs.existsSync(targetDir)) {
                 fs.mkdirSync(targetDir, { recursive: true });
             }
 
-            const filePath = path.join(targetDir, filename);
+            // Prevent path traversal: normalize and ensure it stays within targetDir
+            const baseName = path.basename(filename);
+            const filePath = path.join(targetDir, baseName);
+            if (!filePath.startsWith(targetDir)) {
+                throw new Error('Invalid filename: path traversal detected');
+            }
             // buffer comes as Uint8Array/Buffer from renderer
             fs.writeFileSync(filePath, Buffer.from(buffer));
             
