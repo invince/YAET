@@ -216,7 +216,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     (profile: Profile) => profile.profileType,
     (profile: Profile) => {
       if (profile.group) {
-        let group = this.settingService.findGroupById(profile.id);
+        let group = profile.group ? this.settingService.findGroupById(profile.group) : undefined;
         if (group) {
           return [group.name];
         }
