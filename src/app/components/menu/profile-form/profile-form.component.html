@@ -13,20 +13,38 @@
 
       <mat-form-field class="field">
         <mat-label>Group</mat-label>
-        <mat-select formControlName="group" (selectionChange)="onSelectGroup($event)" [style.color]="groupColor">
-          <mat-option></mat-option>
+        <mat-select formControlName="group" (selectionChange)="onSelectGroup($event)">
+          <mat-select-trigger>
+            @if (form.get('group')?.value) {
+              <span class="group-option">
+                @if (groupColor) { <span class="group-dot" [style.background]="groupColor"></span> }
+                {{ form.get('group')?.value?.name || '' }}
+              </span>
+            }
+          </mat-select-trigger>
+          <mat-option>
+            <span class="group-option group-none">None</span>
+          </mat-option>
           @for (oneGroup of settingStorage.settings.groups; track oneGroup.id) {
-          <mat-option [value]="oneGroup" [style.background]="oneGroup.color">{{ oneGroup.name }}</mat-option>
+          <mat-option [value]="oneGroup" class="group-option-wrapper">
+            <span class="group-option">
+              @if (oneGroup.color) { <span class="group-dot" [style.background]="oneGroup.color"></span> }
+              <span [style.color]="oneGroup.color || undefined">{{ oneGroup.name }}</span>
+            </span>
+          </mat-option>
           }
         </mat-select>
       </mat-form-field>
 
       <mat-form-field class="field">
-        <mat-chip-grid #chipGrid aria-label="Enter Tags" formControlName="tags">
-          @if (form.get("tags")?.value) {
-          @for (tag of form.get("tags")?.value; track tag.id) {
-          <mat-chip-row class="tag-chip" [removable]="true" (removed)="removeTag(tag)" [style.background]="tag.color"
+        <mat-label>Tags</mat-label>
+        <mat-chip-grid #chipGrid>
+          @if (tagList.length) {
+          @for (tag of tagList; track tag.id) {
+          <mat-chip-row class="tag-chip" [removable]="true" (removed)="removeTag(tag)"
+            [class.tag-has-color]="!!tag.color" [style.--tag-color]="tag.color"
             [attr.aria-description]="'press enter to edit ' + tag.name" [value]="tag">
+            @if (tag.color) { <span class="tag-chip-dot" [style.background]="tag.color"></span> }
             {{ tag.name }}
             <button matChipRemove [attr.aria-label]="'remove ' + tag.name" [style.cursor]="'grab'">
               <mat-icon>cancel</mat-icon>
@@ -40,7 +58,12 @@
           (matChipInputTokenEnd)="addTag($event)" />
         <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectTag($event)">
           @for (tag of filteredTags; track tag.id) {
-          <mat-option [value]="tag">{{ tag.name }}</mat-option>
+          <mat-option [value]="tag">
+            <span class="tag-option">
+              @if (tag.color) { <span class="tag-option-dot" [style.background]="tag.color"></span> }
+              <span [style.color]="tag.color || undefined">{{ tag.name }}</span>
+            </span>
+          </mat-option>
           }
         </mat-autocomplete>
       </mat-form-field>

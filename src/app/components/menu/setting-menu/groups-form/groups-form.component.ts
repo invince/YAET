@@ -3,30 +3,27 @@ import {SettingService} from '../../../../services/setting.service';
 import {SettingStorageService} from '../../../../services/setting-storage.service';
 import {ProfileService} from '../../../../services/profile.service';
 import {MySettings} from '../../../../domain/setting/MySettings';
-import {MatChipEditedEvent, MatChipsModule} from '@angular/material/chips';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {FormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';
 import {MatIconModule} from '@angular/material/icon';
-import {MatTreeModule, MatTreeNestedDataSource} from '@angular/material/tree';
 import {MatButtonModule} from '@angular/material/button';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
+import {MatTooltipModule} from '@angular/material/tooltip';
 import {GroupNode} from '../../../../domain/GroupNode';
-import {NestedTreeControl} from '@angular/cdk/tree';
 import {NotificationService} from '../../../../services/notification.service';
+import {Group} from '../../../../domain/Group';
 
 @Component({
     selector: 'app-groups-form',
     imports: [
         FormsModule,
-        ReactiveFormsModule,
         CommonModule,
-        MatTreeModule,
         MatButtonModule,
         MatIconModule,
         MatFormFieldModule,
-        MatChipsModule,
-        MatInput
+        MatInput,
+        MatTooltipModule
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './groups-form.component.html',
@@ -34,15 +31,14 @@ import {NotificationService} from '../../../../services/notification.service';
 })
 export class GroupsFormComponent implements OnInit{
 
-  dataSource = new MatTreeNestedDataSource<GroupNode>();
   newGroupName: string = '';
-  treeControl = new NestedTreeControl<GroupNode>(node => node.children);
+  editingGroupId: string | null = null;
+  private savedEditName = '';
+
   constructor(
     private settingService: SettingService,
     public settingStorage: SettingStorageService,
-
     public profileService: ProfileService,
-
     private notification: NotificationService,
   ) {
   }
@@ -54,89 +50,83 @@ export class GroupsFormComponent implements OnInit{
     if (!this.settingStorage.settings.groups) {
       this.settingStorage.settings.groups = [];
     }
-
-    this.dataSource.data = this.createGroupDataSource();
   }
 
-  hasChild(_: number, node: GroupNode): boolean {
-    return !!node.children && node.children.length > 0;
+  get groups(): Group[] {
+    return this.settingStorage.settings.groups || [];
   }
 
-  createGroupDataSource(): GroupNode[] {
+  get groupNodes(): GroupNode[] {
     return GroupNode.map2DataSource(
       this.settingStorage.settings.groups,
-      this.profileService.profilesCopy.profiles,
-      true,
-      false,
-      (group, node) => {
-        node.editable = true;
-        return node;
-      }
+      this.profileService?.profilesCopy?.profiles,
+      true, false,
+      (group, node) => { node.editable = true; return node; }
     );
   }
 
+  refresh() {
+    // Trigger change detection by reassigning (immutable pattern)
+    this.groupNodes;
+  }
+
+  getProfileCount(node: GroupNode): number {
+    if (!this.profileService?.profilesCopy?.profiles || !node.id) return 0;
+    return this.profileService.profilesCopy.profiles.filter(p => p.group === node.id).length;
+  }
+
   onAddGroup($event: any) {
-    if (!this.newGroupName) {
+    if (!this.newGroupName || !this.newGroupName.trim()) {
       return;
     }
-    let newName = this.newGroupName.trim();
-    if (newName.length > 0) {
-      if (!this.settingService.existGroup(this.newGroupName)){
-        this.settingService.addGroup(this.newGroupName);
-
-        this.newGroupName = '';
-
-        this.dataSource.data = this.createGroupDataSource();
-
-      } else {
-        this.notification.error(`Empty name is not allowed for a group, your change weill be aborted`);
-      }
-    }
-  }
-
-  async update(node: GroupNode, event: MatChipEditedEvent) {
-    const updateName = event.value.trim();
-    if (!node.group) {
-      this.notification.error('Invalid group, your change will be abort');
-      node.name = node.oldName;
-      return
-    }
-
-    // Remove tag if it no longer has a name
-    if (!updateName) {
-      await this.remove(node);
-      this.dataSource.data = this.createGroupDataSource();
-      return;
-    }
-    if (!this.settingService.existGroup(updateName, node.id)){
-      this.settingService.updateGroup(node.group, updateName);
-      this.dataSource.data = this.createGroupDataSource();
+    const name = this.newGroupName.trim();
+    if (!this.settingService.existGroup(name)) {
+      this.settingService.addGroup(name);
+      this.newGroupName = '';
+      this.refresh();
     } else {
-      this.notification.error(`Already have this ${updateName}, your change weill be aborted`);
-      node.name = node.oldName;
+      this.notification.error(`Group "${name}" already exists`);
     }
   }
 
+  startEdit(node: GroupNode) {
+    this.editingGroupId = node.id || null;
+    this.savedEditName = node.name;
+  }
+
+  cancelEdit() {
+    this.editingGroupId = null;
+  }
+
+  saveEdit(node: GroupNode, newName: string) {
+    this.editingGroupId = null;
+    const updateName = newName?.trim();
+    if (!updateName || !node.group) {
+      if (!updateName && node.group) {
+        this.remove(node);
+      }
+      return;
+    }
+    if (!this.settingService.existGroup(updateName, node.id)) {
+      this.settingService.updateGroup(node.group, updateName);
+      this.refresh();
+    } else {
+      this.notification.error(`Group "${updateName}" already exists`);
+    }
+  }
 
   async remove(groupNode: GroupNode) {
     if (groupNode.group) {
       await this.settingService.removeGroup(groupNode.group);
     }
-    this.dataSource.data = this.createGroupDataSource();
-  }
-
-  openColorPicker(index: string): void {
-    const picker = document.getElementById('group-color-picker-' + index) as HTMLElement;
-    picker.click();
+    this.refresh();
   }
 
   updateColor(node: GroupNode, event: any): void {
     const color = event.target.value.trim();
     if (color && node.group) {
       this.settingService.updateGroupColor(node.group, color);
-      this.dataSource.data = this.createGroupDataSource();
+      this.refresh();
     }
   }
 }
-
-

@@ -1,250 +1,312 @@
-# General
-- start app without any setting files
-- start app with setting files
-- multiple message can be displayed one by one (for ex, when you change master key and re-encrypt all settings)
-- dev mode has menu
-- prod mode no menu
-- mouse middle-click the title of the tab trigger close of the tab
+# YAET Test Plan
 
-## Package
-- local dev mode ok
-  - either run npm run ng:serve + npm run electron:dev
-  - or run npm run start
-- package script ok
-  - can create local installer
-- release script ok
-  - can push installer to github for autoupdate check
-  - increment package json version
+> Version: 3.1.4 | Last Updated: 2026-05-14
 
-## Auto Update
-- if dev mode, no auto update should happen
-- if prod mode, and auto update option checked, then auto update should start (check log)
-- if prod mode, and auto update option is not checked, then auto update should not start (check log)
+---
 
-## Master Key
-- if no master key configured, when you click cloud, profile, secret, quickconnect button, popup to suggest you set master key should appear
-  - NOTE: we'll update the key, but we shall not display the re-encrypt popup
-- when change master key, if you set the correct old master key, a popup to suggest you re-encrypt all settings should appear
-  - click ok, all will be re-encrypted
-  - click cancel, nothing happens
-- when change master key, if you set the incorrect old master key, all encrypted settings go to void
-  - NOTE: we'll update the key to new key, but we shall not display the re-encrypt popup
+## 1. Application Startup
 
-# Setting Menu
-- all page validation ok (save button disable enable correctly)
-- can add group
-- can edit group
-- can delete group
-  - if this group contains profile, after delete, that profile should go to default group
-- can add tags
-- can edit tags
-- can delete tags
-  - if exists profile contains this tag, after delete, this tag should be removed for that profile
-- if not compatible settings loaded, info message will display and the settings is initialized 
-  - cloud
-  - profile
-  - secrets
-  - settings
+- [ ] Start app without any existing config files (fresh install)
+  - Config directory `.yaet` should be created automatically
+  - App should start without errors
+  - Profiles/secrets/settings should initialize with defaults
+- [ ] Start app with existing config files
+  - All saved profiles, secrets, settings should load correctly
+- [ ] Dev mode (`NODE_ENV=development`): Application menu should be visible
+- [ ] Production mode: Application menu should be hidden
+- [ ] Multiple toast notifications can be queued and displayed sequentially
 
-# Add Local Term Menu
-- every time you click local terminal button at sidenav, a local terminal should start
+## 2. Build & Package
 
-# Quick connect menu
-- quick connect setting form works well (cf profiles menu)
-- be able to connect
-- be able to save to profile
+- [ ] `npm run ng:serve` + `npm run electron:dev` works for local development
+- [ ] `npm run start` works (concurrently runs both)
+- [ ] `npm run build` produces a working installer
+- [ ] `npm test` — all unit tests pass (currently 62+ tests)
+- [ ] Release workflow creates GitHub release with artifacts
 
-# Profiles menu
-- group tree view ok
-  - group color displays
-  - each item has tag color
-  - order by name
-  - profile icon ok
-- list view ok
-  - each item has tag color
-  - order by name
-  - profile icon ok
-- default is group tree
-- filter works
-- new profile works
-  - custom
-  - ssh
-  - vnc
-  - rdp
-  - scp
-  - ftp
-  - samba
-  - icon ok
-- clone works
-  - custom
-  - ssh
-  - vnc
-  - rdp
-  - scp
-  - ftp
-  - samba
-  - with same group info cloned
-  - with same tags info cloned
-- edit
-  - if change type of the profile, icon changes too
-  - basic change ok
-  - change group ok
-  - change tag change also the color icon
-- delete ok
+## 3. Auto Update
 
+- [ ] **Settings > Check for Updates** button triggers update check
+- [ ] When `autoUpdate` is enabled, app checks for updates at startup (production only)
+- [ ] When `autoUpdate` is disabled, no automatic update check
+- [ ] When an update is found, dialog prompts user to download
+- [ ] After download completes, dialog prompts user to restart and install
+- [ ] Proxy settings are respected during update check
+- [ ] Dev mode does NOT trigger auto update
 
-# Secrets module
-- add
-  - pass only
-  - login pass
-  - key without passphrase
-  - key with passphrase
-  - duplicate check ok
-- edit
-  - change type ok
-  - rename ok
-  - duplicate check ok
-- delete
-  - associate profile set cleared
-- icon ok
-- icon ok in dropdown of
-  - cloud settings
-  - ssh/scp profile settings
-  - vnc profile settings
-- in cloud drop down of secret, click add new opens a quick secret creation page with only login password type
-- in ssh/scp drop down of secret, click add new opens a quick secret creation page with all type
-- in vnc drop down of secret, click add new opens a quick secret creation page with only password only type
-  - new secret creation has same validator
-  - new secret can be created
-  - after creation, it appears in the dropdown
-  - if only one possible secretType option, that one will be selected by default
+## 4. Master Key & Secrets
 
-# Cloud menu
-- form validation ok
-- upload ok
-- download ok
+- [ ] First-time setup: clicking Cloud, Profile, Secret, or Quick Connect prompts to set a master key
+- [ ] Setting a new master key: works without triggering re-encrypt prompt
+- [ ] Changing master key with correct old key: re-encrypt prompt appears
+  - [ ] Click "OK" → all settings re-encrypted
+  - [ ] Click "Cancel" → no changes
+- [ ] Changing master key with incorrect old key: old data becomes unreadable
+- [ ] Deleting master key: confirm dialog, all secrets become inaccessible
+- [ ] Master key status is updated in real-time (event-driven, no polling)
 
-# Terminal
-- reconnect: open a ssh terminal, reboot, then the reconnect button should appear
-  - after you click it, your session should be reconnected
-- open url: 
-  - when you click url, it's copied in your clipboard
-  - when you press ctrl and click url, it's opened in a new web browser (not in electron itself)
+### Secrets CRUD
+- [ ] Add: Password Only
+- [ ] Add: Login + Password
+- [ ] Add: SSH Key (with and without passphrase)
+- [ ] Add: Duplicate name detection
+- [ ] Edit: Change type preserves fields where possible
+- [ ] Edit: Rename
+- [ ] Edit: Duplicate name detection
+- [ ] Delete: Associated profile references are cleared
+- [ ] Icon displayed correctly in lists and dropdowns
+- [ ] Quick-add from dropdown:
+  - [ ] Cloud settings → Login/Password only
+  - [ ] SSH/SCP profile → All types
+  - [ ] VNC profile → Password only
+  - [ ] New secret appears in dropdown immediately
 
-## Local Terminal
-- (Settings) if default open option checked, then a local terminal should start at startup
-- (Settings) if default open option not checked, then a local terminal should not start at startup
-- cmd powershell work in terminal
-- (Settings) be able to switch between cmd, powershell, powershell7, bash for local terminal
+## 5. Settings Menu
 
-## Telnet
-- be able to configure a telnet connection
-- be able to launch command on that telnet connection
-- NOTE: win11 doesn't support telnet server anymore, you need install a server yourself for ex: hk-telnet-server
+### General
+- [ ] App version displayed correctly
+- [ ] Check for Updates button works
+- [ ] Auto-update toggle
+- [ ] Proxy selection dropdown (when auto-update enabled)
+- [ ] Language switcher works (EN/ZH/FR/ES/DE)
+- [ ] Set/Remove master key buttons work
 
-## WinRM (powershell)
-- be able to configure a winrm connection
-- be able to launch command on that winrm connection
-- NOTE: you may need run following cmd on your client post
-  - ```winrm quickconfigure```
-  - if you use http user authentication, you need add the winrm server into your trustedHost config
-  - ```winrm set winrm/config/client '@{TrustedHosts="machineA,machineB"}'```
-- for ssh type WinRM please use ssh connection in the below part
+### UI
+- [ ] Sidebar navigation options
+- [ ] Profile label length setting
+- [ ] Theme selection applies correctly
 
-## SSH
-- connection ok
-- color ok
-- cmd works
-- vi works
-- scrollbar works
-- clipboard works (ctrl shift c for copy, ctrl v or mouse right click for paste)
-- init path ok
-- init command ok
-- resize ok
+### Terminal
+- [ ] Local terminal type selection (CMD/PowerShell/PowerShell 7/Bash)
+- [ ] Default terminal on startup option
+- [ ] Font size / font family settings
 
-# Remote Desktop
+### Remote Desktop
+- [ ] VNC settings
+- [ ] RDP settings
 
-## Rdp
-- open mstsc
+### File Explorer
+- [ ] File explorer settings
+- [ ] Save button is enabled when form is valid
 
-## VNC
-- connection ok
-- copy paste text ok
-- resize ok
+### AI
+- [ ] AI API URL, token, model settings
+- [ ] Form validation (save button enable/disable correctly for ALL tabs)
 
-# Remote File explorer
+### Groups
+- [ ] Add group
+- [ ] Edit group name/color
+- [ ] Delete group → profiles in that group move to "default"
+- [ ] Tree view shows group colors
 
-## SCP
-- all ok, use a third party lib
-- init path pb fixed via patch-package
-- [x] scp form
-- [x] connect
-- [x] list
-- [x] cd
-- [x] download single
-- [x] download multiple
-- [x] detail view
-- [x] upload
-- [x] drag and drop file to upload
-- [x] copy paste file
-- [x] cut paste file
-- [x] copy paste folder
-- [x] cut paste folder
-- [x] create folder
-- [] create file
-- [x] rename folder
-- [x] rename file
-- [x] delete file
-- [x] delete folder
-- [x] delete folder containing files
-- [x] double click open the file 
-  - if you update the file, the file will be uploaded to scp
-- [x] copy current path
+### Tags
+- [ ] Add tag
+- [ ] Edit tag
+- [ ] Delete tag → removed from all associated profiles
 
-## SMB
-- all ok, use a third party lib
-- [x] SMB form
-- [x] connect
-- [x] list
-- [x] cd
-- [x] download single
-- [x] download multiple
-- [x] detail view
-- [x] upload
-- [x] drag and drop file to upload
-- [x] copy paste file
-- [x] cut paste file
-- [x] copy paste folder
-- [x] cut paste folder
-- [x] create folder
-- [] create file
-- [x] rename folder
-- [x] rename file
-- [x] delete file
-- [x] delete folder
-- [x] delete folder containing files
-- [x] double click open the file
-  - if you update the file, the file will be uploaded to scp
+### Incompatible Settings
+- [ ] If saved data version is higher than app version, warning is shown and defaults are used
+  - [ ] Profiles
+  - [ ] Secrets
+  - [ ] Settings
+  - [ ] Cloud settings
 
-## Ftp
-- [x] profile form
-- [x] connect
-- [x] list
-- [x] cd
-- [x] download single
-- [x] download multiple
-- [x] upload
-- [x] drag and drop file to upload
-- [x] init path
-- [x] create folder
-- [] create file
-- [x] rename folder
-- [x] rename file
-- [x] delete file
-- [x] delete folder
-- [x] double click open the file
-  - if you update the file, the file will be uploaded to ftp
-- [] secure FTPS
+## 6. Profiles
 
-# Custom
-- custom command can start, for ex for realvnc
+### View Modes
+- [ ] Tree view (default): grouped by group name, ordered alphabetically
+  - [ ] Group color displayed
+  - [ ] Tag colors on items
+  - [ ] Profile icons
+- [ ] List view: flat list ordered alphabetically
+  - [ ] Tag colors on items
+  - [ ] Profile icons
+- [ ] Filter by name/tag works
+
+### Profile Operations
+- [ ] New profile: all types (SSH, Telnet, WinRM, Local Terminal, VNC, RDP, SCP, FTP, Samba, Custom)
+- [ ] Clone: all types, preserves group and tags, appends "Clone" to name
+- [ ] Edit:
+  - [ ] Type change → icon updates
+  - [ ] Basic field changes
+  - [ ] Group assignment
+  - [ ] Tag assignment updates icon color
+- [ ] Delete: confirmation, removed from list
+
+### Quick Connect
+- [ ] Quick connect form works (same validation as profiles)
+- [ ] Can connect directly
+- [ ] Can save to profile
+
+## 7. Terminal
+
+### Local Terminal
+- [ ] Clicking local terminal button on sidebar opens a terminal immediately
+- [ ] CMD, PowerShell, PowerShell 7, Bash all work
+- [ ] "Open terminal at startup" setting works
+- [ ] Switch terminal type via settings applies on next open
+
+### SSH
+- [ ] Connection succeeds
+- [ ] Color scheme applied correctly
+- [ ] Commands execute
+- [ ] `vi` / `nano` editors work
+- [ ] Scrollbar works
+- [ ] Clipboard: `Ctrl+Shift+C` copies selection, `Ctrl+V` / right-click pastes
+- [ ] Init path (`cd` on connect) works
+- [ ] Init command runs on connect
+- [ ] Resize propagates correctly to remote terminal
+- [ ] Reconnect: after network interruption, reconnect button appears and works
+- [ ] URL handling:
+  - [ ] Click → copied to clipboard
+  - [ ] Ctrl+Click → opened in external browser
+
+### Telnet
+- [ ] Configure telnet connection
+- [ ] Send commands
+- [ *Note:* Windows 11 does not include telnet server; use a 3rd-party server like hk-telnet-server]
+
+### WinRM (PowerShell Remoting)
+- [ ] Configure WinRM connection
+- [ ] PowerShell commands execute remotely
+- [ *Note:* May need `winrm quickconfigure` and trusted hosts config]
+
+## 8. Remote Desktop
+
+### RDP
+- [ ] Opens Microsoft Remote Desktop (mstsc) with configured host
+
+### VNC
+- [ ] Connection succeeds
+- [ ] Copy/paste text works bidirectionally
+- [ ] Resize works
+
+## 9. File Explorer
+
+### SCP/SFTP
+- [ ] Connect
+- [ ] List directory
+- [ ] Navigate (cd)
+- [ ] Download single file
+- [ ] Download multiple files
+- [ ] Upload file
+- [ ] Drag & drop file to upload
+- [ ] Copy/paste file
+- [ ] Cut/paste file
+- [ ] Copy/paste folder
+- [ ] Cut/paste folder
+- [ ] Create folder
+- [ ] Create file
+- [ ] Rename folder
+- [ ] Rename file
+- [ ] Delete file
+- [ ] Delete folder (empty)
+- [ ] Delete folder containing files
+- [ ] Double-click open file → downloaded to temp → opened in native app
+  - [ ] Saving the file triggers re-upload to server
+- [ ] Copy current path
+- [ ] Detail view toggle
+- [ ] Proxy support
+
+### FTP
+- [ ] Connect
+- [ ] List directory
+- [ ] Navigate (cd)
+- [ ] Download single file
+- [ ] Download multiple files
+- [ ] Upload file
+- [ ] Drag & drop upload
+- [ ] Create folder
+- [ ] Rename folder/file
+- [ ] Delete file/folder
+- [ ] Double-click open → edit → auto-upload
+- [ ] Init path
+- [ ] FTPS (secure) — *not yet implemented*
+
+### SMB/Samba
+- [ ] Connect
+- [ ] List directory
+- [ ] Navigate (cd)
+- [ ] Download single/multiple files
+- [ ] Upload
+- [ ] Drag & drop upload
+- [ ] Copy/paste, cut/paste files and folders
+- [ ] Create folder
+- [ ] Rename folder/file
+- [ ] Delete file/folder (empty and with contents)
+- [ ] Double-click open → edit → auto-upload
+
+## 10. Custom Commands
+
+- [ ] Custom command configured in profile
+- [ ] Custom command executes (e.g., launching RealVNC)
+
+## 11. Cloud Sync
+
+- [ ] Cloud settings form validation
+- [ ] Authentication via login/password or secret
+- [ ] Upload profiles/secrets to remote git repo
+- [ ] Download profiles/secrets from remote git repo
+
+## 12. AI Chat
+
+- [ ] AI settings configured (API URL, token, model)
+- [ ] Send message and receive AI response
+- [ ] Markdown rendering works (code blocks, lists, etc.)
+- [ ] Context mode: includes current terminal output in prompt
+- [ ] Agent mode: AI response sent directly to terminal
+- [ ] Messages are scrollable
+- [ ] Loading state shown during API call
+
+## 13. UI/UX
+
+- [ ] Tab management:
+  - [ ] Open multiple tabs
+  - [ ] Switch between tabs
+  - [ ] Close tab with middle-click on title
+  - [ ] Split screen (vertical/horizontal)
+  - [ ] Move tab between panes
+- [ ] Themes:
+  - [ ] Pink-Bluegrey (dark)
+  - [ ] Purple-Green (dark)
+  - [ ] Indigo-Pink (light)
+  - [ ] Deep Purple-Amber (light)
+- [ ] Custom scrollbar styling
+- [ ] Offline: no external CDN requests (fonts/icons bundled locally)
+
+## 14. Security & Error Handling
+
+- [ ] CSP blocks inline scripts (check devtools console)
+- [ ] XSS: AI chat output does NOT execute HTML/scripts (DOMPurify sanitizes)
+- [ ] IPC channels are whitelisted (unexpected channels are rejected)
+- [ ] Corrupted JSON data does not crash the app (caught by try-catch in profile/secret/proxy services)
+- [ ] Express API requires valid token (401 on missing/invalid token)
+- [ ] Proxy credentials are scoped to auto-updater lifecycle only
+- [ ] Command injection: shell commands use `spawn` with argument arrays
+
+## 15. Automated Tests
+
+- [ ] `npm test` — all tests pass
+  - [ ] `VersionUtils`: version comparison (equal, greater, less, different lengths)
+  - [ ] `FilterKeywordPipe`: filtering, case-insensitivity, multi-provider, null safety
+  - [ ] `Secret`/`Proxy`/`Profile` domain models: construction, cloning, CRUD
+  - [ ] `TabInstance`: creation, name fallback
+  - [ ] `GroupNode`: tree construction, sorting, empty groups, default node, patches
+  - [ ] `ModelFormController`: form init, model mapping, refresh, preconditions
+
+---
+
+## Test Environment
+
+- **OS**: Windows 10/11, Ubuntu 22.04+, macOS (if available)
+- **Node.js**: 20.19+ / 22.12+ / 24+
+- **Electron**: 35.x
+- **Browser**: Chrome/Chromium (for Angular tests)
+
+---
+
+## Notes
+
+- Items marked `[x]` in the original test plan have been manually verified previously.
+- New features (AI Chat, manual update check, Express API auth) should be prioritized for manual testing.
+- Automated tests cover domain models, pipes, and utility functions; manual testing is required for Electron IPC, UI interactions, and remote connections.

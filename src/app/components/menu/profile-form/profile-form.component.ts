@@ -76,6 +76,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
   @ViewChild('tagsAutoCompleteInput') tagsAutoCompleteInput!: ElementRef<HTMLInputElement>;
   filteredTags: Tag[] = [];
+  tagList: Tag[] = [];
 
   constructor(
     private log: LogService,
@@ -129,14 +130,16 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     if (!profile || !this.form) return;
     this.groupColor = profile.group ? (this.settingStorage.settings.groups.find(g => g.id === profile.group)?.color || '') : '';
 
-    // No tags needed.
+    const group = profile.group ? this.settingStorage.settings.groups.find(g => g.id === profile.group) : undefined;
+    this.tagList = (profile.tags || []).map(id => this.settingStorage.settings.tags.find(t => t.id === id)).filter((t): t is Tag => !!t);
 
     this.form.patchValue({
       name: profile.name,
       comment: profile.comment,
       category: profile.category,
       profileType: profile.profileType,
-      group: profile.group,
+      group: group || profile.group,
+      tags: this.tagList,
       proxyId: profile.proxyId,
       remoteTerminalProfileForm: ['SSH_TERMINAL', 'TELNET_TERMINAL', 'WIN_RM_TERMINAL', 'SCP_FILE_EXPLORER'].includes(profile.profileType) ?
                                  (profile.profileType === ProfileType.SSH_TERMINAL || profile.profileType === ProfileType.SCP_FILE_EXPLORER ? profile.sshProfile :
@@ -148,6 +151,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       customProfileForm: profile.category === ProfileCategory.CUSTOM ? profile.customProfile : null,
     });
     this.form.markAsPristine();
+    this.dirtyStateChange.emit(false);
     this.updateFilteredTag(null);
   }
 
@@ -159,6 +163,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     this.profile.category = val.category;
     this.profile.profileType = val.profileType;
     this.profile.group = typeof val.group === 'string' ? val.group : (val.group?.id || '');
+    this.profile.tags = this.tagList.map((t: Tag) => t.id);
     this.profile.proxyId = val.proxyId;
 
     const profileType = val.profileType;
@@ -224,36 +229,36 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     const value = (event.value || '').trim();
     if (value) {
       const existingTag = this.settingStorage.settings.tags.find(t => t.name.toLowerCase() === value.toLowerCase());
-      if (existingTag) {
-        const currentTags = this.form.get('tags')?.value as Tag[];
-        if (!currentTags.find(t => t.id === existingTag.id)) {
-            this.form.get('tags')?.setValue([...currentTags, existingTag]);
-            this.form.get('tags')?.markAsDirty();
-        }
+      if (existingTag && !this.tagList.find(t => t.id === existingTag.id)) {
+        this.tagList = [...this.tagList, existingTag];
+        this.form.get('tags')?.setValue(this.tagList);
+        this.form.get('tags')?.markAsDirty();
+        this.dirtyStateChange.emit(true);
       }
     }
     event.chipInput!.clear();
-    this.updateFilteredTag(null);
+    this.filteredTags = this.settingStorage.settings.tags;
   }
 
   removeTag(tag: Tag): void {
-    const currentTags = this.form.get('tags')?.value as Tag[];
-    const index = currentTags.indexOf(tag);
+    const index = this.tagList.indexOf(tag);
     if (index >= 0) {
-      currentTags.splice(index, 1);
-      this.form.get('tags')?.setValue([...currentTags]);
+      this.tagList = [...this.tagList.slice(0, index), ...this.tagList.slice(index + 1)];
+      this.form.get('tags')?.setValue(this.tagList);
       this.form.get('tags')?.markAsDirty();
+      this.dirtyStateChange.emit(true);
     }
   }
 
   selectTag(event: MatAutocompleteSelectedEvent): void {
-    const currentTags = this.form.get('tags')?.value as Tag[];
-    if (!currentTags.find(t => t.id === event.option.value.id)) {
-        this.form.get('tags')?.setValue([...currentTags, event.option.value]);
-        this.form.get('tags')?.markAsDirty();
+    if (!this.tagList.find(t => t.id === event.option.value.id)) {
+      this.tagList = [...this.tagList, event.option.value];
+      this.form.get('tags')?.setValue(this.tagList);
+      this.form.get('tags')?.markAsDirty();
+      this.dirtyStateChange.emit(true);
     }
     this.tagsAutoCompleteInput.nativeElement.value = '';
-    this.updateFilteredTag(null);
+    this.filteredTags = this.settingStorage.settings.tags;
   }
 
   updateFilteredTag(event: any): void {

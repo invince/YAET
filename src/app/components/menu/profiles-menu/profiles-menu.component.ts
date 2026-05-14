@@ -205,7 +205,11 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   }
 
   public tagsColor(profile: Profile): string[] {
-    return [];
+    if (!profile || !profile.tags || !this.settingStorage?.settings?.tags) return [];
+    return profile.tags
+      .map(id => this.settingStorage.settings.tags.find(t => t.id === id))
+      .filter(Boolean)
+      .map(t => t!.color);
   }
 
 
