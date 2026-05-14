@@ -44,6 +44,7 @@ const ALLOWED_INVOKE_CHANNELS = [
   'local-file.read',
   'local-file.watch',
   'local-file.unwatch',
+  'get-api-token',
 ];
 
 const ALLOWED_ON_CHANNELS = [
