@@ -1,5 +1,6 @@
 const { ipcMain, app, shell } = require('electron');
 const fs = require('fs');
+const fsp = require('fs/promises');
 const path = require('path');
 
 const LOCAL_FILE_SAVE_TEMP = 'local-file.save-temp';
@@ -17,20 +18,16 @@ function initLocalFileHandler(log, mainWindow) {
         try {
             const tempDir = app.getPath('temp');
             const targetDir = path.join(tempDir, 'yaet', folder || '');
-            
-            if (!fs.existsSync(targetDir)) {
-                fs.mkdirSync(targetDir, { recursive: true });
-            }
 
-            // Prevent path traversal: normalize and ensure it stays within targetDir
+            await fsp.mkdir(targetDir, { recursive: true });
+
             const baseName = path.basename(filename);
             const filePath = path.join(targetDir, baseName);
             if (!filePath.startsWith(targetDir)) {
                 throw new Error('Invalid filename: path traversal detected');
             }
-            // buffer comes as Uint8Array/Buffer from renderer
-            fs.writeFileSync(filePath, Buffer.from(buffer));
-            
+            await fsp.writeFile(filePath, Buffer.from(buffer));
+
             return { success: true, path: filePath };
         } catch (error) {
             log.error('Error saving temp file:', error);
@@ -55,12 +52,12 @@ function initLocalFileHandler(log, mainWindow) {
 
     ipcMain.handle(LOCAL_FILE_READ, async (event, filePath) => {
         try {
-            if (fs.existsSync(filePath)) {
-                const content = fs.readFileSync(filePath, 'utf-8');
-                return { success: true, content };
-            }
-            return { success: false, error: 'File not found' };
+            const content = await fsp.readFile(filePath, 'utf-8');
+            return { success: true, content };
         } catch (error) {
+            if (error.code === 'ENOENT') {
+                return { success: false, error: 'File not found' };
+            }
             return { success: false, error: error.message };
         }
     });
