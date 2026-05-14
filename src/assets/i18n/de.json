@@ -65,6 +65,12 @@
         "VNC_CLIPBOARD_COMPATIBLE": "VNC-Zwischenablage-Kompatibilitätsmodus aktivieren",
         "VNC_QUALITY": "Qualität (0-9)",
         "VNC_COMPRESSION": "Komprimierung (0-9)",
+        "AI_ASSISTANT": "KI-Assistent",
+        "AI_CONFIGURATION": "KI-Konfiguration",
+        "AI_MODE": "Modus",
+        "AI_MODEL": "Modell",
+        "AI_ACP_COMMAND": "ACP-Befehl",
+        "AI_ACP_ARGS": "ACP-Argumente",
         "ADD_NEW_GROUP": "Neue Gruppe hinzufügen"
     },
     "LANGUAGES": {

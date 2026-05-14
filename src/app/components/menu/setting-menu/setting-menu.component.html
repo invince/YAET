@@ -217,11 +217,22 @@
           <div class="setting-form" [formGroup]="aiForm">
             <div class="form-section" style="display: flex; flex-direction: column; gap: 12px;">
               <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
-                OpenAI Configuration
+                {{ 'SETTINGS.AI_CONFIGURATION' | translate }}
                 <button mat-stroked-button color="warn" size="small" (click)="onClearAiSettings()">
-                  <mat-icon>clear_all</mat-icon> Clear
+                  <mat-icon>clear_all</mat-icon> {{ 'COMMON.CLEAR' | translate }}
                 </button>
               </div>
+
+              <mat-form-field class="field" appearance="outline">
+                <mat-label>{{ 'SETTINGS.AI_MODE' | translate }}</mat-label>
+                <mat-select formControlName="aiMode" (selectionChange)="onSelectAiMode($event)">
+                  @for (opt of MODE_OPTIONS; track opt.value) {
+                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              @if (aiForm.get('aiMode')?.value === 'web') {
               <mat-form-field class="field" appearance="outline">
                 <mat-label>API URL</mat-label>
                 <input matInput type="text" formControlName="aiApiUrl" />
@@ -232,10 +243,62 @@
                 <input matInput type="password" formControlName="aiToken" />
               </mat-form-field>
 
+              <div style="display: flex; gap: 8px; align-items: flex-start;">
+                <mat-form-field class="field" style="flex: 1;" appearance="outline">
+                  <mat-label>Web {{ 'SETTINGS.AI_MODEL' | translate }}</mat-label>
+                  @if (aiModelOptions.length > 0) {
+                  <mat-select formControlName="aiModel">
+                    @for (model of aiModelOptions; track model) {
+                    <mat-option [value]="model">{{ model }}</mat-option>
+                    }
+                  </mat-select>
+                  } @else {
+                  <input matInput type="text" formControlName="aiModel" placeholder="gpt-4o" />
+                  }
+                  @if (isLoadingModels) {
+                  <mat-icon matSuffix style="font-size: 18px;">hourglass_top</mat-icon>
+                  }
+                </mat-form-field>
+                <button mat-icon-button (click)="fetchAiModels()" [disabled]="isLoadingModels"
+                  title="Refresh models from API" style="margin-top: 4px;">
+                  <mat-icon>refresh</mat-icon>
+                </button>
+              </div>
+              }
+
+              @if (aiForm.get('aiMode')?.value === 'acp') {
               <mat-form-field class="field" appearance="outline">
-                <mat-label>Model</mat-label>
-                <input matInput type="text" formControlName="aiModel" />
+                <mat-label>{{ 'SETTINGS.AI_ACP_COMMAND' | translate }}</mat-label>
+                <input matInput type="text" formControlName="acpCommand" />
               </mat-form-field>
+
+              <mat-form-field class="field" appearance="outline">
+                <mat-label>{{ 'SETTINGS.AI_ACP_ARGS' | translate }}</mat-label>
+                <input matInput type="text" formControlName="acpArgs" />
+              </mat-form-field>
+
+              <div style="display: flex; gap: 8px; align-items: flex-start;">
+                <mat-form-field class="field" style="flex: 1;" appearance="outline">
+                  <mat-label>ACP {{ 'SETTINGS.AI_MODEL' | translate }}</mat-label>
+                  @if (acpModelOptions.length > 0) {
+                  <mat-select formControlName="acpModel">
+                    @for (model of acpModelOptions; track model) {
+                    <mat-option [value]="model">{{ model }}</mat-option>
+                    }
+                  </mat-select>
+                  } @else {
+                  <input matInput type="text" formControlName="acpModel" placeholder="e.g., opencode/big-pickle" />
+                  }
+                  @if (isLoadingAcpModels) {
+                  <mat-icon matSuffix style="font-size: 18px;">hourglass_top</mat-icon>
+                  }
+                </mat-form-field>
+                <button mat-icon-button (click)="fetchAcpModels()" [disabled]="isLoadingAcpModels"
+                  title="Refresh models from ACP" style="margin-top: 4px;">
+                  <mat-icon>refresh</mat-icon>
+                </button>
+              </div>
+              }
             </div>
           </div>
         </div>

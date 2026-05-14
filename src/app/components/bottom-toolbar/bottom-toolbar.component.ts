@@ -1,11 +1,11 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { AiChatService } from '../../services/ai-chat.service';
-import { SettingStorageService } from '../../services/setting-storage.service';
-import { TabService } from '../../services/tab.service';
+import {CommonModule} from '@angular/common';
+import {Component} from '@angular/core';
+import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
+import {MatToolbarModule} from '@angular/material/toolbar';
+import {AiChatService} from '../../services/ai-chat.service';
+import {SettingStorageService} from '../../services/setting-storage.service';
+import {TabService} from '../../services/tab.service';
 
 @Component({
     selector: 'app-bottom-toolbar',
@@ -22,7 +22,11 @@ export class BottomToolbarComponent {
 
     get isAiConfigured(): boolean {
         const ai = this.settingStorage.settings.ai;
-        return !!(ai && ai.apiUrl && ai.token);
+        if (!ai) return false;
+        if (ai.mode === 'acp' || (!ai.mode && ai.acpCommand)) {
+            return !!(ai.acpCommand);
+        }
+        return !!(ai.apiUrl && ai.token);
     }
 
     toggleSplit(direction: 'vertical' | 'horizontal' = 'vertical', ratio: number = 50) {

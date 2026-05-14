@@ -65,6 +65,12 @@
         "VNC_CLIPBOARD_COMPATIBLE": "Activer le mode compatible presse-papiers VNC",
         "VNC_QUALITY": "Qualité (0-9)",
         "VNC_COMPRESSION": "Compression (0-9)",
+        "AI_ASSISTANT": "Assistant IA",
+        "AI_CONFIGURATION": "Configuration IA",
+        "AI_MODE": "Mode",
+        "AI_MODEL": "Modèle",
+        "AI_ACP_COMMAND": "Commande ACP",
+        "AI_ACP_ARGS": "Arguments ACP",
         "ADD_NEW_GROUP": "Ajouter un nouveau groupe"
     },
     "LANGUAGES": {

@@ -5,6 +5,9 @@ import {CloudResponse} from '../../domain/setting/CloudResponse';
 import {SecretStorageService} from '../secret-storage.service';
 import {Log} from '../../domain/Log';
 import {
+  ACP_FETCH_MODELS,
+  ACP_SEND,
+  AI_FETCH_MODELS,
   CHECK_FOR_UPDATES,
   CLOUD_DOWNLOAD,
   CLOUD_RELOAD,
@@ -117,6 +120,27 @@ export class ElectronService extends AbstractElectronService {
     if (this.ipc) {
       this.ipc.send(CHECK_FOR_UPDATES, {});
     }
+  }
+
+  async sendAcpChat(command: string, args: string, model: string, messages: any[]): Promise<string> {
+    if (this.ipc) {
+      return await this.ipc.invoke(ACP_SEND, { command, args, model, messages });
+    }
+    throw new Error('Electron IPC not available');
+  }
+
+  async fetchAiModels(apiUrl: string, token: string): Promise<string[]> {
+    if (this.ipc) {
+      return await this.ipc.invoke(AI_FETCH_MODELS, { apiUrl, token });
+    }
+    throw new Error('Electron IPC not available');
+  }
+
+  async fetchAcpModels(command: string, args: string): Promise<string[]> {
+    if (this.ipc) {
+      return await this.ipc.invoke(ACP_FETCH_MODELS, { command, args });
+    }
+    throw new Error('Electron IPC not available');
   }
   //#endregion "Settings"
 
@@ -247,8 +271,19 @@ export class ElectronService extends AbstractElectronService {
   }
   //#endregion "Proxies"
 
+  //#region "ACP"
+  onAcpChunk(callback: (data: { chunk: string }) => void) {
+    if (this.ipc) {
+      this.ipc.on('acp.chunk', (event: any, data: any) => callback(data));
+    }
+  }
 
-
+  removeAcpChunkListeners() {
+    if (this.ipc) {
+      this.ipc.removeAllListeners('acp.chunk');
+    }
+  }
+  //#endregion "ACP"
 }
 
 export class TermOutput {

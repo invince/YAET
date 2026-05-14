@@ -5,8 +5,14 @@
       <span>AI Assistant</span>
     </div>
     <div class="header-actions">
-      <mat-slide-toggle [(ngModel)]="agentMode" title="Agent Mode (execute commands instantly)"></mat-slide-toggle>
-      <mat-slide-toggle [(ngModel)]="useContext" title="Use active terminal context"></mat-slide-toggle>
+      <div class="toggle-group" title="Agent Mode (execute commands instantly)">
+        <mat-icon>terminal</mat-icon>
+        <mat-slide-toggle [(ngModel)]="agentMode"></mat-slide-toggle>
+      </div>
+      <div class="toggle-group" title="Use active terminal context">
+        <mat-icon>article</mat-icon>
+        <mat-slide-toggle [(ngModel)]="useContext"></mat-slide-toggle>
+      </div>
       <button mat-icon-button (click)="toggleChat()">
         <mat-icon>close</mat-icon>
       </button>
@@ -21,8 +27,13 @@
     }
     @if (isLoading) {
     <div class="message assistant">
-      <div class="message-content">
-        <mat-spinner diameter="20"></mat-spinner>
+      <div class="message-content" style="display: flex; align-items: center; gap: 8px;">
+        @if (messages.length === 0 || messages[messages.length-1].role !== 'assistant' || messages[messages.length-1].content === '') {
+          <mat-spinner diameter="20"></mat-spinner>
+        }
+        <button mat-icon-button (click)="stop()" title="Stop Generation" style="color: #ff5252;">
+          <mat-icon>stop_circle</mat-icon>
+        </button>
       </div>
     </div>
     }

@@ -31,6 +31,9 @@ const ALLOWED_SEND_CHANNELS = [
 ];
 
 const ALLOWED_INVOKE_CHANNELS = [
+  'acp.send',
+  'acp.fetch-models',
+  'ai.fetch-models',
   'session.open.rd.vnc',
   'session.fe.scp.register',
   'session.fe.ftp.register',
@@ -60,6 +63,7 @@ const ALLOWED_ON_CHANNELS = [
   'cloud.loaded',
   'proxies.loaded',
   'masterkey-changed',
+  'acp.chunk',
 ];
 
 contextBridge.exposeInMainWorld('electronAPI', {

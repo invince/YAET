@@ -65,6 +65,12 @@
         "VNC_CLIPBOARD_COMPATIBLE": "启用 VNC 剪贴板兼容模式",
         "VNC_QUALITY": "质量 (0-9)",
         "VNC_COMPRESSION": "压缩 (0-9)",
+        "AI_ASSISTANT": "AI 助手",
+        "AI_CONFIGURATION": "AI 配置",
+        "AI_MODE": "模式",
+        "AI_MODEL": "模型",
+        "AI_ACP_COMMAND": "ACP 命令",
+        "AI_ACP_ARGS": "ACP 参数",
         "ADD_NEW_GROUP": "添加新组"
     },
     "LANGUAGES": {

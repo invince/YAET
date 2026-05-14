@@ -66,6 +66,11 @@
         "VNC_QUALITY": "Quality (0-9)",
         "VNC_COMPRESSION": "Compression (0-9)",
         "AI_ASSISTANT": "AI Assistant",
+        "AI_CONFIGURATION": "AI Configuration",
+        "AI_MODE": "Mode",
+        "AI_MODEL": "Model",
+        "AI_ACP_COMMAND": "ACP Command",
+        "AI_ACP_ARGS": "ACP Arguments",
         "ADD_NEW_GROUP": "Add new Group"
     },
     "LANGUAGES": {
