@@ -10,4 +10,7 @@ export class AiSettings {
   acpCommand: string = '';
   acpArgs: string = '';
   acpModel: string = '';
+
+  useContext: boolean = true;
+  agentMode: boolean = false;
 }

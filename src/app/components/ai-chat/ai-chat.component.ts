@@ -17,6 +17,7 @@ import {SettingStorageService} from '../../services/setting-storage.service';
 import {TabService} from '../../services/tab.service';
 import {TerminalInstanceService} from '../../services/terminal-instance.service';
 import {ElectronService} from '../../services/electron/electron.service';
+import {SettingService} from '../../services/setting.service';
 
 @Component({
   selector: 'app-ai-chat',
@@ -40,8 +41,22 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   userInput = '';
   messages: { role: string, content: string }[] = [];
   isLoading = false;
-  useContext = true;
-  agentMode = false;
+  
+  get useContext() {
+    return this.settingStorage.settings.ai.useContext ?? true;
+  }
+  set useContext(val: boolean) {
+    this.settingStorage.settings.ai.useContext = val;
+    this.saveSettings();
+  }
+
+  get agentMode() {
+    return this.settingStorage.settings.ai.agentMode ?? false;
+  }
+  set agentMode(val: boolean) {
+    this.settingStorage.settings.ai.agentMode = val;
+    this.saveSettings();
+  }
 
   constructor(
     private aiService: AiService,
@@ -51,6 +66,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     private electronTerminalService: ElectronTerminalService,
     public aiChatService: AiChatService,
     private electronService: ElectronService,
+    private settingService: SettingService,
     private cdr: ChangeDetectorRef,
     private sanitizer: DomSanitizer
   ) { }
@@ -163,6 +179,17 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
 
     this.electronService.removeAcpChunkListeners();
     this.electronService.onAcpChunk((data: any) => {
+      if (data.done) {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+          return;
+      }
+      if (data.full) {
+          assistantMessage.content = data.full;
+          this.cdr.detectChanges();
+          this.scrollToBottom();
+          return;
+      }
       // Avoid duplication if the same chunk is somehow received twice or overlapping
       if (data.chunk && !assistantMessage.content.endsWith(data.chunk)) {
           assistantMessage.content += data.chunk;
@@ -234,5 +261,9 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     this.isLoading = false;
     this.electronService.removeAcpChunkListeners();
     this.cdr.detectChanges();
+  }
+
+  private saveSettings() {
+    this.settingService.save();
   }
 }

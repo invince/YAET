@@ -112,6 +112,8 @@ export class SettingService {
     if (!ai.mode) {
       ai.mode = 'web';
     }
+    if (ai.useContext === undefined) ai.useContext = true;
+    if (ai.agentMode === undefined) ai.agentMode = false;
   }
 
   private validateFileExplorerSettings(fileExplorer: FileExplorerSettings) {

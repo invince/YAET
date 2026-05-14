@@ -215,6 +215,7 @@ function initAcpIpcHandler(log) {
       // notifications
       if (msg.method === 'session/update' && msg.params?.update) {
         const u = msg.params.update;
+        log.info(`ACP Update: ${u.sessionUpdate}`);
         let chunk = '';
         // opencode seems to use sessionUpdate: 'agent_message_chunk'
         if (u.sessionUpdate === 'agent_message_chunk' && u.content) {
@@ -234,8 +235,31 @@ function initAcpIpcHandler(log) {
         }
 
         if (chunk) {
-            accumulatedText += chunk;
-            event.sender.send('acp.chunk', { chunk });
+            if (u.sessionUpdate === 'agent_message') {
+                event.sender.send('acp.chunk', { full: chunk });
+                accumulatedText = chunk;
+            } else {
+                accumulatedText += chunk;
+                event.sender.send('acp.chunk', { chunk });
+            }
+        }
+        
+        const isDone = u.sessionUpdate === 'agent_message' || 
+                      u.sessionUpdate === 'usage_update' ||
+                      (u.sessionUpdate === 'status' && (u.status === 'completed' || u.status === 'error')) ||
+                      u.finishReason ||
+                      u.stop_reason;
+
+        if (isDone) {
+            log.info(`ACP stream finished signal detected: ${u.sessionUpdate || ''} ${u.status || ''}`);
+            event.sender.send('acp.chunk', { done: true });
+            if (u.status === 'error') {
+                throw new Error('ACP session update reported error');
+            }
+            if (accumulatedText || u.sessionUpdate === 'usage_update') {
+                log.info(`ACP returning early with ${accumulatedText.length} chars`);
+                return accumulatedText || '';
+            }
         }
         continue;
       }
