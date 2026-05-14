@@ -1,4 +1,4 @@
 export class Log {
-  level!: string;
-  message!: string;
+  level: string = '';
+  message: string = '';
 }

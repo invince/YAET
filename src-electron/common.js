@@ -117,36 +117,37 @@ function updateManifest(log, newConfigSaved) {
 }
 
 function hasConfig(log, configToCheck) {
-  return new Promise((resolve, reject) => {
-    const manifestFile = path.join(APP_CONFIG_PATH, MANIFEST_JSON); // same folder as exe
+  return new Promise((resolve) => {
+    const manifestFile = path.join(APP_CONFIG_PATH, MANIFEST_JSON);
     try {
       if (!fs.existsSync(manifestFile)) {
-        const manifest = {};
-        fs.writeFile(manifestFile, JSON.stringify(manifest, null, 2), 'utf8', (err) => {
+        fs.writeFile(manifestFile, JSON.stringify({ data: [] }, null, 2), 'utf8', (err) => {
           if (err) {
             log.error(`Error writing JSON ${MANIFEST_JSON}:`, err);
-          } else {
-            log.info(`JSON ${MANIFEST_JSON} written successfully.`);
           }
+          resolve(false);
         });
-
-      } else {
-        fs.readFile(manifestFile, 'utf-8', (err, data) => {
-          if (!err) {
-            const manifest = JSON.parse(data);
-            if (!manifest.data) {
-              manifest.data = [];
-            }
-            if (manifest.data.includes(configToCheck)) {
-              resolve(true);
-            }
-          }
-        });
+        return;
       }
+
+      fs.readFile(manifestFile, 'utf-8', (err, data) => {
+        if (err) {
+          log.error('Error reading ' + manifestFile, err);
+          resolve(false);
+          return;
+        }
+        try {
+          const manifest = JSON.parse(data);
+          resolve(manifest?.data?.includes(configToCheck) || false);
+        } catch (parseErr) {
+          log.error('Error parsing manifest.json', parseErr);
+          resolve(false);
+        }
+      });
     } catch (err) {
       log.error('Error reading ' + manifestFile, err);
+      resolve(false);
     }
-    resolve(false);
   });
 }
 

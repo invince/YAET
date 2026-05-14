@@ -36,13 +36,13 @@ export class Secret {
 
   icon: string = '';
   secretType: SecretType = SecretType.LOGIN_PASSWORD;
-  name!: string;
-  login!: string;
-  password!: string;
+  name: string = '';
+  login: string = '';
+  password: string = '';
 
-  key!: string;
+  key: string = '';
 
-  passphrase!: string;
+  passphrase: string = '';
 
   isNew: boolean = true;
 }

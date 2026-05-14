@@ -1,40 +1,61 @@
 <div class="tags-management-container">
-  <mat-form-field class="tag-chip-list">
-    <mat-label>Tags Management</mat-label>
-    <mat-chip-grid #chipGrid aria-label="Enter Tags">
-      @for (tag of settingStorage.settings.tags; let i = $index; track tag.id) {
-      <mat-chip-row
-          class="tag-chip"
-          [removable]="true"
-          (removed)="remove(tag)"
-          [editable]="true"
-          (edited)="update(tag, $event)"
-          [style.background]="tag.color"
-          [attr.aria-description]="'press enter to edit ' + tag.name"
-        >
-        {{tag.name}}
-        <!-- Color Picker -->
-        <mat-icon matChipTrailingIcon class="fake-color-picker-btn"  (click)="openColorPicker(i)">color_lens</mat-icon>
-        <button matChipRemove [attr.aria-label]="'remove ' + tag.name"  [style.cursor]="'grab'">
-          <mat-icon>cancel</mat-icon>
-        </button>
-      </mat-chip-row>
-      <input
-        type="color"
-        class="hidden-color-picker"
-        [value]="tag.color"
-        (change)="updateColor(tag, $event)"
-        [id]="'tag-color-picker-' + i"
-      />
-      }
-      <input
-        placeholder="New Tag..."
-        [matChipInputFor]="chipGrid"
-        [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-        [matChipInputAddOnBlur]="addOnBlur"
-        (matChipInputTokenEnd)="add($event)"
-      />
-    </mat-chip-grid>
-  </mat-form-field>
+  <div class="add-tag-row">
+    <mat-form-field class="tag-name-input" appearance="outline" subscriptSizing="dynamic">
+      <mat-label>New tag name</mat-label>
+      <input matInput #tagInput [(ngModel)]="newTagName" (keydown.enter)="addFromInput()" />
+    </mat-form-field>
+    <button mat-raised-button color="primary" (click)="addFromInput()" [disabled]="!newTagName">
+      <mat-icon>add</mat-icon>
+      Add Tag
+    </button>
+  </div>
 
+  <div class="tags-list">
+    @for (tag of settingStorage.settings.tags; track tag.id) {
+    <div class="tag-item" [style.borderLeftColor]="tag.color || '#888'">
+      <div class="tag-color-dot" [style.background]="tag.color || '#888'"></div>
+
+      <div class="tag-info">
+        @if (editingTagId === tag.id) {
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="inline-edit-input">
+            <input
+              matInput
+              #editInput
+              [value]="tag.name"
+              (blur)="saveEdit(tag, editInput.value)"
+              (keydown.enter)="saveEdit(tag, editInput.value)"
+              (keydown.escape)="cancelEdit()"
+            />
+          </mat-form-field>
+        } @else {
+          <span class="tag-name" (dblclick)="startEdit(tag)">{{ tag.name }}</span>
+        }
+      </div>
+
+      <div class="tag-actions">
+        <input
+          type="color"
+          #colorPicker
+          class="hidden-color-picker"
+          [value]="tag.color || '#3f51b5'"
+          (change)="updateColor(tag, $event)"
+        />
+        <button mat-icon-button matTooltip="Change color" (click)="colorPicker.click()">
+          <mat-icon>color_lens</mat-icon>
+        </button>
+        <button mat-icon-button matTooltip="Edit name" (click)="startEdit(tag)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button matTooltip="Delete tag" color="warn" (click)="remove(tag)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    </div>
+    } @empty {
+    <div class="empty-state">
+      <mat-icon>label</mat-icon>
+      <p>No tags yet. Add one above to organize your profiles.</p>
+    </div>
+    }
+  </div>
 </div>

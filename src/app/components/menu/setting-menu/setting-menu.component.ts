@@ -1,46 +1,48 @@
-import { CommonModule, KeyValuePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButton, MatIconButton } from '@angular/material/button';
-import { MatCheckbox } from '@angular/material/checkbox';
-import { MatDialog } from '@angular/material/dialog';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatFormField, MatLabel, MatSuffix } from '@angular/material/form-field';
-import { MatIcon } from '@angular/material/icon';
-import { MatInput } from '@angular/material/input';
-import { MatOption, MatSelect } from '@angular/material/select';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { NgxSpinnerService } from 'ngx-spinner';
-import { Subscription } from 'rxjs';
+import {CommonModule, KeyValuePipe} from '@angular/common';
+import {ChangeDetectorRef, Component, Inject, OnDestroy, OnInit} from '@angular/core';
+import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {MatButton, MatIconButton} from '@angular/material/button';
+import {MatCheckbox} from '@angular/material/checkbox';
+import {MatDialog} from '@angular/material/dialog';
+import {MatExpansionModule} from '@angular/material/expansion';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatIcon} from '@angular/material/icon';
+import {MatInputModule} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {NgxSpinnerService} from 'ngx-spinner';
+import {Subscription} from 'rxjs';
 import packageJson from '../../../../../package.json';
-import { LocalTerminalProfile, LocalTerminalType } from '../../../domain/profile/LocalTerminalProfile';
-import { Proxy } from '../../../domain/Proxy';
-import { SecretType } from '../../../domain/Secret';
-import { AiSettings } from '../../../domain/setting/AiSettings';
-import { FileExplorerSettings } from '../../../domain/setting/FileExplorerSettings';
-import { GeneralSettings } from '../../../domain/setting/GeneralSettings';
-import { MySettings } from '../../../domain/setting/MySettings';
-import { RemoteDesktopSettings } from '../../../domain/setting/RemoteDesktopSettings';
-import { TerminalSettings } from '../../../domain/setting/TerminalSettings';
-import { SideNavType, UISettings } from '../../../domain/setting/UISettings';
-import { LogService } from '../../../services/log.service';
-import { MasterKeyService } from '../../../services/master-key.service';
-import { NotificationService } from '../../../services/notification.service';
-import { ProxyService } from '../../../services/proxy.service';
-import { SecretStorageService } from '../../../services/secret-storage.service';
-import { SecretService } from '../../../services/secret.service';
-import { SettingStorageService } from '../../../services/setting-storage.service';
-import { SettingService } from '../../../services/setting.service';
+import {LocalTerminalProfile, LocalTerminalType} from '../../../domain/profile/LocalTerminalProfile';
+import {Proxy} from '../../../domain/Proxy';
+import {SecretType} from '../../../domain/Secret';
+import {AiMode, AiSettings} from '../../../domain/setting/AiSettings';
+import {AiService} from '../../../services/ai.service';
+import {FileExplorerSettings} from '../../../domain/setting/FileExplorerSettings';
+import {GeneralSettings} from '../../../domain/setting/GeneralSettings';
+import {MySettings} from '../../../domain/setting/MySettings';
+import {RemoteDesktopSettings} from '../../../domain/setting/RemoteDesktopSettings';
+import {TerminalSettings} from '../../../domain/setting/TerminalSettings';
+import {SideNavType, UISettings} from '../../../domain/setting/UISettings';
+import {ElectronService} from '../../../services/electron/electron.service';
+import {LogService} from '../../../services/log.service';
+import {MasterKeyService} from '../../../services/master-key.service';
+import {NotificationService} from '../../../services/notification.service';
+import {ProxyService} from '../../../services/proxy.service';
+import {SecretStorageService} from '../../../services/secret-storage.service';
+import {SecretService} from '../../../services/secret.service';
+import {SettingStorageService} from '../../../services/setting-storage.service';
+import {SettingService} from '../../../services/setting.service';
 import {
-    FormFieldWithPrecondition,
-    ModelFieldWithPrecondition,
-    ModelFormController
+  FormFieldWithPrecondition,
+  ModelFieldWithPrecondition,
+  ModelFormController
 } from '../../../utils/ModelFormController';
-import { ConfirmationComponent } from '../../confirmation/confirmation.component';
-import { MasterKeyComponent } from '../../dialog/master-key/master-key.component';
-import { MenuComponent } from '../menu.component';
-import { GroupsFormComponent } from './groups-form/groups-form.component';
-import { TagsFormComponent } from './tags-form/tags-form.component';
+import {ConfirmationComponent} from '../../confirmation/confirmation.component';
+import {MasterKeyComponent} from '../../dialog/master-key/master-key.component';
+import {MenuComponent} from '../menu.component';
+import {GroupsFormComponent} from './groups-form/groups-form.component';
+import {TagsFormComponent} from './tags-form/tags-form.component';
 
 
 @Component({
@@ -53,14 +55,11 @@ import { TagsFormComponent } from './tags-form/tags-form.component';
     CommonModule,
     MatIcon,
     MatIconButton,
-    MatFormField,
-    MatLabel,
-    MatSelect,
-    MatOption,
+    MatFormFieldModule,
+    MatSelectModule,
     KeyValuePipe,
-    MatInput,
+    MatInputModule,
     MatButton,
-    MatSuffix,
     MatCheckbox,
     MatExpansionModule,
     TranslateModule,
@@ -96,6 +95,16 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     { value: 'deeppurple-amber', label: 'Deep Purple & Amber (Light)' },
   ];
 
+  MODE_OPTIONS = [
+    { value: 'web' as AiMode, label: 'Web Provider' },
+    { value: 'acp' as AiMode, label: 'ACP' },
+  ];
+
+  aiModelOptions: string[] = [];
+  isLoadingModels = false;
+  acpModelOptions: string[] = [];
+  isLoadingAcpModels = false;
+
   proxies: Proxy[] = [];
 
   settingsCopy!: MySettings;
@@ -123,6 +132,8 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   constructor(
     private log: LogService,
     private fb: FormBuilder,
+    private electronService: ElectronService,
+    private aiService: AiService,
     private settingService: SettingService,
     private settingStorage: SettingStorageService,
     private secretStorageService: SecretStorageService,
@@ -180,9 +191,13 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
     this.mfcAi = new ModelFormController<AiSettings>(
       new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>([
+        ['mode', { name: 'aiMode', formControlOption: [''] }],
         ['apiUrl', { name: 'aiApiUrl', formControlOption: [''] }],
         ['token', { name: 'aiToken', formControlOption: [''] }],
         ['model', { name: 'aiModel', formControlOption: [''] }],
+        ['acpCommand', { name: 'acpCommand', formControlOption: [''] }],
+        ['acpArgs', { name: 'acpArgs', formControlOption: [''] }],
+        ['acpModel', { name: 'acpModel', formControlOption: [''] }],
       ])
     );
   }
@@ -224,12 +239,83 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
     this.refreshForm(this.settingsCopy);
 
+    this.subscriptions.push(
+      this.aiForm.get('aiApiUrl')!.valueChanges.subscribe(() => this.scheduleFetchModels()),
+      this.aiForm.get('aiToken')!.valueChanges.subscribe(() => this.scheduleFetchModels()),
+      this.aiForm.get('acpCommand')!.valueChanges.subscribe(() => this.scheduleFetchAcpModels()),
+    );
+
     this.subscriptions.push(this.settingService.settingLoadedEvent.subscribe(() => {
       this.settingsCopy = this.settingStorage.settings;
       this.refreshForm(this.settingsCopy);
       this.cdr.detectChanges(); // mat select doesn't detect well change from event subscription
+      this.spinner.hide();
     }));
 
+  }
+
+  private fetchModelTimer: any;
+  private scheduleFetchModels() {
+    if (this.aiForm.get('aiMode')?.value !== 'web') return;
+    const url = this.aiForm.get('aiApiUrl')?.value;
+    const token = this.aiForm.get('aiToken')?.value;
+    if (!url || !token) return;
+    clearTimeout(this.fetchModelTimer);
+    this.fetchModelTimer = setTimeout(() => this.fetchAiModels(), 600);
+  }
+
+  fetchAiModels() {
+    const url = this.aiForm.get('aiApiUrl')?.value;
+    const token = this.aiForm.get('aiToken')?.value;
+    if (!url || !token) return;
+    this.isLoadingModels = true;
+    this.aiService.fetchModels(url, token).subscribe({
+      next: (models) => {
+        this.aiModelOptions = models;
+        this.isLoadingModels = false;
+        const currentModel = this.aiForm.get('aiModel')?.value;
+        if (!currentModel && models.length > 0) {
+          this.aiForm.get('aiModel')?.setValue(models[0]);
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isLoadingModels = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private fetchAcpModelTimer: any;
+  private scheduleFetchAcpModels() {
+    if (this.aiForm.get('aiMode')?.value !== 'acp') return;
+    const command = this.aiForm.get('acpCommand')?.value;
+    if (!command) return;
+    clearTimeout(this.fetchAcpModelTimer);
+    this.fetchAcpModelTimer = setTimeout(() => this.fetchAcpModels(), 600);
+  }
+
+  fetchAcpModels() {
+    const command = this.aiForm.get('acpCommand')?.value;
+    const args = this.aiForm.get('acpArgs')?.value;
+    if (!command) return;
+    this.isLoadingAcpModels = true;
+    this.aiService.fetchAcpModels(command, args).subscribe({
+      next: (models) => {
+        this.acpModelOptions = models;
+        this.isLoadingAcpModels = false;
+        const currentModel = this.aiForm.get('acpModel')?.value;
+        if (!currentModel && models.length > 0) {
+          this.aiForm.get('acpModel')?.setValue(models[0]);
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isLoadingAcpModels = false;
+        this.notification.error('Failed to fetch ACP models: ' + (err.message || err));
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   private initGeneralForm() {
@@ -257,6 +343,8 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
   ngOnDestroy(): void {
+    clearTimeout(this.fetchModelTimer);
+    clearTimeout(this.fetchAcpModelTimer);
     if (this.subscriptions) {
       this.subscriptions.forEach(one => one.unsubscribe());
     }
@@ -309,6 +397,9 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     if (this.currentTabIndex == this.AI_FORM_TAB_INDEX) {
       return this.aiForm.valid;
     }
+    if (this.currentTabIndex == this.FILE_EXPLORER_FORM_TAB_INDEX) {
+      return this.fileExplorerForm.valid;
+    }
     return false;
   }
 
@@ -323,9 +414,14 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   reload() {
     this.spinner.show();
     this.settingService.reload();
-    this.spinner.hide();
+    // spinner will be hidden when settingLoadedEvent fires
   }
 
+
+  checkForUpdates() {
+    this.notification.info('Checking for updates...');
+    this.electronService.checkForUpdates();
+  }
 
   openMasterKeyModal() {
     const dialogRef = this.dialog.open(MasterKeyComponent, {
@@ -430,6 +526,10 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     await this.settingService.save(this.settingsCopy);
   }
 
+  onSelectAiMode($event: any) {
+    this.aiForm.markAsDirty();
+  }
+
   onClearAiSettings() {
     this.aiForm.reset(new AiSettings());
     this.aiForm.markAsDirty();
@@ -444,7 +544,8 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
   getLocalTermOptions(): LocalTerminalType[] {
-    if (process.platform === 'win32') {
+    const isWin32 = (window as any).electronAPI?.platform === 'win32';
+    if (isWin32) {
       return [LocalTerminalType.CMD, LocalTerminalType.POWERSHELL, LocalTerminalType.POWERSHELL_7, LocalTerminalType.BASH];
     } else {
       return [LocalTerminalType.BASH];

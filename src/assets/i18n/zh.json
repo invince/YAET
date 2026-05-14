@@ -43,6 +43,7 @@
         "SECURITY": "安全",
         "APP_VERSION": "应用版本",
         "AUTO_UPDATE": "自动更新应用程序",
+        "CHECK_FOR_UPDATES": "检查更新",
         "PROXY": "更新代理",
         "LANGUAGE": "语言",
         "LANGUAGE_LABEL": "界面语言",
@@ -64,6 +65,12 @@
         "VNC_CLIPBOARD_COMPATIBLE": "启用 VNC 剪贴板兼容模式",
         "VNC_QUALITY": "质量 (0-9)",
         "VNC_COMPRESSION": "压缩 (0-9)",
+        "AI_ASSISTANT": "AI 助手",
+        "AI_CONFIGURATION": "AI 配置",
+        "AI_MODE": "模式",
+        "AI_MODEL": "模型",
+        "AI_ACP_COMMAND": "ACP 命令",
+        "AI_ACP_ARGS": "ACP 参数",
         "ADD_NEW_GROUP": "添加新组"
     },
     "LANGUAGES": {

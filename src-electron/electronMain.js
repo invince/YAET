@@ -32,6 +32,8 @@ let allSecrets = null;
 
 const log = require("electron-log")
 const { initCommonIpc } = require("./ipc/commonIpc");
+const { initAcpIpcHandler } = require("./ipc/acp");
+const { initAiIpcHandler, initAiChatIpcHandler } = require("./ipc/ai");
 const { initSSHTerminalIpcHandler } = require("./ipc/terminal/ssh");
 const { initTelnetIpcHandler } = require("./ipc/terminal/telnet");
 const { initLocalTerminalIpcHandler } = require("./ipc/terminal/localTerminal");
@@ -57,13 +59,14 @@ app.on('ready', () => {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    icon: __dirname + '/assets/icons/app-icon.png', // Path to your icon
+    backgroundColor: '#1e1e1e',
+    icon: __dirname + '/assets/icons/app-icon.png',
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      enableRemoteModule: true,
+      nodeIntegration: false,
+      contextIsolation: true,
+      enableRemoteModule: false,
       enableBlinkFeatures: 'Accelerated2dCanvas',
-      // preload: path.join(__dirname, 'preload.js'), // FIXME: preload need contextIsolation, but xterm.js won't work with that
+      preload: path.join(__dirname, 'preload.js'),
     },
   });
 
@@ -90,13 +93,13 @@ app.on('ready', () => {
     load(log, mainWindow, PROFILES_JSON, "profiles.loaded", true)
       .then(r => log.info(PROFILES_JSON + " loaded, event sent"))
       .catch(log.error);
-    
+
     reloadSecrets();
-    
+
     load(log, mainWindow, CLOUD_JSON, "cloud.loaded", true)
       .then(r => log.info(CLOUD_JSON + " loaded, event sent"))
       .catch(log.error);
-      
+
     reloadProxies();
 
     load(log, mainWindow, SETTINGS_JSON, "settings.loaded", false)
@@ -130,6 +133,9 @@ function initHandlerBeforeSettingLoad() {
 
   initClipboard(log, mainWindow);
   initCustomSessionHandler(log);
+  initAcpIpcHandler(log);
+  initAiIpcHandler(log);
+  initAiChatIpcHandler(log);
   initLocalFileHandler(log, mainWindow);
 
   // Start API
@@ -138,7 +144,6 @@ function initHandlerBeforeSettingLoad() {
 
 
 function initHandlerAfterSettingLoad(settings) {
-  // createMenu(log);
   if (!initialized) {
     const autoUpdate = settings?.general?.autoUpdate;
     if (autoUpdate) {

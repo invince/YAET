@@ -1,7 +1,7 @@
 import {LocalTerminalProfile, LocalTerminalType} from '../profile/LocalTerminalProfile';
 
 export class TerminalSettings {
-  public localTerminal!: LocalTerminalProfile;
+  public localTerminal: LocalTerminalProfile;
 
   constructor() {
     this.localTerminal = new LocalTerminalProfile();

@@ -238,8 +238,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.draggedTab = null;
     this.dragOverPane = null;
-    this.draggedTab = null;
-    this.dragOverPane = null;
   }
 
   applyTheme(theme: string | undefined) {

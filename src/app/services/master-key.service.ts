@@ -1,23 +1,23 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import {Injectable, OnDestroy} from '@angular/core';
+import {MatDialog} from '@angular/material/dialog';
 import CryptoJS from 'crypto-js';
-import { Subject, Subscription } from 'rxjs';
-import { ConfirmationComponent } from '../components/confirmation/confirmation.component';
-import { ElectronService } from './electron/electron.service';
-import { LogService } from './log.service';
+import {Subject, Subscription} from 'rxjs';
+import {ConfirmationComponent} from '../components/confirmation/confirmation.component';
+import {ElectronService} from './electron/electron.service';
+import {LogService} from './log.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MasterKeyService implements OnDestroy {
 
-
   private _masterKeyLoaded: boolean = false;
 
   private _hasMasterKey?: boolean;
-  private readonly intervalId: NodeJS.Timeout;
 
   private subscriptions: Subscription[] = [];
+
+  private cleanupFns: (() => void)[] = [];
 
   private updateEventSubject = new Subject<string>();
   updateEvent$ = this.updateEventSubject.asObservable();
@@ -27,16 +27,23 @@ export class MasterKeyService implements OnDestroy {
     private electron: ElectronService,
     private dialog: MatDialog,
   ) {
-
     this.refreshHasMasterKey();
-    this.intervalId = setInterval(() => this.refreshHasMasterKey(), 30 * 1000)
+    this.listenForMasterKeyChanges();
   }
 
 
-  // This will be called when the service is destroyed
   ngOnDestroy(): void {
-    clearInterval(this.intervalId); // Clean up resources
     this.subscriptions.forEach(one => one.unsubscribe());
+    this.cleanupFns.forEach(fn => fn());
+  }
+
+  private listenForMasterKeyChanges() {
+    const unsubscribe = this.electron.onMasterKeyChanged(() => {
+      this.refreshHasMasterKey();
+    });
+    if (unsubscribe) {
+      this.cleanupFns.push(unsubscribe);
+    }
   }
 
   private refreshHasMasterKey() {

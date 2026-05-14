@@ -1,14 +1,127 @@
 .groups-management-container {
+  max-width: 560px;
 
-  //.transparent-chip {
-  //  background-color: transparent !important; /* Makes the chip transparent */
-  //  color: inherit; /* Ensures text color remains legible */
-  //}
+  .add-group-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
 
+    .group-name-input {
+      flex: 1;
+    }
+  }
 
-  .fake-color-picker-btn {
-    padding-right: 20px !important;
-    cursor: pointer;
+  .groups-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .group-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--app-sidebar-bg-color);
+    border-left: 4px solid #888;
+    transition: background 0.2s;
+
+    &:hover {
+      background: var(--app-hover-bg-color);
+
+      .group-actions {
+        opacity: 1;
+      }
+    }
+
+    .group-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+
+      .group-name {
+        font-weight: 500;
+        font-size: 14px;
+        cursor: text;
+        padding: 2px 4px;
+        border-radius: 4px;
+        transition: background 0.15s;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.06);
+        }
+      }
+
+      .profile-count {
+        font-size: 11px;
+        opacity: 0.5;
+      }
+
+      .inline-edit-input {
+        width: 100%;
+        margin: 0;
+
+        ::ng-deep .mat-mdc-text-field-wrapper {
+          height: 36px;
+          padding: 0 8px;
+        }
+
+        ::ng-deep .mat-mdc-form-field-infix {
+          padding-top: 6px;
+          padding-bottom: 6px;
+          min-height: unset;
+        }
+
+        input {
+          font-size: 14px;
+        }
+      }
+    }
+
+    .group-actions {
+      display: flex;
+      gap: 2px;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+
+      ::ng-deep .mat-mdc-icon-button {
+        width: 32px;
+        height: 32px;
+        padding: 4px;
+
+        .mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+          line-height: 18px;
+        }
+      }
+    }
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    opacity: 0.5;
+    text-align: center;
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      margin-bottom: 12px;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+    }
   }
 
   .hidden-color-picker {
@@ -17,34 +130,4 @@
     width: 0;
     height: 0;
   }
-
-  .group-tree {
-    padding-bottom: 20px;
-
-    .child-tree-invisible {
-      display: none;
-    }
-
-    .mat-nested-tree-node div[role=group] {
-      padding-left: 48px;
-      padding-bottom: 10px;
-    }
-
-
-    div[role=group] > .mat-nested-tree-node {
-      display: flex;
-      align-items: center; /* Aligns items vertically */
-      padding-left: 30px;
-    }
-
-    .tree-parent-node {
-      display: flex;
-      align-items: center; /* Aligns items vertically */
-
-      .group-name {
-        font-weight: bold;
-      }
-    }
-  }
-
 }

@@ -58,3 +58,67 @@
 ::ng-deep .mat-mdc-form-field-hint {
   font-size: 0.7em;
 }
+
+.group-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.group-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 2px rgba(0,0,0,0.3);
+}
+
+.group-none {
+  opacity: 0.5;
+  font-style: italic;
+}
+
+::ng-deep .group-option-wrapper .mdc-list-item__primary-text {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.tag-chip {
+  --tag-color: '';
+}
+
+.tag-chip.tag-has-color {
+  background: color-mix(in srgb, var(--tag-color) 15%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--tag-color) 40%, transparent);
+}
+
+.tag-chip-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-right: 2px;
+}
+
+.tag-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tag-option-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 2px rgba(0,0,0,0.3);
+}
+
+::ng-deep .mat-mdc-autocomplete-panel .mdc-list-item__primary-text {
+  display: flex;
+  align-items: center;
+}

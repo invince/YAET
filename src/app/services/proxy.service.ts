@@ -1,15 +1,16 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
+import {Injectable, OnDestroy} from '@angular/core';
+import {Subscription} from 'rxjs';
 import packageJson from '../../../package.json';
-import { Compatibility } from '../../main';
-import { Proxies, Proxy } from '../domain/Proxy';
-import { compareVersions } from '../utils/VersionUtils';
-import { ElectronService } from './electron/electron.service';
-import { PROXIES_LOADED } from './electron/ElectronConstant';
-import { LogService } from './log.service';
-import { MasterKeyService } from './master-key.service';
-import { NotificationService } from './notification.service';
-import { ProxyStorageService } from './proxy-storage.service';
+import {Compatibility} from '../../main';
+import {Proxies, Proxy} from '../domain/Proxy';
+import {compareVersions} from '../utils/VersionUtils';
+import {ElectronService} from './electron/electron.service';
+import {PROXIES_LOADED} from './electron/ElectronConstant';
+import {LogService} from './log.service';
+import {MasterKeyService} from './master-key.service';
+import {NotificationService} from './notification.service';
+import {ProxyStorageService} from './proxy-storage.service';
+
 @Injectable({
     providedIn: 'root'
 })
@@ -31,16 +32,18 @@ export class ProxyService implements OnDestroy {
             this.apply(data);
         });
 
-        this.subscriptions.push(masterKeyService.updateEvent$.subscribe(event => {
-            if (event === 'invalid') {
-                this.proxyStorage.data = new Proxies();
-                this.saveAll();
-                this.notification.info('Proxies cleared');
-            } else {
-                this.saveAll();
-                this.notification.info('Proxies re-encrypted');
-            }
-
+        this.subscriptions.push(masterKeyService.updateEvent$.subscribe({
+            next: event => {
+                if (event === 'invalid') {
+                    this.proxyStorage.data = new Proxies();
+                    this.saveAll();
+                    this.notification.info('Proxies cleared');
+                } else {
+                    this.saveAll();
+                    this.notification.info('Proxies re-encrypted');
+                }
+            },
+            error: err => this.log.error('Proxy service update event error: ' + err)
         }));
     }
 
@@ -52,24 +55,30 @@ export class ProxyService implements OnDestroy {
 
     private apply(data: any) {
         if (!data) {
-            this._loaded = true; // this means you don't have profile yet
+            this._loaded = true;
             return;
         }
         this.masterKeyService.decrypt2String(data).then(
             decrypted => {
                 if (decrypted) {
-                    let dataObj = JSON.parse(decrypted);
-                    if (dataObj) {
-                        if (dataObj.compatibleVersion) {
-                            if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
-                                let msg = "Your application is not compatible with saved settings, please update your app. For instance, empty proxies applied";
-                                this.log.warn(msg);
-                                this.notification.info(msg);
-                                dataObj = new Proxies();
+                    try {
+                        let dataObj = JSON.parse(decrypted);
+                        if (dataObj) {
+                            if (dataObj.compatibleVersion) {
+                                if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
+                                    let msg = "Your application is not compatible with saved settings, please update your app. For instance, empty proxies applied";
+                                    this.log.warn(msg);
+                                    this.notification.info(msg);
+                                    dataObj = new Proxies();
+                                }
                             }
                         }
+                        this.proxyStorage.data = dataObj;
+                    } catch (e) {
+                        this.log.error('Failed to parse proxies data: ' + e);
+                        this.notification.error('Failed to load proxies: corrupted data');
+                        this.proxyStorage.data = new Proxies();
                     }
-                    this.proxyStorage.data = dataObj;
                     this._loaded = true;
                 }
             }

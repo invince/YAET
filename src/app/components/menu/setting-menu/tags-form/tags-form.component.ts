@@ -1,13 +1,14 @@
 import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
 import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatChipEditedEvent, MatChipInputEvent, MatChipsModule} from '@angular/material/chips';
 import {MatIconModule} from '@angular/material/icon';
+import {MatButtonModule} from '@angular/material/button';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatInput} from '@angular/material/input';
 import {SettingStorageService} from '../../../../services/setting-storage.service';
 import {SettingService} from '../../../../services/setting.service';
 import {MySettings} from '../../../../domain/setting/MySettings';
-import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import {Tag} from '../../../../domain/Tag';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {FormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';
 import {NotificationService} from '../../../../services/notification.service';
 
@@ -15,11 +16,12 @@ import {NotificationService} from '../../../../services/notification.service';
     selector: 'app-tags-form',
     imports: [
         FormsModule,
-        ReactiveFormsModule,
         CommonModule,
         MatFormFieldModule,
-        MatChipsModule,
-        MatIconModule
+        MatIconModule,
+        MatButtonModule,
+        MatTooltipModule,
+        MatInput
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './tags-form.component.html',
@@ -27,8 +29,9 @@ import {NotificationService} from '../../../../services/notification.service';
 })
 export class TagsFormComponent implements OnInit{
 
-  readonly addOnBlur = true;
-  readonly separatorKeysCodes = [ENTER, COMMA] as const;
+  newTagName: string = '';
+  editingTagId: string | null = null;
+
   constructor(
     private settingService: SettingService,
     public settingStorage: SettingStorageService,
@@ -45,43 +48,42 @@ export class TagsFormComponent implements OnInit{
     }
   }
 
-  add(event: MatChipInputEvent): void {
-    const value = (event.value || '').trim();
+  addFromInput() {
+    const value = this.newTagName?.trim();
+    if (!value) return;
 
-    if (value) {
-      if (!this.settingService.existTag(value)) {
-        this.settingService.addTag(value);
-      } else {
-        this.notification.error('Cannot add duplicate tag');
-      }
+    if (!this.settingService.existTag(value)) {
+      this.settingService.addTag(value);
+      this.newTagName = '';
+    } else {
+      this.notification.error('Tag "' + value + '" already exists');
     }
-
-    // Clear the input value
-    event.chipInput!.clear();
   }
 
   async remove(tag: Tag) {
     await this.settingService.removeTag(tag);
   }
 
-  async update(tag: Tag, event: MatChipEditedEvent) {
-    const value = event.value.trim();
+  startEdit(tag: Tag) {
+    this.editingTagId = tag.id;
+  }
 
-    // Remove tag if it no longer has a name
+  cancelEdit() {
+    this.editingTagId = null;
+  }
+
+  saveEdit(tag: Tag, newName: string) {
+    this.editingTagId = null;
+    const value = newName?.trim();
     if (!value) {
-      await this.remove(tag);
+      this.remove(tag);
       return;
     }
     if (!this.settingService.existTag(value, tag.id)) {
       this.settingService.updateTag(tag, value);
     } else {
-      this.notification.error('Already have this tag:' + value);
+      this.notification.error('Tag "' + value + '" already exists');
     }
-  }
-
-  openColorPicker(index: number): void {
-    const picker = document.getElementById('tag-color-picker-' + index) as HTMLElement;
-    picker.click();
   }
 
   updateColor(tag: Tag, event: any): void {

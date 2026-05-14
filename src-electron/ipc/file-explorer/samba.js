@@ -203,7 +203,14 @@ function initSambaHandler(log, sambaMap, expressApp) {
 
   expressApp.post('/api/v1/samba/upload/:id', upload.single('uploadFiles'), async (req, res) => {
     const { data, filename } = req.body;
-    const targetDir = fixPath(JSON.parse(data).name);
+    let targetDir;
+    try {
+      targetDir = fixPath(JSON.parse(data).name);
+    } catch (error) {
+      log.error('Error parsing upload data JSON:', error);
+      res.status(400).send({ error: { code: 400, message: 'Invalid JSON: ' + error.message } });
+      return;
+    }
     const configId = req.params['id'];
 
     if (!req.file) {
@@ -228,7 +235,14 @@ function initSambaHandler(log, sambaMap, expressApp) {
   });
 
   expressApp.post('/api/v1/samba/download/:id', upload.none(), async (req, res) => {
-    const downloadInput = JSON.parse(req.body.downloadInput);
+    let downloadInput;
+    try {
+      downloadInput = JSON.parse(req.body.downloadInput);
+    } catch (error) {
+      log.error('Error parsing downloadInput JSON:', error);
+      res.status(400).send({ error: { code: 400, message: 'Invalid JSON: ' + error.message } });
+      return;
+    }
     const directoryPath = fixPath(downloadInput.path);
     const names = downloadInput.names;
     const configId = req.params['id'];
@@ -273,7 +287,14 @@ function initSambaHandler(log, sambaMap, expressApp) {
   });
 
   expressApp.post('/api/v1/samba/open/:id', upload.none(), async (req, res) => {
-    const downloadInput = JSON.parse(req.body.downloadInput);
+    let downloadInput;
+    try {
+      downloadInput = JSON.parse(req.body.downloadInput);
+    } catch (error) {
+      log.error('Error parsing downloadInput JSON:', error);
+      res.status(400).send({ error: { code: 400, message: 'Invalid JSON: ' + error.message } });
+      return;
+    }
     const remotePath = fixPath(downloadInput.path);
     const fileName = downloadInput.names[0]; // Assuming a single file
     const configId = req.params['id'];
@@ -281,7 +302,7 @@ function initSambaHandler(log, sambaMap, expressApp) {
     try {
       await withSambaClient(configId, async (smbClient) => {
         const fullRemotePath = path.join(remotePath, fileName);
-        const tempDir = path.join(os.tmpdir(), 'scp-temp-files');
+        const tempDir = path.join(os.tmpdir(), 'samba-temp-files');
         if (!fs.existsSync(tempDir)) {
           fs.mkdirSync(tempDir, { recursive: true });
         }

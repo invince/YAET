@@ -88,16 +88,17 @@ function initWinRmIpcHandler(settings, log, terminalMap) {
     });
 
     // Initialize the remote connection
-    // Prepare the commands
+    // Escape single quotes for PowerShell (double single quote)
+    const esc = (s) => (s || '').replace(/'/g, "''");
     let connectionCommand = [];
     if (password && username) {
       connectionCommand =  [
-        `$secPassword = ConvertTo-SecureString '${password}' -AsPlainText -Force`,
-        `$cred = New-Object System.Management.Automation.PSCredential('${username}', $secPassword)`,
-        `Enter-PSSession -ComputerName '${host}' -Credential $cred`,
+        `$secPassword = ConvertTo-SecureString '${esc(password)}' -AsPlainText -Force`,
+        `$cred = New-Object System.Management.Automation.PSCredential('${esc(username)}', $secPassword)`,
+        `Enter-PSSession -ComputerName '${esc(host)}' -Credential $cred`,
       ];
     } else {
-      connectionCommand = [`Enter-PSSession -ComputerName '${host}'`]
+      connectionCommand = [`Enter-PSSession -ComputerName '${esc(host)}'`]
     }
 
     for (const oneCmd of connectionCommand) {

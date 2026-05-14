@@ -8,8 +8,8 @@ export enum LocalTerminalType {
 }
 
 export class LocalTerminalProfile {
-  public type!: LocalTerminalType
-  public execPath!: string;
+  public type: LocalTerminalType = LocalTerminalType.CMD
+  public execPath: string = '';
 
   public defaultOpen: boolean = false;
 }

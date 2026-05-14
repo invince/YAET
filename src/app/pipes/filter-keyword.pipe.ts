@@ -2,17 +2,16 @@ import {Pipe, PipeTransform} from '@angular/core';
 
 @Pipe({
   name: 'filterKeyword',
-  standalone: true
+  standalone: true,
+  pure: true
 })
 export class FilterKeywordPipe implements PipeTransform {
 
-  /**
-   * Transforms the array by filtering based on the keyword.
-   * @param items - The list to filter.
-   * @param keywordProviders - An array of functions that provide keyword (or lists of keywords) from each item.
-   * @param filter - The keyword to filter by.
-   * @returns Filtered list.
-   */
+  private lastItems: any = undefined;
+  private lastProviders: ((item: any) => string | string[])[] | null = null;
+  private lastKeyword: string = '';
+  private lastResult: any[] = [];
+
   transform<T>(
     items: T[],
     keywordProviders: ((item: T) => string | string[])[],
@@ -22,19 +21,27 @@ export class FilterKeywordPipe implements PipeTransform {
       return items;
     }
 
+    if (items === this.lastItems && keywordProviders === this.lastProviders && filterKeyword === this.lastKeyword) {
+      return this.lastResult as T[];
+    }
+
+    this.lastItems = items;
+    this.lastProviders = keywordProviders;
+    this.lastKeyword = filterKeyword;
+
     const lowercasedKeyword = filterKeyword.toLowerCase();
 
-    return items.filter(item => {
-      // Collect all keywords from providers
+    this.lastResult = items.filter(item => {
       const allKeywords = keywordProviders.flatMap(provider => {
         const result = provider(item);
-        return Array.isArray(result) ? result : [result]; // Normalize to an array
+        return Array.isArray(result) ? result : [result];
       });
 
-      // Check if any keyword matches the filter
       return allKeywords.some(keyword =>
         keyword && keyword.toLowerCase().includes(lowercasedKeyword)
       );
     });
+
+    return this.lastResult as T[];
   }
 }

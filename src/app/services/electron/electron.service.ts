@@ -1,14 +1,15 @@
-import { Injectable } from '@angular/core';
-import { IpcRenderer } from 'electron';
-import { Log } from '../../domain/Log';
-import { AuthType, SecretType } from '../../domain/Secret';
-import { CloudResponse } from '../../domain/setting/CloudResponse';
-import { CloudSettings } from '../../domain/setting/CloudSettings';
-import { MySettings } from '../../domain/setting/MySettings';
-import { NotificationService } from '../notification.service';
-import { SecretStorageService } from '../secret-storage.service';
-import { TabService } from '../tab.service';
+import {MySettings} from '../../domain/setting/MySettings';
+import {Injectable} from '@angular/core';
+import {CloudSettings} from '../../domain/setting/CloudSettings';
+import {CloudResponse} from '../../domain/setting/CloudResponse';
+import {SecretStorageService} from '../secret-storage.service';
+import {Log} from '../../domain/Log';
 import {
+  ACP_FETCH_MODELS,
+  ACP_SEND,
+  AI_FETCH_MODELS,
+  AI_SEND_CHAT,
+  CHECK_FOR_UPDATES,
   CLOUD_DOWNLOAD,
   CLOUD_RELOAD,
   CLOUD_SAVE,
@@ -17,6 +18,7 @@ import {
   ERROR,
   GET_MASTERKEY,
   LOG,
+  MASTER_KEY_CHANGED,
   OPEN_URL,
   PROFILES_RELOAD,
   PROFILES_SAVE,
@@ -26,17 +28,27 @@ import {
   SECRETS_RELOAD,
   SECRETS_SAVE,
   SETTINGS_RELOAD,
-  SETTINGS_SAVE
+  SETTINGS_SAVE,
 } from './ElectronConstant';
+import {resolveLoginPassword} from '../../utils/SecretResolver';
+import {NotificationService} from '../notification.service';
+import {TabService} from '../tab.service';
+
+interface ElectronAPI {
+  send(channel: string, data?: any): void;
+  invoke(channel: string, data?: any): Promise<any>;
+  on(channel: string, callback: (...args: any[]) => void): void;
+  removeAllListeners(channel: string): void;
+}
 
 
 export class AbstractElectronService {
 
-  protected readonly ipc!: IpcRenderer;
+  protected readonly ipc!: ElectronAPI;
 
   constructor() {
-    if (window.require) {
-      this.ipc = window.require('electron').ipcRenderer;
+    if ((window as any).electronAPI) {
+      this.ipc = (window as any).electronAPI;
     }
   }
 
@@ -104,6 +116,40 @@ export class ElectronService extends AbstractElectronService {
       this.ipc.send(SETTINGS_RELOAD, {});
     }
   }
+
+  checkForUpdates() {
+    if (this.ipc) {
+      this.ipc.send(CHECK_FOR_UPDATES, {});
+    }
+  }
+
+  async sendAcpChat(command: string, args: string, model: string, messages: any[]): Promise<string> {
+    if (this.ipc) {
+      return await this.ipc.invoke(ACP_SEND, { command, args, model, messages });
+    }
+    throw new Error('Electron IPC not available');
+  }
+
+  async fetchAiModels(apiUrl: string, token: string): Promise<string[]> {
+    if (this.ipc) {
+      return await this.ipc.invoke(AI_FETCH_MODELS, { apiUrl, token });
+    }
+    throw new Error('Electron IPC not available');
+  }
+
+  async fetchAcpModels(command: string, args: string): Promise<string[]> {
+    if (this.ipc) {
+      return await this.ipc.invoke(ACP_FETCH_MODELS, { command, args });
+    }
+    throw new Error('Electron IPC not available');
+  }
+
+  async sendAiChat(apiUrl: string, token: string, model: string, messages: any[]): Promise<any> {
+    if (this.ipc) {
+      return await this.ipc.invoke(AI_SEND_CHAT, { apiUrl, token, model, messages });
+    }
+    throw new Error('Electron IPC not available');
+  }
   //#endregion "Settings"
 
 
@@ -142,6 +188,15 @@ export class ElectronService extends AbstractElectronService {
     if (this.ipc) {
       await this.ipc.invoke(DELETE_MASTERKEY);
     }
+  }
+
+  onMasterKeyChanged(callback: () => void): () => void {
+    if (this.ipc) {
+      const handler = () => callback();
+      this.ipc.on(MASTER_KEY_CHANGED, handler);
+      return () => this.ipc.removeAllListeners(MASTER_KEY_CHANGED);
+    }
+    return () => {};
   }
 
   async saveSecrets(encryptedSecrets: string) {
@@ -201,19 +256,8 @@ export class ElectronService extends AbstractElectronService {
   }
 
   private prepareCloudSettings(cloudSettings: CloudSettings): CloudSettings | undefined {
-    if (cloudSettings.authType == AuthType.SECRET) {
-      let secret = this.secretStorage.findById(cloudSettings.secretId);
-      if (!secret) {
-        this.log({ level: 'error', message: "Invalid secret " + cloudSettings.secretId });
-        return undefined;
-      }
-      switch (secret.secretType) {
-        case SecretType.LOGIN_PASSWORD: {
-          cloudSettings.login = secret.login;
-          cloudSettings.password = secret.password;
-          break;
-        }
-      }
+    if (!resolveLoginPassword(cloudSettings, cloudSettings, this.secretStorage, m => this.log(m))) {
+      return undefined;
     }
     return cloudSettings;
 
@@ -235,8 +279,19 @@ export class ElectronService extends AbstractElectronService {
   }
   //#endregion "Proxies"
 
+  //#region "ACP"
+  onAcpChunk(callback: (data: { chunk: string }) => void) {
+    if (this.ipc) {
+      this.ipc.on('acp.chunk', (event: any, data: any) => callback(data));
+    }
+  }
 
-
+  removeAcpChunkListeners() {
+    if (this.ipc) {
+      this.ipc.removeAllListeners('acp.chunk');
+    }
+  }
+  //#endregion "ACP"
 }
 
 export class TermOutput {

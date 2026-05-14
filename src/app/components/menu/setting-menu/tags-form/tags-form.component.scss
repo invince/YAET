@@ -1,18 +1,128 @@
-.tag-chip-list{
-  width: 100%;
-}
-
 .tags-management-container {
-  .tag-chip {
+  max-width: 560px;
+
+  .add-tag-row {
     display: flex;
     align-items: center;
-    transition: background-color 0.3s ease-in-out;
+    gap: 12px;
+    margin-bottom: 24px;
 
-    .fake-color-picker-btn {
-      padding-right: 20px !important;
-      cursor: pointer;
+    .tag-name-input {
+      flex: 1;
     }
   }
+
+  .tags-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .tag-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--app-sidebar-bg-color);
+    border-left: 4px solid #888;
+    transition: background 0.2s;
+
+    &:hover {
+      background: var(--app-hover-bg-color);
+
+      .tag-actions {
+        opacity: 1;
+      }
+    }
+
+    .tag-color-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .tag-info {
+      flex: 1;
+      min-width: 0;
+
+      .tag-name {
+        font-weight: 500;
+        font-size: 14px;
+        cursor: text;
+        padding: 2px 4px;
+        border-radius: 4px;
+        transition: background 0.15s;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.06);
+        }
+      }
+
+      .inline-edit-input {
+        width: 100%;
+        margin: 0;
+
+        ::ng-deep .mat-mdc-text-field-wrapper {
+          height: 36px;
+          padding: 0 8px;
+        }
+
+        ::ng-deep .mat-mdc-form-field-infix {
+          padding-top: 6px;
+          padding-bottom: 6px;
+          min-height: unset;
+        }
+
+        input {
+          font-size: 14px;
+        }
+      }
+    }
+
+    .tag-actions {
+      display: flex;
+      gap: 2px;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+
+      ::ng-deep .mat-mdc-icon-button {
+        width: 32px;
+        height: 32px;
+        padding: 4px;
+
+        .mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+          line-height: 18px;
+        }
+      }
+    }
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    opacity: 0.5;
+    text-align: center;
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      margin-bottom: 12px;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+    }
+  }
+
   .hidden-color-picker {
     visibility: hidden;
     position: absolute;
@@ -20,4 +130,3 @@
     height: 0;
   }
 }
-

@@ -30,6 +30,7 @@ import {
 } from '../../../../utils/ModelFormController';
 import {SecretQuickFormComponent} from '../../../dialog/secret-quick-form/secret-quick-form.component';
 import {MatDialog} from '@angular/material/dialog';
+import {clearAuthFields, passwordMatchValidator} from '../../../../utils/PasswordValidators';
 
 @Component({
     selector: 'app-custom-profile-form',
@@ -82,7 +83,7 @@ export class CustomProfileFormComponent extends ChildFormAsFormControl(MenuCompo
     mappings.set('authType' , {name: 'authType', formControlOption:  ['', [Validators.required]]});
     mappings.set({name: 'login', precondition: form => this.form.get('authType')?.value  == 'login'}    , 'login');
     mappings.set({name: 'password', precondition: form => this.form.get('authType')?.value  == 'login'} , 'password');
-    mappings.set({name: 'password', precondition: form => false } , 'confirmPassword'); // we don't set model.password via confirmPassword control
+    mappings.set({name: 'password', precondition: form => false} , 'confirmPassword'); // we don't set model.password via confirmPassword control
     mappings.set({name: 'secretId', precondition: form => this.form.get('authType')?.value  == 'secret' } , 'secretId');
 
 
@@ -96,37 +97,32 @@ export class CustomProfileFormComponent extends ChildFormAsFormControl(MenuCompo
 
   secretOrPasswordMatchValidator(group: FormGroup) {
     let authType = group.get('authType')?.value;
-    if (authType ==  AuthType.LOGIN) {
+    if (authType == AuthType.LOGIN) {
       group.get('login')?.addValidators(Validators.required);
       group.get('password')?.addValidators(Validators.required);
       group.get('confirmPassword')?.addValidators(Validators.required);
       group.get('secretId')?.removeValidators(Validators.required);
       const password = group.get('password')?.value;
-      const confirmPassword = group.get('confirmPassword')?.value;
       if (!password) {
         return {passwordRequired: true};
       }
-      return password === confirmPassword ? null : { passwordMismatch: true };
-    } else if (authType ==  AuthType.SECRET) {
+      return passwordMatchValidator(group);
+    } else if (authType == AuthType.SECRET) {
       group.get('login')?.removeValidators(Validators.required);
       group.get('password')?.removeValidators(Validators.required);
       group.get('confirmPassword')?.removeValidators(Validators.required);
       group.get('secretId')?.addValidators(Validators.required);
       return group.get('secretId')?.value ? null : {secretRequired: true};
-    } else if (authType == AuthType.NA) {
+    } else {
       group.get('login')?.removeValidators(Validators.required);
       group.get('password')?.removeValidators(Validators.required);
       group.get('confirmPassword')?.removeValidators(Validators.required);
       group.get('secretId')?.removeValidators(Validators.required);
-      return {};
+      return null;
     }
-    return {};
   }
 
-  onSelectSecret($event: MatSelectChange) {
-    // this.form.get('password')?.setValue(null);
-    // this.form.get('confirmPassword')?.setValue(null);
-  }
+
 
   override refreshForm(custom: any) {
     if (this.form) {
@@ -139,17 +135,10 @@ export class CustomProfileFormComponent extends ChildFormAsFormControl(MenuCompo
   }
 
   onSelectAuthType($event: MatRadioChange) {
-    let authType = $event.value;
-    if (authType ==  AuthType.LOGIN) {
-      this.form.get('secretId')?.setValue(null);
-    } else if (authType ==  AuthType.SECRET) {
-      this.form.get('password')?.setValue(null);
-      this.form.get('confirmPassword')?.setValue(null);
-    } else if (authType == AuthType.NA) {
-      this.form.get('password')?.setValue(null);
-      this.form.get('confirmPassword')?.setValue(null);
-      this.form.get('secretId')?.setValue(null);
-    }
+    clearAuthFields(this.form, $event.value);
+  }
+
+  onSelectSecret(_$event: MatSelectChange) {
   }
 
   quickCreateSecret() {

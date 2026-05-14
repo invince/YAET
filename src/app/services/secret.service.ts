@@ -35,16 +35,18 @@ export class SecretService implements OnDestroy{
       this.apply(data);
     });
 
-    this.subscriptions.push(masterKeyService.updateEvent$.subscribe(event => {
-      if(event === 'invalid') {
-        this.secretStorage.data = new Secrets();
-        this.saveAll();
-        this.notification.info('Secrets cleared');
-      } else {
-        this.saveAll();
-        this.notification.info('Secrets re-encrypted');
-      }
-
+    this.subscriptions.push(masterKeyService.updateEvent$.subscribe({
+      next: event => {
+        if(event === 'invalid') {
+          this.secretStorage.data = new Secrets();
+          this.saveAll();
+          this.notification.info('Secrets cleared');
+        } else {
+          this.saveAll();
+          this.notification.info('Secrets re-encrypted');
+        }
+      },
+      error: err => this.log.error('Secret service update event error: ' + err)
     }));
   }
 
@@ -56,18 +58,24 @@ export class SecretService implements OnDestroy{
     this.masterKeyService.decrypt2String(data).then(
       decrypted => {
         if (decrypted) {
-          let dataObj = JSON.parse(decrypted);
-          if (dataObj) {
-            if (dataObj.compatibleVersion) {
-              if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
-                let msg = "Your application is not compatible with saved settings, please update your app. For instance, empty secrets applied";
-                this.log.warn(msg);
-                this.notification.info(msg);
-                dataObj = new Secrets();
+          try {
+            let dataObj = JSON.parse(decrypted);
+            if (dataObj) {
+              if (dataObj.compatibleVersion) {
+                if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
+                  let msg = "Your application is not compatible with saved settings, please update your app. For instance, empty secrets applied";
+                  this.log.warn(msg);
+                  this.notification.info(msg);
+                  dataObj = new Secrets();
+                }
               }
             }
+            this.secretStorage.data = dataObj;
+          } catch (e) {
+            this.log.error('Failed to parse secrets data: ' + e);
+            this.notification.error('Failed to load secrets: corrupted data');
+            this.secretStorage.data = new Secrets();
           }
-          this.secretStorage.data =  dataObj;
           this._loaded = true;
         }
       }

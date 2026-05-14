@@ -11,6 +11,7 @@ import {ProfileService} from './profile.service';
 import {Group} from '../domain/Group';
 import packageJson from '../../../package.json';
 import {RemoteDesktopSettings} from '../domain/setting/RemoteDesktopSettings';
+import {AiSettings} from '../domain/setting/AiSettings';
 import {FileExplorerSettings} from '../domain/setting/FileExplorerSettings';
 import {TerminalSettings} from '../domain/setting/TerminalSettings';
 import {LogService} from './log.service';
@@ -99,7 +100,20 @@ export class SettingService {
       this.validateTerminalSettings(_settings.terminal);
       this.validateRemoteDesktopSettings(_settings.remoteDesktop);
       this.validateFileExplorerSettings(_settings.fileExplorer);
+      this.validateAiSettings(_settings.ai);
     }
+  }
+
+  private validateAiSettings(ai: AiSettings) {
+    if (!ai) return;
+    if ((ai as any).provider && !ai.mode) {
+      ai.mode = (ai as any).provider === 'acp' ? 'acp' : 'web';
+    }
+    if (!ai.mode) {
+      ai.mode = 'web';
+    }
+    if (ai.useContext === undefined) ai.useContext = true;
+    if (ai.agentMode === undefined) ai.agentMode = false;
   }
 
   private validateFileExplorerSettings(fileExplorer: FileExplorerSettings) {
@@ -123,7 +137,8 @@ export class SettingService {
         case LocalTerminalType.POWERSHELL_7:
           terminalSettings.localTerminal.execPath = 'pwsh.exe'; break;
         case LocalTerminalType.BASH: {
-          if (process.platform === 'win32') {
+          const isWin32 = (window as any).electronAPI?.platform === 'win32';
+          if (isWin32) {
             terminalSettings.localTerminal.execPath = 'wsl.exe';
           } else {
             terminalSettings.localTerminal.execPath = 'bash';

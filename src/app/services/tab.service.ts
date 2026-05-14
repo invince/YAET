@@ -55,10 +55,10 @@ export class TabService {
     this._tabs.push(tabInstance);
 
     // Switch to the new tab in the active pane
-    setTimeout(() => {
+    queueMicrotask(() => {
       const paneTabs = this.getTabsForPane(targetPaneId);
       this.paneTabIndices[targetPaneId] = paneTabs.length - 1;
-    }, 50);
+    });
   }
 
   getSelectedTab() {
@@ -130,7 +130,7 @@ export class TabService {
     }
 
     // Set target pane to show the moved tab
-    setTimeout(() => {
+    queueMicrotask(() => {
       const targetPaneTabs = this.getTabsForPane(targetPaneId);
       this.paneTabIndices[targetPaneId] = targetPaneTabs.length - 1;
       this.activePane = targetPaneId;

@@ -43,6 +43,7 @@
         "SECURITY": "Seguridad",
         "APP_VERSION": "Versión de la aplicación",
         "AUTO_UPDATE": "Actualización automática",
+        "CHECK_FOR_UPDATES": "Buscar actualizaciones",
         "PROXY": "Proxy",
         "LANGUAGE": "Idioma",
         "LANGUAGE_LABEL": "Idioma de la interfaz",
@@ -64,6 +65,12 @@
         "VNC_CLIPBOARD_COMPATIBLE": "Activar modo compatible con portapapeles VNC",
         "VNC_QUALITY": "Calidad (0-9)",
         "VNC_COMPRESSION": "Compresión (0-9)",
+        "AI_ASSISTANT": "Asistente de IA",
+        "AI_CONFIGURATION": "Configuración de IA",
+        "AI_MODE": "Modo",
+        "AI_MODEL": "Modelo",
+        "AI_ACP_COMMAND": "Comando ACP",
+        "AI_ACP_ARGS": "Argumentos ACP",
         "ADD_NEW_GROUP": "Agregar nuevo grupo"
     },
     "LANGUAGES": {

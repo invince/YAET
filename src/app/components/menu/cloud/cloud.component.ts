@@ -1,30 +1,30 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCheckbox } from '@angular/material/checkbox';
-import { MatDialog } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIcon } from '@angular/material/icon';
-import { MatInput } from '@angular/material/input';
-import { MatListModule } from '@angular/material/list';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatSelectChange, MatSelectModule } from '@angular/material/select';
-import _ from 'lodash';
-import { NgxSpinnerService } from 'ngx-spinner';
-import { AuthType, SecretType } from '../../../domain/Secret';
-import { CloudSettings } from '../../../domain/setting/CloudSettings';
-import { CloudService } from '../../../services/cloud.service';
-import { MasterKeyService } from '../../../services/master-key.service';
-import { NotificationService } from '../../../services/notification.service';
-import { ProfileService } from '../../../services/profile.service';
-import { ProxyStorageService } from '../../../services/proxy-storage.service';
-import { ProxyService } from '../../../services/proxy.service';
-import { SecretStorageService } from '../../../services/secret-storage.service';
-import { SecretService } from '../../../services/secret.service';
-import { SettingService } from '../../../services/setting.service';
-import { SecretQuickFormComponent } from '../../dialog/secret-quick-form/secret-quick-form.component';
-import { MenuComponent } from '../menu.component';
+import {CommonModule} from '@angular/common';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {MatButtonModule} from '@angular/material/button';
+import {MatCheckbox} from '@angular/material/checkbox';
+import {MatDialog} from '@angular/material/dialog';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatIcon} from '@angular/material/icon';
+import {MatInput} from '@angular/material/input';
+import {MatListModule} from '@angular/material/list';
+import {MatRadioModule} from '@angular/material/radio';
+import {MatSelectChange, MatSelectModule} from '@angular/material/select';
+import isEqual from 'lodash/isEqual';
+import {NgxSpinnerService} from 'ngx-spinner';
+import {AuthType, SecretType} from '../../../domain/Secret';
+import {CloudSettings} from '../../../domain/setting/CloudSettings';
+import {CloudService} from '../../../services/cloud.service';
+import {MasterKeyService} from '../../../services/master-key.service';
+import {NotificationService} from '../../../services/notification.service';
+import {ProfileService} from '../../../services/profile.service';
+import {ProxyStorageService} from '../../../services/proxy-storage.service';
+import {ProxyService} from '../../../services/proxy.service';
+import {SecretStorageService} from '../../../services/secret-storage.service';
+import {SecretService} from '../../../services/secret.service';
+import {SettingService} from '../../../services/setting.service';
+import {SecretQuickFormComponent} from '../../dialog/secret-quick-form/secret-quick-form.component';
+import {MenuComponent} from '../menu.component';
 
 @Component({
   selector: 'app-cloud-menu',
@@ -101,7 +101,7 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
       { validators: [this.secretOrPasswordMatchValidator] }
     );
 
-    this.allSelected = _.isEqual(cloudSettings.items, this.SYNC_ITEMS);
+    this.allSelected = isEqual(cloudSettings.items, this.SYNC_ITEMS);
   }
 
   toggleAll(event: any) {
@@ -162,14 +162,16 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
         () => {
           this.cloudService.upload(cloud).then((response) => {
             this.spinner.hide();
-            if (response) {
-              if (response.succeed) {
-                this.notification.info('Uploaded');
-              } else {
-                this.notification.error('Error Occurred: ' + response.ko);
-              }
-              this.processing = false;
+            if (response.succeed) {
+              this.notification.info('Uploaded');
+            } else {
+              this.notification.error('Error Occurred: ' + response.ko);
             }
+            this.processing = false;
+          }).catch((err) => {
+            this.spinner.hide();
+            this.processing = false;
+            this.notification.error('Upload failed: ' + err.message);
           });
         }
       );
@@ -185,28 +187,30 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
         () => {
           this.cloudService.download(cloud).then((response) => {
             this.spinner.hide();
-            if (response) {
-              if (response.succeed) {
-                this.notification.info('Downloaded');
-                for (const item of cloud.items) {
-                  if (item.toLowerCase() == SettingService.CLOUD_OPTION.toLowerCase()) {
-                    this.settingService.reload();
-                  }
-                  if (item.toLowerCase() == ProfileService.CLOUD_OPTION.toLowerCase()) {
-                    this.profileService.reload();
-                  }
-                  if (item.toLowerCase() == SecretService.CLOUD_OPTION.toLowerCase()) {
-                    this.secretService.reload();
-                  }
-                  if (item.toLowerCase() == ProxyService.CLOUD_OPTION.toLowerCase()) {
-                    this.proxyService.reload();
-                  }
+            if (response.succeed) {
+              this.notification.info('Downloaded');
+              for (const item of cloud.items) {
+                if (item.toLowerCase() == SettingService.CLOUD_OPTION.toLowerCase()) {
+                  this.settingService.reload();
                 }
-              } else {
-                this.notification.error('Error Occurred: ' + response.ko);
+                if (item.toLowerCase() == ProfileService.CLOUD_OPTION.toLowerCase()) {
+                  this.profileService.reload();
+                }
+                if (item.toLowerCase() == SecretService.CLOUD_OPTION.toLowerCase()) {
+                  this.secretService.reload();
+                }
+                if (item.toLowerCase() == ProxyService.CLOUD_OPTION.toLowerCase()) {
+                  this.proxyService.reload();
+                }
               }
-              this.processing = false;
+            } else {
+              this.notification.error('Error Occurred: ' + response.ko);
             }
+            this.processing = false;
+          }).catch((err) => {
+            this.spinner.hide();
+            this.processing = false;
+            this.notification.error('Download failed: ' + err.message);
           })
         });
     }

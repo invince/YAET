@@ -240,7 +240,14 @@ function initScpSftpHandler(log, scpMap, expressApp, getProxies, getSecrets) {
 
   expressApp.post('/api/v1/scp/upload/:id', upload.single('uploadFiles'), async (req, res) => {
     const { data, filename } = req.body;
-    const path = JSON.parse(data).name;
+    let path;
+    try {
+      path = JSON.parse(data).name;
+    } catch (error) {
+      log.error('Error parsing upload data JSON:', error);
+      res.status(400).send({ error: { code: 400, message: 'Invalid JSON: ' + error.message } });
+      return;
+    }
     const configId = req.params['id'];
 
     if (!req.file) {
@@ -274,7 +281,14 @@ function initScpSftpHandler(log, scpMap, expressApp, getProxies, getSecrets) {
   });
 
   expressApp.post('/api/v1/scp/download/:id', upload.none(), async (req, res) => {
-    const downloadInput = JSON.parse(req.body.downloadInput);
+    let downloadInput;
+    try {
+      downloadInput = JSON.parse(req.body.downloadInput);
+    } catch (error) {
+      log.error('Error parsing downloadInput JSON:', error);
+      res.status(400).send({ error: { code: 400, message: 'Invalid JSON: ' + error.message } });
+      return;
+    }
     const path = downloadInput.path;
     const names = downloadInput.names;
     const configId = req.params['id'];
@@ -316,7 +330,14 @@ function initScpSftpHandler(log, scpMap, expressApp, getProxies, getSecrets) {
   });
 
   expressApp.post('/api/v1/scp/open/:id', upload.none(), async (req, res) => {
-    const downloadInput = JSON.parse(req.body.downloadInput);
+    let downloadInput;
+    try {
+      downloadInput = JSON.parse(req.body.downloadInput);
+    } catch (error) {
+      log.error('Error parsing downloadInput JSON:', error);
+      res.status(400).send({ error: { code: 400, message: 'Invalid JSON: ' + error.message } });
+      return;
+    }
     const remotePath = downloadInput.path;
     const fileName = downloadInput.names[0]; // Assuming a single file
     const configId = req.params['id'];

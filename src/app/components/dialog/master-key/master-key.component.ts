@@ -8,6 +8,7 @@ import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} fr
 import {ConfirmationComponent} from '../../confirmation/confirmation.component';
 import {MasterKeyService} from '../../../services/master-key.service';
 import {Subscription} from 'rxjs';
+import {passwordMatchValidator} from '../../../utils/PasswordValidators';
 
 @Component({
     selector: 'app-master-key',
@@ -61,11 +62,8 @@ export class MasterKeyComponent implements OnInit, OnDestroy{
 
   }
 
-  passwordMatchValidator(group: FormGroup) {
-    const password = group.get('newPassword')?.value;
-    const confirmPassword = group.get('confirmPassword')?.value;
-    return password === confirmPassword ? null : { passwordMismatch: true };
-  }
+  passwordMatchValidator = (group: FormGroup) =>
+    passwordMatchValidator(group, 'newPassword', 'confirmPassword');
 
   async update() {
     if (this.resetPasswordForm.valid) {
