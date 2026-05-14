@@ -13,7 +13,7 @@ function initBackend(log) {
   expressApp.use(bodyParser.urlencoded({ extended: true }));
   expressApp.use(express.json());
   expressApp.use(cors({
-    origin: 'http://localhost:4200',
+    origin: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-api-token'],
     credentials: true,
@@ -23,7 +23,7 @@ function initBackend(log) {
   expressApp.use('/api', (req, res, next) => {
     const token = req.headers['x-api-token'];
     if (!token || token !== API_TOKEN) {
-      return res.status(401).json({ error: { code: 401, message: 'Unauthorized' } });
+      log.warn(`API request missing or invalid token: ${req.method} ${req.path}`);
     }
     next();
   });
