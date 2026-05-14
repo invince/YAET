@@ -302,7 +302,7 @@ function initSambaHandler(log, sambaMap, expressApp) {
     try {
       await withSambaClient(configId, async (smbClient) => {
         const fullRemotePath = path.join(remotePath, fileName);
-        const tempDir = path.join(os.tmpdir(), 'scp-temp-files');
+        const tempDir = path.join(os.tmpdir(), 'samba-temp-files');
         if (!fs.existsSync(tempDir)) {
           fs.mkdirSync(tempDir, { recursive: true });
         }

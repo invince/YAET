@@ -227,6 +227,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       this.settingsCopy = this.settingStorage.settings;
       this.refreshForm(this.settingsCopy);
       this.cdr.detectChanges(); // mat select doesn't detect well change from event subscription
+      this.spinner.hide();
     }));
 
   }
@@ -325,7 +326,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   reload() {
     this.spinner.show();
     this.settingService.reload();
-    this.spinner.hide();
+    // spinner will be hidden when settingLoadedEvent fires
   }
 
 
