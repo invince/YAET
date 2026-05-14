@@ -1,10 +1,16 @@
 <div class="chat-container" [class.open]="aiChatService.isOpen$ | async">
   <div class="chat-header">
-    <div class="header-title">
+    <div class="header-left" (click)="toggleHistoryDropdown($event)">
       <mat-icon>smart_toy</mat-icon>
-      <span>AI Assistant</span>
+      <span class="session-name">{{ currentSessionName }}</span>
+      <mat-icon class="dropdown-arrow">arrow_drop_down</mat-icon>
     </div>
-    <div class="header-actions">
+    <div class="header-center">
+      <button mat-icon-button (click)="toggleChat()" class="close-btn">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="header-right">
       <div class="toggle-group" title="Agent Mode (execute commands instantly)">
         <mat-icon>terminal</mat-icon>
         <mat-slide-toggle [(ngModel)]="agentMode"></mat-slide-toggle>
@@ -13,10 +19,31 @@
         <mat-icon>article</mat-icon>
         <mat-slide-toggle [(ngModel)]="useContext"></mat-slide-toggle>
       </div>
-      <button mat-icon-button (click)="toggleChat()">
-        <mat-icon>close</mat-icon>
-      </button>
     </div>
+    @if (showHistoryDropdown) {
+    <div class="history-dropdown" (click)="stopProp($event)">
+      <div class="history-item new-chat-item" (click)="newChat()">
+        <mat-icon>add</mat-icon>
+        <span>New Chat</span>
+      </div>
+      <div class="history-divider"></div>
+      @for (session of sessions; track session.id) {
+      <div class="history-item" [class.active]="session.id === currentSessionId" (click)="switchSession(session.id)">
+        <div class="history-item-info">
+          @if (renamingId === session.id) {
+          <input class="rename-input" [(ngModel)]="renameInput" (keyup.enter)="confirmRename()" (keyup.escape)="cancelRename()" (blur)="confirmRename()" (click)="stopProp($event)" />
+          } @else {
+          <div class="history-item-name" (dblclick)="startRename(session.id, session.name); stopProp($event)">{{ session.name }}</div>
+          }
+          <div class="history-item-time">{{ session.updatedAt | date:'short' }}</div>
+        </div>
+        <button class="history-item-delete" (click)="deleteSession(session.id)" mat-icon-button>
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      }
+    </div>
+    }
   </div>
 
   <div class="chat-messages" #scrollMe [scrollTop]="scrollMe.scrollHeight">
@@ -48,4 +75,3 @@
     </mat-form-field>
   </div>
 </div>
-

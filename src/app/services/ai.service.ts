@@ -1,4 +1,3 @@
-import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {ElectronService} from './electron/electron.service';
@@ -9,7 +8,6 @@ import {ElectronService} from './electron/electron.service';
 export class AiService {
 
   constructor(
-    private http: HttpClient,
     private electronService: ElectronService,
   ) { }
 
@@ -42,16 +40,17 @@ export class AiService {
   }
 
   sendWebMessage(apiUrl: string, token: string, model: string, messages: any[]): Observable<any> {
-    const url = `${apiUrl}/chat/completions`;
-    const headers = {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    };
-    const body = {
-      model: model,
-      messages: messages
-    };
-    return this.http.post(url, body, { headers });
+    return new Observable<any>(observer => {
+      this.electronService.sendAiChat(apiUrl, token, model, messages).then(
+        (resp) => {
+          observer.next(resp);
+          observer.complete();
+        },
+        (err) => {
+          observer.error(err);
+        }
+      );
+    });
   }
 
   async sendAcpMessage(command: string, args: string, model: string, messages: any[]): Promise<string> {

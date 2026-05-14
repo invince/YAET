@@ -33,7 +33,7 @@ let allSecrets = null;
 const log = require("electron-log")
 const { initCommonIpc } = require("./ipc/commonIpc");
 const { initAcpIpcHandler } = require("./ipc/acp");
-const { initAiIpcHandler } = require("./ipc/ai");
+const { initAiIpcHandler, initAiChatIpcHandler } = require("./ipc/ai");
 const { initSSHTerminalIpcHandler } = require("./ipc/terminal/ssh");
 const { initTelnetIpcHandler } = require("./ipc/terminal/telnet");
 const { initLocalTerminalIpcHandler } = require("./ipc/terminal/localTerminal");
@@ -134,6 +134,7 @@ function initHandlerBeforeSettingLoad() {
   initCustomSessionHandler(log);
   initAcpIpcHandler(log);
   initAiIpcHandler(log);
+  initAiChatIpcHandler(log);
   initLocalFileHandler(log, mainWindow);
 
   // Start API

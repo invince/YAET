@@ -90,3 +90,4 @@ export const NODE_EXPRESS_API_ROOT = 'http://localhost:13012/api';
 export const ACP_SEND = 'acp.send';
 export const ACP_FETCH_MODELS = 'acp.fetch-models';
 export const AI_FETCH_MODELS = 'ai.fetch-models';
+export const AI_SEND_CHAT = 'ai.send-chat';
