@@ -56,7 +56,7 @@ YAET is a comprehensive remote connection and management tool built with Angular
 ## Prerequisites
 
 - **Node.js**: v20.19+ or v22.12+ or v24+
-- **Angular CLI**: Latest version
+- **Angular CLI**: 20.3.x
 - **Python 3.x**: Required for native module compilation
   - **Important**: If using Python 3.13+, you must install setuptools: `pip install setuptools`
 - **Build Tools** (Windows):
@@ -162,8 +162,8 @@ Application logs can be found at:
 
 ## Technology Stack
 
-- **Frontend**: Angular 21, Angular Material
-- **Desktop**: Electron 31
+- **Frontend**: Angular 20, Angular Material
+- **Desktop**: Electron 35
 - **Terminal**: xterm.js
 - **File Transfer**: ssh2, basic-ftp, v9u-smb2
 - **Remote Desktop**: @novnc/novnc
