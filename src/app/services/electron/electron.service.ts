@@ -1,19 +1,9 @@
-interface ElectronAPI {
-  send(channel: string, data?: any): void;
-  invoke(channel: string, data?: any): Promise<any>;
-  on(channel: string, callback: (...args: any[]) => void): void;
-  removeAllListeners(channel: string): void;
-}
-
-import {Injectable} from '@angular/core';
-import {Log} from '../../domain/Log';
-import {AuthType, SecretType} from '../../domain/Secret';
-import {CloudResponse} from '../../domain/setting/CloudResponse';
-import {CloudSettings} from '../../domain/setting/CloudSettings';
 import {MySettings} from '../../domain/setting/MySettings';
-import {NotificationService} from '../notification.service';
+import {Injectable} from '@angular/core';
+import {CloudSettings} from '../../domain/setting/CloudSettings';
+import {CloudResponse} from '../../domain/setting/CloudResponse';
 import {SecretStorageService} from '../secret-storage.service';
-import {TabService} from '../tab.service';
+import {Log} from '../../domain/Log';
 import {
   CHECK_FOR_UPDATES,
   CLOUD_DOWNLOAD,
@@ -34,8 +24,18 @@ import {
   SECRETS_RELOAD,
   SECRETS_SAVE,
   SETTINGS_RELOAD,
-  SETTINGS_SAVE
+  SETTINGS_SAVE,
 } from './ElectronConstant';
+import {resolveLoginPassword} from '../../utils/SecretResolver';
+import {NotificationService} from '../notification.service';
+import {TabService} from '../tab.service';
+
+interface ElectronAPI {
+  send(channel: string, data?: any): void;
+  invoke(channel: string, data?: any): Promise<any>;
+  on(channel: string, callback: (...args: any[]) => void): void;
+  removeAllListeners(channel: string): void;
+}
 
 
 export class AbstractElectronService {
@@ -224,19 +224,8 @@ export class ElectronService extends AbstractElectronService {
   }
 
   private prepareCloudSettings(cloudSettings: CloudSettings): CloudSettings | undefined {
-    if (cloudSettings.authType == AuthType.SECRET) {
-      let secret = this.secretStorage.findById(cloudSettings.secretId);
-      if (!secret) {
-        this.log({ level: 'error', message: "Invalid secret " + cloudSettings.secretId });
-        return undefined;
-      }
-      switch (secret.secretType) {
-        case SecretType.LOGIN_PASSWORD: {
-          cloudSettings.login = secret.login;
-          cloudSettings.password = secret.password;
-          break;
-        }
-      }
+    if (!resolveLoginPassword(cloudSettings, cloudSettings, this.secretStorage, m => this.log(m))) {
+      return undefined;
     }
     return cloudSettings;
 

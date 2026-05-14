@@ -8,6 +8,7 @@ import {NotificationService} from '../notification.service';
 import {SecretStorageService} from '../secret-storage.service';
 import {TabService} from '../tab.service';
 import {AbstractElectronService} from './electron.service';
+import {resolveSecretToConfig} from '../../utils/SecretResolver';
 import {
   ERROR,
   SESSION_CLOSE_LOCAL_TERMINAL,
@@ -114,34 +115,8 @@ export class ElectronTerminalService extends AbstractElectronService {
     let telnetProfile = session.profile.telnetProfile;
     telnetConfig.host = telnetProfile.host;
     telnetConfig.port = telnetProfile.port;
-    if (telnetProfile.authType == AuthType.LOGIN) {
-      telnetConfig.username = telnetProfile.login;
-      telnetConfig.password = telnetProfile.password;
-    } else if (telnetProfile.authType == AuthType.SECRET) {
-      let secret = this.secretStorage.findById(telnetProfile.secretId);
-      if (!secret) {
-        this.log({ level: 'error', message: "Invalid secret " + telnetProfile.secretId });
-        return;
-      }
-      switch (secret.secretType) {
-        case SecretType.LOGIN_PASSWORD: {
-          telnetConfig.username = secret.login;
-          telnetConfig.password = secret.password;
-          break;
-        }
-        case SecretType.SSH_KEY: {
-          telnetConfig.username = secret.login;
-          telnetConfig.privateKey = secret.key.replace(/\\n/g, '\n');
-          if (secret.passphrase) {
-            telnetConfig.passphrase = secret.passphrase;
-          }
-          break;
-        }
-        case SecretType.PASSWORD_ONLY: {
-          // todo
-          break;
-        }
-      }
+    if (!resolveSecretToConfig(telnetConfig, telnetProfile, this.secretStorage, m => this.log(m))) {
+      return;
     }
     let data: { [key: string]: any; } = { terminalId: session.id, config: telnetConfig };
     if (session.profile.proxyId) {
@@ -171,34 +146,8 @@ export class ElectronTerminalService extends AbstractElectronService {
     let sshProfile = session.profile.sshProfile;
     sshConfig.host = sshProfile.host;
     sshConfig.port = sshProfile.port;
-    if (sshProfile.authType == AuthType.LOGIN) {
-      sshConfig.username = sshProfile.login;
-      sshConfig.password = sshProfile.password;
-    } else if (sshProfile.authType == AuthType.SECRET) {
-      let secret = this.secretStorage.findById(sshProfile.secretId);
-      if (!secret) {
-        this.log({ level: 'error', message: "Invalid secret " + sshProfile.secretId });
-        return;
-      }
-      switch (secret.secretType) {
-        case SecretType.LOGIN_PASSWORD: {
-          sshConfig.username = secret.login;
-          sshConfig.password = secret.password;
-          break;
-        }
-        case SecretType.SSH_KEY: {
-          sshConfig.username = secret.login;
-          sshConfig.privateKey = secret.key.replace(/\\n/g, '\n');
-          if (secret.passphrase) {
-            sshConfig.passphrase = secret.passphrase;
-          }
-          break;
-        }
-        case SecretType.PASSWORD_ONLY: {
-          // todo
-          break;
-        }
-      }
+    if (!resolveSecretToConfig(sshConfig, sshProfile, this.secretStorage, m => this.log(m))) {
+      return;
     }
     let data: { [key: string]: any; } = { terminalId: session.id, config: sshConfig };
     if (session.profile.proxyId) {
@@ -228,34 +177,8 @@ export class ElectronTerminalService extends AbstractElectronService {
     let profile = session.profile.winRmProfile;
     config.host = profile.host;
     config.port = profile.port;
-    if (profile.authType == AuthType.LOGIN) {
-      config.username = profile.login;
-      config.password = profile.password;
-    } else if (profile.authType == AuthType.SECRET) {
-      let secret = this.secretStorage.findById(profile.secretId);
-      if (!secret) {
-        this.log({ level: 'error', message: "Invalid secret " + profile.secretId });
-        return;
-      }
-      switch (secret.secretType) {
-        case SecretType.LOGIN_PASSWORD: {
-          config.username = secret.login;
-          config.password = secret.password;
-          break;
-        }
-        case SecretType.SSH_KEY: {
-          config.username = secret.login;
-          config.privateKey = secret.key.replace(/\\n/g, '\n');
-          if (secret.passphrase) {
-            config.passphrase = secret.passphrase;
-          }
-          break;
-        }
-        case SecretType.PASSWORD_ONLY: {
-          // todo
-          break;
-        }
-      }
+    if (!resolveSecretToConfig(config, profile, this.secretStorage, m => this.log(m))) {
+      return;
     }
     let data: { [key: string]: any; } = { terminalId: session.id, config: config };
     if (profile.initPath) {
