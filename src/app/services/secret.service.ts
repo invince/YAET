@@ -35,16 +35,18 @@ export class SecretService implements OnDestroy{
       this.apply(data);
     });
 
-    this.subscriptions.push(masterKeyService.updateEvent$.subscribe(event => {
-      if(event === 'invalid') {
-        this.secretStorage.data = new Secrets();
-        this.saveAll();
-        this.notification.info('Secrets cleared');
-      } else {
-        this.saveAll();
-        this.notification.info('Secrets re-encrypted');
-      }
-
+    this.subscriptions.push(masterKeyService.updateEvent$.subscribe({
+      next: event => {
+        if(event === 'invalid') {
+          this.secretStorage.data = new Secrets();
+          this.saveAll();
+          this.notification.info('Secrets cleared');
+        } else {
+          this.saveAll();
+          this.notification.info('Secrets re-encrypted');
+        }
+      },
+      error: err => this.log.error('Secret service update event error: ' + err)
     }));
   }
 

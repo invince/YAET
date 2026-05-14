@@ -1,11 +1,11 @@
-import { ProfileCategory } from './profile/Profile';
-import { Session } from './session/Session';
+import {ProfileCategory} from './profile/Profile';
+import {Session} from './session/Session';
 
 export class TabInstance {
 
   readonly id: string; // uuid
 
-  public name!: string;
+  public name: string = '';
   readonly category: ProfileCategory;
 
   public connected: boolean = false;

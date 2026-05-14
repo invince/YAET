@@ -39,15 +39,18 @@ export class ProfileService implements OnDestroy{
   ) {
     electron.onLoadedEvent(PROFILES_LOADED, data => this.apply(data));
 
-    this.subscriptions.push(masterKeyService.updateEvent$.subscribe(event => {
-      if(event === 'invalid') {
-        this._profiles = new Profiles();
-        this.save();
-        this.notification.info('Profiles cleared');
-      } else {
-        this.save();
-        this.notification.info('Profiles re-encrypted');
-      }
+    this.subscriptions.push(masterKeyService.updateEvent$.subscribe({
+      next: event => {
+        if(event === 'invalid') {
+          this._profiles = new Profiles();
+          this.save();
+          this.notification.info('Profiles cleared');
+        } else {
+          this.save();
+          this.notification.info('Profiles re-encrypted');
+        }
+      },
+      error: err => this.log.error('Profile service update event error: ' + err)
     }));
   }
 

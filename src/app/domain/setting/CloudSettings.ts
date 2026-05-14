@@ -1,13 +1,13 @@
-import { AuthType } from '../Secret';
+import {AuthType} from '../Secret';
 
 export class CloudSettings {
-  public url!: string;
+  public url: string = '';
 
-  public items!: string[];
+  public items: string[] = [];
   public authType?: AuthType;
   public login: string = '';
   public password: string = '';
-  public secretId!: string;
+  public secretId: string = '';
   public proxyId?: string;
 
   public version: string = '';

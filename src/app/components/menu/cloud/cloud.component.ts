@@ -162,14 +162,16 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
         () => {
           this.cloudService.upload(cloud).then((response) => {
             this.spinner.hide();
-            if (response) {
-              if (response.succeed) {
-                this.notification.info('Uploaded');
-              } else {
-                this.notification.error('Error Occurred: ' + response.ko);
-              }
-              this.processing = false;
+            if (response.succeed) {
+              this.notification.info('Uploaded');
+            } else {
+              this.notification.error('Error Occurred: ' + response.ko);
             }
+            this.processing = false;
+          }).catch((err) => {
+            this.spinner.hide();
+            this.processing = false;
+            this.notification.error('Upload failed: ' + err.message);
           });
         }
       );
@@ -185,28 +187,30 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
         () => {
           this.cloudService.download(cloud).then((response) => {
             this.spinner.hide();
-            if (response) {
-              if (response.succeed) {
-                this.notification.info('Downloaded');
-                for (const item of cloud.items) {
-                  if (item.toLowerCase() == SettingService.CLOUD_OPTION.toLowerCase()) {
-                    this.settingService.reload();
-                  }
-                  if (item.toLowerCase() == ProfileService.CLOUD_OPTION.toLowerCase()) {
-                    this.profileService.reload();
-                  }
-                  if (item.toLowerCase() == SecretService.CLOUD_OPTION.toLowerCase()) {
-                    this.secretService.reload();
-                  }
-                  if (item.toLowerCase() == ProxyService.CLOUD_OPTION.toLowerCase()) {
-                    this.proxyService.reload();
-                  }
+            if (response.succeed) {
+              this.notification.info('Downloaded');
+              for (const item of cloud.items) {
+                if (item.toLowerCase() == SettingService.CLOUD_OPTION.toLowerCase()) {
+                  this.settingService.reload();
                 }
-              } else {
-                this.notification.error('Error Occurred: ' + response.ko);
+                if (item.toLowerCase() == ProfileService.CLOUD_OPTION.toLowerCase()) {
+                  this.profileService.reload();
+                }
+                if (item.toLowerCase() == SecretService.CLOUD_OPTION.toLowerCase()) {
+                  this.secretService.reload();
+                }
+                if (item.toLowerCase() == ProxyService.CLOUD_OPTION.toLowerCase()) {
+                  this.proxyService.reload();
+                }
               }
-              this.processing = false;
+            } else {
+              this.notification.error('Error Occurred: ' + response.ko);
             }
+            this.processing = false;
+          }).catch((err) => {
+            this.spinner.hide();
+            this.processing = false;
+            this.notification.error('Download failed: ' + err.message);
           })
         });
     }

@@ -10,8 +10,8 @@ import {UISettings} from './UISettings';
 export class MySettings {
 
   revision: number;
-  public general!: GeneralSettings;
-  public ui!: UISettings;
+  public general: GeneralSettings;
+  public ui: UISettings;
   public groups: Group[];
   public tags: Tag[];
 

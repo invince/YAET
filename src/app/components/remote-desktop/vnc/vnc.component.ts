@@ -9,9 +9,9 @@ import {
   SimpleChanges,
   ViewChild
 } from '@angular/core';
-import { Session } from '../../../domain/session/Session';
-import { VncService } from '../../../services/remote-desktop/vnc.service';
-import { TabService } from '../../../services/tab.service';
+import {Session} from '../../../domain/session/Session';
+import {VncService} from '../../../services/remote-desktop/vnc.service';
+import {TabService} from '../../../services/tab.service';
 
 
 @Component({
@@ -59,16 +59,11 @@ export class VncComponent implements AfterViewInit, OnChanges, OnDestroy {
     }
   }
 
-  // Use arrow function to bind 'this' correctly for addEventListener
-  private handleKeyDownCapture = async (event: KeyboardEvent) => {
+  @HostListener('window:keydown', ['$event'])
+  async handleKeyDownCapture(event: KeyboardEvent) {
     if ((event.ctrlKey || event.metaKey) && (event.code === 'KeyV' || event.key === 'v' || event.key === 'V')) {
       console.log('VNC Component: Intercepted Ctrl+V (KeyDown)', event);
       if (this.isViewInitialized) {
-        // We do NOT prevent default here, letting noVNC handle the key
-        // event.preventDefault();
-        // event.stopPropagation();
-        // event.stopImmediatePropagation();
-
         try {
           const text = await navigator.clipboard.readText();
           console.log('VNC Component: Read clipboard text', text);
@@ -80,10 +75,6 @@ export class VncComponent implements AfterViewInit, OnChanges, OnDestroy {
         }
       }
     }
-  }
-
-  ngOnInit(): void {
-    window.addEventListener('keydown', this.handleKeyDownCapture, true); // Capture phase
   }
   ngAfterViewInit(): void {
     this.connect();
@@ -101,7 +92,6 @@ export class VncComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   ngOnDestroy() {
-    window.removeEventListener('keydown', this.handleKeyDownCapture, true);
     this.disconnect();
   }
 

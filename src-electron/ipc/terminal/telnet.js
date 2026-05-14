@@ -80,6 +80,11 @@ function initTelnetIpcHandler(log, terminalMap, getProxies, getSecrets) {
 
                 telnetClient.send(inputBuffer).catch((err) => {
                   log.error(`Error sending data: ${err.message}`);
+                  event.sender.send('error', {
+                    category: 'telnet',
+                    id,
+                    error: `Send failed: ${err.message}`,
+                  });
                 });
                 event.sender.send('terminal.output',
                   {id: id, data: '\r'}
@@ -111,6 +116,11 @@ function initTelnetIpcHandler(log, terminalMap, getProxies, getSecrets) {
       })
       .catch((err) => {
         log.error(`Error sending data: ${err.message}`);
+        event.sender.send('error', {
+          category: 'telnet',
+          id,
+          error: `Connection failed: ${err.message}`,
+        });
       });
 
   });

@@ -2,7 +2,6 @@ const express = require("express");
 const bodyParser = require("express");
 const cors = require("cors");
 const crypto = require("crypto");
-const log = require("electron-log");
 const { ipcMain } = require("electron");
 
 const API_TOKEN = crypto.randomUUID();

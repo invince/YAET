@@ -1,20 +1,20 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
+import {Injectable, OnDestroy} from '@angular/core';
+import {Subscription} from 'rxjs';
 import packageJson from '../../../package.json';
-import { Compatibility } from '../../main';
-import { CloudResponse } from '../domain/setting/CloudResponse';
-import { CloudSettings } from '../domain/setting/CloudSettings';
-import { compareVersions } from '../utils/VersionUtils';
-import { ElectronService } from './electron/electron.service';
-import { CLOUD_LOADED } from './electron/ElectronConstant';
-import { LogService } from './log.service';
-import { MasterKeyService } from './master-key.service';
-import { NotificationService } from './notification.service';
-import { ProfileService } from './profile.service';
-import { ProxyStorageService } from './proxy-storage.service';
-import { ProxyService } from './proxy.service';
-import { SecretService } from './secret.service';
-import { SettingService } from './setting.service';
+import {Compatibility} from '../../main';
+import {CloudResponse} from '../domain/setting/CloudResponse';
+import {CloudSettings} from '../domain/setting/CloudSettings';
+import {compareVersions} from '../utils/VersionUtils';
+import {ElectronService} from './electron/electron.service';
+import {CLOUD_LOADED} from './electron/ElectronConstant';
+import {LogService} from './log.service';
+import {MasterKeyService} from './master-key.service';
+import {NotificationService} from './notification.service';
+import {ProfileService} from './profile.service';
+import {ProxyStorageService} from './proxy-storage.service';
+import {ProxyService} from './proxy.service';
+import {SecretService} from './secret.service';
+import {SettingService} from './setting.service';
 
 
 @Injectable({
@@ -41,15 +41,18 @@ export class CloudService implements OnDestroy {
     private notification: NotificationService,
   ) {
     electron.onLoadedEvent(CLOUD_LOADED, data => this.apply(data));
-    this.subscriptions.push(masterKeyService.updateEvent$.subscribe(event => {
-      if (event === 'invalid') {
-        this._cloud = new CloudSettings();
-        this.save();
-        this.notification.info('Cloud Settings cleared');
-      } else {
-        this.save();
-        this.notification.info('Cloud Settings re-encrypted');
-      }
+    this.subscriptions.push(masterKeyService.updateEvent$.subscribe({
+      next: event => {
+        if (event === 'invalid') {
+          this._cloud = new CloudSettings();
+          this.save();
+          this.notification.info('Cloud Settings cleared');
+        } else {
+          this.save();
+          this.notification.info('Cloud Settings re-encrypted');
+        }
+      },
+      error: err => this.log.error('Cloud service update event error: ' + err)
     }));
   }
 
@@ -68,19 +71,24 @@ export class CloudService implements OnDestroy {
     this.masterKeyService.decrypt2String(data).then(
       decrypted => {
         if (decrypted) {
-          let dataObj = JSON.parse(decrypted);
-          if (dataObj) {
-            if (dataObj.compatibleVersion) {
-              if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
-                let msg = "Your application is not compatible with saved settings, please update your app. For instance, we'll use default cloud settings";
-                this.log.warn(msg);
-                this.notification.info(msg);
-                dataObj = new CloudSettings();
+          try {
+            let dataObj = JSON.parse(decrypted);
+            if (dataObj) {
+              if (dataObj.compatibleVersion) {
+                if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
+                  let msg = "Your application is not compatible with saved settings, please update your app. For instance, we'll use default cloud settings";
+                  this.log.warn(msg);
+                  this.notification.info(msg);
+                  dataObj = new CloudSettings();
+                }
               }
             }
+            this._cloud = dataObj;
+          } catch (e) {
+            this.log.error('Failed to parse cloud data: ' + e);
+            this.notification.error('Failed to load cloud settings: corrupted data');
+            this._cloud = new CloudSettings();
           }
-
-          this._cloud = dataObj;
           this._loaded = true;
         }
       }
@@ -120,11 +128,13 @@ export class CloudService implements OnDestroy {
     this.electron.reloadCloud();
   }
 
-  async upload(cloudSettings: CloudSettings): Promise<CloudResponse | undefined> {
-    return await this.electron.uploadCloud(cloudSettings);
+  async upload(cloudSettings: CloudSettings): Promise<CloudResponse> {
+    const result = await this.electron.uploadCloud(cloudSettings);
+    return result ?? { succeed: false, ko: 'Upload failed: no response from backend' };
   }
 
-  async download(cloudSettings: CloudSettings): Promise<CloudResponse | undefined> {
-    return await this.electron.downloadCloud(cloudSettings); // after download a CLOUD_LOADED will be sent
+  async download(cloudSettings: CloudSettings): Promise<CloudResponse> {
+    const result = await this.electron.downloadCloud(cloudSettings);
+    return result ?? { succeed: false, ko: 'Download failed: no response from backend' };
   }
 }

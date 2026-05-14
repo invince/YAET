@@ -4,9 +4,9 @@ import {Profile} from './profile/Profile';
 export const NODE_DEFAULT_NAME: string = 'default';
 
 export class GroupNode {
-  name! : string;
+  name: string = '';
 
-  oldName! : string;
+  oldName: string = '';
 
   id? : string;
 
@@ -151,7 +151,7 @@ export class GroupNode {
     return nodes.map(
       node => {
         if (node.children) {
-          node.children = node.children.sort(comparator);
+          node.children = [...node.children].sort(comparator);
         }
         return node;
       }

@@ -90,13 +90,13 @@ app.on('ready', () => {
     load(log, mainWindow, PROFILES_JSON, "profiles.loaded", true)
       .then(r => log.info(PROFILES_JSON + " loaded, event sent"))
       .catch(log.error);
-    
+
     reloadSecrets();
-    
+
     load(log, mainWindow, CLOUD_JSON, "cloud.loaded", true)
       .then(r => log.info(CLOUD_JSON + " loaded, event sent"))
       .catch(log.error);
-      
+
     reloadProxies();
 
     load(log, mainWindow, SETTINGS_JSON, "settings.loaded", false)
@@ -138,7 +138,6 @@ function initHandlerBeforeSettingLoad() {
 
 
 function initHandlerAfterSettingLoad(settings) {
-  // createMenu(log);
   if (!initialized) {
     const autoUpdate = settings?.general?.autoUpdate;
     if (autoUpdate) {

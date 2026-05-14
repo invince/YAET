@@ -225,15 +225,21 @@ export class FileListComponent implements OnInit, OnDestroy {
         const separator = this.path.endsWith('/') ? '' : '/';
         const fullPath = `${this.path}${separator}`;
 
-        this.api.download(this.ajaxSettings.downloadUrl, fullPath, [item.name]).subscribe(blob => {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = item.name;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+        this.api.download(this.ajaxSettings.downloadUrl, fullPath, [item.name]).subscribe({
+            next: (blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = item.name;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            },
+            error: (err) => {
+                console.error('Error downloading file', err);
+                alert('Failed to download file: ' + (err.error?.error?.message || err.message));
+            }
         });
     }
 
@@ -243,8 +249,14 @@ export class FileListComponent implements OnInit, OnDestroy {
         const separator = this.path.endsWith('/') ? '' : '/';
         const fullPath = `${this.path}${separator}`;
 
-        this.api.delete(this.ajaxSettings.url, fullPath, [item]).subscribe(() => {
-            this.refresh();
+        this.api.delete(this.ajaxSettings.url, fullPath, [item]).subscribe({
+            next: () => {
+                this.refresh();
+            },
+            error: (err) => {
+                console.error('Error deleting item', err);
+                alert('Failed to delete item: ' + (err.error?.error?.message || err.message));
+            }
         });
     }
 
@@ -848,15 +860,21 @@ export class FileListComponent implements OnInit, OnDestroy {
         const fullPath = `${this.path}${separator}`;
         const names = Array.from(this.selection);
 
-        this.api.download(this.ajaxSettings.downloadUrl, fullPath, names).subscribe(blob => {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = names.length === 1 ? names[0] : 'download.zip';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+        this.api.download(this.ajaxSettings.downloadUrl, fullPath, names).subscribe({
+            next: (blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = names.length === 1 ? names[0] : 'download.zip';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            },
+            error: (err) => {
+                console.error('Error downloading selected files', err);
+                alert('Failed to download selected files: ' + (err.error?.error?.message || err.message));
+            }
         });
     }
 
@@ -874,9 +892,15 @@ export class FileListComponent implements OnInit, OnDestroy {
         const fullPath = `${this.path}${separator}`;
         const items = this.dataSource.data.filter(item => this.selection.has(item.name));
 
-        this.api.delete(this.ajaxSettings.url, fullPath, items).subscribe(() => {
-            this.clearSelection();
-            this.refresh();
+        this.api.delete(this.ajaxSettings.url, fullPath, items).subscribe({
+            next: () => {
+                this.clearSelection();
+                this.refresh();
+            },
+            error: (err) => {
+                console.error('Error deleting selected items', err);
+                alert('Failed to delete selected items: ' + (err.error?.error?.message || err.message));
+            }
         });
     }
 
