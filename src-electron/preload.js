@@ -59,6 +59,7 @@ const ALLOWED_ON_CHANNELS = [
   'secrets.loaded',
   'cloud.loaded',
   'proxies.loaded',
+  'masterkey-changed',
 ];
 
 contextBridge.exposeInMainWorld('electronAPI', {

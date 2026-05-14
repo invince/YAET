@@ -81,6 +81,7 @@ export const PROXIES_RELOAD = 'proxies.reload';
 //#endregion "Proxies"
 
 
+export const MASTER_KEY_CHANGED = 'masterkey-changed';
 export const CHECK_FOR_UPDATES = 'check-for-updates';
 export const GET_API_TOKEN = 'get-api-token';
 

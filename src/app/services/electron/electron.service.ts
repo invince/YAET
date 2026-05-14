@@ -24,6 +24,7 @@ import {
   ERROR,
   GET_MASTERKEY,
   LOG,
+  MASTER_KEY_CHANGED,
   OPEN_URL,
   PROFILES_RELOAD,
   PROFILES_SAVE,
@@ -155,6 +156,15 @@ export class ElectronService extends AbstractElectronService {
     if (this.ipc) {
       await this.ipc.invoke(DELETE_MASTERKEY);
     }
+  }
+
+  onMasterKeyChanged(callback: () => void): () => void {
+    if (this.ipc) {
+      const handler = () => callback();
+      this.ipc.on(MASTER_KEY_CHANGED, handler);
+      return () => this.ipc.removeAllListeners(MASTER_KEY_CHANGED);
+    }
+    return () => {};
   }
 
   async saveSecrets(encryptedSecrets: string) {

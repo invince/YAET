@@ -9,7 +9,8 @@ function initSecurityIpcHandler(log) {
 
   ipcMain.handle('masterkey.save', async (event, password) => {
     log.info("master key saving...");
-    return keytar.setPassword(service, account, password);
+    await keytar.setPassword(service, account, password);
+    event.sender.send('masterkey-changed');
   });
 
   ipcMain.handle('masterkey.get', async (event,) => {
@@ -18,7 +19,8 @@ function initSecurityIpcHandler(log) {
 
   ipcMain.handle('masterkey.delete', async (event) => {
     log.info("master key deleting...");
-    return keytar.deletePassword(service, account);
+    await keytar.deletePassword(service, account);
+    event.sender.send('masterkey-changed');
   });
 
 }
