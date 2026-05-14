@@ -59,18 +59,24 @@ export class ProfileService implements OnDestroy{
     this.masterKeyService.decrypt2String(data).then(
       decrypted => {
         if (decrypted) {
-          let dataObj = JSON.parse(decrypted);
-          if (dataObj) {
-            if (dataObj.compatibleVersion) {
-              if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
-                let msg = "Your application is not compatible with saved settings, please update your app. For instance, empty profiles applied";
-                this.log.warn(msg);
-                this.notification.info(msg);
-                dataObj = new Profiles();
+          try {
+            let dataObj = JSON.parse(decrypted);
+            if (dataObj) {
+              if (dataObj.compatibleVersion) {
+                if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
+                  let msg = "Your application is not compatible with saved settings, please update your app. For instance, empty profiles applied";
+                  this.log.warn(msg);
+                  this.notification.info(msg);
+                  dataObj = new Profiles();
+                }
               }
             }
+            this._profiles = dataObj;
+          } catch (e) {
+            this.log.error('Failed to parse profiles data: ' + e);
+            this.notification.error('Failed to load profiles: corrupted data');
+            this._profiles = new Profiles();
           }
-          this._profiles =  dataObj;
           this._loaded = true;
         }
       }

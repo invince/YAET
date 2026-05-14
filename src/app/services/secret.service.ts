@@ -56,18 +56,24 @@ export class SecretService implements OnDestroy{
     this.masterKeyService.decrypt2String(data).then(
       decrypted => {
         if (decrypted) {
-          let dataObj = JSON.parse(decrypted);
-          if (dataObj) {
-            if (dataObj.compatibleVersion) {
-              if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
-                let msg = "Your application is not compatible with saved settings, please update your app. For instance, empty secrets applied";
-                this.log.warn(msg);
-                this.notification.info(msg);
-                dataObj = new Secrets();
+          try {
+            let dataObj = JSON.parse(decrypted);
+            if (dataObj) {
+              if (dataObj.compatibleVersion) {
+                if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
+                  let msg = "Your application is not compatible with saved settings, please update your app. For instance, empty secrets applied";
+                  this.log.warn(msg);
+                  this.notification.info(msg);
+                  dataObj = new Secrets();
+                }
               }
             }
+            this.secretStorage.data = dataObj;
+          } catch (e) {
+            this.log.error('Failed to parse secrets data: ' + e);
+            this.notification.error('Failed to load secrets: corrupted data');
+            this.secretStorage.data = new Secrets();
           }
-          this.secretStorage.data =  dataObj;
           this._loaded = true;
         }
       }
