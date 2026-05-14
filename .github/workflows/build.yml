@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest]
 
     steps:
       - name: Checkout Code
@@ -32,6 +32,9 @@ jobs:
           npx patch-package
           npx ng build --base-href ./
 
+      - name: Run Unit Tests
+        run: npx ng test --no-watch --browsers ChromeHeadless
+
       - name: Build and Publish (Windows)
         if: matrix.os == 'windows-latest'
         run: npx electron-builder --windows --publish always
@@ -41,5 +44,11 @@ jobs:
       - name: Build and Publish (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: npx electron-builder --linux --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Build and Publish (macOS)
+        if: matrix.os == 'macos-latest'
+        run: npx electron-builder --mac --publish always
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
