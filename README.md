@@ -116,6 +116,15 @@ If you install any npm packages used by the Electron main process:
 npm run rebuild-native
 ```
 
+## Testing
+
+```bash
+# Run unit tests
+npm test
+```
+
+The project includes automated tests for core services, component logic, and utility functions. Tests are implemented with Jasmine and run via Angular's Karma test runner.
+
 ## Building & Releasing
 
 ### Build Installer

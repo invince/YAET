@@ -64,16 +64,20 @@ export class GroupNode {
       });
     }
 
-    // construct a map of grpId and Node(with children)
+    const buildGroupNode = (oneGroup: Group) => {
+      let node = this.mapGroup2Node(oneGroup);
+      if (patchGroup) {
+        node = patchGroup(oneGroup, node);
+      }
+      return node;
+    };
+
     groupIdProfileMap.forEach((profilesInThisGrp, groupId) => {
       let oneGroup = groupIdGroupMap.get(groupId);
       if (!oneGroup) {
         profilesWithoutGrp = [...profilesWithoutGrp, ...profilesInThisGrp];
       } else {
-        let node = this.mapGroup2Node(oneGroup);
-        if (patchGroup) {
-          node = patchGroup(oneGroup, node);
-        }
+        let node = buildGroupNode(oneGroup);
         for (let oneProfile of profilesInThisGrp) {
           let childNode = this.mapProfile2Node(oneProfile)
           if (patchProfile) {
@@ -91,11 +95,7 @@ export class GroupNode {
         if (node) {
           result.push(node);
         } else if (showEmptyGroup) {
-          let node = this.mapGroup2Node(oneGroup);
-          if (patchGroup) {
-            node = patchGroup(oneGroup, node);
-          }
-          result.push(node)
+          result.push(buildGroupNode(oneGroup));
         }
       }
     }
