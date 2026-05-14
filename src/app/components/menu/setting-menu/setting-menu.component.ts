@@ -5,10 +5,10 @@ import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatCheckbox} from '@angular/material/checkbox';
 import {MatDialog} from '@angular/material/dialog';
 import {MatExpansionModule} from '@angular/material/expansion';
-import {MatFormField, MatLabel, MatSuffix} from '@angular/material/form-field';
+import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIcon} from '@angular/material/icon';
-import {MatInput} from '@angular/material/input';
-import {MatOption, MatSelect} from '@angular/material/select';
+import {MatInputModule} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {NgxSpinnerService} from 'ngx-spinner';
 import {Subscription} from 'rxjs';
@@ -54,14 +54,11 @@ import {TagsFormComponent} from './tags-form/tags-form.component';
     CommonModule,
     MatIcon,
     MatIconButton,
-    MatFormField,
-    MatLabel,
-    MatSelect,
-    MatOption,
+    MatFormFieldModule,
+    MatSelectModule,
     KeyValuePipe,
-    MatInput,
+    MatInputModule,
     MatButton,
-    MatSuffix,
     MatCheckbox,
     MatExpansionModule,
     TranslateModule,
@@ -310,6 +307,9 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     }
     if (this.currentTabIndex == this.AI_FORM_TAB_INDEX) {
       return this.aiForm.valid;
+    }
+    if (this.currentTabIndex == this.FILE_EXPLORER_FORM_TAB_INDEX) {
+      return this.fileExplorerForm.valid;
     }
     return false;
   }

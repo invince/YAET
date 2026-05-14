@@ -153,13 +153,24 @@
 .field {
   width: 100%;
   max-width: 400px;
+  margin-bottom: 8px;
 }
 
 mat-checkbox {
   margin-bottom: 8px;
 }
 
+/* Fix input and select padding */
+input.mat-mdc-input-element {
+  padding-left: 4px !important;
+  box-sizing: border-box !important;
+}
 
+::ng-deep .mat-mdc-select-value,
+::ng-deep .mat-mdc-select-trigger {
+  padding-left: 4px !important;
+  box-sizing: border-box !important;
+}
 
 
 
