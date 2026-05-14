@@ -23,6 +23,7 @@ import {MySettings} from '../../../domain/setting/MySettings';
 import {RemoteDesktopSettings} from '../../../domain/setting/RemoteDesktopSettings';
 import {TerminalSettings} from '../../../domain/setting/TerminalSettings';
 import {SideNavType, UISettings} from '../../../domain/setting/UISettings';
+import {ElectronService} from '../../../services/electron/electron.service';
 import {LogService} from '../../../services/log.service';
 import {MasterKeyService} from '../../../services/master-key.service';
 import {NotificationService} from '../../../services/notification.service';
@@ -123,6 +124,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   constructor(
     private log: LogService,
     private fb: FormBuilder,
+    private electronService: ElectronService,
     private settingService: SettingService,
     private settingStorage: SettingStorageService,
     private secretStorageService: SecretStorageService,
@@ -326,6 +328,11 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     this.spinner.hide();
   }
 
+
+  checkForUpdates() {
+    this.notification.info('Checking for updates...');
+    this.electronService.checkForUpdates();
+  }
 
   openMasterKeyModal() {
     const dialogRef = this.dialog.open(MasterKeyComponent, {

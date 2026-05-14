@@ -43,6 +43,7 @@
         "SECURITY": "Security",
         "APP_VERSION": "App Version",
         "AUTO_UPDATE": "Auto update application",
+        "CHECK_FOR_UPDATES": "Check for Updates",
         "PROXY": "Proxy update",
         "LANGUAGE": "Language",
         "LANGUAGE_LABEL": "Interface Language",

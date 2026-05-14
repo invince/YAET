@@ -27,6 +27,7 @@ const ALLOWED_SEND_CHANNELS = [
   'proxies.save',
   'proxies.reload',
   'trigger-native-clipboard-paste',
+  'check-for-updates',
 ];
 
 const ALLOWED_INVOKE_CHANNELS = [

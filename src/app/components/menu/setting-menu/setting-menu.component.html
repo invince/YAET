@@ -41,6 +41,11 @@
               <mat-label style="display: block; margin-bottom: 16px; color: #9ca3af;">{{ 'SETTINGS.APP_VERSION' |
                 translate }}:
                 <b>{{version}}</b></mat-label>
+              <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 12px;">
+                <button mat-stroked-button (click)="checkForUpdates()">
+                  <mat-icon>system_update</mat-icon> {{ 'SETTINGS.CHECK_FOR_UPDATES' | translate }}
+                </button>
+              </div>
               <mat-checkbox formControlName="autoUpdate">{{ 'SETTINGS.AUTO_UPDATE' | translate }}</mat-checkbox>
               @if (generalForm.get('autoUpdate')?.value) {
               <div style="margin-top: 10px;">

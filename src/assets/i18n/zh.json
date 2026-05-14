@@ -43,6 +43,7 @@
         "SECURITY": "安全",
         "APP_VERSION": "应用版本",
         "AUTO_UPDATE": "自动更新应用程序",
+        "CHECK_FOR_UPDATES": "检查更新",
         "PROXY": "更新代理",
         "LANGUAGE": "语言",
         "LANGUAGE_LABEL": "界面语言",

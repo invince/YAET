@@ -15,6 +15,7 @@ import {NotificationService} from '../notification.service';
 import {SecretStorageService} from '../secret-storage.service';
 import {TabService} from '../tab.service';
 import {
+  CHECK_FOR_UPDATES,
   CLOUD_DOWNLOAD,
   CLOUD_RELOAD,
   CLOUD_SAVE,
@@ -108,6 +109,12 @@ export class ElectronService extends AbstractElectronService {
   reloadSettings() {
     if (this.ipc) {
       this.ipc.send(SETTINGS_RELOAD, {});
+    }
+  }
+
+  checkForUpdates() {
+    if (this.ipc) {
+      this.ipc.send(CHECK_FOR_UPDATES, {});
     }
   }
   //#endregion "Settings"
