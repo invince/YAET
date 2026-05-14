@@ -59,7 +59,8 @@ app.on('ready', () => {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    icon: __dirname + '/assets/icons/app-icon.png', // Path to your icon
+    backgroundColor: '#1e1e1e',
+    icon: __dirname + '/assets/icons/app-icon.png',
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

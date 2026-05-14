@@ -93,11 +93,21 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
       this.electron.sendTerminalResize(this.session.id, size.cols, size.rows);
     });
 
-    // Force initial fit
-    setTimeout(() => this.fitAddon.fit(), 0);
+    const doFit = () => {
+      try { this.fitAddon.fit(); } catch (_) { }
+    };
 
-    // Add ResizeObserver for container changes
-    this.resizeObserver = new ResizeObserver(() => this.fitAddon.fit());
+    requestAnimationFrame(() => doFit());
+    setTimeout(doFit, 200);
+    setTimeout(doFit, 800);
+
+    const interval = setInterval(doFit, 300);
+    setTimeout(() => clearInterval(interval), 3000);
+
+    this.resizeObserver = new ResizeObserver(() => {
+      doFit();
+      clearInterval(interval);
+    });
     this.resizeObserver.observe(this.termContainer.nativeElement);
 
     //  ctrl + shift + c for copy when selecting data, default otherwise
