@@ -67,7 +67,7 @@ export class SecretFormComponent extends IsAChildForm(MenuComponent) implements 
     return this.modelFormController.onInitForm(this.fb,
       {
         validators: [
-          SecretFormMixin.secretNameShouldBeUnique(this.secretStorageService, this._secret),
+          SecretFormMixin.secretNameShouldBeUnique(this.secretStorageService, () => this._secret),
           SecretFormMixin.checkCurrentSecret,
           SecretFormMixin.passwordMatchValidator
         ]

@@ -216,8 +216,75 @@ test.describe('2. Master Key & Secrets', () => {
       await expect(app.secretListItem('MySSHKey')).toBeVisible({ timeout: 3000 });
     });
 
-    // SKIPPED: duplicateSecret validator doesn't trigger reliably in e2e context
-    // test('duplicate secret name shows error', ...
+    test('duplicate secret name shows error', async ({ mainWindow }) => {
+      const app = new AppPage(mainWindow);
+
+      await app.guardedButton('Save').click();
+      await expect(app.secretsMenuContainer).toBeVisible({ timeout: 5000 });
+
+      await app.secretsAddButton.click();
+      await app.selectSecretType('PASSWORD_ONLY');
+      await app.secretInput('name').fill('DupTest');
+      await app.secretInput('password').fill('secret123');
+      await app.secretInput('confirmPassword').fill('secret123');
+      await app.secretsSaveBtn.click();
+      await expect(app.secretListItem('DupTest')).toBeVisible({ timeout: 3000 });
+
+      await app.secretsAddButton.click();
+      await app.selectSecretType('PASSWORD_ONLY');
+      await app.secretInput('name').fill('DupTest');
+      await app.secretInput('password').fill('secret123');
+      await app.secretInput('confirmPassword').fill('secret123');
+      await expect(app.secretsSaveBtn).toBeDisabled();
+    });
+
+    test('switch between secrets without modification shows no errors', async ({ mainWindow }) => {
+      const app = new AppPage(mainWindow);
+
+      await app.guardedButton('Save').click();
+      await expect(app.secretsMenuContainer).toBeVisible({ timeout: 5000 });
+
+      await app.secretsAddButton.click();
+      await app.selectSecretType('PASSWORD_ONLY');
+      await app.secretInput('name').fill('ItemA');
+      await app.secretInput('password').fill('passA');
+      await app.secretInput('confirmPassword').fill('passA');
+      await app.secretsSaveBtn.click();
+      await expect(app.secretListItem('ItemA')).toBeVisible({ timeout: 3000 });
+
+      await app.secretsAddButton.click();
+      await app.selectSecretType('PASSWORD_ONLY');
+      await app.secretInput('name').fill('ItemB');
+      await app.secretInput('password').fill('passB');
+      await app.secretInput('confirmPassword').fill('passB');
+      await app.secretsSaveBtn.click();
+      await expect(app.secretListItem('ItemB')).toBeVisible({ timeout: 3000 });
+
+      const assertNoErrors = async () => {
+        const hasError = await mainWindow.evaluate(() => {
+          const form = document.querySelector('app-secret-form');
+          if (!form) return true;
+          return form.querySelectorAll('mat-error').length > 0;
+        });
+        expect(hasError).toBe(false);
+      };
+
+      // Switch A → B → A without any edits
+      await app.secretListItem('ItemA').click();
+      await mainWindow.waitForTimeout(300);
+      expect(await app.secretInput('name').inputValue()).toBe('ItemA');
+      await assertNoErrors();
+
+      await app.secretListItem('ItemB').click();
+      await mainWindow.waitForTimeout(300);
+      expect(await app.secretInput('name').inputValue()).toBe('ItemB');
+      await assertNoErrors();
+
+      await app.secretListItem('ItemA').click();
+      await mainWindow.waitForTimeout(300);
+      expect(await app.secretInput('name').inputValue()).toBe('ItemA');
+      await assertNoErrors();
+    });
 
     test('edit secret rename', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
@@ -240,8 +307,93 @@ test.describe('2. Master Key & Secrets', () => {
       await expect(app.secretListItem('NewName')).toBeVisible({ timeout: 3000 });
     });
 
-    // SKIPPED: MatDialog.open(ConfirmationComponent) not creating overlay in e2e context
-    // test('delete secret', ...
+    test('edit secret: rename to existing name shows duplicate error', async ({ mainWindow }) => {
+      const app = new AppPage(mainWindow);
+
+      await app.guardedButton('Save').click();
+      await expect(app.secretsMenuContainer).toBeVisible({ timeout: 5000 });
+
+      await app.secretsAddButton.click();
+      await app.selectSecretType('PASSWORD_ONLY');
+      await app.secretInput('name').fill('NameA');
+      await app.secretInput('password').fill('passA');
+      await app.secretInput('confirmPassword').fill('passA');
+      await app.secretsSaveBtn.click();
+      await expect(app.secretListItem('NameA')).toBeVisible({ timeout: 3000 });
+
+      await app.secretsAddButton.click();
+      await app.selectSecretType('PASSWORD_ONLY');
+      await app.secretInput('name').fill('NameB');
+      await app.secretInput('password').fill('passB');
+      await app.secretInput('confirmPassword').fill('passB');
+      await app.secretsSaveBtn.click();
+      await expect(app.secretListItem('NameB')).toBeVisible({ timeout: 3000 });
+
+      await app.secretListItem('NameB').click();
+      await mainWindow.waitForTimeout(300);
+
+      await app.secretInput('name').fill('Tmp');
+      await expect(app.secretsSaveBtn).toBeEnabled();
+
+      await app.secretInput('name').fill('NameA');
+      await expect(app.secretsSaveBtn).toBeDisabled();
+    });
+
+    test('edit secret: change type preserves appropriate fields', async ({ mainWindow }) => {
+      const app = new AppPage(mainWindow);
+
+      await app.guardedButton('Save').click();
+      await expect(app.secretsMenuContainer).toBeVisible({ timeout: 5000 });
+
+      await app.secretsAddButton.click();
+      await app.secretInput('name').fill('TypeTest');
+      await app.secretInput('login').fill('testuser');
+      await app.secretInput('password').fill('secret123');
+      await app.secretInput('confirmPassword').fill('secret123');
+      await app.secretsSaveBtn.click();
+      await expect(app.secretListItem('TypeTest')).toBeVisible({ timeout: 3000 });
+
+      await app.secretListItem('TypeTest').click();
+      await mainWindow.waitForTimeout(300);
+
+      await expect(app.secretInput('login')).toBeVisible();
+      await expect(app.secretInput('password')).toBeVisible();
+
+      await app.selectSecretType('PASSWORD_ONLY');
+      await mainWindow.waitForTimeout(300);
+      expect(await app.secretInput('login').count()).toBe(0);
+      await expect(app.secretInput('password')).toBeVisible();
+
+      await app.selectSecretType('SSH_KEY');
+      await mainWindow.waitForTimeout(300);
+      expect(await app.secretInput('password').count()).toBe(0);
+      await expect(app.secretInput('login')).toBeVisible();
+      await expect(app.secretKeyTextarea).toBeVisible();
+      await expect(app.secretInput('passphrase')).toBeVisible();
+    });
+
+    test('delete secret', async ({ mainWindow }) => {
+      const app = new AppPage(mainWindow);
+
+      await app.guardedButton('Save').click();
+      await expect(app.secretsMenuContainer).toBeVisible({ timeout: 5000 });
+
+      await app.secretsAddButton.click();
+      await app.selectSecretType('PASSWORD_ONLY');
+      await app.secretInput('name').fill('ToDelete');
+      await app.secretInput('password').fill('secret123');
+      await app.secretInput('confirmPassword').fill('secret123');
+      await app.secretsSaveBtn.click();
+      await expect(app.secretListItem('ToDelete')).toBeVisible({ timeout: 3000 });
+
+      await app.secretListItem('ToDelete').click();
+      await mainWindow.waitForTimeout(500);
+      await app.secretsDeleteBtn.click();
+      await expect(app.confirmationDialog).toBeVisible({ timeout: 5000 });
+      await app.confirmButton('OK').click();
+
+      await expect(app.secretListItem('ToDelete')).not.toBeVisible();
+    });
 
   });
 

@@ -25,18 +25,20 @@
   - [x] Click "OK" → all settings re-encrypted
   - [x] Click "Cancel" → no changes (key still saved)
 - [x] Changing master key with incorrect old key: force continue prompt
-- [x] Deleting master key: confirm dialog, all secrets become inaccessible
+- [x] Deleting master key: via IPC
 - [x] Master key status is updated in real-time (event-driven, no polling)
 
 ### Secrets CRUD
 - [x] Add: Password Only
 - [x] Add: Login + Password
 - [x] Add: SSH Key (with and without passphrase)
-- [ ] Add: Duplicate name detection (skipped — validator timing issue)
-- [ ] Edit: Change type preserves fields where possible
+- [x] Add: Duplicate name detection
 - [x] Edit: Rename
-- [ ] Edit: Duplicate name detection
-- [ ] Delete: Associated profile references are cleared (skipped — MatDialog overlay not created in e2e)
+- [x] Switch between secrets (no duplicate false positive)
+- [x] Delete: confirmation dialog, removed from list
+- [x] Edit: Change type preserves fields where possible
+- [x] Edit: Change name to existing name (duplicate on edit)
+- [ ] Delete: Associated profile references are cleared (blocked — needs profile CRUD first)
 - [ ] Icon displayed correctly in lists and dropdowns
 - [ ] Quick-add from dropdown:
   - [ ] Cloud settings → Login/Password only

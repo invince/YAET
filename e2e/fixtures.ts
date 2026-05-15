@@ -28,8 +28,12 @@ export const test = base.extend<E2EFixtures>({
       }
     }
 
+    const isCI = !!process.env.CI;
     const electronApp = await electron.launch({
-      args: [path.join(__dirname, '..', 'src-electron', 'electronMain.e2e.js')],
+      args: [
+        ...(isCI ? ['--headless'] : []),
+        path.join(__dirname, '..', 'src-electron', 'electronMain.e2e.js'),
+      ],
       env: {
         ...process.env,
         NODE_ENV: 'e2e',
