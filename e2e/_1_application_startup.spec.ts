@@ -1,6 +1,8 @@
-import { test, expect } from './fixtures';
+import {expect, test} from './fixtures';
 import path from 'path';
 import fs from 'fs';
+
+const DEFAULT_TERMINAL_TYPE = process.platform === 'win32' ? 'cmd' : 'bash';
 
 const DEFAULT_SETTINGS = {
   revision: Date.now(),
@@ -14,7 +16,7 @@ const DEFAULT_SETTINGS = {
   },
   groups: [],
   tags: [],
-  terminal: { localTerminal: { type: 'cmd', execPath: '', defaultOpen: false } },
+  terminal: { localTerminal: { type: DEFAULT_TERMINAL_TYPE, execPath: '', defaultOpen: false } },
   fileExplorer: {},
   remoteDesktop: { vncClipboardCompatibleMode: false, vncCompressionLevel: 6, vncQuality: 7 },
   ai: {

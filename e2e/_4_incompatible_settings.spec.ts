@@ -1,6 +1,6 @@
-import { test, expect } from './fixtures';
-import path from 'path';
-import fs from 'fs';
+import {expect, test} from './fixtures';
+
+const DEFAULT_TERMINAL_TYPE = process.platform === 'win32' ? 'cmd' : 'bash';
 
 const HIGH_VERSION = '100.0.0';
 const MASTER_KEY = 'e2e-test-key';
@@ -43,7 +43,7 @@ test.describe('Incompatible Settings Warning', () => {
           ui: { profileLabelLength: 10, profileSideNavType: 'flat', secretLabelLength: 10, secretLabelLengthInDropDown: 8, theme: 'pink-bluegrey' },
           groups: [],
           tags: [],
-          terminal: { localTerminal: { type: 'cmd', execPath: '', defaultOpen: false } },
+          terminal: { localTerminal: { type: DEFAULT_TERMINAL_TYPE, execPath: '', defaultOpen: false } },
           fileExplorer: {},
           remoteDesktop: { vncClipboardCompatibleMode: false, vncCompressionLevel: 6, vncQuality: 7 },
           ai: { mode: 'web', apiUrl: 'https://api.openai.com/v1', token: '', model: '', acpCommand: '', acpArgs: '', acpModel: '', useContext: true, agentMode: false },
@@ -71,7 +71,7 @@ test.describe('Incompatible Settings Warning', () => {
           general: { autoUpdate: true, proxyId: '', language: 'en' },
           ui: { profileLabelLength: 10, profileSideNavType: 'flat', secretLabelLength: 10, secretLabelLengthInDropDown: 8, theme: 'pink-bluegrey' },
           groups: [], tags: [],
-          terminal: { localTerminal: { type: 'cmd', execPath: '', defaultOpen: false } },
+          terminal: { localTerminal: { type: DEFAULT_TERMINAL_TYPE, execPath: '', defaultOpen: false } },
           fileExplorer: {},
           remoteDesktop: { vncClipboardCompatibleMode: false, vncCompressionLevel: 6, vncQuality: 7 },
           ai: { mode: 'web', apiUrl: 'https://api.openai.com/v1', token: '', model: '', acpCommand: '', acpArgs: '', acpModel: '', useContext: true, agentMode: false },

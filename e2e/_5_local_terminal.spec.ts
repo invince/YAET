@@ -1,11 +1,13 @@
-import { test, expect } from './fixtures';
+import {expect, test} from './fixtures';
+
+const DEFAULT_TERMINAL_TYPE = process.platform === 'win32' ? 'cmd' : 'bash';
 
 const DEFAULT_SETTINGS = {
   revision: Date.now(),
   general: { autoUpdate: true, proxyId: '', language: 'en' },
   ui: { profileLabelLength: 10, profileSideNavType: 'flat', secretLabelLength: 10, secretLabelLengthInDropDown: 8, theme: 'pink-bluegrey' },
   groups: [], tags: [],
-  terminal: { localTerminal: { type: 'cmd', execPath: '', defaultOpen: false } },
+  terminal: { localTerminal: { type: DEFAULT_TERMINAL_TYPE, execPath: '', defaultOpen: false } },
   fileExplorer: {},
   remoteDesktop: { vncClipboardCompatibleMode: false, vncCompressionLevel: 6, vncQuality: 7 },
   ai: { mode: 'web', apiUrl: 'https://api.openai.com/v1', token: '', model: '', acpCommand: '', acpArgs: '', acpModel: '', useContext: true, agentMode: false },
@@ -37,7 +39,7 @@ test.describe('5. Local Terminal (UI only)', () => {
       seedConfig: {
         'settings.json': JSON.stringify({
           ...DEFAULT_SETTINGS,
-          terminal: { localTerminal: { type: 'cmd', execPath: '', defaultOpen: true } },
+          terminal: { localTerminal: { type: DEFAULT_TERMINAL_TYPE, execPath: '', defaultOpen: true } },
         }),
       },
     });
@@ -60,10 +62,11 @@ test.describe('5. Local Terminal (UI only)', () => {
       await mainWindow.locator('.settings-sidebar .sidebar-item').nth(4).click();
       await mainWindow.waitForTimeout(300);
 
-      // Change terminal type to PowerShell
+      // Change terminal type
       const typeSelect = mainWindow.locator('.settings-container mat-select[formControlName="localTerminalType"]');
       await typeSelect.click();
-      await mainWindow.locator('mat-option').filter({ hasText: 'powershell' }).first().click();
+      const targetType = process.platform === 'win32' ? 'powershell' : 'bash';
+      await mainWindow.locator('mat-option').filter({ hasText: targetType }).first().click();
       await mainWindow.waitForTimeout(300);
 
       // Close settings (click Cancel)
