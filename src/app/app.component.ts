@@ -130,6 +130,9 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.settingService.settingLoadedEvent.subscribe(
         evt => {
+          // ngZone.run() ensures changes are detected when the event fires outside
+          // Angular's zone (e.g. from a raw ipcRenderer.on callback).
+          // Without it, addTab() doesn't trigger change detection and the UI stays stale.
           this.ngZone.run(() => {
             if (!this.settingInitialized &&
               this.settingStorage.settings.terminal?.localTerminal?.defaultOpen) {
