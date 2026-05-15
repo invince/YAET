@@ -129,7 +129,7 @@ npm run rebuild-native
 npm test
 ```
 
-The project includes automated tests for core services, component logic, and utility functions. Tests are implemented with Jasmine and run via Angular's Karma test runner.
+The project includes automated tests for core services, component logic, and utility functions. Tests are implemented with Jasmine and run via Angular's Karma test runner. E2E test will be launched automatically by github actions
 
 ## Building & Releasing
 
