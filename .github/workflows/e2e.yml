@@ -41,7 +41,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E Tests
-        run: npx playwright test --worker=4
+        run: npx playwright test --workers=4
         env:
           CI: true
 
