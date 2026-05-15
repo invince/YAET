@@ -113,12 +113,12 @@ export function ChildFormAsFormControl<TBase extends Constructor>(Base: TBase) {
 
     ngOnInit(): void {
       this.form = this.onInitForm();
-      // Propagate changes to parent form
+      // Propagate changes to parent form via model (not raw form values)
       this.subscriptions.push(this.form.valueChanges.subscribe(value => {
-        if (!this._isWritingValue) this.onChange(value);
+        if (!this._isWritingValue) this.onChange(this.formToModel());
       }));
       this.subscriptions.push(this.form.statusChanges.subscribe(() => {
-        if (!this._isWritingValue) this.onChange(this.form.value);
+        if (!this._isWritingValue) this.onChange(this.formToModel());
       }));
     }
 

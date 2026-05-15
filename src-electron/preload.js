@@ -31,6 +31,7 @@ const ALLOWED_SEND_CHANNELS = [
 ];
 
 const ALLOWED_INVOKE_CHANNELS = [
+  'settings.get',
   'acp.send',
   'acp.fetch-models',
   'ai.fetch-models',

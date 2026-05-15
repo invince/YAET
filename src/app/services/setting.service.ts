@@ -4,7 +4,7 @@ import {Profile} from '../domain/profile/Profile';
 import {ElectronService} from './electron/electron.service';
 import {SETTINGS_LOADED} from './electron/ElectronConstant';
 import {LocalTerminalType} from '../domain/profile/LocalTerminalProfile';
-import {Subject} from 'rxjs';
+import {ReplaySubject} from 'rxjs';
 import {SettingStorageService} from './setting-storage.service';
 import {Tag} from '../domain/Tag';
 import {ProfileService} from './profile.service';
@@ -26,7 +26,7 @@ import {NotificationService} from './notification.service';
 export class SettingService {
 
   static CLOUD_OPTION = 'Setting';
-  private settingLoadedSubject = new Subject<any>();
+  private settingLoadedSubject = new ReplaySubject<any>(1);
   settingLoadedEvent = this.settingLoadedSubject.asObservable(); // Expose as Observable
 
 
@@ -40,9 +40,14 @@ export class SettingService {
     private notification: NotificationService,
     ) {
     electron.onLoadedEvent(SETTINGS_LOADED, data => this.apply(data));
+    // Fallback: settings may have been loaded before our IPC listener was registered
+    electron.getSettings().then(data => {
+      if (data) this.apply(data);
+    }).catch(() => {});
   }
 
   private apply(data: any) {
+    if (this._loaded) return;
     if (data) {
       let dataObj: any;
       if (typeof data === "string") {

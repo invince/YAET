@@ -27,6 +27,7 @@ import {
   SAVE_MASTERKEY,
   SECRETS_RELOAD,
   SECRETS_SAVE,
+  SETTINGS_GET,
   SETTINGS_RELOAD,
   SETTINGS_SAVE,
 } from './ElectronConstant';
@@ -115,6 +116,13 @@ export class ElectronService extends AbstractElectronService {
     if (this.ipc) {
       this.ipc.send(SETTINGS_RELOAD, {});
     }
+  }
+
+  async getSettings(): Promise<any> {
+    if (this.ipc) {
+      return await this.ipc.invoke(SETTINGS_GET);
+    }
+    return undefined;
   }
 
   checkForUpdates() {

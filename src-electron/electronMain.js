@@ -1,6 +1,6 @@
 const path = require("path");
 const fs = require("fs");
-const { app, globalShortcut, BrowserWindow, Tray } = require('electron');
+const { app, globalShortcut, BrowserWindow, Tray, ipcMain } = require('electron');
 
 const { createMenu } = require('./ui/menu');
 const { SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON, APP_CONFIG_PATH, PROXIES_JSON } = require("./common");
@@ -27,6 +27,7 @@ let scpMap = new Map();
 let ftpMap = new Map();
 let sambaMap = new Map();
 let initialized = false;
+let lastSettings = null;
 let allProxies = null;
 let allSecrets = null;
 
@@ -104,6 +105,7 @@ app.on('ready', () => {
 
     load(log, mainWindow, SETTINGS_JSON, "settings.loaded", false)
       .then(settings => {
+        lastSettings = settings;
         initHandlerAfterSettingLoad(settings);
       })
       .catch(log.error);
@@ -137,6 +139,9 @@ function initHandlerBeforeSettingLoad() {
   initAiIpcHandler(log);
   initAiChatIpcHandler(log);
   initLocalFileHandler(log, mainWindow);
+
+  // Allow renderer to check if settings were already loaded before its listener registered
+  ipcMain.handle('settings.get', () => lastSettings);
 
   // Start API
   expressApp.listen(13012, () => log.info('API listening on port 13012'));

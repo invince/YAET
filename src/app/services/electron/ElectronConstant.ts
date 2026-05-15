@@ -41,6 +41,7 @@ export const SESSION_OPEN_CUSTOM = 'session.open.custom';
 
 
 //#region "Settings"
+export const SETTINGS_GET = 'settings.get';
 export const SETTINGS_RELOAD = 'settings.reload';
 export const SETTINGS_SAVE = 'settings.save';
 export const SETTINGS_LOADED = 'settings.loaded';
