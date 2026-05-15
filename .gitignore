@@ -53,3 +53,7 @@ src-electron/logs
 build.log
 
 docs/ai/
+
+# Playwright e2e
+/e2e-report
+/e2e-results
