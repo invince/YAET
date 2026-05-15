@@ -157,14 +157,14 @@ export class ProfileService implements OnDestroy{
   }
 
   async removeTag(tag: Tag) {
-    for(let profile of this._profiles.profiles) {
+    for(let profile of this._profiles?.profiles ?? []) {
       profile.tags = profile.tags?.filter(one => one != tag.id)
     }
     await this.save();
   }
 
   async removeGroup(group: Group) {
-    for(let profile of this._profiles.profiles) {
+    for(let profile of this._profiles?.profiles ?? []) {
       if (profile.group == group.id) {
         profile.group = '';
       }
