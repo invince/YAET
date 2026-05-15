@@ -1,5 +1,5 @@
-import { test, expect } from './fixtures';
-import { AppPage } from './app.po';
+import {expect, test} from './fixtures';
+import {AppPage} from './app.po';
 
 test.describe('3. Settings Menu', () => {
 
@@ -121,8 +121,10 @@ test.describe('3. Settings Menu', () => {
       await select.click();
       const options = mainWindow.locator('mat-option');
       const texts = await options.allTextContents();
-      expect(texts).toContain('cmd');
-      expect(texts).toContain('powershell');
+      if (process.platform === 'win32') {
+        expect(texts).toContain('cmd');
+        expect(texts).toContain('powershell');
+      }
       expect(texts).toContain('bash');
     });
 
