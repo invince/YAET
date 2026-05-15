@@ -1,5 +1,5 @@
 import {CommonModule, DOCUMENT} from '@angular/common';
-import {Component, Inject, OnDestroy, OnInit, Renderer2} from '@angular/core';
+import {Component, Inject, NgZone, OnDestroy, OnInit, Renderer2} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatDialog} from '@angular/material/dialog';
 import {MatIcon} from '@angular/material/icon';
@@ -104,7 +104,8 @@ export class AppComponent implements OnInit, OnDestroy {
     public dialog: MatDialog,
     @Inject(TranslateService) private translate: TranslateService,
     @Inject(DOCUMENT) private document: Document,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private ngZone: NgZone,
   ) { }
 
   ngOnInit() {
@@ -129,23 +130,25 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.settingService.settingLoadedEvent.subscribe(
         evt => {
-          if (!this.settingInitialized &&
-            this.settingStorage.settings.terminal?.localTerminal?.defaultOpen) {
-            this.modalControl.closeModal();
-            const tab = new TabInstance(ProfileCategory.TERMINAL,
-              this.sessionService.create(this.settingService.createLocalTerminalProfile(), ProfileType.LOCAL_TERMINAL));
-            this.tabService.addTab(tab);
-          }
+          this.ngZone.run(() => {
+            if (!this.settingInitialized &&
+              this.settingStorage.settings.terminal?.localTerminal?.defaultOpen) {
+              this.modalControl.closeModal();
+              const tab = new TabInstance(ProfileCategory.TERMINAL,
+                this.sessionService.create(this.settingService.createLocalTerminalProfile(), ProfileType.LOCAL_TERMINAL));
+              this.tabService.addTab(tab);
+            }
 
-          this.settingInitialized = true;
+            this.settingInitialized = true;
 
-          // Initialize language
-          this.translate.setDefaultLang('en');
-          const savedLang = this.settingStorage.settings.general?.language || 'en';
-          this.translate.use(savedLang);
+            // Initialize language
+            this.translate.setDefaultLang('en');
+            const savedLang = this.settingStorage.settings.general?.language || 'en';
+            this.translate.use(savedLang);
 
-          // Apply theme
-          this.applyTheme(this.settingStorage.settings.ui?.theme);
+            // Apply theme
+            this.applyTheme(this.settingStorage.settings.ui?.theme);
+          });
         }
       )
     );
