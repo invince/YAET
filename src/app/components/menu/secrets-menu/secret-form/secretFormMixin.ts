@@ -35,10 +35,11 @@ export class SecretFormMixin {
     return null;
   }
 
-  static secretNameShouldBeUnique(secretStorageService: SecretStorageService, secret: Secret | undefined = undefined) { // NOTE: inside validatorFn, we cannot use inject thing
+  static secretNameShouldBeUnique(secretStorageService: SecretStorageService, getCurrentSecret: () => Secret | undefined) {
     return (group: FormGroup) => {
       let name = group.get("name")?.value;
-      if (name && secretStorageService.dataCopy.secrets?.find(one => one.name === name && one.id !== secret?.id)) {
+      let currentSecret = getCurrentSecret();
+      if (name && secretStorageService.dataCopy.secrets?.find(one => one.name === name && one.id !== currentSecret?.id)) {
         return {duplicateSecret: true};
       }
       return null;

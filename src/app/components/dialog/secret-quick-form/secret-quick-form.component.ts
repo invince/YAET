@@ -75,7 +75,7 @@ export class SecretQuickFormComponent extends  MenuComponent implements OnInit, 
     return this.modelFormController.onInitForm(this.fb,
       {
         validators: [
-          SecretFormMixin.secretNameShouldBeUnique(this.secretStorageService),
+          SecretFormMixin.secretNameShouldBeUnique(this.secretStorageService, () => undefined),
           SecretFormMixin.checkCurrentSecret,
           SecretFormMixin.passwordMatchValidator
         ]

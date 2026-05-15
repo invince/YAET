@@ -179,11 +179,11 @@ export class ProfileService implements OnDestroy{
   }
 
   isSecretUsed(secret: Secret) {
-    return this._profiles.profiles.find(one => Profile.useSecret(one, secret));
+    return this._profiles?.profiles?.find(one => Profile.useSecret(one, secret));
   }
 
   clearSecret(secret: Secret) {
-    this._profiles.profiles.filter(one => Profile.useSecret(one, secret))
+    this._profiles?.profiles?.filter(one => Profile.useSecret(one, secret))
       .forEach(one => Profile.clearSecret(one, secret));
     this.save();
   }

@@ -2,7 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const os = require('os');
 
-const USER_HOME = os.homedir();
+const USER_HOME = process.env.YAET_HOME || os.homedir();
 const APP_CONFIG_PATH = USER_HOME + '/.yaet'
 const BACKUP_FOLDER = 'backup';
 const GIT_FOLDER = 'git';

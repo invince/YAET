@@ -1,6 +1,6 @@
 {
   "name": "yet-another-electron-term",
-  "version": "4.0.2",
+  "version": "4.0.2re",
   "author": {
     "name": "invince",
     "email": "invincezero@gmail.com"
@@ -14,6 +14,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "start": "concurrently \"npm run ng:serve\" \"npm run electron:dev\"",
+    "test:e2e": "ng build --base-href ./ && playwright test",
     "ng:serve": "ng serve",
     "electron:dev": "wait-on http://localhost:4200 && cross-env NODE_ENV=development electron .",
     "postinstall": "patch-package",
@@ -53,7 +54,10 @@
       "icon": "src-electron/assets/icons/app-icon.png"
     },
     "mac": {
-      "target": ["dmg", "zip"],
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "icon": "src-electron/assets/icons/app-icon.icns",
       "category": "public.app-category.utilities"
     }
@@ -118,6 +122,7 @@
     "@angular-devkit/build-angular": "~20.3.25",
     "@angular/cli": "~20.3.25",
     "@angular/compiler-cli": "~20.3.21",
+    "@playwright/test": "^1.60.0",
     "@types/crypto-js": "^4.2.2",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^25.7.0",
