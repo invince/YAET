@@ -32,7 +32,7 @@ YAET is a comprehensive remote connection and management tool built with Angular
 
 
 ### 🔐 Secrets Management
-- Secure password storage using system keychain
+- Secure password storage using system keychain to encrypt
 - SSH key management with passphrase support
 - Reusable credentials across multiple profiles
 - Support for login/password and SSH key authentication
@@ -40,8 +40,7 @@ YAET is a comprehensive remote connection and management tool built with Angular
 
 
 ### ☁️ Cloud Sync
-- Synchronize profiles and settings across devices via your own git repository (could be github, gitlab, or even your own git server). We don't provide cloud sync service. All is up to you.
-- Backup and restore configurations
+- Synchronize profiles and settings (all encrypted via system keychain) across devices via your own git repository (could be github, gitlab, or even your own git server). We don't provide cloud sync service. All is up to you.
 - Seamless multi-device workflow
 - <img width="500" height="500" alt="屏幕截图 2026-02-15 003612" src="https://github.com/user-attachments/assets/394e3423-1957-4bec-afeb-40b54501e7ce" />
 
@@ -52,6 +51,13 @@ YAET is a comprehensive remote connection and management tool built with Angular
 - Connection profiles with custom groups and tags
 - Session reconnection after network interruptions
 - Customizable themes and color schemes
+
+### 🤖 AI Assistant (ACP/MCP)
+- **Agent Client Protocol (ACP)**: Deep integration with AI agents for automated tasks and terminal interactions.
+- **Agent Mode**: Enable the AI to execute commands directly in your terminal for autonomous problem solving.
+- **Context Awareness**: Ask questions about your active terminal output or specific session context.
+- **Model Management**: Support for multiple LLM models with easy switching via ACP.
+- **Persistent Chat History**: Manage multiple chat sessions with persistent storage, renaming, and history tracking.
 
 ## Prerequisites
 
@@ -145,8 +151,8 @@ Releases are now automated via **GitHub Actions**.
 2.  **Commit, Tag, and Push**:
     ```bash
     git add package.json
-    git commit -m "chore: bump version to v3.x.x"
-    git tag v3.x.x
+    git commit -m "chore: bump version to v4.x.x"
+    git tag v4.x.x
     git push && git push --tags
     ```
 
@@ -172,9 +178,10 @@ Application logs can be found at:
 ## Technology Stack
 
 - **Frontend**: Angular 20, Angular Material
-- **Desktop**: Electron 35
+- **Desktop**: Electron 39
 - **Terminal**: xterm.js
 - **File Transfer**: ssh2, basic-ftp, v9u-smb2
 - **Remote Desktop**: @novnc/novnc
+- **AI Integration**: Agent Client Protocol (ACP) or OpenAI provider
 
 
