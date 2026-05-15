@@ -124,12 +124,53 @@ npm run rebuild-native
 
 ## Testing
 
+### Unit Tests
+
 ```bash
-# Run unit tests
 npm test
 ```
 
-The project includes automated tests for core services, component logic, and utility functions. Tests are implemented with Jasmine and run via Angular's Karma test runner. E2E test will be launched automatically by github actions
+Unit tests cover domain models, pipes, utility functions, and services. Implemented with Jasmine + Karma.
+
+### E2E Tests
+
+E2E tests use **Playwright + Electron** and run a full Electron app instance against the compiled Angular build. Tests verify UI interactions, IPC communication, and CRUD flows.
+
+```bash
+# Run e2e tests (headless, default)
+npm run test:e2e
+
+# Run e2e tests with visible window (debugging)
+npm run test:e2e:headed
+
+# Run a single test file
+npx playwright test e2e/_2_master_key_secrets.spec.ts
+
+# Run tests matching a pattern
+npx playwright test -g "add Password Only"
+```
+
+**How it works:**
+- Angular is built first (`ng build`), then Electron loads the built files
+- Each test gets a fresh Electron instance with an isolated temp directory
+- Mock keychain (`security.mock.js`) replaces the OS keychain — no system creds touched
+- Tests run **headless** by default. Set `YAET_SHOW_WINDOW=1` for a visible window
+- CI runs e2e on every PR/push (`.github/workflows/e2e.yml`) and before each release
+
+**Current coverage (47 tests):**
+| Section | Tests | Status |
+|---------|-------|--------|
+| 1. Application Startup | 7 | ✅ |
+| 2. Master Key & Secrets | 22 | ✅ |
+| 3. Settings Menu | 29 | ✅ |
+| 4. Incompatible Settings | 4 | ✅ |
+| 5. Local Terminal | 3 | ✅ |
+| 6. UI/UX | 10 | ✅ |
+| 7. Proxy Management | 4 | ✅ |
+| 8. Cloud Settings | 4 | ✅ |
+| 4. Profiles | 4 | ✅ |
+
+See [TestPlanE2E.md](./TestPlanE2E.md) for the full test plan.
 
 ## Building & Releasing
 

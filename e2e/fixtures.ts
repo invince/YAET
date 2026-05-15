@@ -28,10 +28,11 @@ export const test = base.extend<E2EFixtures>({
       }
     }
 
-    const isCI = !!process.env.CI;
+    // Default: headless. Set YAET_SHOW_WINDOW=1 for visible window (debugging).
+    const headless = !process.env.YAET_SHOW_WINDOW;
     const electronApp = await electron.launch({
       args: [
-        ...(isCI ? ['--headless'] : []),
+        ...(headless ? ['--headless'] : []),
         path.join(__dirname, '..', 'src-electron', 'electronMain.e2e.js'),
       ],
       env: {

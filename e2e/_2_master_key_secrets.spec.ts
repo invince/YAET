@@ -339,6 +339,27 @@ test.describe('2. Master Key & Secrets', () => {
       await expect(app.secretsSaveBtn).toBeDisabled();
     });
 
+    test('saved secret fields persist after reopen', async ({ mainWindow }) => {
+      const app = new AppPage(mainWindow);
+
+      await app.guardedButton('Save').click();
+      await expect(app.secretsMenuContainer).toBeVisible({ timeout: 5000 });
+
+      await app.secretsAddButton.click();
+      await app.secretInput('name').fill('Persist');
+      await app.secretInput('login').fill('persist-user');
+      await app.secretInput('password').fill('persist-pass');
+      await app.secretInput('confirmPassword').fill('persist-pass');
+      await app.secretsSaveBtn.click();
+      await expect(app.secretListItem('Persist')).toBeVisible({ timeout: 3000 });
+
+      await app.secretListItem('Persist').click();
+      await mainWindow.waitForTimeout(300);
+
+      expect(await app.secretInput('name').inputValue()).toBe('Persist');
+      expect(await app.secretInput('login').inputValue()).toBe('persist-user');
+    });
+
     test('edit secret: change type preserves appropriate fields', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
 
@@ -370,6 +391,49 @@ test.describe('2. Master Key & Secrets', () => {
       await expect(app.secretInput('login')).toBeVisible();
       await expect(app.secretKeyTextarea).toBeVisible();
       await expect(app.secretInput('passphrase')).toBeVisible();
+    });
+
+    test('icons displayed correctly in secrets list', async ({ mainWindow }) => {
+      const app = new AppPage(mainWindow);
+
+      await app.guardedButton('Save').click();
+      await expect(app.secretsMenuContainer).toBeVisible({ timeout: 5000 });
+
+      // Add PASSWORD_ONLY → icon should be 'password'
+      await app.secretsAddButton.click();
+      await app.selectSecretType('PASSWORD_ONLY');
+      await app.secretInput('name').fill('POSecret');
+      await app.secretInput('password').fill('pass');
+      await app.secretInput('confirmPassword').fill('pass');
+      await app.secretsSaveBtn.click();
+      await expect(app.secretListItem('POSecret')).toBeVisible({ timeout: 3000 });
+
+      // Add LOGIN_PASSWORD → icon should be 'face'
+      await app.secretsAddButton.click();
+      await app.secretInput('name').fill('LSecret');
+      await app.secretInput('login').fill('u');
+      await app.secretInput('password').fill('pass');
+      await app.secretInput('confirmPassword').fill('pass');
+      await app.secretsSaveBtn.click();
+      await expect(app.secretListItem('LSecret')).toBeVisible({ timeout: 3000 });
+
+      // Add SSH_KEY → icon should be 'key'
+      await app.secretsAddButton.click();
+      await app.selectSecretType('SSH_KEY');
+      await app.secretInput('name').fill('KSecret');
+      await app.secretInput('login').fill('u');
+      await app.secretKeyTextarea.fill('key content');
+      await app.secretsSaveBtn.click();
+      await expect(app.secretListItem('KSecret')).toBeVisible({ timeout: 3000 });
+
+      // Verify each secret's icon in the list
+      const iconTexts = await mainWindow.evaluate(() => {
+        const items = document.querySelectorAll('app-secrets-menu .sidenav-content button');
+        return Array.from(items).map(btn => btn.querySelector('mat-icon')?.textContent?.trim());
+      });
+      expect(iconTexts).toContain('password');
+      expect(iconTexts).toContain('face');
+      expect(iconTexts).toContain('key');
     });
 
     test('delete secret', async ({ mainWindow }) => {
