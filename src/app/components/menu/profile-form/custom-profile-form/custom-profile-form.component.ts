@@ -1,5 +1,6 @@
 import {Component, forwardRef, Injector} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {TranslateModule} from '@ngx-translate/core';
 import {
   FormBuilder,
   FormGroup,
@@ -38,6 +39,7 @@ import {clearAuthFields, passwordMatchValidator} from '../../../../utils/Passwor
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
+        TranslateModule,
         MatSelectModule,
         MatRadioModule,
         MatFormFieldModule,

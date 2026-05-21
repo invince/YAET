@@ -22,7 +22,10 @@
         "HOST_NAME": "Nom d'hôte",
         "PORT": "Port",
         "SECRET": "Secret",
-        "NONE": "Aucun"
+        "NONE": "Aucun",
+        "CLONE": "Cloner",
+        "CONNECT": "Connecter",
+        "ADD_NEW": "Ajouter nouveau..."
     },
     "SETTINGS": {
         "TITLE": "Paramètres",
@@ -117,7 +120,23 @@
         "SHARE_PATH": "Chemin de partage",
         "DOMAIN": "Domaine",
         "INIT_PATH": "Chemin initial",
-        "INIT_COMMAND": "Commande initiale"
+        "INIT_COMMAND": "Commande initiale",
+        "ADD_TAG": "Ajouter un tag...",
+        "PROXY": "Proxy",
+        "SOCKS_HINT": "Seuls les proxies SOCKS sont supportés",
+        "CATEGORY": "Catégorie",
+        "CONNECTION_TYPE": "Type de connexion",
+        "DESCRIPTION": "Description",
+        "LOCAL_TERMINAL": "Terminal local",
+        "SSH_TERMINAL": "Terminal SSH",
+        "TELNET_TERMINAL": "Terminal Telnet",
+        "WIN_RM_TERMINAL": "Terminal WinRM",
+        "VNC_REMOTE_DESKTOP": "Bureau à distance VNC",
+        "RDP_REMOTE_DESKTOP": "Bureau à distance RDP",
+        "SCP_FILE_EXPLORER": "Explorateur de fichiers SCP",
+        "FTP_FILE_EXPLORER": "Explorateur de fichiers FTP",
+        "SAMBA_FILE_EXPLORER": "Explorateur de fichiers Samba",
+        "CUSTOM": "Personnalisé"
     },
     "QUICKCONNECT": {
         "TITLE": "Connexion rapide"
@@ -128,5 +147,16 @@
     },
     "DIALOGS": {
         "DELETE_MASTER_KEY_CONFIRM": "Supprimer la clé principale. Si vous continuez, tous les secrets existants seront invalides. Voulez-vous continuer ?"
+    },
+    "FTP": {
+        "SECURED": "Sécurisé"
+    },
+    "RDP": {
+        "FULL_SCREEN": "Afficher en plein écran",
+        "LOG_AS_ADMIN": "Se connecter en tant qu'administrateur"
+    },
+    "CUSTOM": {
+        "COMMAND": "Commande",
+        "EXEC_HINT": "vous pouvez utiliser $login $password dans la commande"
     }
 }

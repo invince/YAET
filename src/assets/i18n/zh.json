@@ -22,7 +22,10 @@
         "HOST_NAME": "主机名",
         "PORT": "端口",
         "SECRET": "密钥",
-        "NONE": "无"
+        "NONE": "无",
+        "CLONE": "克隆",
+        "CONNECT": "连接",
+        "ADD_NEW": "添加新项..."
     },
     "SETTINGS": {
         "TITLE": "设置",
@@ -117,7 +120,23 @@
         "SHARE_PATH": "共享路径",
         "DOMAIN": "域",
         "INIT_PATH": "初始路径",
-        "INIT_COMMAND": "初始命令"
+        "INIT_COMMAND": "初始命令",
+        "ADD_TAG": "添加标签...",
+        "PROXY": "代理",
+        "SOCKS_HINT": "仅支持 SOCKS 代理",
+        "CATEGORY": "类别",
+        "CONNECTION_TYPE": "连接类型",
+        "DESCRIPTION": "描述",
+        "LOCAL_TERMINAL": "本地终端",
+        "SSH_TERMINAL": "SSH 终端",
+        "TELNET_TERMINAL": "Telnet 终端",
+        "WIN_RM_TERMINAL": "WinRM 终端",
+        "VNC_REMOTE_DESKTOP": "VNC 远程桌面",
+        "RDP_REMOTE_DESKTOP": "RDP 远程桌面",
+        "SCP_FILE_EXPLORER": "SCP 文件浏览器",
+        "FTP_FILE_EXPLORER": "FTP 文件浏览器",
+        "SAMBA_FILE_EXPLORER": "Samba 文件浏览器",
+        "CUSTOM": "自定义"
     },
     "QUICKCONNECT": {
         "TITLE": "快速连接"
@@ -128,5 +147,16 @@
     },
     "DIALOGS": {
         "DELETE_MASTER_KEY_CONFIRM": "删除主密钥，如果继续，所有现有密钥将失效。您要继续吗？"
+    },
+    "FTP": {
+        "SECURED": "安全连接"
+    },
+    "RDP": {
+        "FULL_SCREEN": "全屏显示",
+        "LOG_AS_ADMIN": "以管理员身份登录"
+    },
+    "CUSTOM": {
+        "COMMAND": "命令",
+        "EXEC_HINT": "您可以在命令中使用 $login $password"
     }
 }

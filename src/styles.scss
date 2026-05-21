@@ -50,44 +50,64 @@ $deeppurple-amber-theme: mat.m2-define-light-theme((color: (primary: $deeppurple
   @include mat.all-component-colors($pink-bluegrey-theme);
   --app-bg-color: #{t.$color-bg-dark};
   --app-sidebar-bg-color: #{t.$color-sidebar-dark};
-  --app-text-color: #{t.$color-text-dark};
-  --app-header-text-color: #{t.$color-header-text-dark};
+  --app-surface-elevated: #{t.$color-surface-elevated-dark};
   --app-border-color: #{t.$color-border-dark};
+  --app-border-light: #{t.$color-border-light-dark};
+  --app-text-color: #{t.$color-text-dark};
+  --app-text-secondary: #{t.$color-text-secondary-dark};
+  --app-text-muted: #{t.$color-text-muted-dark};
+  --app-header-text-color: #{t.$color-header-text-dark};
   --app-hover-bg-color: #{t.$color-hover-dark};
   --app-active-bg-color: #{t.$color-active-dark};
+  --app-modal-content: #{t.$color-modal-content-dark};
 }
 
 .theme-purple-green {
   @include mat.all-component-colors($purple-green-theme);
   --app-bg-color: #{t.$color-bg-dark};
   --app-sidebar-bg-color: #{t.$color-sidebar-dark};
-  --app-text-color: #{t.$color-text-dark};
-  --app-header-text-color: #{t.$color-header-text-dark};
+  --app-surface-elevated: #{t.$color-surface-elevated-dark};
   --app-border-color: #{t.$color-border-dark};
+  --app-border-light: #{t.$color-border-light-dark};
+  --app-text-color: #{t.$color-text-dark};
+  --app-text-secondary: #{t.$color-text-secondary-dark};
+  --app-text-muted: #{t.$color-text-muted-dark};
+  --app-header-text-color: #{t.$color-header-text-dark};
   --app-hover-bg-color: #{t.$color-hover-dark};
   --app-active-bg-color: #{t.$color-active-dark};
+  --app-modal-content: #{t.$color-modal-content-dark};
 }
 
 .theme-indigo-pink {
   @include mat.all-component-colors($indigo-pink-theme);
   --app-bg-color: #{t.$color-bg-light};
   --app-sidebar-bg-color: #{t.$color-sidebar-light};
-  --app-text-color: #{t.$color-text-light};
-  --app-header-text-color: #{t.$color-header-text-light};
+  --app-surface-elevated: #{t.$color-surface-elevated-light};
   --app-border-color: #{t.$color-border-light};
+  --app-border-light: #{t.$color-border-lighter-light};
+  --app-text-color: #{t.$color-text-light};
+  --app-text-secondary: #{t.$color-text-secondary-light};
+  --app-text-muted: #{t.$color-text-muted-light};
+  --app-header-text-color: #{t.$color-header-text-light};
   --app-hover-bg-color: #{t.$color-hover-light};
   --app-active-bg-color: #{t.$color-active-light};
+  --app-modal-content: #{t.$color-modal-content-light};
 }
 
 .theme-deeppurple-amber {
   @include mat.all-component-colors($deeppurple-amber-theme);
   --app-bg-color: #{t.$color-bg-light};
   --app-sidebar-bg-color: #{t.$color-sidebar-light};
-  --app-text-color: #{t.$color-text-light};
-  --app-header-text-color: #{t.$color-header-text-light};
+  --app-surface-elevated: #{t.$color-surface-elevated-light};
   --app-border-color: #{t.$color-border-light};
+  --app-border-light: #{t.$color-border-lighter-light};
+  --app-text-color: #{t.$color-text-light};
+  --app-text-secondary: #{t.$color-text-secondary-light};
+  --app-text-muted: #{t.$color-text-muted-light};
+  --app-header-text-color: #{t.$color-header-text-light};
   --app-hover-bg-color: #{t.$color-hover-light};
   --app-active-bg-color: #{t.$color-active-light};
+  --app-modal-content: #{t.$color-modal-content-light};
 }
 
 
@@ -149,4 +169,43 @@ body {
   background-color: var(--app-active-bg-color) !important;
   color: var(--app-text-color) !important;
   font-weight: bold !important;
+}
+
+// ============================================================
+// Global Dialog Styling - Theme-aware
+// ============================================================
+
+// Dark theme dialogs
+.theme-pink-bluegrey .mat-mdc-dialog-container,
+.theme-purple-green .mat-mdc-dialog-container {
+  --mdc-dialog-container-color: #{t.$color-surface-dark};
+  --mdc-dialog-supporting-text-color: #{t.$color-text-dark};
+  --mdc-dialog-headline-color: #{t.$color-header-text-dark};
+}
+
+.theme-pink-bluegrey .mat-mdc-dialog-container .mat-mdc-form-field,
+.theme-purple-green .mat-mdc-dialog-container .mat-mdc-form-field {
+  --mdc-filled-text-field-container-color: #{t.$color-surface-elevated-dark};
+  --mdc-filled-text-field-input-text-color: #{t.$color-text-dark};
+  --mdc-filled-text-field-label-text-color: #{t.$color-text-secondary-dark};
+}
+
+.theme-pink-bluegrey .mat-mdc-dialog-container .mat-mdc-button,
+.theme-purple-green .mat-mdc-dialog-container .mat-mdc-button {
+  --mdc-protected-button-container-color: #{t.$color-surface-elevated-dark};
+  --mdc-protected-button-label-text-color: #{t.$color-text-dark};
+}
+
+// Light theme dialogs
+.theme-indigo-pink .mat-mdc-dialog-container,
+.theme-deeppurple-amber .mat-mdc-dialog-container {
+  --mdc-dialog-container-color: #{t.$color-surface-light};
+  --mdc-dialog-supporting-text-color: #{t.$color-text-light};
+  --mdc-dialog-headline-color: #{t.$color-header-text-light};
+}
+
+// Dialog backdrop
+.cdk-overlay-backdrop {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
 }

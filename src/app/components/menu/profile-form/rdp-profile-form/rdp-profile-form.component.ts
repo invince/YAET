@@ -16,6 +16,7 @@ import {ChildFormAsFormControl} from '../../../EnhancedFormMixin';
 import {MenuComponent} from '../../menu.component';
 import {RdpProfile} from '../../../../domain/profile/RdpProfile';
 import {MatSlideToggle} from '@angular/material/slide-toggle';
+import {TranslateModule} from '@ngx-translate/core';
 import {
   FormFieldWithPrecondition,
   ModelFieldWithPrecondition,
@@ -27,6 +28,7 @@ import {
     imports: [
         FormsModule,
         ReactiveFormsModule,
+        TranslateModule,
         MatFormFieldModule,
         MatFormFieldModule,
         MatInput,

@@ -17,11 +17,40 @@
   opacity: 0;
   pointer-events: none;
   transition: all t.$transition-slow ease;
+  color: var(--app-text-color);
 
   &.open {
     transform: translateY(0);
     opacity: 1;
     pointer-events: auto;
+  }
+
+  // Ensure all icons and text inherit proper colors
+  mat-icon {
+    color: inherit;
+  }
+
+  // Style Material components for theme compatibility
+  ::ng-deep .mat-mdc-icon-button {
+    --mdc-icon-button-icon-color: var(--app-text-color);
+    --mdc-icon-button-hover-icon-color: var(--app-header-text-color);
+  }
+
+  ::ng-deep .mat-mdc-slide-toggle {
+    --mdc-switch-selected-focus-state-layer-color: var(--mat-sys-primary);
+    --mdc-switch-selected-hover-state-layer-color: var(--mat-sys-primary);
+    --mdc-switch-selected-pressed-state-layer-color: var(--mat-sys-primary);
+    --mdc-switch-selected-focus-track-color: var(--mat-sys-primary);
+    --mdc-switch-selected-hover-track-color: var(--mat-sys-primary);
+    --mdc-switch-selected-pressed-track-color: var(--mat-sys-primary);
+    --mdc-switch-selected-track-color: var(--mat-sys-primary);
+  }
+
+  ::ng-deep .mat-mdc-progress-spinner {
+    .mdc-circular-progress__determinate-circle,
+    .mdc-circular-progress__indeterminate-circle-graphic {
+      stroke: var(--mat-sys-primary);
+    }
   }
 }
 
@@ -41,7 +70,7 @@
     align-items: center;
     gap: t.$spacing-xs;
     font-weight: t.$font-weight-medium;
-    color: var(--app-text-secondary);
+    color: var(--app-text-color);
     cursor: pointer;
     user-select: none;
     padding: 2px 6px;
@@ -71,8 +100,8 @@
   }
 
   .close-btn {
-    mat-icon { color: var(--app-text-muted); }
-    &:hover mat-icon { color: var(--app-header-text-color); }
+    mat-icon { color: var(--app-text-color); opacity: 0.7; }
+    &:hover mat-icon { color: var(--app-header-text-color); opacity: 1; }
   }
 
   .header-right {
@@ -91,7 +120,8 @@
       font-size: 16px;
       width: 16px;
       height: 16px;
-      color: var(--app-text-muted);
+      color: var(--app-text-color);
+      opacity: 0.7;
     }
   }
 }
@@ -104,7 +134,7 @@
   max-height: 280px;
   overflow-y: auto;
   background: var(--app-surface-elevated);
-  border: 1px solid var(--app-border-light);
+  border: 1px solid var(--app-border-color);
   border-radius: t.$radius-md;
   box-shadow: t.$shadow-xl;
   z-index: t.$z-overlay;
@@ -121,7 +151,7 @@
   padding: t.$spacing-sm t.$spacing-md;
   cursor: pointer;
   transition: background t.$transition-fast;
-  color: var(--app-text-secondary);
+  color: var(--app-text-color);
   font-size: t.$font-size-sm;
   &:hover { background: var(--app-hover-bg-color); }
   &.active { background: var(--app-active-bg-color); color: var(--app-header-text-color); }
@@ -139,7 +169,8 @@
 
   .history-item-time {
     font-size: t.$font-size-xs;
-    color: var(--app-text-muted);
+    color: var(--app-text-color);
+    opacity: 0.6;
     margin-top: 2px;
   }
 
@@ -150,7 +181,7 @@
     background: var(--app-bg-color);
     border: 1px solid t.$color-accent;
     border-radius: t.$radius-sm;
-    color: var(--app-header-text-color);
+    color: var(--app-text-color);
     outline: none;
     box-sizing: border-box;
   }
@@ -164,8 +195,8 @@
     align-items: center;
     justify-content: center;
     padding: 0;
-    mat-icon { font-size: 14px; width: 14px; height: 14px; color: var(--app-text-muted); }
-    &:hover mat-icon { color: t.$color-error; }
+    mat-icon { font-size: 14px; width: 14px; height: 14px; color: var(--app-text-color); opacity: 0.5; }
+    &:hover mat-icon { color: t.$color-error; opacity: 1; }
   }
   &:hover .history-item-delete { opacity: 1; }
 
@@ -177,7 +208,7 @@
 
 .history-divider {
   height: 1px;
-  background: var(--app-border-light);
+  background: var(--app-border-color);
   margin: t.$spacing-xs 0;
 }
 
@@ -209,8 +240,8 @@
 
   &.assistant {
     align-self: flex-start;
-    background: var(--app-border-color);
-    color: var(--app-text-secondary);
+    background: var(--app-surface-elevated);
+    color: var(--app-text-color);
     border-bottom-left-radius: t.$radius-sm;
   }
 
@@ -233,10 +264,21 @@
     padding-left: t.$spacing-md !important;
     padding-right: t.$spacing-md !important;
   }
+  ::ng-deep .mat-mdc-form-field-infix {
+    color: var(--app-text-color) !important;
+  }
+  ::ng-deep .mat-mdc-input-element {
+    color: var(--app-text-color) !important;
+  }
+  ::ng-deep .mat-mdc-form-field-label {
+    color: var(--app-text-color) !important;
+    opacity: 0.6;
+  }
 }
 
 .message-content {
   word-break: break-word;
+  color: inherit;
 
   ::ng-deep {
     p {
@@ -251,6 +293,7 @@
       border-radius: t.$radius-sm;
       font-family: t.$font-family-mono;
       font-size: 0.9em;
+      color: inherit;
     }
 
     pre {
@@ -263,6 +306,7 @@
       code {
         background: transparent;
         padding: 0;
+        color: inherit;
       }
     }
 
@@ -284,4 +328,13 @@
 
 ::ng-deep .mat-mdc-form-field-subscript-wrapper {
   display: none;
+}
+
+.stop-btn {
+  mat-icon {
+    color: t.$color-error;
+  }
+  &:hover mat-icon {
+    color: t.$color-error-hover;
+  }
 }

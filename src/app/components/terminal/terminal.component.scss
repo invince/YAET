@@ -2,14 +2,6 @@
 @use 'tokens' as t;
 @import '@xterm/xterm/css/xterm.css';
 
-// Fix parent chain heights
-html,
-body,
-app-root {
-  height: 100%;
-  margin: 0;
-}
-
 .terminal-container {
   display: flex;
   flex-direction: column;
@@ -24,8 +16,8 @@ app-root {
     min-height: 0;
     position: relative;
 
-    // Target xterm.js DOM elements directly
-    .xterm {
+    // Target xterm.js DOM elements (created outside Angular, use ::ng-deep)
+    ::ng-deep .xterm {
       position: absolute !important;
       inset: 0 !important;
       padding: t.$spacing-sm !important;

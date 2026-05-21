@@ -26,27 +26,3 @@
   margin-top: auto;
   padding: 0 0 t.$spacing-sm 0;
 }
-
-// Fix Angular 21 mat-mini-fab sizing regression
-.sidebar-buttons button[mat-mini-fab],
-.sidebar-buttons .mat-mdc-mini-fab {
-  width: t.$sidebar-button-size !important;
-  height: t.$sidebar-button-size !important;
-  padding: 0 !important;
-  border-radius: t.$radius-full !important;
-  min-width: t.$sidebar-button-size !important;
-}
-
-.sidebar-buttons button[mat-mini-fab] .mat-mdc-button-touch-target,
-.sidebar-buttons .mat-mdc-mini-fab .mat-mdc-button-touch-target {
-  width: t.$sidebar-button-size !important;
-  height: t.$sidebar-button-size !important;
-}
-
-.sidebar-buttons button[mat-mini-fab] .mat-icon,
-.sidebar-buttons .mat-mdc-mini-fab .mat-icon {
-  width: 24px;
-  height: 24px;
-  font-size: 24px;
-  line-height: 24px;
-}

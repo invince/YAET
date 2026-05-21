@@ -30,7 +30,7 @@ import {TerminalInstanceService} from '../../services/terminal-instance.service'
   styleUrls: ['./terminal.component.scss'],
   standalone: true,
   imports: [CommonModule, MatButtonModule, MatIconModule],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.ShadowDom
 })
 export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() session!: Session;

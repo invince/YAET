@@ -58,7 +58,7 @@
         @if (messages.length === 0 || messages[messages.length-1].role !== 'assistant' || messages[messages.length-1].content === '') {
           <mat-spinner diameter="20"></mat-spinner>
         }
-        <button mat-icon-button (click)="stop()" title="Stop Generation" style="color: #ff5252;">
+        <button mat-icon-button (click)="stop()" title="Stop Generation" class="stop-btn">
           <mat-icon>stop_circle</mat-icon>
         </button>
       </div>

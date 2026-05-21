@@ -3,6 +3,7 @@ import {CdkTextareaAutosize} from '@angular/cdk/text-field';
 import {CommonModule, KeyValuePipe} from '@angular/common';
 import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
 import {MatButtonModule} from '@angular/material/button';
 import {MatChipInputEvent, MatChipsModule} from '@angular/material/chips';
@@ -37,6 +38,7 @@ import {VncProfileFormComponent} from './vnc-profile-form/vnc-profile-form.compo
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    TranslateModule,
     MatFormFieldModule,
     MatSelectModule,
     MatButtonModule,
@@ -86,6 +88,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     public settingStorage: SettingStorageService,
     public proxyStorage: ProxyStorageService,
     private settingService: SettingService,
+    private translate: TranslateService,
   ) {
     super();
   }
@@ -269,6 +272,32 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
 
   getTypeOptions() {
     return ProfileCategoryTypeMap.get(this.form.get('category')?.value) || [];
+  }
+
+  translateCategory(cat: ProfileCategory): string {
+    const keyMap: Record<ProfileCategory, string> = {
+      [ProfileCategory.TERMINAL]: 'SETTINGS.TERMINAL',
+      [ProfileCategory.REMOTE_DESKTOP]: 'SETTINGS.REMOTE_DESKTOP',
+      [ProfileCategory.FILE_EXPLORER]: 'SETTINGS.FILE_EXPLORER',
+      [ProfileCategory.CUSTOM]: 'CUSTOM.COMMAND',
+    };
+    return this.translate.instant(keyMap[cat] || cat);
+  }
+
+  translateProfileType(type: any): string {
+    const keyMap: Record<string, string> = {
+      [ProfileType.LOCAL_TERMINAL]: 'PROFILES.LOCAL_TERMINAL',
+      [ProfileType.SSH_TERMINAL]: 'PROFILES.SSH_TERMINAL',
+      [ProfileType.TELNET_TERMINAL]: 'PROFILES.TELNET_TERMINAL',
+      [ProfileType.WIN_RM_TERMINAL]: 'PROFILES.WIN_RM_TERMINAL',
+      [ProfileType.VNC_REMOTE_DESKTOP]: 'PROFILES.VNC_REMOTE_DESKTOP',
+      [ProfileType.RDP_REMOTE_DESKTOP]: 'PROFILES.RDP_REMOTE_DESKTOP',
+      [ProfileType.SCP_FILE_EXPLORER]: 'PROFILES.SCP_FILE_EXPLORER',
+      [ProfileType.FTP_FILE_EXPLORER]: 'PROFILES.FTP_FILE_EXPLORER',
+      [ProfileType.SAMBA_FILE_EXPLORER]: 'PROFILES.SAMBA_FILE_EXPLORER',
+      [ProfileType.CUSTOM]: 'PROFILES.CUSTOM',
+    };
+    return this.translate.instant(keyMap[type] || type);
   }
 
   override unordered = (a: any, b: any) => 0;

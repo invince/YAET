@@ -11,6 +11,7 @@ import {
 import {ChildFormAsFormControl} from '../../../EnhancedFormMixin';
 import {MenuComponent} from '../../menu.component';
 import {AuthType, SecretType} from '../../../../domain/Secret';
+import {TranslateModule} from '@ngx-translate/core';
 import {
   FormFieldWithPrecondition,
   ModelFieldWithPrecondition,
@@ -33,6 +34,7 @@ import {MatRadioButton, MatRadioGroup} from '@angular/material/radio';
     selector: 'app-samba-form',
     imports: [
         FormsModule,
+        TranslateModule,
         KeyValuePipe,
         MatFormField,
         MatIcon,
