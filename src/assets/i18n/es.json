@@ -181,5 +181,8 @@
         "SYNC_PROFILE": "Perfiles",
         "SYNC_SECRET": "Secretos",
         "SYNC_PROXY": "Proxies"
+    },
+    "TABS": {
+        "EMPTY_STATE": "No hay pestañas abiertas. Conéctese a un perfil o inicie una nueva conexión para comenzar."
     }
 }

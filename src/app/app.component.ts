@@ -5,7 +5,8 @@ import {MatDialog} from '@angular/material/dialog';
 import {MatIcon} from '@angular/material/icon';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatTabsModule} from '@angular/material/tabs';
-import {TranslateService} from '@ngx-translate/core';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {NgxSpinnerModule} from 'ngx-spinner';
 import {Subscription} from 'rxjs';
 import {menuAnimation} from './animations/menuAnimation';
@@ -58,6 +59,8 @@ import {TabService} from './services/tab.service';
     SidebarComponent,
     BottomToolbarComponent,
     AiChatComponent,
+    MatTooltipModule,
+    TranslateModule,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -80,7 +83,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   settingInitialized = false;
 
-  // Drag and drop state
+  // Drag and drop state for pane-level (split mode)
   draggedTab: { tab: TabInstance, index: number, paneId: number } | null = null;
   dragOverPane: number | null = null;
 
@@ -214,7 +217,6 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Only allow drop if dragging to different pane
     if (this.draggedTab.paneId !== paneId) {
       event.preventDefault();
       if (event.dataTransfer) {
@@ -237,7 +239,6 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Move tab to target pane
     if (this.draggedTab.paneId !== targetPaneId) {
       this.tabService.moveTabToPane(this.draggedTab.tab, targetPaneId);
     }

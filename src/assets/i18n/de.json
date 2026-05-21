@@ -181,5 +181,8 @@
         "SYNC_PROFILE": "Profile",
         "SYNC_SECRET": "Geheimnisse",
         "SYNC_PROXY": "Proxies"
+    },
+    "TABS": {
+        "EMPTY_STATE": "Keine offenen Tabs. Verbinden Sie sich mit einem Profil oder starten Sie eine neue Verbindung."
     }
 }

@@ -181,5 +181,8 @@
         "SYNC_PROFILE": "配置文件",
         "SYNC_SECRET": "密钥",
         "SYNC_PROXY": "代理"
+    },
+    "TABS": {
+        "EMPTY_STATE": "没有打开的标签页。连接配置文件或开始新连接以开始使用。"
     }
 }

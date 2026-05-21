@@ -1,6 +1,7 @@
 @use 'sass:color';
 @use 'tokens' as t;
 @import '@xterm/xterm/css/xterm.css';
+@import 'material-design-icons-iconfont/dist/material-design-icons.css';
 
 .terminal-container {
   display: flex;

@@ -32,6 +32,12 @@
                         </div>
                     </mat-tab>
                     }
+                    @if (tabService.getTabsForPane(0).length === 0) {
+                    <div class="tab-empty-state">
+                        <mat-icon>tab</mat-icon>
+                        <span>{{ 'TABS.EMPTY_STATE' | translate }}</span>
+                    </div>
+                    }
                 </mat-tab-group>
             </div>
 
@@ -56,6 +62,12 @@
                         </div>
                     </mat-tab>
                     }
+                    @if (tabService.getTabsForPane(1).length === 0) {
+                    <div class="tab-empty-state">
+                        <mat-icon>tab</mat-icon>
+                        <span>{{ 'TABS.EMPTY_STATE' | translate }}</span>
+                    </div>
+                    }
                 </mat-tab-group>
             </div>
 
@@ -64,14 +76,16 @@
         <!-- Templates -->
         <ng-template #tabLabel let-tab="tab" let-i="i" let-paneId="paneId">
             <div class="tab-label">
-                <span class="tab-drag-handle" draggable="true" (dragstart)="onTabDragStart($event, tab, i, paneId)"
+                <span class="tab-drag-handle"
+                    [attr.draggable]="tabService.splitMode ? 'true' : null"
+                    (dragstart)="onTabDragStart($event, tab, i, paneId)"
                     (dragend)="onTabDragEnd()">
                     @if (!tab.connected) {
                     <button mat-icon-button (click)="reconnect(tab)" aria-label="Reconnect tab">
                         <mat-icon>refresh</mat-icon>
                     </button>
                     }
-                    {{ tab.name }}
+                    <span class="tab-name" [matTooltip]="tab.name">{{ tab.name }}</span>
                 </span>
                 <button mat-icon-button (click)="removeTab(i, paneId)"
                     (mousedown)="onTabLabelMouseDown($event, i, paneId)" aria-label="Remove tab">

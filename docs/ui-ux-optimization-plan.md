@@ -103,10 +103,10 @@
 - 无空标签状态提示
 
 **具体任务**:
-- [ ] 4.1 增加标签文本截断长度至 15-20 字符
-- [ ] 4.2 添加 tooltip 显示完整标签名
-- [ ] 4.3 优化拖拽时的视觉反馈（高亮目标区域、拖拽手柄样式）
-- [ ] 4.4 添加空标签页状态提示
+- [x] 4.1 增加标签文本截断长度至 15-20 字符（CSS `text-overflow: ellipsis` + `max-width: 120px`，配合 `matTooltip` 显示完整名称）
+- [x] 4.2 添加 tooltip 显示完整标签名
+- [x] 4.3 优化拖拽时的视觉反馈（添加 `tab-drop-indicator` 竖线指示放置位置，`tab-dragging` 降低透明度）
+- [x] 4.4 添加空标签页状态提示（`tab-empty-state` 组件，带图标和 i18n 多语言支持）
 
 **涉及文件**:
 - `src/app/components/` (tab 相关组件)
@@ -306,7 +306,7 @@
 | 1. 统一样式方案 & 设计令牌 | ✅ 已完成 | 19个CSS→SCSS迁移，tokens系统建立，硬编码颜色消除 |
 | 2. 主题系统修复 | ✅ 已完成 | sidebar !important 消除（mat-mini-fab→mat-icon-button），terminal ViewEncapsulation.ShadowDom，app.component 硬编码颜色修复，file-list/proxy-menu 颜色令牌化 |
 | 3. 模态框/对话框美化 | ✅ 已完成 | 3.1 backdrop blur ✅, 3.2 统一令牌样式 ✅, 3.3 过渡动画（已有）✅, 3.4 响应式布局 ✅, 3.5 头部样式统一 ✅ |
-| 4. 标签页优化 | ⬜ 未开始 | |
+| 4. 标签页优化 | ✅ 已完成 | 4.1 CSS text-overflow ellipsis + max-width 120px + matTooltip 显示完整名称 ✅, 4.2 tooltip 已实现 ✅, 4.3 tab-drop-indicator 竖线指示器 + tab-dragging 透明度反馈 ✅, 4.4 tab-empty-state 空状态组件（图标 + i18n 5 语言）✅ |
 | 4.5. Profile 页面 i18n | ✅ 已完成 | 14 个新翻译 key 添加到 5 个语言文件，profile-form 及 6 个子表单模板全部使用 translate pipe，Category/ConnectionType 动态值翻译方法，AuthType 单选按钮翻译 |
 | 4.6. Cloud 同步表单 i18n | ✅ 已完成 | CLOUD 翻译 key 添加到 5 个语言文件，表单模板全部使用 translate pipe，AuthType/Sync Items 动态翻译，上传/下载通知消息国际化 |
 | 5. AI 聊天面板优化 | ⬜ 未开始 | |

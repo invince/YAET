@@ -181,5 +181,8 @@
         "SYNC_PROFILE": "Profils",
         "SYNC_SECRET": "Secrets",
         "SYNC_PROXY": "Proxies"
+    },
+    "TABS": {
+        "EMPTY_STATE": "Aucun onglet ouvert. Connectez-vous à un profil ou démarrez une nouvelle connexion."
     }
 }
