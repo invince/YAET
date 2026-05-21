@@ -4,7 +4,7 @@
             <mat-form-field class="field">
                 <mat-label>{{ 'PROXY.NAME' | translate }}</mat-label>
                 <input matInput formControlName="name" placeholder="My Proxy">
-                <mat-error *ngIf="form.get('name')?.hasError('required')">Name is required</mat-error>
+                @if (form.get('name')?.hasError('required')) {<mat-error>Name is required</mat-error>}
             </mat-form-field>
 
             <mat-form-field class="field">
@@ -19,15 +19,15 @@
             <mat-form-field class="field">
                 <mat-label>{{ 'PROXY.HOST' | translate }}</mat-label>
                 <input matInput formControlName="host" placeholder="proxy.example.com">
-                <mat-error *ngIf="form.get('host')?.hasError('required')">Host is required</mat-error>
+                @if (form.get('host')?.hasError('required')) {<mat-error>Host is required</mat-error>}
             </mat-form-field>
 
             <mat-form-field class="field">
                 <mat-label>{{ 'PROXY.PORT' | translate }}</mat-label>
                 <input matInput type="number" formControlName="port" placeholder="8080">
-                <mat-error *ngIf="form.get('port')?.hasError('required')">Port is required</mat-error>
-                <mat-error *ngIf="form.get('port')?.hasError('min') || form.get('port')?.hasError('max')">Invalid
-                    port</mat-error>
+                @if (form.get('port')?.hasError('required')) {<mat-error>Port is required</mat-error>}
+                @if (form.get('port')?.hasError('min') || form.get('port')?.hasError('max')) {<mat-error>Invalid
+                    port</mat-error>}
             </mat-form-field>
 
             <mat-form-field class="field">
@@ -45,8 +45,8 @@
 
     <div class="proxy-form-footer modal-footer">
         <button mat-raised-button color="warn" (click)="onCancel()">{{ 'COMMON.CANCEL' | translate }}</button>
-        <button mat-raised-button color="warn" (click)="onDelete()" *ngIf="!proxy.isNew">{{ 'COMMON.DELETE' | translate
-            }}</button>
+        @if (!proxy.isNew) {<button mat-raised-button color="warn" (click)="onDelete()">{{ 'COMMON.DELETE' | translate
+            }}</button>}
         <button mat-raised-button color="primary" (click)="onSaveOne()" [disabled]="form.invalid || form.pristine">{{
             'COMMON.SAVE' | translate }}</button>
     </div>

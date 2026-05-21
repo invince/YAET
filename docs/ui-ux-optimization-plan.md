@@ -156,6 +156,32 @@
 
 ---
 
+### 4.7 新式控制流语法迁移
+
+**问题**:
+- 模板中混用旧式结构指令（`*ngIf`、`*ngFor`）与新式语法（`@if`、`@for`、`@switch`）
+- Angular 17+ 推荐使用新式控制流语法，性能更好、类型检查更严格
+
+**具体任务**:
+- [x] 4.7.1 `file-list.component.html` — 11 处 `*ngIf` + 1 处 `*ngFor` → `@if`/`@for`（含 `@if`/`@else` 重构）
+- [x] 4.7.2 `setting-menu.component.html` — 8 处 `*ngIf` → `@if`
+- [x] 4.7.3 `proxy-form.component.html` — 5 处 `*ngIf` → `@if`
+- [x] 4.7.4 `app.component.html` — 1 处 `*ngIf` → `@if`
+- [x] 4.7.5 `terminal.component.html` — 1 处 `*ngIf` → `@if`
+- [x] 4.7.6 `file-creator-dialog.component.html` — 1 处 `*ngIf` → `@if`
+- [x] 4.7.7 `profile-form.component.html` — 1 处 `*ngFor` → `@for`
+
+**涉及文件**:
+- `src/app/components/file-explorer/custom/file-list.component.html`
+- `src/app/components/menu/setting-menu/setting-menu.component.html`
+- `src/app/components/menu/proxy-menu/proxy-form/proxy-form.component.html`
+- `src/app/app.component.html`
+- `src/app/components/terminal/terminal.component.html`
+- `src/app/components/file-explorer/custom/file-creator-dialog.component.html`
+- `src/app/components/menu/profile-form/profile-form.component.html`
+
+---
+
 ### 5. AI 聊天面板优化
 
 **问题**:
@@ -164,11 +190,11 @@
 - 缺少打字指示器
 
 **具体任务**:
-- [ ] 5.1 实现可拖拽功能
-- [ ] 5.2 实现可调整大小功能
-- [ ] 5.3 优化消息气泡样式（区分用户/AI 消息）
-- [ ] 5.4 添加打字指示器动画
-- [ ] 5.5 优化会话历史下拉菜单样式
+- [x] 5.1 实现可拖拽功能（鼠标在 header 上拖拽，限制在视口内，位置持久化到 localStorage）
+- [x] 5.2 实现可调整大小功能（右下角拖拽手柄，范围 280-600px 宽 × 300-800px 高，持久化到 localStorage）
+- [x] 5.3 优化消息气泡样式（新增 avatar 图标 + role 标签，气泡阴影，滚动条样式，代码块优化）
+- [x] 5.4 添加打字指示器动画（3 点弹跳动画替代 spinner）
+- [x] 5.5 优化会话历史下拉菜单样式（活跃项蓝色指示条，入场动画，改进滚动条，hover 交互增强）
 
 **涉及文件**:
 - `src/app/components/ai-chat/ai-chat.component.ts`
@@ -309,7 +335,8 @@
 | 4. 标签页优化 | ✅ 已完成 | 4.1 CSS text-overflow ellipsis + max-width 120px + matTooltip 显示完整名称 ✅, 4.2 tooltip 已实现 ✅, 4.3 tab-drop-indicator 竖线指示器 + tab-dragging 透明度反馈 ✅, 4.4 tab-empty-state 空状态组件（图标 + i18n 5 语言）✅ |
 | 4.5. Profile 页面 i18n | ✅ 已完成 | 14 个新翻译 key 添加到 5 个语言文件，profile-form 及 6 个子表单模板全部使用 translate pipe，Category/ConnectionType 动态值翻译方法，AuthType 单选按钮翻译 |
 | 4.6. Cloud 同步表单 i18n | ✅ 已完成 | CLOUD 翻译 key 添加到 5 个语言文件，表单模板全部使用 translate pipe，AuthType/Sync Items 动态翻译，上传/下载通知消息国际化 |
-| 5. AI 聊天面板优化 | ⬜ 未开始 | |
+| 4.7. 新式控制流语法迁移 | ✅ 已完成 | 7 个文件中 31 处旧式结构指令（29 `*ngIf` + 2 `*ngFor`）全部替换为 `@if`/`@for`，编译验证通过 |
+| 5. AI 聊天面板优化 | ✅ 已完成 | 5.1 可拖拽（header 拖拽，persist localStorage）✅, 5.2 可调整大小（右下角手柄 280-600×300-800px）✅, 5.3 气泡样式优化（avatar+role标签+阴影）✅, 5.4 打字指示器（3 点弹跳动画）✅, 5.5 历史下拉优化（活跃指示条+入场动画）✅ |
 | 6. 侧边栏 & 导航优化 | 🔄 部分完成 | sidebar `!important` 消除（归入 2.3）✅; ESC 键关闭拦截修复：移除自定义 HostListener，改用 `mat-sidenav [disableClose]="true"` 内建属性 ✅ |
 | 7. 表单体验优化 | ⬜ 未开始 | |
 | 8. 动画系统增强 | ⬜ 未开始 | |

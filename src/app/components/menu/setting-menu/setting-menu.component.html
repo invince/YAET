@@ -33,7 +33,8 @@
       <div class="settings-content">
 
         <!-- General Settings -->
-        <div *ngIf="currentTabIndex === 0">
+        @if (currentTabIndex === 0) {
+        <div>
           <div class="settings-header">{{ 'SETTINGS.GENERAL_SETTINGS' | translate }}</div>
           <div class="setting-form" [formGroup]="generalForm">
             <div class="form-section">
@@ -89,9 +90,11 @@
             </div>
           </div>
         </div>
+        }
 
         <!-- UI Settings -->
-        <div *ngIf="currentTabIndex === 1">
+        @if (currentTabIndex === 1) {
+        <div>
           <div class="settings-header">{{ 'SETTINGS.UI_SETTINGS' | translate }}</div>
           <div class="setting-form" [formGroup]="uiForm">
             <div class="form-section">
@@ -134,25 +137,31 @@
             </div>
           </div>
         </div>
+        }
 
         <!-- Groups Settings -->
-        <div *ngIf="currentTabIndex === 2">
+        @if (currentTabIndex === 2) {
+        <div>
           <div class="settings-header">{{ 'SETTINGS.GROUPS_MANAGEMENT' | translate }}</div>
           <div class="setting-form">
             <app-groups-form></app-groups-form>
           </div>
         </div>
+        }
 
         <!-- Tags Settings -->
-        <div *ngIf="currentTabIndex === 3">
+        @if (currentTabIndex === 3) {
+        <div>
           <div class="settings-header">{{ 'SETTINGS.TAGS_MANAGEMENT' | translate }}</div>
           <div class="setting-form">
             <app-tags-form></app-tags-form>
           </div>
         </div>
+        }
 
         <!-- Terminal Settings -->
-        <div *ngIf="currentTabIndex === 4">
+        @if (currentTabIndex === 4) {
+        <div>
           <div class="settings-header">{{ 'SETTINGS.TERMINAL_SETTINGS' | translate }}</div>
           <div class="setting-form" [formGroup]="terminalForm">
             <div class="form-section">
@@ -186,9 +195,11 @@
             </div>
           </div>
         </div>
+        }
 
         <!-- Remote Desktop Settings -->
-        <div *ngIf="currentTabIndex === 5">
+        @if (currentTabIndex === 5) {
+        <div>
           <div class="settings-header">Remote Desktop</div>
           <div class="setting-form" [formGroup]="remoteDesktopForm">
             <div class="form-section">
@@ -210,9 +221,11 @@
             </div>
           </div>
         </div>
+        }
 
         <!-- AI Assistant Settings -->
-        <div *ngIf="currentTabIndex === 7">
+        @if (currentTabIndex === 7) {
+        <div>
           <div class="settings-header">{{ 'SETTINGS.AI_ASSISTANT' | translate }}</div>
           <div class="setting-form" [formGroup]="aiForm">
             <div class="form-section" style="display: flex; flex-direction: column; gap: 12px;">
@@ -302,6 +315,7 @@
             </div>
           </div>
         </div>
+        }
 
       </div>
 

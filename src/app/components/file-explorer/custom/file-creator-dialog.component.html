@@ -1,9 +1,11 @@
 <h2 mat-dialog-title>Create New Text File</h2>
 <h2 mat-dialog-title>Create New Text File</h2>
 <mat-dialog-content>
-    <div class="spinner-overlay" *ngIf="isSaving">
+    @if (isSaving) {
+    <div class="spinner-overlay">
         <mat-spinner diameter="50"></mat-spinner>
     </div>
+    }
 
     <mat-form-field appearance="outline" style="width: 100%; margin-bottom: 16px;">
         <mat-label>File Name</mat-label>

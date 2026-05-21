@@ -42,7 +42,8 @@
             </div>
 
             <!-- Pane 1 -->
-            <div class="split-pane" *ngIf="tabService.splitMode"
+            @if (tabService.splitMode) {
+            <div class="split-pane"
                 [style.width]="tabService.splitDirection === 'vertical' ? (100 - tabService.splitRatio) + '%' : '100%'"
                 [style.height]="tabService.splitDirection === 'horizontal' ? (100 - tabService.splitRatio) + '%' : '100%'"
                 style="display: flex; flex-direction: column;" (click)="setActivePane(1)"
@@ -70,6 +71,7 @@
                     }
                 </mat-tab-group>
             </div>
+            }
 
         </div>
 
