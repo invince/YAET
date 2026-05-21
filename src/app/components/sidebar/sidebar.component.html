@@ -1,28 +1,40 @@
 <div class="sidebar-buttons">
-    <br>
     <div class="sidebar-buttons-top">
-        <button mat-icon-button color="primary" (click)="addLocalTerminal()" aria-label="Add Local Terminal">
+        <button mat-icon-button color="primary" (click)="addLocalTerminal()"
+            matTooltip="Local Terminal" matTooltipPosition="right">
             <mat-icon>terminal</mat-icon>
         </button>
-        <button mat-icon-button color="primary" (click)="addMenu()" aria-label="Add Profile">
+        <button mat-icon-button color="primary" (click)="addMenu()"
+            [class.active]="modalControl.currentOpenedMenu === MENU_ADD"
+            matTooltip="Quick Connect" matTooltipPosition="right">
             <mat-icon>add</mat-icon>
         </button>
-        <button mat-icon-button color="primary" (click)="profileMenu()" aria-label="Favorite">
+        <button mat-icon-button color="primary" (click)="profileMenu()"
+            [class.active]="modalControl.currentOpenedMenu === MENU_PROFILE"
+            matTooltip="Profiles" matTooltipPosition="right">
             <mat-icon>favorite</mat-icon>
         </button>
-        <button mat-icon-button color="primary" (click)="secureMenu()" aria-label="Save">
+        <button mat-icon-button color="primary" (click)="secureMenu()"
+            [class.active]="modalControl.currentOpenedMenu === MENU_SECURE"
+            matTooltip="Secrets" matTooltipPosition="right">
             <mat-icon>password</mat-icon>
         </button>
     </div>
     <div class="sidebar-buttons-bottom">
-        <button mat-icon-button color="primary" (click)="proxyMenu()" aria-label="Proxy">
+        <button mat-icon-button color="primary" (click)="proxyMenu()"
+            [class.active]="modalControl.currentOpenedMenu === MENU_PROXY"
+            matTooltip="Proxies" matTooltipPosition="right">
             <mat-icon>dns</mat-icon>
         </button>
-        <button mat-icon-button color="primary" (click)="cloudMenu()" aria-label="Cloud">
+        <button mat-icon-button color="primary" (click)="cloudMenu()"
+            [class.active]="modalControl.currentOpenedMenu === MENU_CLOUD"
+            matTooltip="Cloud Sync" matTooltipPosition="right">
             <mat-icon>cloud</mat-icon>
         </button>
 
-        <button mat-icon-button color="primary" (click)="settingMenu()" aria-label="Settings">
+        <button mat-icon-button color="primary" (click)="settingMenu()"
+            [class.active]="modalControl.currentOpenedMenu === MENU_SETTING"
+            matTooltip="Settings" matTooltipPosition="right">
             <mat-icon>settings</mat-icon>
         </button>
     </div>

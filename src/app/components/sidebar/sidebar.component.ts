@@ -1,20 +1,21 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnDestroy } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
-import { MatIcon } from '@angular/material/icon';
-import { Subscription } from 'rxjs';
-import { MasterKeyComponent } from '../../components/dialog/master-key/master-key.component';
-import { MenuConsts } from '../../domain/MenuConsts';
-import { ProfileCategory, ProfileType } from '../../domain/profile/Profile';
-import { TabInstance } from '../../domain/TabInstance';
-import { LogService } from '../../services/log.service';
-import { MasterKeyService } from '../../services/master-key.service';
-import { ModalControllerService } from '../../services/modal-controller.service';
-import { NotificationService } from '../../services/notification.service';
-import { SessionService } from '../../services/session.service';
-import { SettingService } from '../../services/setting.service';
-import { TabService } from '../../services/tab.service';
+import {CommonModule} from '@angular/common';
+import {Component, OnDestroy} from '@angular/core';
+import {MatButtonModule} from '@angular/material/button';
+import {MatDialog} from '@angular/material/dialog';
+import {MatIcon} from '@angular/material/icon';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {Subscription} from 'rxjs';
+import {MasterKeyComponent} from '../../components/dialog/master-key/master-key.component';
+import {MenuConsts} from '../../domain/MenuConsts';
+import {ProfileCategory, ProfileType} from '../../domain/profile/Profile';
+import {TabInstance} from '../../domain/TabInstance';
+import {LogService} from '../../services/log.service';
+import {MasterKeyService} from '../../services/master-key.service';
+import {ModalControllerService} from '../../services/modal-controller.service';
+import {NotificationService} from '../../services/notification.service';
+import {SessionService} from '../../services/session.service';
+import {SettingService} from '../../services/setting.service';
+import {TabService} from '../../services/tab.service';
 
 @Component({
     selector: 'app-sidebar',
@@ -22,6 +23,7 @@ import { TabService } from '../../services/tab.service';
         CommonModule,
         MatButtonModule,
         MatIcon,
+        MatTooltipModule,
     ],
     templateUrl: './sidebar.component.html',
     styleUrl: './sidebar.component.scss'

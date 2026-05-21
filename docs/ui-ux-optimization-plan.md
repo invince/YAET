@@ -211,15 +211,15 @@
 - 无可折叠功能
 
 **具体任务**:
-- [ ] 6.1 为所有侧边栏图标添加 tooltip
-- [ ] 6.2 优化激活状态视觉反馈（指示条、背景色等）
-- [ ] 6.3 实现侧边栏可折叠功能（可选）
-- [ ] 6.4 添加 hover 微交互效果
+- [x] 6.1 为所有侧边栏图标添加 tooltip（`matTooltip` + `MatTooltipModule` 导入，位置 right）
+- [x] 6.2 优化激活状态视觉反馈（左侧 3px 蓝色指示条 + `active-bg-color` 背景色，通过 `modalControl.currentOpenedMenu` 比较实现）
+- [ ] 6.3 实现侧边栏可折叠功能（已尝试，因动画晃动回退，保留 tooltip 方案）
+- [x] 6.4 添加 hover 微交互效果（`hover-bg-color` 背景过渡，`color` 过渡）
 
 **涉及文件**:
 - `src/app/components/sidebar/sidebar.component.ts`
 - `src/app/components/sidebar/sidebar.component.html`
-- `src/app/components/sidebar/sidebar.component.css`
+- `src/app/components/sidebar/sidebar.component.scss`
 
 ---
 
@@ -337,7 +337,7 @@
 | 4.6. Cloud 同步表单 i18n | ✅ 已完成 | CLOUD 翻译 key 添加到 5 个语言文件，表单模板全部使用 translate pipe，AuthType/Sync Items 动态翻译，上传/下载通知消息国际化 |
 | 4.7. 新式控制流语法迁移 | ✅ 已完成 | 7 个文件中 31 处旧式结构指令（29 `*ngIf` + 2 `*ngFor`）全部替换为 `@if`/`@for`，编译验证通过 |
 | 5. AI 聊天面板优化 | ✅ 已完成 | 5.1 可拖拽（header 拖拽，persist localStorage）✅, 5.2 可调整大小（右下角手柄 280-600×300-800px）✅, 5.3 气泡样式优化（avatar+role标签+阴影）✅, 5.4 打字指示器（3 点弹跳动画）✅, 5.5 历史下拉优化（活跃指示条+入场动画）✅ |
-| 6. 侧边栏 & 导航优化 | 🔄 部分完成 | sidebar `!important` 消除（归入 2.3）✅; ESC 键关闭拦截修复：移除自定义 HostListener，改用 `mat-sidenav [disableClose]="true"` 内建属性 ✅ |
+| 6. 侧边栏 & 导航优化 | 🔄 部分完成 | sidebar `!important` 消除（归入 2.3）✅; ESC 键关闭拦截修复 ✅; 6.1 matTooltip 添加到 7 个按钮 ✅; 6.2 激活状态左侧蓝色指示条 ✅; 6.3 可折叠 ➖（已尝试，动画晃动，放弃）; 6.4 hover 微交互 ✅ |
 | 7. 表单体验优化 | ⬜ 未开始 | |
 | 8. 动画系统增强 | ⬜ 未开始 | |
 | 9. 空状态设计 | ⬜ 未开始 | |
