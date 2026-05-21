@@ -1,0 +1,27 @@
+@use 'tokens' as t;
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.vnc-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.toolbar {
+  display: flex;
+  gap: t.$spacing-md;
+  padding: t.$spacing-md;
+  background: var(--app-surface-elevated, t.$color-surface-elevated-dark);
+  border-bottom: 1px solid var(--app-border-color);
+}
+
+.vnc {
+  flex-grow: 1;
+  width: 100%;
+  background-color: #000;
+}

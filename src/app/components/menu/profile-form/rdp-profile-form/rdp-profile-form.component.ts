@@ -47,7 +47,7 @@ import {
         },
     ],
     templateUrl: './rdp-profile-form.component.html',
-    styleUrl: './rdp-profile-form.component.css'
+    styleUrl: './rdp-profile-form.component.scss'
 })
 export class RdpProfileFormComponent extends ChildFormAsFormControl(MenuComponent)  {
 

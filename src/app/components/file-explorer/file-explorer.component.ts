@@ -12,7 +12,7 @@ import {SambaComponent} from './samba/samba.component';
         SambaComponent,
     ],
     templateUrl: './file-explorer.component.html',
-    styleUrl: './file-explorer.component.css'
+    styleUrl: './file-explorer.component.scss'
 })
 export class FileExplorerComponent {
   @Input() session!: Session;

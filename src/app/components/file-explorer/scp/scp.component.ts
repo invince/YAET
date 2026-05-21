@@ -12,7 +12,7 @@ import { FileListComponent } from '../custom/file-list.component';
         FileListComponent
     ],
     templateUrl: './scp.component.html',
-    styleUrl: './scp.component.css'
+    styleUrl: './scp.component.scss'
 })
 export class ScpComponent extends AbstractFileManager implements OnInit, OnDestroy {
 

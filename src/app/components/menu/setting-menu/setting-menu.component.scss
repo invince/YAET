@@ -1,3 +1,5 @@
+@use 'tokens' as t;
+
 /* Overlay to cover the screen */
 .modal-overlay {
   position: fixed;
@@ -9,51 +11,51 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: t.$z-overlay;
   backdrop-filter: blur(2px);
 }
 
 /* Main Container */
 .settings-container {
   display: flex;
-  width: 900px;
-  height: 680px;
+  width: t.$settings-width;
+  height: t.$settings-height;
   background-color: var(--app-bg-color);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  border-radius: t.$radius-lg;
+  box-shadow: t.$shadow-lg;
   overflow: hidden;
   color: var(--app-text-color);
-  font-family: 'Segoe UI', sans-serif;
+  font-family: t.$font-family-ui;
   border: 1px solid var(--app-border-color);
 }
 
 /* Sidebar Navigation */
 .settings-sidebar {
-  width: 220px;
+  width: t.$settings-sidebar-width;
   background-color: var(--app-sidebar-bg-color);
   border-right: 1px solid var(--app-border-color);
   display: flex;
   flex-direction: column;
-  padding-top: 24px;
+  padding-top: t.$spacing-xl;
 }
 
 .sidebar-title {
-  font-size: 18px;
-  font-weight: 600;
-  padding: 0 24px 24px 24px;
+  font-size: t.$font-size-xl;
+  font-weight: t.$font-weight-semibold;
+  padding: 0 t.$spacing-xl t.$spacing-xl t.$spacing-xl;
   color: var(--app-header-text-color);
   opacity: 0.9;
 }
 
 .sidebar-item {
-  padding: 12px 24px;
+  padding: t.$spacing-md t.$spacing-xl;
   cursor: pointer;
   color: var(--app-text-color);
-  transition: all 0.2s ease;
-  font-size: 14px;
+  transition: all t.$transition-normal ease;
+  font-size: t.$font-size-md;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: t.$spacing-md;
   border-left: 3px solid transparent;
   opacity: 0.7;
 }
@@ -67,8 +69,8 @@
 .sidebar-item.active {
   background-color: var(--app-active-bg-color);
   color: var(--app-text-color);
-  border-left-color: #3f51b5;
-  font-weight: 500;
+  border-left-color: var(--mat-sys-primary);
+  font-weight: t.$font-weight-medium;
   opacity: 1;
 }
 
@@ -88,46 +90,46 @@
 
 .settings-content {
   flex: 1;
-  padding: 32px 40px;
+  padding: t.$spacing-2xl t.$spacing-3xl;
   overflow-y: auto;
 }
 
 .settings-header {
-  font-size: 24px;
-  font-weight: 500;
-  margin-bottom: 32px;
+  font-size: t.$font-size-2xl;
+  font-weight: t.$font-weight-medium;
+  margin-bottom: t.$spacing-2xl;
   color: var(--app-header-text-color);
   border-bottom: 1px solid var(--app-border-color);
-  padding-bottom: 16px;
+  padding-bottom: t.$spacing-lg;
 }
 
 /* Form Styling */
 .setting-form {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: t.$spacing-xl;
 }
 
 .form-section {
-  margin-bottom: 12px;
+  margin-bottom: t.$spacing-md;
 }
 
 .section-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #3f51b5;
-  margin-bottom: 16px;
+  font-size: t.$font-size-sm;
+  font-weight: t.$font-weight-semibold;
+  color: var(--mat-sys-primary);
+  margin-bottom: t.$spacing-lg;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 /* Footer Actions */
 .settings-actions {
-  padding: 16px 32px;
+  padding: t.$spacing-md t.$spacing-2xl;
   border-top: 1px solid var(--app-border-color);
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  gap: t.$spacing-md;
   background-color: var(--app-sidebar-bg-color);
 }
 
@@ -141,52 +143,49 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #424242;
-  border-radius: 4px;
+  background: var(--app-border-color);
+  border-radius: t.$radius-sm;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #505050;
+  background: var(--app-hover-bg-color);
 }
 
 /* Field Width */
 .field {
   width: 100%;
   max-width: 400px;
-  margin-bottom: 8px;
+  margin-bottom: t.$spacing-sm;
 }
 
 mat-checkbox {
-  margin-bottom: 8px;
+  margin-bottom: t.$spacing-sm;
 }
 
 /* Fix input and select padding */
 input.mat-mdc-input-element {
-  padding-left: 4px !important;
+  padding-left: t.$spacing-xs !important;
   box-sizing: border-box !important;
 }
 
 ::ng-deep .mat-mdc-select-value,
 ::ng-deep .mat-mdc-select-trigger {
-  padding-left: 4px !important;
+  padding-left: t.$spacing-xs !important;
   box-sizing: border-box !important;
 }
-
-
-
 
 /* Dropdown panel - rendered in CDK overlay, needs global style */
 ::ng-deep .mat-mdc-select-panel {
   background-color: var(--app-sidebar-bg-color) !important;
   color: var(--app-text-color) !important;
   border: 1px solid var(--app-border-color) !important;
-  border-radius: 4px !important;
+  border-radius: t.$radius-sm !important;
 }
 
 ::ng-deep .mat-mdc-option {
   color: var(--app-text-color) !important;
-  font-family: 'Segoe UI', sans-serif !important;
-  font-size: 14px !important;
+  font-family: t.$font-family-ui !important;
+  font-size: t.$font-size-md !important;
 }
 
 ::ng-deep .mat-mdc-option:hover:not(.mdc-list-item--disabled) {

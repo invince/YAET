@@ -59,7 +59,7 @@ import {MatRadioButton, MatRadioGroup} from '@angular/material/radio';
         },
     ],
     templateUrl: './samba-form.component.html',
-    styleUrl: './samba-form.component.css'
+    styleUrl: './samba-form.component.scss'
 })
 export class SambaFormComponent extends ChildFormAsFormControl(MenuComponent)  {
 

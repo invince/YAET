@@ -60,7 +60,7 @@ import {TabService} from './services/tab.service';
     AiChatComponent,
   ],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css',
+  styleUrl: './app.component.scss',
   animations: [
     menuAnimation,
   ]

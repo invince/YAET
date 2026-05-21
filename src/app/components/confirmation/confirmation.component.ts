@@ -9,7 +9,7 @@ import {MatButton} from '@angular/material/button';
         MatButton
     ],
     templateUrl: './confirmation.component.html',
-    styleUrl: './confirmation.component.css'
+    styleUrl: './confirmation.component.scss'
 })
 export class ConfirmationComponent {
 

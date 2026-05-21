@@ -1,0 +1,19 @@
+@use 'tokens' as t;
+
+.field {
+  margin-left: t.$spacing-lg;
+  margin-top: t.$spacing-lg;
+  width: 280px;
+}
+
+.host-field {
+  margin-left: t.$spacing-lg;
+  margin-top: t.$spacing-lg;
+  width: 195px;
+}
+
+.port-field {
+  margin-left: t.$spacing-lg;
+  margin-top: t.$spacing-lg;
+  width: 65px;
+}

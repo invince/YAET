@@ -1,12 +1,14 @@
+@use 'tokens' as t;
+
 /* Angular Material 21 sidenav sizing - Scoped to main app sidebar */
 .main-app-sidenav {
-  width: 50px !important;
-  min-width: 50px !important;
-  max-width: 50px !important;
+  width: t.$sidebar-width !important;
+  min-width: t.$sidebar-width !important;
+  max-width: t.$sidebar-width !important;
 }
 
 .main-app-sidenav .mat-drawer-inner-container {
-  width: 50px !important;
+  width: t.$sidebar-width !important;
   overflow: visible !important;
 }
 
@@ -24,7 +26,7 @@ mat-tab-group {
 .tab-drag-handle {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: t.$spacing-xs;
   flex: 1;
   cursor: grab;
 }
@@ -36,16 +38,16 @@ mat-tab-group {
 /* Split View Styles */
 .split-pane {
   position: relative;
-  transition: width 0.2s ease;
+  transition: width t.$transition-normal ease;
 }
 
 /* Visual indicator for active pane */
 .split-pane.active-pane {
-  box-shadow: inset 0 0 0 1px #3f51b5;
+  box-shadow: inset 0 0 0 1px var(--mat-sys-primary);
 }
 
 /* Drag and drop styles */
 .split-pane.drag-over {
-  background-color: rgba(63, 81, 181, 0.1);
-  box-shadow: inset 0 0 0 2px #3f51b5;
+  background-color: color-mix(in srgb, var(--mat-sys-primary) 10%, transparent);
+  box-shadow: inset 0 0 0 2px var(--mat-sys-primary);
 }

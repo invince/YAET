@@ -26,7 +26,7 @@ import { ProfileFormComponent } from "../profile-form/profile-form.component";
     TranslateModule
   ],
   templateUrl: './quickconnect-menu.component.html',
-  styleUrl: './quickconnect-menu.component.css'
+  styleUrl: './quickconnect-menu.component.scss'
 })
 export class QuickconnectMenuComponent extends MenuComponent implements OnInit {
 

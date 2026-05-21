@@ -42,7 +42,7 @@ import {MenuComponent} from '../menu.component';
     MatCheckbox,
   ],
   templateUrl: './cloud.component.html',
-  styleUrl: './cloud.component.css'
+    styleUrl: './cloud.component.scss'
 })
 export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
   AUTH_OPTIONS = AuthType;

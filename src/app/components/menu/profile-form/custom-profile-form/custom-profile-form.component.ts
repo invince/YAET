@@ -47,7 +47,7 @@ import {clearAuthFields, passwordMatchValidator} from '../../../../utils/Passwor
         CdkTextareaAutosize,
     ],
     templateUrl: './custom-profile-form.component.html',
-    styleUrl: './custom-profile-form.component.css',
+    styleUrl: './custom-profile-form.component.scss',
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,

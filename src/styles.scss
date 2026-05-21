@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use 'tokens' as t;
 
 /* You can add global styles to this file, and also import other style files */
 @use "modal";
@@ -47,46 +48,46 @@ $deeppurple-amber-theme: mat.m2-define-light-theme((color: (primary: $deeppurple
 // Apply the color themes to specific classes
 .theme-pink-bluegrey {
   @include mat.all-component-colors($pink-bluegrey-theme);
-  --app-bg-color: #1e1e1e;
-  --app-sidebar-bg-color: #252526;
-  --app-text-color: #e0e0e0;
-  --app-header-text-color: #fff;
-  --app-border-color: #333;
-  --app-hover-bg-color: #2a2d2e;
-  --app-active-bg-color: #37373d;
+  --app-bg-color: #{t.$color-bg-dark};
+  --app-sidebar-bg-color: #{t.$color-sidebar-dark};
+  --app-text-color: #{t.$color-text-dark};
+  --app-header-text-color: #{t.$color-header-text-dark};
+  --app-border-color: #{t.$color-border-dark};
+  --app-hover-bg-color: #{t.$color-hover-dark};
+  --app-active-bg-color: #{t.$color-active-dark};
 }
 
 .theme-purple-green {
   @include mat.all-component-colors($purple-green-theme);
-  --app-bg-color: #1e1e1e;
-  --app-sidebar-bg-color: #252526;
-  --app-text-color: #e0e0e0;
-  --app-header-text-color: #fff;
-  --app-border-color: #333;
-  --app-hover-bg-color: #2a2d2e;
-  --app-active-bg-color: #37373d;
+  --app-bg-color: #{t.$color-bg-dark};
+  --app-sidebar-bg-color: #{t.$color-sidebar-dark};
+  --app-text-color: #{t.$color-text-dark};
+  --app-header-text-color: #{t.$color-header-text-dark};
+  --app-border-color: #{t.$color-border-dark};
+  --app-hover-bg-color: #{t.$color-hover-dark};
+  --app-active-bg-color: #{t.$color-active-dark};
 }
 
 .theme-indigo-pink {
   @include mat.all-component-colors($indigo-pink-theme);
-  --app-bg-color: #fafafa;
-  --app-sidebar-bg-color: #f5f5f5;
-  --app-text-color: rgba(0, 0, 0, 0.87);
-  --app-header-text-color: rgba(0, 0, 0, 0.87);
-  --app-border-color: #e0e0e0;
-  --app-hover-bg-color: #e0e0e0;
-  --app-active-bg-color: #d5d5d5;
+  --app-bg-color: #{t.$color-bg-light};
+  --app-sidebar-bg-color: #{t.$color-sidebar-light};
+  --app-text-color: #{t.$color-text-light};
+  --app-header-text-color: #{t.$color-header-text-light};
+  --app-border-color: #{t.$color-border-light};
+  --app-hover-bg-color: #{t.$color-hover-light};
+  --app-active-bg-color: #{t.$color-active-light};
 }
 
 .theme-deeppurple-amber {
   @include mat.all-component-colors($deeppurple-amber-theme);
-  --app-bg-color: #fafafa;
-  --app-sidebar-bg-color: #f5f5f5;
-  --app-text-color: rgba(0, 0, 0, 0.87);
-  --app-header-text-color: rgba(0, 0, 0, 0.87);
-  --app-border-color: #e0e0e0;
-  --app-hover-bg-color: #e0e0e0;
-  --app-active-bg-color: #d5d5d5;
+  --app-bg-color: #{t.$color-bg-light};
+  --app-sidebar-bg-color: #{t.$color-sidebar-light};
+  --app-text-color: #{t.$color-text-light};
+  --app-header-text-color: #{t.$color-header-text-light};
+  --app-border-color: #{t.$color-border-light};
+  --app-hover-bg-color: #{t.$color-hover-light};
+  --app-active-bg-color: #{t.$color-active-light};
 }
 
 
@@ -97,7 +98,7 @@ body {
 
 body {
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: t.$font-family-base;
 }
 
 
@@ -145,9 +146,7 @@ body {
 
 /* In your component's CSS/SCSS file */
 .selected {
-  background-color: #e0f7fa !important;
-  /* Example highlight color */
-  color: #00796b !important;
-  /* Example text color */
+  background-color: var(--app-active-bg-color) !important;
+  color: var(--app-text-color) !important;
   font-weight: bold !important;
 }

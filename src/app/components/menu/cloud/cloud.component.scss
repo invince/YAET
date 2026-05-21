@@ -1,8 +1,10 @@
+@use 'tokens' as t;
+
 .modal-content {
   width: 550px;
   display: flex;
   flex-direction: row;
-  gap: 16px;
+  gap: t.$spacing-lg;
   padding: 0;
 }
 
@@ -12,41 +14,40 @@
 }
 
 .field-long {
-  margin-left: 16px;
-  margin-top: 16px;
+  margin-left: t.$spacing-lg;
+  margin-top: t.$spacing-lg;
   width: 480px;
 }
 
-
 .field {
-  margin-left: 16px;
-  margin-top: 16px;
+  margin-left: t.$spacing-lg;
+  margin-top: t.$spacing-lg;
   width: 280px;
 }
 
 .small-icon {
   height: 36px;
-  background-color: coral;
+  background-color: t.$color-warning;
 }
 
 /* Compact mat-selection-list */
 .cloud-form mat-selection-list {
-  padding-top: 4px !important;
-  margin-left: 16px;
+  padding-top: t.$spacing-xs !important;
+  margin-left: t.$spacing-lg;
 }
 
 .cloud-form mat-selection-list mat-list-option {
   height: 32px !important;
   min-height: 32px !important;
-  font-size: 13px !important;
+  font-size: t.$font-size-sm !important;
 }
 
 /* Compact mat-checkbox */
 .cloud-form mat-checkbox {
-  margin-left: 16px;
-  margin-top: 8px;
-  margin-bottom: 4px;
-  font-size: 13px !important;
+  margin-left: t.$spacing-lg;
+  margin-top: t.$spacing-sm;
+  margin-bottom: t.$spacing-xs;
+  font-size: t.$font-size-sm !important;
 }
 
 .cloud-form mat-checkbox .mdc-checkbox {
@@ -56,9 +57,9 @@
 
 /* Reduce spacing for form fields */
 .cloud-form mat-form-field {
-  margin-bottom: 4px !important;
+  margin-bottom: t.$spacing-xs !important;
 }
 
 .cloud-form mat-radio-group {
-  margin-bottom: 8px !important;
+  margin-bottom: t.$spacing-sm !important;
 }

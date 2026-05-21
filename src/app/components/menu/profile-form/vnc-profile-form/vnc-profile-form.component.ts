@@ -45,7 +45,7 @@ import {clearAuthFields, passwordMatchValidator} from '../../../../utils/Passwor
         MatIconButton,
     ],
     templateUrl: './vnc-profile-form.component.html',
-    styleUrl: './vnc-profile-form.component.css',
+    styleUrl: './vnc-profile-form.component.scss',
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,

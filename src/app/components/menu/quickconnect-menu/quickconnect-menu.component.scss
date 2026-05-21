@@ -1,7 +1,9 @@
+@use 'tokens' as t;
+
 .modal-content {
   width: 850px;
   display: flex;
   flex-direction: row;
-  gap: 16px;
+  gap: t.$spacing-lg;
   padding: 0;
 }

@@ -1,12 +1,12 @@
+@use 'tokens' as t;
+
 .sidebar-buttons {
   padding: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   height: 100%;
-  /* Ensures the container takes full height of the sidenav */
-  gap: 15px;
-  /* Space between buttons */
+  gap: t.$spacing-lg;
   overflow: hidden;
 }
 
@@ -14,8 +14,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
-  /* Space between buttons */
+  gap: t.$spacing-lg;
   padding: 0;
 }
 
@@ -23,27 +22,25 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
-  /* Space between buttons */
+  gap: t.$spacing-lg;
   margin-top: auto;
-  /* Pushes this section to the bottom */
-  padding: 0 0 10px 0;
+  padding: 0 0 t.$spacing-sm 0;
 }
 
-/* Fix Angular 21 mat-mini-fab sizing regression */
+// Fix Angular 21 mat-mini-fab sizing regression
 .sidebar-buttons button[mat-mini-fab],
 .sidebar-buttons .mat-mdc-mini-fab {
-  width: 40px !important;
-  height: 40px !important;
+  width: t.$sidebar-button-size !important;
+  height: t.$sidebar-button-size !important;
   padding: 0 !important;
-  border-radius: 50% !important;
-  min-width: 40px !important;
+  border-radius: t.$radius-full !important;
+  min-width: t.$sidebar-button-size !important;
 }
 
 .sidebar-buttons button[mat-mini-fab] .mat-mdc-button-touch-target,
 .sidebar-buttons .mat-mdc-mini-fab .mat-mdc-button-touch-target {
-  width: 40px !important;
-  height: 40px !important;
+  width: t.$sidebar-button-size !important;
+  height: t.$sidebar-button-size !important;
 }
 
 .sidebar-buttons button[mat-mini-fab] .mat-icon,

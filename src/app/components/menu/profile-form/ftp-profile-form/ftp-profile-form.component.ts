@@ -58,7 +58,7 @@ import {MatSlideToggle} from '@angular/material/slide-toggle';
         },
     ],
     templateUrl: './ftp-profile-form.component.html',
-    styleUrl: './ftp-profile-form.component.css'
+    styleUrl: './ftp-profile-form.component.scss'
 })
 export class FtpProfileFormComponent extends ChildFormAsFormControl(MenuComponent)  {
 

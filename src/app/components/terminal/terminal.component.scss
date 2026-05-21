@@ -1,4 +1,5 @@
 @use 'sass:color';
+@use 'tokens' as t;
 @import '@xterm/xterm/css/xterm.css';
 
 // Fix parent chain heights
@@ -14,7 +15,7 @@ app-root {
   flex-direction: column;
   height: 100%;
   width: 100%;
-  background: black;
+  background: var(--app-bg-color, t.$color-bg-dark);
   overflow: hidden;
 
   // Terminal wrapper
@@ -23,12 +24,11 @@ app-root {
     min-height: 0;
     position: relative;
 
-
     // Target xterm.js DOM elements directly
     .xterm {
       position: absolute !important;
       inset: 0 !important;
-      padding: 8px !important;
+      padding: t.$spacing-sm !important;
       height: 100% !important;
     }
   }
@@ -41,15 +41,14 @@ app-root {
   .terminal-toolbar {
     display: flex;
     align-items: center;
-    padding: 8px 16px;
-    background-color: #2d2d2d;
-    border-bottom: 1px solid #424242;
+    padding: t.$spacing-sm t.$spacing-lg;
+    background-color: var(--app-surface-elevated, t.$color-surface-elevated-dark);
+    border-bottom: 1px solid var(--app-border-color, t.$color-border-dark);
     flex-shrink: 0;
-    /* Remove absolute positioning to let it be part of the flex layout */
 
     .toolbar-button {
-      color: #e0e0e0;
-      
+      color: var(--app-text-color, t.$color-text-dark);
+
       mat-icon {
         font-size: 20px;
         width: 20px;

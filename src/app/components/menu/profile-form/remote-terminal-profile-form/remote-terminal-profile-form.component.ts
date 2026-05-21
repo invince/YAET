@@ -58,7 +58,7 @@ import {MatDialog} from '@angular/material/dialog';
         },
     ],
     templateUrl: './remote-terminal-profile-form.component.html',
-    styleUrl: './remote-terminal-profile-form.component.css'
+    styleUrl: './remote-terminal-profile-form.component.scss'
 })
 export class RemoteTerminalProfileFormComponent extends ChildFormAsFormControl(MenuComponent)  {
 
