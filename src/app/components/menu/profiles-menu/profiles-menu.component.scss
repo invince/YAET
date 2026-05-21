@@ -2,9 +2,11 @@
 
 // Modal Styling
 .modal-content {
-  width: 900px;
   display: flex;
   padding: 0;
+  min-height: 400px;
+  width: 900px;
+  max-width: 100%;
 
   .one-form {
     background-color: var(--app-modal-content, t.$color-modal-content-dark);

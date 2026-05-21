@@ -2,6 +2,6 @@
 
 .remote-desktop-container {
   display: block;
-  height: calc(100vh - #{t.$bottom-toolbar-height});
+  height: calc(100vh - t.$bottom-toolbar-height);
   width: 100%;
 }

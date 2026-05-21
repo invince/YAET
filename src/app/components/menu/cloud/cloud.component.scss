@@ -1,28 +1,30 @@
 @use 'tokens' as t;
 
 .modal-content {
-  width: 550px;
   display: flex;
   flex-direction: row;
   gap: t.$spacing-lg;
   padding: 0;
+  width: 900px;
+  max-width: 100%;
 }
 
 .cloud-form {
   display: flex;
   flex-direction: column;
+  flex: 1;
 }
 
 .field-long {
-  margin-left: t.$spacing-lg;
-  margin-top: t.$spacing-lg;
-  width: 480px;
+  margin: t.$spacing-lg t.$spacing-lg 0;
+  width: 100%;
+  max-width: 480px;
 }
 
 .field {
-  margin-left: t.$spacing-lg;
-  margin-top: t.$spacing-lg;
-  width: 280px;
+  margin: t.$spacing-lg t.$spacing-lg 0;
+  width: 100%;
+  max-width: 280px;
 }
 
 .small-icon {
@@ -33,7 +35,7 @@
 /* Compact mat-selection-list */
 .cloud-form mat-selection-list {
   padding-top: t.$spacing-xs !important;
-  margin-left: t.$spacing-lg;
+  margin: 0 t.$spacing-lg;
 }
 
 .cloud-form mat-selection-list mat-list-option {
@@ -44,9 +46,7 @@
 
 /* Compact mat-checkbox */
 .cloud-form mat-checkbox {
-  margin-left: t.$spacing-lg;
-  margin-top: t.$spacing-sm;
-  margin-bottom: t.$spacing-xs;
+  margin: t.$spacing-sm t.$spacing-lg t.$spacing-xs;
   font-size: t.$font-size-sm !important;
 }
 
@@ -61,5 +61,5 @@
 }
 
 .cloud-form mat-radio-group {
-  margin-bottom: t.$spacing-sm !important;
+  margin: t.$spacing-lg t.$spacing-lg 0;
 }
