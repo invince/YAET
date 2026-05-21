@@ -158,5 +158,28 @@
     "CUSTOM": {
         "COMMAND": "Command",
         "EXEC_HINT": "you can use $login $password in the command"
+    },
+    "CLOUD": {
+        "TITLE": "Sync",
+        "GIT_URL": "Git URL",
+        "PROXY": "Proxy",
+        "AUTH_TYPE": "Auth Type",
+        "LOGIN": "Login",
+        "PASSWORD": "Password",
+        "SECRET": "Secret",
+        "CHECK_ALL": "Check All",
+        "PASSWORD_REQUIRED": "Password is required",
+        "SECRET_REQUIRED": "Secret is required",
+        "UPLOAD": "Upload",
+        "DOWNLOAD": "Download",
+        "UPLOADED": "Uploaded",
+        "DOWNLOADED": "Downloaded",
+        "UPLOAD_FAILED": "Upload failed",
+        "DOWNLOAD_FAILED": "Download failed",
+        "ERROR_OCCURRED": "Error Occurred",
+        "SYNC_SETTING": "Settings",
+        "SYNC_PROFILE": "Profiles",
+        "SYNC_SECRET": "Secrets",
+        "SYNC_PROXY": "Proxies"
     }
 }

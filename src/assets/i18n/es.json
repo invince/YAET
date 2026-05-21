@@ -158,5 +158,28 @@
     "CUSTOM": {
         "COMMAND": "Comando",
         "EXEC_HINT": "puede usar $login $password en el comando"
+    },
+    "CLOUD": {
+        "TITLE": "Sincronizar",
+        "GIT_URL": "URL de Git",
+        "PROXY": "Proxy",
+        "AUTH_TYPE": "Tipo de autenticación",
+        "LOGIN": "Usuario",
+        "PASSWORD": "Contraseña",
+        "SECRET": "Secreto",
+        "CHECK_ALL": "Seleccionar todo",
+        "PASSWORD_REQUIRED": "La contraseña es obligatoria",
+        "SECRET_REQUIRED": "El secreto es obligatorio",
+        "UPLOAD": "Subir",
+        "DOWNLOAD": "Descargar",
+        "UPLOADED": "Subido",
+        "DOWNLOADED": "Descargado",
+        "UPLOAD_FAILED": "Error al subir",
+        "DOWNLOAD_FAILED": "Error al descargar",
+        "ERROR_OCCURRED": "Ha ocurrido un error",
+        "SYNC_SETTING": "Configuración",
+        "SYNC_PROFILE": "Perfiles",
+        "SYNC_SECRET": "Secretos",
+        "SYNC_PROXY": "Proxies"
     }
 }

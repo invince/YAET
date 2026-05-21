@@ -158,5 +158,28 @@
     "CUSTOM": {
         "COMMAND": "命令",
         "EXEC_HINT": "您可以在命令中使用 $login $password"
+    },
+    "CLOUD": {
+        "TITLE": "同步",
+        "GIT_URL": "Git URL",
+        "PROXY": "代理",
+        "AUTH_TYPE": "认证类型",
+        "LOGIN": "登录名",
+        "PASSWORD": "密码",
+        "SECRET": "密钥",
+        "CHECK_ALL": "全选",
+        "PASSWORD_REQUIRED": "密码为必填项",
+        "SECRET_REQUIRED": "密钥为必填项",
+        "UPLOAD": "上传",
+        "DOWNLOAD": "下载",
+        "UPLOADED": "已上传",
+        "DOWNLOADED": "已下载",
+        "UPLOAD_FAILED": "上传失败",
+        "DOWNLOAD_FAILED": "下载失败",
+        "ERROR_OCCURRED": "发生错误",
+        "SYNC_SETTING": "设置",
+        "SYNC_PROFILE": "配置文件",
+        "SYNC_SECRET": "密钥",
+        "SYNC_PROXY": "代理"
     }
 }

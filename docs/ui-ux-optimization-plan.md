@@ -135,6 +135,27 @@
 
 ---
 
+### 4.6 Cloud 同步表单国际化
+
+**问题**:
+- Cloud 同步表单标签和选项使用硬编码英文
+- 下拉选项（AuthType、Sync Items）未翻译
+- 缺少中/德/法/西语支持
+
+**具体任务**:
+- [x] 4.6.1 在 5 个语言文件（en, zh, de, fr, es）中添加 CLOUD 翻译 key（标题、字段、按钮、验证消息、同步项）
+- [x] 4.6.2 Cloud 表单模板使用 `translate` pipe 替换硬编码文本
+- [x] 4.6.3 实现 AuthType 动态值翻译方法（`translateAuthType`）
+- [x] 4.6.4 Sync Items（Setting/Profile/Secret/Proxy）动态翻译
+- [x] 4.6.5 上传/下载通知消息国际化
+
+**涉及文件**:
+- `src/assets/i18n/*.json`
+- `src/app/components/menu/cloud/cloud.component.ts`
+- `src/app/components/menu/cloud/cloud.component.html`
+
+---
+
 ### 5. AI 聊天面板优化
 
 **问题**:
@@ -287,6 +308,7 @@
 | 3. 模态框/对话框美化 | ✅ 已完成 | 3.1 backdrop blur ✅, 3.2 统一令牌样式 ✅, 3.3 过渡动画（已有）✅, 3.4 响应式布局 ✅, 3.5 头部样式统一 ✅ |
 | 4. 标签页优化 | ⬜ 未开始 | |
 | 4.5. Profile 页面 i18n | ✅ 已完成 | 14 个新翻译 key 添加到 5 个语言文件，profile-form 及 6 个子表单模板全部使用 translate pipe，Category/ConnectionType 动态值翻译方法，AuthType 单选按钮翻译 |
+| 4.6. Cloud 同步表单 i18n | ✅ 已完成 | CLOUD 翻译 key 添加到 5 个语言文件，表单模板全部使用 translate pipe，AuthType/Sync Items 动态翻译，上传/下载通知消息国际化 |
 | 5. AI 聊天面板优化 | ⬜ 未开始 | |
 | 6. 侧边栏 & 导航优化 | 🔄 部分完成 | sidebar `!important` 消除（归入 2.3）✅; ESC 键关闭拦截修复：移除自定义 HostListener，改用 `mat-sidenav [disableClose]="true"` 内建属性 ✅ |
 | 7. 表单体验优化 | ⬜ 未开始 | |
