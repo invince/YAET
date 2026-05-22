@@ -85,6 +85,7 @@
     },
     "PROXY": {
         "TITLE": "代理",
+        "NO_RESULTS": "未找到代理",
         "NAME": "名称",
         "TYPE": "类型",
         "HOST": "主机",
@@ -95,6 +96,7 @@
     },
     "SECRETS": {
         "TITLE": "密钥",
+        "NO_RESULTS": "未找到密钥",
         "NAME": "名称",
         "TYPE": "类型",
         "LOGIN": "登录名",
@@ -112,6 +114,7 @@
     },
     "PROFILES": {
         "TITLE": "配置文件",
+        "NO_RESULTS": "未找到配置文件",
         "NAME": "名称",
         "GROUP": "组",
         "TAGS": "标签",

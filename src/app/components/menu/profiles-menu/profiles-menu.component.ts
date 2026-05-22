@@ -1,5 +1,6 @@
 import {NestedTreeControl} from '@angular/cdk/tree';
 import {CommonModule} from '@angular/common';
+import {EmptyStateComponent} from '../../empty-state/empty-state.component';
 import {listAnimation} from '../../../animations/menuAnimation';
 import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -41,7 +42,8 @@ import {ProfileFormComponent} from '../profile-form/profile-form.component';
     MatIcon,
     ProfileFormComponent,
     FilterKeywordPipe,
-    TranslateModule
+    TranslateModule,
+    EmptyStateComponent
   ],
   templateUrl: './profiles-menu.component.html',
   styleUrl: './profiles-menu.component.scss',
@@ -272,6 +274,16 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
       this.keywordPipe.transform(this.profilesCopy.profiles, this.keywordsProviders, this.filter),
       false,
       true);
+  }
+
+  hasFilteredResults(): boolean {
+    if (!this.profilesCopy?.profiles) return false;
+    if (!this.filter) return this.profilesCopy.profiles.length > 0;
+    return this.keywordPipe.transform(this.profilesCopy.profiles, this.keywordsProviders, this.filter).length > 0;
+  }
+
+  hasTreeFilteredResults(): boolean {
+    return this.hasFilteredResults();
   }
 
   hasChild(_: number, node: GroupNode): boolean {

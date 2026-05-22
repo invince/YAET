@@ -91,7 +91,8 @@
         "PORT": "Port",
         "AUTH": "Authentication (Optional)",
         "AUTH_HINT": "Select a secret for username/password authentication",
-        "NONE": "None"
+        "NONE": "None",
+        "NO_RESULTS": "No proxies found"
     },
     "SECRETS": {
         "TITLE": "Secrets",
@@ -102,6 +103,7 @@
         "CONFIRM_PASSWORD": "Confirm Password",
         "SSH_KEY": "SSH Key",
         "KEY_PHRASE": "Key Phrase",
+        "NO_RESULTS": "No secrets found",
         "ERRORS": {
             "DUPLICATE": "Duplicate Secret exists, please change name",
             "PASSWORD_MISMATCH": "Passwords do not match",
@@ -115,6 +117,7 @@
         "NAME": "Name",
         "GROUP": "Group",
         "TAGS": "Tags",
+        "NO_RESULTS": "No profiles found",
         "ICON": "Icon",
         "PROTOCOL": "Protocol",
         "SHARE_PATH": "Share Path",

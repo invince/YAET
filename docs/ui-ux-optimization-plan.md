@@ -302,16 +302,18 @@
 - 现有内联空状态（标签页、文件浏览器）散落各处，无可复用组件
 
 **具体任务**:
-- [ ] 9.1 设计可复用的空状态组件 `src/app/components/empty-state/`
+- [x] 9.1 设计可复用的空状态组件 `src/app/components/empty-state/`（`app-empty-state` selector，icon + message 输入）
 - [x] 9.2 标签页区域空状态（内联：`.tab-empty-state` + 图标 + i18n）
-- [ ] 9.3 应用到配置文件列表（`profiles-menu` — 筛选无结果时显示空提示）
-- [ ] 9.4 应用到密钥管理（`secrets-menu` — 列表为空或筛选无结果时显示空提示）
+- [x] 9.3 应用到配置文件列表（`profiles-menu` — 使用 `@empty` block 在筛选无结果时显示空提示）
+- [x] 9.4 应用到密钥管理（`secrets-menu` — 使用 `@empty` block 在列表为空或筛选无结果时显示空提示）
 - [x] 9.5 文件浏览器空状态（内联：`.empty-state` 居中 + 300px min-height + muted 颜色）
 
 **涉及文件**:
 - `src/app/components/empty-state/` (新建)
 - `src/app/components/menu/profiles-menu/`
 - `src/app/components/menu/secrets-menu/`
+- `src/app/components/menu/proxy-menu/`
+- `src/assets/i18n/*.json`
 
 ---
 
@@ -377,5 +379,5 @@
 | 6. 侧边栏 & 导航优化 | 🔄 部分完成 | 6.1 matTooltip 7 按钮 ✅; 6.2 激活状态蓝色指示条 ✅; 6.3 可折叠 ➖（已尝试，动画晃动，放弃）; 6.4 hover 微交互 ✅ |
 | 7. 表单体验优化 | 🔄 部分完成 | 7A: 7.1a ✅ 7.1b ⬜ 7.2a ✅ 7.3 ⬜ 7.4a ✅; 7B: secret 同步 ✅; 7C: proxy 同步 ✅ |
 | 8. 动画系统增强 | ✅ 已完成 | 8.1a menuAnimation.ts ✅; 8.1b listAnimation 扩展 ✅; 8.2 模态框过渡 ✅; 8.3 tab 切换动画 ✅; 8.4a 部分按钮 hover ✅; 8.4b sidebar scale 微交互 ✅; 8.5 profiles/secrets/proxies 列表动画 ✅ |
-| 9. 空状态设计 | 🔄 部分完成 | 9.1 复用组件 ⬜; 9.2 标签空状态 ✅; 9.3 profiles 空状态 ⬜; 9.4 secrets 空状态 ⬜; 9.5 文件浏览器 ✅ |
+| 9. 空状态设计 | ✅ 已完成 | 9.1 复用组件 ✅; 9.2 标签空状态 ✅; 9.3 profiles 空状态 ✅; 9.4 secrets 空状态 ✅; 9.5 文件浏览器 ✅ |
 | 10. 可访问性 | 🔄 部分完成 | 10.1a 部分已有 ARIA ✅; 10.1b sidebar aria-label ⬜; 10.2 快捷键系统 ⬜; 10.3 提示面板 ⬜; 10.4 MatDialog 焦点陷阱 ✅; 10.5 WCAG 审核 ⬜ |

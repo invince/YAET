@@ -34,6 +34,7 @@
 
             <div class="sidenav-content" [@listAnimation]="profilesCopy.profiles.length">
               @if (sideNavType=='tree') {
+              @if (hasTreeFilteredResults()) {
               <mat-tree #tree [dataSource]="treeDataSource" [treeControl]="treeControl" class="group-tree">
                 <!-- Leaf Node -->
                 <mat-nested-tree-node *matTreeNodeDef="let node">
@@ -73,8 +74,12 @@
                   </div>
                 </mat-nested-tree-node>
               </mat-tree>
+              } @else {
+              <app-empty-state icon="folder_open" [message]="'PROFILES.NO_RESULTS' | translate"></app-empty-state>
+              }
               }
               @else {
+              @if (hasFilteredResults()) {
               @for (profile of profilesCopy.profiles | filterKeyword:keywordsProviders:filter; track profile.id) {
               <div class="sidenav-item">
                 <button mat-button [class.selected]="profile.id === selectedProfileId" (click)="onTabChange(profile)"
@@ -89,6 +94,9 @@
                 </button>
 
               </div>
+              }
+              } @else {
+              <app-empty-state icon="folder_open" [message]="'PROFILES.NO_RESULTS' | translate"></app-empty-state>
               }
               }
             </div>

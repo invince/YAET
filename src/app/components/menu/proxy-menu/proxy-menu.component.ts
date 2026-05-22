@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { EmptyStateComponent } from '../../empty-state/empty-state.component';
 import { listAnimation } from '../../../animations/menuAnimation';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -39,7 +40,8 @@ import { ProxyFormComponent } from './proxy-form/proxy-form.component';
         MatIcon,
         FilterKeywordPipe,
         ProxyFormComponent,
-        TranslateModule
+        TranslateModule,
+        EmptyStateComponent
     ],
     templateUrl: './proxy-menu.component.html',
     styleUrl: './proxy-menu.component.scss',

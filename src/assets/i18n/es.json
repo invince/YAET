@@ -85,6 +85,7 @@
     },
     "PROXY": {
         "TITLE": "Proxies",
+        "NO_RESULTS": "No se encontraron proxies",
         "NAME": "Nombre",
         "TYPE": "Tipo",
         "HOST": "Host",
@@ -95,6 +96,7 @@
     },
     "SECRETS": {
         "TITLE": "Secretos",
+        "NO_RESULTS": "No se encontraron secretos",
         "NAME": "Nombre",
         "TYPE": "Tipo",
         "LOGIN": "Usuario",
@@ -112,6 +114,7 @@
     },
     "PROFILES": {
         "TITLE": "Perfiles",
+        "NO_RESULTS": "No se encontraron perfiles",
         "NAME": "Nombre",
         "GROUP": "Grupo",
         "TAGS": "Etiquetas",

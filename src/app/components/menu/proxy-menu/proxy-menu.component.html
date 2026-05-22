@@ -41,6 +41,8 @@
                   }}
                 </button>
               </div>
+              } @empty {
+              <app-empty-state icon="dns" [message]="'PROXY.NO_RESULTS' | translate"></app-empty-state>
               }
             </div>
           </div>

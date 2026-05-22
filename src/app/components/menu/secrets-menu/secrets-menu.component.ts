@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { EmptyStateComponent } from '../../empty-state/empty-state.component';
 import { listAnimation } from '../../../animations/menuAnimation';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -40,7 +41,8 @@ import { SecretFormComponent } from './secret-form/secret-form.component';
     MatDialogModule,
     SecretFormComponent,
     FilterKeywordPipe,
-    TranslateModule
+    TranslateModule,
+    EmptyStateComponent
   ],
   templateUrl: './secrets-menu.component.html',
   styleUrl: './secrets-menu.component.scss',
