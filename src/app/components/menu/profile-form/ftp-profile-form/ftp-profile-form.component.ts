@@ -9,6 +9,7 @@ import {
   Validators
 } from "@angular/forms";
 import {CommonModule} from "@angular/common";
+import {TranslateModule} from '@ngx-translate/core';
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIcon} from "@angular/material/icon";
 import {MatIconButton} from "@angular/material/button";
@@ -37,6 +38,7 @@ import {MatSlideToggle} from '@angular/material/slide-toggle';
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
+        TranslateModule,
         MatSelectModule,
         MatRadioModule,
         MatFormFieldModule,
@@ -58,7 +60,7 @@ import {MatSlideToggle} from '@angular/material/slide-toggle';
         },
     ],
     templateUrl: './ftp-profile-form.component.html',
-    styleUrl: './ftp-profile-form.component.css'
+    styleUrl: './ftp-profile-form.component.scss'
 })
 export class FtpProfileFormComponent extends ChildFormAsFormControl(MenuComponent)  {
 

@@ -65,7 +65,7 @@ import {TagsFormComponent} from './tags-form/tags-form.component';
     TranslateModule,
   ],
   templateUrl: './setting-menu.component.html',
-  styleUrl: './setting-menu.component.css'
+    styleUrl: './setting-menu.component.scss'
 })
 export class SettingMenuComponent extends MenuComponent implements OnInit, OnDestroy {
 

@@ -8,7 +8,7 @@ import {Session} from '../../domain/session/Session';
         VncComponent
     ],
     templateUrl: './remote-desktop.component.html',
-    styleUrl: './remote-desktop.component.css'
+    styleUrl: './remote-desktop.component.scss'
 })
 export class RemoteDesktopComponent {
   @Input() session!: Session;

@@ -12,7 +12,7 @@ import { FileListComponent } from '../custom/file-list.component';
         FileListComponent
     ],
     templateUrl: './samba.component.html',
-    styleUrl: './samba.component.css'
+    styleUrl: './samba.component.scss'
 })
 export class SambaComponent extends AbstractFileManager implements OnInit, OnDestroy {
 

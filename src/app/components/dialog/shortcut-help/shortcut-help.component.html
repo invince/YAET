@@ -1,0 +1,23 @@
+<h2 mat-dialog-title>
+  <mat-icon>keyboard</mat-icon>
+  {{ 'SHORTCUTS.TITLE' | translate }}
+</h2>
+
+<mat-dialog-content>
+  <div class="shortcut-list">
+    @for (item of shortcuts; track item.keys) {
+    <div class="shortcut-row">
+      <span class="shortcut-keys">
+        @for (key of item.keys.split('+'); track key) {
+        <kbd>{{ key }}</kbd>
+        }
+      </span>
+      <span class="shortcut-action">{{ item.action | translate }}</span>
+    </div>
+    }
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>{{ 'COMMON.CLOSE' | translate }}</button>
+</mat-dialog-actions>

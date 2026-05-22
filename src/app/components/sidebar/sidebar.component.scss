@@ -1,0 +1,58 @@
+@use 'tokens' as t;
+
+.sidebar-buttons {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  gap: t.$spacing-sm;
+  overflow: hidden;
+}
+
+.sidebar-buttons-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: t.$spacing-sm;
+  padding: t.$spacing-lg 0 0 0;
+}
+
+.sidebar-buttons-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: t.$spacing-sm;
+  margin-top: auto;
+  padding: 0 0 t.$spacing-sm 0;
+}
+
+::ng-deep .mat-mdc-icon-button {
+  transition: background t.$transition-fast, color t.$transition-fast, transform t.$transition-fast;
+  position: relative;
+
+  &:hover {
+    background: var(--app-hover-bg-color);
+    transform: scale(1.15);
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
+
+  &.active {
+    color: t.$color-accent;
+    background: var(--app-active-bg-color);
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 6px;
+      bottom: 6px;
+      width: 3px;
+      background: t.$color-accent;
+      border-radius: 0 2px 2px 0;
+    }
+  }
+}

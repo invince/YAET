@@ -12,7 +12,7 @@ import { FileListComponent } from '../custom/file-list.component';
         FileListComponent
     ],
     templateUrl: './ftp.component.html',
-    styleUrl: './ftp.component.css'
+    styleUrl: './ftp.component.scss'
 })
 export class FtpComponent extends AbstractFileManager implements OnInit, OnDestroy {
 

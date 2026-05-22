@@ -2,17 +2,20 @@
   <div class="profile-form">
     <div class="profile-form-left-part">
       <mat-form-field class="field">
-        <mat-label>Name</mat-label>
+        <mat-label>{{ 'PROFILES.NAME' | translate }}</mat-label>
         <input matInput type="text" formControlName="name" required />
         @if (form.get('name')?.value) {
         <button matSuffix mat-icon-button aria-label="Clear" (click)="clear(form,'name')">
           <mat-icon>close</mat-icon>
         </button>
         }
+        @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
+        <mat-error>Name is required</mat-error>
+        }
       </mat-form-field>
 
       <mat-form-field class="field">
-        <mat-label>Group</mat-label>
+        <mat-label>{{ 'PROFILES.GROUP' | translate }}</mat-label>
         <mat-select formControlName="group" (selectionChange)="onSelectGroup($event)">
           <mat-select-trigger>
             @if (form.get('group')?.value) {
@@ -23,7 +26,7 @@
             }
           </mat-select-trigger>
           <mat-option>
-            <span class="group-option group-none">None</span>
+            <span class="group-option group-none">{{ 'COMMON.NONE' | translate }}</span>
           </mat-option>
           @for (oneGroup of settingStorage.settings.groups; track oneGroup.id) {
           <mat-option [value]="oneGroup" class="group-option-wrapper">
@@ -37,7 +40,7 @@
       </mat-form-field>
 
       <mat-form-field class="field">
-        <mat-label>Tags</mat-label>
+        <mat-label>{{ 'PROFILES.TAGS' | translate }}</mat-label>
         <mat-chip-grid #chipGrid>
           @if (tagList.length) {
           @for (tag of tagList; track tag.id) {
@@ -53,7 +56,7 @@
           }
           }
         </mat-chip-grid>
-        <input #tagsAutoCompleteInput placeholder="Add Tag..." (input)="updateFilteredTag($event)"
+        <input #tagsAutoCompleteInput [placeholder]="'PROFILES.ADD_TAG' | translate" (input)="updateFilteredTag($event)"
           [matChipInputFor]="chipGrid" [matAutocomplete]="auto" [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
           (matChipInputTokenEnd)="addTag($event)" />
         <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectTag($event)">
@@ -70,40 +73,48 @@
 
       @if (['SSH_TERMINAL', 'SCP_FILE_EXPLORER', 'TELNET_TERMINAL'].includes(form.get('profileType')?.value)) {
         <mat-form-field class="field">
-          <mat-label>Proxy</mat-label>
+          <mat-label>{{ 'PROFILES.PROXY' | translate }}</mat-label>
           <mat-select formControlName="proxyId">
             <mat-option></mat-option>
             @for (proxy of proxyStorage.dataCopy.proxies; track proxy.id) {
             <mat-option [value]="proxy.id">{{ proxy.name }} ({{ proxy.type }})</mat-option>
             }
           </mat-select>
-          <mat-hint>Only SOCKS proxies are supported</mat-hint>
+          <mat-hint>{{ 'PROFILES.SOCKS_HINT' | translate }}</mat-hint>
         </mat-form-field>
       }
 
       <mat-form-field class="field">
-        <mat-label>Category</mat-label>
+        <mat-label>{{ 'PROFILES.CATEGORY' | translate }}</mat-label>
         <mat-select (selectionChange)="onSelectCategory($event)" required formControlName="category">
           @for (oneCat of CATEGORY_OPTIONS | keyvalue : unordered; track oneCat.value) {
-          <mat-option [value]="oneCat.value">{{ oneCat.value }}</mat-option>
+          <mat-option [value]="oneCat.value">{{ translateCategory(oneCat.value) }}</mat-option>
           }
         </mat-select>
+        @if (form.get('category')?.hasError('required') && form.get('category')?.touched) {
+        <mat-error>Category is required</mat-error>
+        }
       </mat-form-field>
       @if (form.get('category')?.value) {
       <mat-form-field class="field">
-        <mat-label>Connection Type</mat-label>
+        <mat-label>{{ 'PROFILES.CONNECTION_TYPE' | translate }}</mat-label>
         <mat-select (selectionChange)="onSelectType($event)" required formControlName="profileType">
-          <mat-option *ngFor="let oneType of getTypeOptions()  | keyvalue : unordered " [value]="oneType.value">{{
-            oneType.value }}
+          @for (oneType of getTypeOptions() | keyvalue : unordered; track oneType.value) {
+          <mat-option [value]="oneType.value">{{
+            translateProfileType(oneType.value) }}
           </mat-option>
+          }
         </mat-select>
+        @if (form.get('profileType')?.hasError('required') && form.get('profileType')?.touched) {
+        <mat-error>Connection type is required</mat-error>
+        }
       </mat-form-field>
       }
     </div>
 
     <div class="profile-form-right-part">
       <mat-form-field class="field">
-        <mat-label>Description</mat-label>
+        <mat-label>{{ 'PROFILES.DESCRIPTION' | translate }}</mat-label>
         <textarea matInput type="text" formControlName="comment" cdkTextareaAutosize></textarea>
         @if (form.get('comment')?.value) {
         <button matSuffix mat-icon-button aria-label="Clear" (click)="clear(form,'comment')">
@@ -161,25 +172,29 @@
 
   <div class="profile-form-footer modal-footer">
     @if (!profile.isNew && buttons.includes('close')) {
-    <button mat-button (click)="onClose()">Cancel</button>
+    <button mat-button (click)="onClose()">{{ 'COMMON.CANCEL' | translate }}</button>
     }
     @if (buttons.includes('reload')) {
-    <button mat-stroked-button class="mat-accent" (click)="onReload()">Reload</button>
+    <button mat-stroked-button class="mat-accent" (click)="onReload()">{{ 'COMMON.RELOAD' | translate }}</button>
     }
     @if (buttons.includes('delete')) {
-    <button mat-raised-button color="warn" (click)="onDelete()">Delete</button>
+    <button mat-raised-button color="warn" (click)="onDelete()">{{ 'COMMON.DELETE' | translate }}</button>
     }
     @if (!profile.isNew && buttons.includes('clone')) {
-    <button mat-raised-button color="warn" (click)="onClone()" [disabled]="form.invalid">Clone
+    <button mat-raised-button color="warn" (click)="onClone()" [disabled]="form.invalid">{{ 'COMMON.CLONE' | translate }}
     </button>
     }
     @if (masterKeyService.hasMasterKey && buttons.includes('save')) {
-    <button mat-raised-button class="mat-primary" (click)="onSave()" [disabled]="form.invalid || !form.dirty"
-      cdkFocusInitial>Save
+    <button mat-raised-button class="mat-primary" (click)="onSave()" [disabled]="form.invalid || !form.dirty || saving"
+      cdkFocusInitial>
+      @if (saving) {
+      <mat-icon class="saving-spinner" style="animation: spin 1s linear infinite; display: inline-block;">refresh</mat-icon>
+      }
+      {{ 'COMMON.SAVE' | translate }}
     </button>
     }
     @if (buttons.includes('connect')) {
-    <button mat-raised-button class="mat-primary" (click)="onConnect()" [disabled]="form.invalid">Connect
+    <button mat-raised-button class="mat-primary" (click)="onConnect()" [disabled]="form.invalid">{{ 'COMMON.CONNECT' | translate }}
     </button>
     }
   </div>

@@ -1,15 +1,16 @@
 import {CommonModule} from '@angular/common';
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatCheckbox} from '@angular/material/checkbox';
-import {MatDialog} from '@angular/material/dialog';
+import {MatDialog, MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle} from '@angular/material/dialog';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIcon} from '@angular/material/icon';
 import {MatInput} from '@angular/material/input';
 import {MatListModule} from '@angular/material/list';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatSelectChange, MatSelectModule} from '@angular/material/select';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import isEqual from 'lodash/isEqual';
 import {NgxSpinnerService} from 'ngx-spinner';
 import {AuthType, SecretType} from '../../../domain/Secret';
@@ -40,9 +41,13 @@ import {MenuComponent} from '../menu.component';
     MatIcon,
     MatInput,
     MatCheckbox,
+    TranslateModule,
+    MatDialogTitle,
+    MatDialogContent,
+    MatDialogActions,
   ],
   templateUrl: './cloud.component.html',
-  styleUrl: './cloud.component.css'
+    styleUrl: './cloud.component.scss'
 })
 export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
   AUTH_OPTIONS = AuthType;
@@ -58,8 +63,8 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
 
   constructor(
     private fb: FormBuilder,
-    public masterKeyService: MasterKeyService, // in html
-    public secretStorageService: SecretStorageService, // in html
+    public masterKeyService: MasterKeyService,
+    public secretStorageService: SecretStorageService,
 
     public secretService: SecretService,
     private settingService: SettingService,
@@ -70,7 +75,9 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
     private spinner: NgxSpinnerService,
     public dialog: MatDialog,
     public proxyService: ProxyService,
-    public proxyStorage: ProxyStorageService
+    public proxyStorage: ProxyStorageService,
+    public dialogRef: MatDialogRef<CloudComponent>,
+    @Inject(TranslateService) private translate: TranslateService
   ) {
     super();
   }
@@ -89,10 +96,10 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
 
     this.form = this.fb.group(
       {
-        url: [cloudSettings.url, [Validators.required]], // we shall avoid use ngModel and formControl at same time
+        url: [cloudSettings.url, [Validators.required]],
         items: [cloudSettings.items],
 
-        authType: [cloudSettings.authType, [Validators.required]], // we shall avoid use ngModel and formControl at same time
+        authType: [cloudSettings.authType, [Validators.required]],
         login: [cloudSettings.login],
         password: [cloudSettings.password],
         secretId: [cloudSettings.secretId],
@@ -163,15 +170,15 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
           this.cloudService.upload(cloud).then((response) => {
             this.spinner.hide();
             if (response.succeed) {
-              this.notification.info('Uploaded');
+              this.notification.info(this.translate.instant('CLOUD.UPLOADED'));
             } else {
-              this.notification.error('Error Occurred: ' + response.ko);
+              this.notification.error(this.translate.instant('CLOUD.ERROR_OCCURRED') + ': ' + response.ko);
             }
             this.processing = false;
           }).catch((err) => {
             this.spinner.hide();
             this.processing = false;
-            this.notification.error('Upload failed: ' + err.message);
+            this.notification.error(this.translate.instant('CLOUD.UPLOAD_FAILED') + ': ' + err.message);
           });
         }
       );
@@ -188,7 +195,7 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
           this.cloudService.download(cloud).then((response) => {
             this.spinner.hide();
             if (response.succeed) {
-              this.notification.info('Downloaded');
+              this.notification.info(this.translate.instant('CLOUD.DOWNLOADED'));
               for (const item of cloud.items) {
                 if (item.toLowerCase() == SettingService.CLOUD_OPTION.toLowerCase()) {
                   this.settingService.reload();
@@ -204,13 +211,13 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
                 }
               }
             } else {
-              this.notification.error('Error Occurred: ' + response.ko);
+              this.notification.error(this.translate.instant('CLOUD.ERROR_OCCURRED') + ': ' + response.ko);
             }
             this.processing = false;
           }).catch((err) => {
             this.spinner.hide();
             this.processing = false;
-            this.notification.error('Download failed: ' + err.message);
+            this.notification.error(this.translate.instant('CLOUD.DOWNLOAD_FAILED') + ': ' + err.message);
           })
         });
     }
@@ -231,5 +238,18 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
         secretTypes: [SecretType.LOGIN_PASSWORD]
       }
     });
+  }
+
+  translateAuthType(type: string): string {
+    const keyMap: Record<string, string> = {
+      [AuthType.NA]: 'COMMON.NONE',
+      [AuthType.LOGIN]: 'CLOUD.LOGIN',
+      [AuthType.SECRET]: 'CLOUD.SECRET',
+    };
+    return this.translate.instant(keyMap[type] || type);
+  }
+
+  override close() {
+    this.dialogRef.close();
   }
 }

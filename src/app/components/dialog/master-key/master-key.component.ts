@@ -23,7 +23,7 @@ import {passwordMatchValidator} from '../../../utils/PasswordValidators';
         MatError,
     ],
     templateUrl: './master-key.component.html',
-    styleUrl: './master-key.component.css'
+    styleUrl: './master-key.component.scss'
 })
 export class MasterKeyComponent implements OnInit, OnDestroy{
   resetPasswordForm: FormGroup;

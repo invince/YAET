@@ -13,6 +13,7 @@ import {
   Validators
 } from '@angular/forms';
 import {CommonModule} from '@angular/common';
+import {TranslateModule} from '@ngx-translate/core';
 import {AuthType, Secret, SecretType} from '../../../../domain/Secret';
 import {MenuComponent} from '../../menu.component';
 import {MatIconButton} from '@angular/material/button';
@@ -37,6 +38,7 @@ import {MatDialog} from '@angular/material/dialog';
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
+        TranslateModule,
         MatSelectModule,
         MatRadioModule,
         MatFormFieldModule,
@@ -58,7 +60,7 @@ import {MatDialog} from '@angular/material/dialog';
         },
     ],
     templateUrl: './remote-terminal-profile-form.component.html',
-    styleUrl: './remote-terminal-profile-form.component.css'
+    styleUrl: './remote-terminal-profile-form.component.scss'
 })
 export class RemoteTerminalProfileFormComponent extends ChildFormAsFormControl(MenuComponent)  {
 

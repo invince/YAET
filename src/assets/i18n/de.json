@@ -22,7 +22,10 @@
         "HOST_NAME": "Hostname",
         "PORT": "Port",
         "SECRET": "Geheimnis",
-        "NONE": "Keine"
+        "NONE": "Keine",
+        "CLONE": "Klonen",
+        "CONNECT": "Verbinden",
+        "ADD_NEW": "Neu hinzufügen..."
     },
     "SETTINGS": {
         "TITLE": "Einstellungen",
@@ -82,6 +85,7 @@
     },
     "PROXY": {
         "TITLE": "Proxies",
+        "NO_RESULTS": "Keine Proxys gefunden",
         "NAME": "Name",
         "TYPE": "Typ",
         "HOST": "Host",
@@ -92,6 +96,7 @@
     },
     "SECRETS": {
         "TITLE": "Geheimnisse",
+        "NO_RESULTS": "Keine Geheimnisse gefunden",
         "NAME": "Name",
         "TYPE": "Typ",
         "LOGIN": "Benutzername",
@@ -109,6 +114,7 @@
     },
     "PROFILES": {
         "TITLE": "Profile",
+        "NO_RESULTS": "Keine Profile gefunden",
         "NAME": "Name",
         "GROUP": "Gruppe",
         "TAGS": "Tags",
@@ -117,7 +123,23 @@
         "SHARE_PATH": "Freigabepfad",
         "DOMAIN": "Domäne",
         "INIT_PATH": "Initialer Pfad",
-        "INIT_COMMAND": "Initialer Befehl"
+        "INIT_COMMAND": "Initialer Befehl",
+        "ADD_TAG": "Tag hinzufügen...",
+        "PROXY": "Proxy",
+        "SOCKS_HINT": "Nur SOCKS-Proxys werden unterstützt",
+        "CATEGORY": "Kategorie",
+        "CONNECTION_TYPE": "Verbindungstyp",
+        "DESCRIPTION": "Beschreibung",
+        "LOCAL_TERMINAL": "Lokales Terminal",
+        "SSH_TERMINAL": "SSH Terminal",
+        "TELNET_TERMINAL": "Telnet Terminal",
+        "WIN_RM_TERMINAL": "WinRM Terminal",
+        "VNC_REMOTE_DESKTOP": "VNC Remote Desktop",
+        "RDP_REMOTE_DESKTOP": "RDP Remote Desktop",
+        "SCP_FILE_EXPLORER": "SCP Datei-Explorer",
+        "FTP_FILE_EXPLORER": "FTP Datei-Explorer",
+        "SAMBA_FILE_EXPLORER": "Samba Datei-Explorer",
+        "CUSTOM": "Benutzerdefiniert"
     },
     "QUICKCONNECT": {
         "TITLE": "Schnellverbindung"
@@ -128,5 +150,54 @@
     },
     "DIALOGS": {
         "DELETE_MASTER_KEY_CONFIRM": "Master-Schlüssel löschen. Wenn Sie fortfahren, werden alle vorhandenen Geheimnisse ungültig. Möchten Sie fortfahren?"
+    },
+    "FTP": {
+        "SECURED": "Gesichert"
+    },
+    "RDP": {
+        "FULL_SCREEN": "Im Vollbild anzeigen",
+        "LOG_AS_ADMIN": "Als Administrator anmelden"
+    },
+    "CUSTOM": {
+        "COMMAND": "Befehl",
+        "EXEC_HINT": "Sie können $login $password im Befehl verwenden"
+    },
+    "CLOUD": {
+        "TITLE": "Synchronisieren",
+        "GIT_URL": "Git-URL",
+        "PROXY": "Proxy",
+        "AUTH_TYPE": "Authentifizierungstyp",
+        "LOGIN": "Benutzername",
+        "PASSWORD": "Passwort",
+        "SECRET": "Geheimnis",
+        "CHECK_ALL": "Alle auswählen",
+        "PASSWORD_REQUIRED": "Passwort ist erforderlich",
+        "SECRET_REQUIRED": "Geheimnis ist erforderlich",
+        "UPLOAD": "Hochladen",
+        "DOWNLOAD": "Herunterladen",
+        "UPLOADED": "Hochgeladen",
+        "DOWNLOADED": "Heruntergeladen",
+        "UPLOAD_FAILED": "Hochladen fehlgeschlagen",
+        "DOWNLOAD_FAILED": "Herunterladen fehlgeschlagen",
+        "ERROR_OCCURRED": "Ein Fehler ist aufgetreten",
+        "SYNC_SETTING": "Einstellungen",
+        "SYNC_PROFILE": "Profile",
+        "SYNC_SECRET": "Geheimnisse",
+        "SYNC_PROXY": "Proxies"
+    },
+    "TABS": {
+        "EMPTY_STATE": "Keine offenen Tabs. Verbinden Sie sich mit einem Profil oder starten Sie eine neue Verbindung."
+    },
+    "SHORTCUTS": {
+        "TITLE": "Tastenkombinationen",
+        "NEW_TERMINAL": "Neues lokales Terminal",
+        "CLOSE_TAB": "Aktuellen Tab schließen",
+        "QUICK_CONNECT": "Schnellverbindung",
+        "NEXT_TAB": "Nächster Tab",
+        "PREV_TAB": "Vorheriger Tab",
+        "TOGGLE_PROFILES": "Profile umschalten",
+        "TOGGLE_SECRETS": "Geheimnisse umschalten",
+        "TOGGLE_SETTINGS": "Einstellungen umschalten",
+        "TOGGLE_AI_CHAT": "AI Chat umschalten"
     }
 }

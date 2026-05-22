@@ -22,7 +22,10 @@
         "HOST_NAME": "Nombre de host",
         "PORT": "Puerto",
         "SECRET": "Secreto",
-        "NONE": "Ninguno"
+        "NONE": "Ninguno",
+        "CLONE": "Clonar",
+        "CONNECT": "Conectar",
+        "ADD_NEW": "Agregar nuevo..."
     },
     "SETTINGS": {
         "TITLE": "Configuración",
@@ -82,6 +85,7 @@
     },
     "PROXY": {
         "TITLE": "Proxies",
+        "NO_RESULTS": "No se encontraron proxies",
         "NAME": "Nombre",
         "TYPE": "Tipo",
         "HOST": "Host",
@@ -92,6 +96,7 @@
     },
     "SECRETS": {
         "TITLE": "Secretos",
+        "NO_RESULTS": "No se encontraron secretos",
         "NAME": "Nombre",
         "TYPE": "Tipo",
         "LOGIN": "Usuario",
@@ -109,6 +114,7 @@
     },
     "PROFILES": {
         "TITLE": "Perfiles",
+        "NO_RESULTS": "No se encontraron perfiles",
         "NAME": "Nombre",
         "GROUP": "Grupo",
         "TAGS": "Etiquetas",
@@ -117,7 +123,23 @@
         "SHARE_PATH": "Ruta compartida",
         "DOMAIN": "Dominio",
         "INIT_PATH": "Ruta inicial",
-        "INIT_COMMAND": "Comando inicial"
+        "INIT_COMMAND": "Comando inicial",
+        "ADD_TAG": "Agregar etiqueta...",
+        "PROXY": "Proxy",
+        "SOCKS_HINT": "Solo se admiten proxies SOCKS",
+        "CATEGORY": "Categoría",
+        "CONNECTION_TYPE": "Tipo de conexión",
+        "DESCRIPTION": "Descripción",
+        "LOCAL_TERMINAL": "Terminal local",
+        "SSH_TERMINAL": "Terminal SSH",
+        "TELNET_TERMINAL": "Terminal Telnet",
+        "WIN_RM_TERMINAL": "Terminal WinRM",
+        "VNC_REMOTE_DESKTOP": "Escritorio remoto VNC",
+        "RDP_REMOTE_DESKTOP": "Escritorio remoto RDP",
+        "SCP_FILE_EXPLORER": "Explorador de archivos SCP",
+        "FTP_FILE_EXPLORER": "Explorador de archivos FTP",
+        "SAMBA_FILE_EXPLORER": "Explorador de archivos Samba",
+        "CUSTOM": "Personalizado"
     },
     "QUICKCONNECT": {
         "TITLE": "Conexión rápida"
@@ -128,5 +150,54 @@
     },
     "DIALOGS": {
         "DELETE_MASTER_KEY_CONFIRM": "Eliminar clave maestra. Si continúa, todos los secretos existentes serán inválidos. ¿Desea continuar?"
+    },
+    "FTP": {
+        "SECURED": "Seguro"
+    },
+    "RDP": {
+        "FULL_SCREEN": "Mostrar en pantalla completa",
+        "LOG_AS_ADMIN": "Iniciar sesión como administrador"
+    },
+    "CUSTOM": {
+        "COMMAND": "Comando",
+        "EXEC_HINT": "puede usar $login $password en el comando"
+    },
+    "CLOUD": {
+        "TITLE": "Sincronizar",
+        "GIT_URL": "URL de Git",
+        "PROXY": "Proxy",
+        "AUTH_TYPE": "Tipo de autenticación",
+        "LOGIN": "Usuario",
+        "PASSWORD": "Contraseña",
+        "SECRET": "Secreto",
+        "CHECK_ALL": "Seleccionar todo",
+        "PASSWORD_REQUIRED": "La contraseña es obligatoria",
+        "SECRET_REQUIRED": "El secreto es obligatorio",
+        "UPLOAD": "Subir",
+        "DOWNLOAD": "Descargar",
+        "UPLOADED": "Subido",
+        "DOWNLOADED": "Descargado",
+        "UPLOAD_FAILED": "Error al subir",
+        "DOWNLOAD_FAILED": "Error al descargar",
+        "ERROR_OCCURRED": "Ha ocurrido un error",
+        "SYNC_SETTING": "Configuración",
+        "SYNC_PROFILE": "Perfiles",
+        "SYNC_SECRET": "Secretos",
+        "SYNC_PROXY": "Proxies"
+    },
+    "TABS": {
+        "EMPTY_STATE": "No hay pestañas abiertas. Conéctese a un perfil o inicie una nueva conexión para comenzar."
+    },
+    "SHORTCUTS": {
+        "TITLE": "Atajos de teclado",
+        "NEW_TERMINAL": "Nueva terminal local",
+        "CLOSE_TAB": "Cerrar pestaña",
+        "QUICK_CONNECT": "Conexión rápida",
+        "NEXT_TAB": "Siguiente pestaña",
+        "PREV_TAB": "Pestaña anterior",
+        "TOGGLE_PROFILES": "Alternar perfiles",
+        "TOGGLE_SECRETS": "Alternar secretos",
+        "TOGGLE_SETTINGS": "Alternar configuración",
+        "TOGGLE_AI_CHAT": "Alternar chat IA"
     }
 }

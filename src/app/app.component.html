@@ -1,5 +1,5 @@
 <mat-sidenav-container fullscreen>
-    <mat-sidenav #sidenav mode="side" opened class="main-app-sidenav">
+    <mat-sidenav #sidenav mode="side" opened disableClose class="main-app-sidenav">
         <app-sidebar></app-sidebar>
     </mat-sidenav>
 
@@ -12,14 +12,14 @@
             <div class="split-pane"
                 [style.width]="tabService.splitMode && tabService.splitDirection === 'vertical' ? tabService.splitRatio + '%' : '100%'"
                 [style.height]="tabService.splitMode && tabService.splitDirection === 'horizontal' ? tabService.splitRatio + '%' : '100%'"
-                [style.border-right]="tabService.splitMode && tabService.splitDirection === 'vertical' ? '1px solid #333' : 'none'"
-                [style.border-bottom]="tabService.splitMode && tabService.splitDirection === 'horizontal' ? '1px solid #333' : 'none'"
+                [style.border-right]="tabService.splitMode && tabService.splitDirection === 'vertical' ? '1px solid var(--app-border-color)' : 'none'"
+                [style.border-bottom]="tabService.splitMode && tabService.splitDirection === 'horizontal' ? '1px solid var(--app-border-color)' : 'none'"
                 (click)="setActivePane(0)" [class.active-pane]="tabService.activePane === 0"
                 [class.drag-over]="dragOverPane === 0" (dragover)="onPaneDragOver($event, 0)"
                 (dragleave)="onPaneDragLeave(0)" (drop)="onPaneDrop($event, 0)"
                 style="display: flex; flex-direction: column;">
 
-                <mat-tab-group id="tab-group-0" [@.disabled]="true" [(selectedIndex)]="tabService.paneTabIndices[0]"
+                <mat-tab-group id="tab-group-0" [(selectedIndex)]="tabService.paneTabIndices[0]"
                     mat-stretch-tabs="false" style="flex: 1; overflow: hidden;">
                     @for (tab of tabService.getTabsForPane(0) ; let i = $index; track tab.id) {
                     <mat-tab>
@@ -32,18 +32,25 @@
                         </div>
                     </mat-tab>
                     }
+                    @if (tabService.getTabsForPane(0).length === 0) {
+                    <div class="tab-empty-state">
+                        <mat-icon>tab</mat-icon>
+                        <span>{{ 'TABS.EMPTY_STATE' | translate }}</span>
+                    </div>
+                    }
                 </mat-tab-group>
             </div>
 
             <!-- Pane 1 -->
-            <div class="split-pane" *ngIf="tabService.splitMode"
+            @if (tabService.splitMode) {
+            <div class="split-pane"
                 [style.width]="tabService.splitDirection === 'vertical' ? (100 - tabService.splitRatio) + '%' : '100%'"
                 [style.height]="tabService.splitDirection === 'horizontal' ? (100 - tabService.splitRatio) + '%' : '100%'"
                 style="display: flex; flex-direction: column;" (click)="setActivePane(1)"
                 [class.active-pane]="tabService.activePane === 1" [class.drag-over]="dragOverPane === 1"
                 (dragover)="onPaneDragOver($event, 1)" (dragleave)="onPaneDragLeave(1)" (drop)="onPaneDrop($event, 1)">
 
-                <mat-tab-group id="tab-group-1" [@.disabled]="true" [(selectedIndex)]="tabService.paneTabIndices[1]"
+                <mat-tab-group id="tab-group-1" [(selectedIndex)]="tabService.paneTabIndices[1]"
                     mat-stretch-tabs="false" style="flex: 1; overflow: hidden;">
                     @for (tab of tabService.getTabsForPane(1) ; let i = $index; track tab.id) {
                     <mat-tab>
@@ -56,22 +63,31 @@
                         </div>
                     </mat-tab>
                     }
+                    @if (tabService.getTabsForPane(1).length === 0) {
+                    <div class="tab-empty-state">
+                        <mat-icon>tab</mat-icon>
+                        <span>{{ 'TABS.EMPTY_STATE' | translate }}</span>
+                    </div>
+                    }
                 </mat-tab-group>
             </div>
+            }
 
         </div>
 
         <!-- Templates -->
         <ng-template #tabLabel let-tab="tab" let-i="i" let-paneId="paneId">
             <div class="tab-label">
-                <span class="tab-drag-handle" draggable="true" (dragstart)="onTabDragStart($event, tab, i, paneId)"
+                <span class="tab-drag-handle"
+                    [attr.draggable]="tabService.splitMode ? 'true' : null"
+                    (dragstart)="onTabDragStart($event, tab, i, paneId)"
                     (dragend)="onTabDragEnd()">
                     @if (!tab.connected) {
                     <button mat-icon-button (click)="reconnect(tab)" aria-label="Reconnect tab">
                         <mat-icon>refresh</mat-icon>
                     </button>
                     }
-                    {{ tab.name }}
+                    <span class="tab-name" [matTooltip]="tab.name">{{ tab.name }}</span>
                 </span>
                 <button mat-icon-button (click)="removeTab(i, paneId)"
                     (mousedown)="onTabLabelMouseDown($event, i, paneId)" aria-label="Remove tab">
@@ -114,10 +130,6 @@
             @case(MENU_PROXY) {
             <app-proxy-menu [@slideInOut]="'in'"
                 (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-proxy-menu>
-            }
-            @case(MENU_CLOUD) {
-            <app-cloud-menu [@slideInOut]="'in'"
-                (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-cloud-menu>
             }
             @case(MENU_SETTING) {
             <app-setting-menu [@slideInOut]="'in'"

@@ -1,32 +1,30 @@
+@use 'tokens' as t;
+
 .modal-content {
     width: 900px;
     display: flex;
 }
 
-
 .field {
     width: 100%;
 }
 
-// Sidenav Container
 .sidenav-container {
     height: 100%;
 }
 
 .sidenav {
-    width: 200px; // Adjust the width as needed
+    width: 200px;
     display: flex;
     flex-direction: column;
-    height: 100%; // Ensure it fills the parent container
+    height: 100%;
 
-    // Filter Section
     .sidenav-filter {
-        flex-shrink: 0; // Avoid shrinking
+        flex-shrink: 0;
     }
 
-    // Add Button Section
     .sidenav-add {
-        flex-shrink: 0; // Avoid shrinking
+        flex-shrink: 0;
 
         button {
             width: 100%;
@@ -34,23 +32,20 @@
         }
     }
 
-    // Type Bar Section
     .sidenav-bottom-bar {
-        margin-top: auto; // Push this element to the bottom
+        margin-top: auto;
         display: flex;
-        justify-content: space-around; // Distribute buttons evenly
-        padding: 8px 0;
-        border-top: 1px solid #ccc; // Optional: Add a top border for separation
+        justify-content: space-around;
+        padding: t.$spacing-sm 0;
+        border-top: 1px solid var(--app-border-color);
     }
 
-    // Sidenav Content
     .sidenav-content {
         flex-grow: 1;
         overflow-y: auto;
         scrollbar-width: thin;
     }
 
-    // Sidenav Item
     .sidenav-item {
         display: flex;
         align-items: start;
@@ -66,7 +61,6 @@
     }
 }
 
-// Force width for the sidenav container in Angular Material 21
 ::ng-deep .menu-sidenav {
     width: 201px !important;
     min-width: 201px !important;
@@ -83,12 +77,10 @@
 }
 
 .one-form {
-    background-color: #696969;
+    background-color: var(--app-modal-content, t.$color-modal-content-dark);
     flex: 1;
-    /* Allow the child to grow */
     display: flex;
     flex-direction: column;
-    /* Adjust for your layout */
 }
 
 app-proxy-form {

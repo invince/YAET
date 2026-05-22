@@ -22,7 +22,10 @@
         "HOST_NAME": "Host Name",
         "PORT": "Port",
         "SECRET": "Secret",
-        "NONE": "None"
+        "NONE": "None",
+        "CLONE": "Clone",
+        "CONNECT": "Connect",
+        "ADD_NEW": "Add New..."
     },
     "SETTINGS": {
         "TITLE": "Settings",
@@ -88,7 +91,8 @@
         "PORT": "Port",
         "AUTH": "Authentication (Optional)",
         "AUTH_HINT": "Select a secret for username/password authentication",
-        "NONE": "None"
+        "NONE": "None",
+        "NO_RESULTS": "No proxies found"
     },
     "SECRETS": {
         "TITLE": "Secrets",
@@ -99,6 +103,7 @@
         "CONFIRM_PASSWORD": "Confirm Password",
         "SSH_KEY": "SSH Key",
         "KEY_PHRASE": "Key Phrase",
+        "NO_RESULTS": "No secrets found",
         "ERRORS": {
             "DUPLICATE": "Duplicate Secret exists, please change name",
             "PASSWORD_MISMATCH": "Passwords do not match",
@@ -112,12 +117,29 @@
         "NAME": "Name",
         "GROUP": "Group",
         "TAGS": "Tags",
+        "NO_RESULTS": "No profiles found",
         "ICON": "Icon",
         "PROTOCOL": "Protocol",
         "SHARE_PATH": "Share Path",
         "DOMAIN": "Domain",
         "INIT_PATH": "Init Path",
-        "INIT_COMMAND": "Init Command"
+        "INIT_COMMAND": "Init Command",
+        "ADD_TAG": "Add Tag...",
+        "PROXY": "Proxy",
+        "SOCKS_HINT": "Only SOCKS proxies are supported",
+        "CATEGORY": "Category",
+        "CONNECTION_TYPE": "Connection Type",
+        "DESCRIPTION": "Description",
+        "LOCAL_TERMINAL": "Local Terminal",
+        "SSH_TERMINAL": "SSH Terminal",
+        "TELNET_TERMINAL": "Telnet Terminal",
+        "WIN_RM_TERMINAL": "WinRM Terminal",
+        "VNC_REMOTE_DESKTOP": "VNC Remote Desktop",
+        "RDP_REMOTE_DESKTOP": "RDP Remote Desktop",
+        "SCP_FILE_EXPLORER": "SCP File Explorer",
+        "FTP_FILE_EXPLORER": "FTP File Explorer",
+        "SAMBA_FILE_EXPLORER": "Samba File Explorer",
+        "CUSTOM": "Custom"
     },
     "QUICKCONNECT": {
         "TITLE": "Connection"
@@ -128,5 +150,54 @@
     },
     "DIALOGS": {
         "DELETE_MASTER_KEY_CONFIRM": "Delete master key, if you continue, all existing secrets will be invalid. Do you want continue ?"
+    },
+    "FTP": {
+        "SECURED": "Secured"
+    },
+    "RDP": {
+        "FULL_SCREEN": "Show in full screen",
+        "LOG_AS_ADMIN": "Log As Admin"
+    },
+    "CUSTOM": {
+        "COMMAND": "Command",
+        "EXEC_HINT": "you can use $login $password in the command"
+    },
+    "CLOUD": {
+        "TITLE": "Sync",
+        "GIT_URL": "Git URL",
+        "PROXY": "Proxy",
+        "AUTH_TYPE": "Auth Type",
+        "LOGIN": "Login",
+        "PASSWORD": "Password",
+        "SECRET": "Secret",
+        "CHECK_ALL": "Check All",
+        "PASSWORD_REQUIRED": "Password is required",
+        "SECRET_REQUIRED": "Secret is required",
+        "UPLOAD": "Upload",
+        "DOWNLOAD": "Download",
+        "UPLOADED": "Uploaded",
+        "DOWNLOADED": "Downloaded",
+        "UPLOAD_FAILED": "Upload failed",
+        "DOWNLOAD_FAILED": "Download failed",
+        "ERROR_OCCURRED": "Error Occurred",
+        "SYNC_SETTING": "Settings",
+        "SYNC_PROFILE": "Profiles",
+        "SYNC_SECRET": "Secrets",
+        "SYNC_PROXY": "Proxies"
+    },
+    "TABS": {
+        "EMPTY_STATE": "No open tabs. Connect to a profile or start a new connection to begin."
+    },
+    "SHORTCUTS": {
+        "TITLE": "Keyboard Shortcuts",
+        "NEW_TERMINAL": "New Local Terminal",
+        "CLOSE_TAB": "Close Current Tab",
+        "QUICK_CONNECT": "Quick Connect",
+        "NEXT_TAB": "Next Tab",
+        "PREV_TAB": "Previous Tab",
+        "TOGGLE_PROFILES": "Toggle Profiles",
+        "TOGGLE_SECRETS": "Toggle Secrets",
+        "TOGGLE_SETTINGS": "Toggle Settings",
+        "TOGGLE_AI_CHAT": "Toggle AI Chat"
     }
 }

@@ -55,6 +55,17 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   renamingId: string | null = null;
   renameInput = '';
 
+  position: { x: number; y: number } | null = null;
+  size = { w: 350, h: 500 };
+  private dragOffset = { x: 0, y: 0 };
+  isDragging = false;
+  private dragPotential = false;
+  private dragStartPos = { x: 0, y: 0 };
+  private resizeStart = { x: 0, y: 0 };
+  private resizeStartSize = { w: 350, h: 500 };
+  private isResizing = false;
+  private resizeDirection: 'se' | 'nw' = 'se';
+
   get useContext() {
     return this.settingStorage.settings.ai.useContext ?? true;
   }
@@ -99,10 +110,12 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     private settingService: SettingService,
     private cdr: ChangeDetectorRef,
     private sanitizer: DomSanitizer,
-    private historyService: AiChatHistoryService
+    private historyService: AiChatHistoryService,
+    private el: ElementRef
   ) { }
 
   ngOnInit(): void {
+    this.loadState();
     const current = this.historyService.current;
     if (current) {
       this.messages = [...current.messages];
@@ -113,20 +126,36 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     this.scrollToBottom();
   }
 
+  private isNearBottom(): boolean {
+    const el = this.myScrollContainer.nativeElement;
+    const threshold = 30;
+    return el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+  }
+
   scrollToBottom(): void {
     try {
-      this.myScrollContainer.nativeElement.scrollTop = this.myScrollContainer.nativeElement.scrollHeight;
+      if (this.isNearBottom()) {
+        this.myScrollContainer.nativeElement.scrollTop = this.myScrollContainer.nativeElement.scrollHeight;
+      }
     } catch (err) { }
   }
 
+  private markdownCache = new Map<string, SafeHtml>();
+
   parseMarkdown(content: string): SafeHtml {
     if (!content) return '';
+    const cached = this.markdownCache.get(content);
+    if (cached) return cached;
     try {
-      const rawHtml = marked.parse(content) as string;
+      let rawHtml = marked.parse(content) as string;
+      rawHtml = rawHtml.replace(/<pre>/g, '<div class="code-block"><button class="code-copy-btn" type="button" aria-label="Copy code">copy</button><pre>');
+      rawHtml = rawHtml.replace(/<\/pre>/g, '</pre></div>');
       const cleanHtml = DOMPurify.sanitize(rawHtml);
-      return this.sanitizer.bypassSecurityTrustHtml(cleanHtml);
+      const safe = this.sanitizer.bypassSecurityTrustHtml(cleanHtml);
+      this.markdownCache.set(content, safe);
+      return safe;
     } catch (e) {
-      return content;
+      return content as any;
     }
   }
 
@@ -191,6 +220,109 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   cancelRename() {
     this.renamingId = null;
     this.renameInput = '';
+  }
+
+  onHeaderMouseDown(event: MouseEvent) {
+    if (!this.aiChatService.isOpen) return;
+    const target = event.target as HTMLElement;
+    if (target.closest('.header-right') || target.closest('.close-btn') || target.closest('.history-dropdown')) {
+      return;
+    }
+    this.dragPotential = true;
+    this.dragStartPos = { x: event.clientX, y: event.clientY };
+    const container = this.el.nativeElement.querySelector('.chat-container') as HTMLElement;
+    const rect = container.getBoundingClientRect();
+    if (!this.position) {
+      this.position = { x: rect.left, y: rect.top };
+    }
+    this.dragOffset = { x: event.clientX - this.position.x, y: event.clientY - this.position.y };
+  }
+
+  onResizeMouseDown(event: MouseEvent, direction: 'se' | 'nw') {
+    event.preventDefault();
+    event.stopPropagation();
+    this.resizeDirection = direction;
+    this.isResizing = true;
+    this.resizeStart = { x: event.clientX, y: event.clientY };
+    this.resizeStartSize = { ...this.size };
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  onDocMouseMove(event: MouseEvent) {
+    if (this.dragPotential) {
+      const dx = Math.abs(event.clientX - this.dragStartPos.x);
+      const dy = Math.abs(event.clientY - this.dragStartPos.y);
+      if (dx > 3 || dy > 3) {
+        this.dragPotential = false;
+        this.isDragging = true;
+      }
+    }
+    if (this.isDragging && this.position) {
+      this.position = {
+        x: event.clientX - this.dragOffset.x,
+        y: event.clientY - this.dragOffset.y,
+      };
+    }
+    if (this.isResizing) {
+      const dx = this.resizeDirection === 'se'
+        ? event.clientX - this.resizeStart.x
+        : this.resizeStart.x - event.clientX;
+      const dy = this.resizeDirection === 'se'
+        ? event.clientY - this.resizeStart.y
+        : this.resizeStart.y - event.clientY;
+      this.size = {
+        w: Math.max(280, Math.min(600, this.resizeStartSize.w + dx)),
+        h: Math.max(300, Math.min(800, this.resizeStartSize.h + dy)),
+      };
+    }
+  }
+
+  @HostListener('document:mouseup')
+  onDocMouseUp() {
+    this.dragPotential = false;
+    if (this.isDragging) {
+      this.isDragging = false;
+      this.saveState();
+    }
+    if (this.isResizing) {
+      this.isResizing = false;
+      this.saveState();
+    }
+  }
+
+  @HostListener('click', ['$event'])
+  onCodeCopyClick(event: MouseEvent) {
+    const btn = (event.target as HTMLElement).closest('.code-copy-btn');
+    if (!btn) return;
+    const pre = btn.parentElement?.querySelector('pre');
+    if (!pre) return;
+    navigator.clipboard.writeText(pre.textContent || '').catch(() => {});
+    btn.textContent = 'done';
+    setTimeout(() => { btn.textContent = 'copy'; }, 2000);
+  }
+
+  @HostListener('window:resize')
+  onWindowResize() {
+    if (this.position) {
+      this.position.x = Math.max(0, Math.min(this.position.x, window.innerWidth - this.size.w));
+      this.position.y = Math.max(0, Math.min(this.position.y, window.innerHeight - this.size.h));
+    }
+  }
+
+  private loadState() {
+    try {
+      const pos = localStorage.getItem('ai-chat-pos');
+      const size = localStorage.getItem('ai-chat-size');
+      if (pos) this.position = JSON.parse(pos);
+      if (size) this.size = JSON.parse(size);
+    } catch { }
+  }
+
+  private saveState() {
+    try {
+      if (this.position) localStorage.setItem('ai-chat-pos', JSON.stringify(this.position));
+      localStorage.setItem('ai-chat-size', JSON.stringify(this.size));
+    } catch { }
   }
 
   private async autoRenameSession() {

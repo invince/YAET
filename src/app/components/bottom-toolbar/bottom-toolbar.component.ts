@@ -11,13 +11,13 @@ import {TabService} from '../../services/tab.service';
     selector: 'app-bottom-toolbar',
     imports: [CommonModule, MatToolbarModule, MatButtonModule, MatIconModule],
     templateUrl: './bottom-toolbar.component.html',
-    styleUrls: ['./bottom-toolbar.component.css']
+    styleUrls: ['./bottom-toolbar.component.scss']
 })
 export class BottomToolbarComponent {
     constructor(
         public tabService: TabService,
         public aiChatService: AiChatService,
-        private settingStorage: SettingStorageService
+        private settingStorage: SettingStorageService,
     ) { }
 
     get isAiConfigured(): boolean {

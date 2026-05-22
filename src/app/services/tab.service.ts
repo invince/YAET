@@ -112,24 +112,19 @@ export class TabService {
   moveTabToPane(tab: TabInstance, targetPaneId: number) {
     const sourcePaneId = tab.paneId;
 
-    // Don't do anything if moving to same pane
     if (sourcePaneId === targetPaneId) {
       return;
     }
 
-    // Get current index in source pane
     const sourcePaneTabs = this.getTabsForPane(sourcePaneId);
     const sourceIndex = sourcePaneTabs.indexOf(tab);
 
-    // Update tab's pane
     tab.paneId = targetPaneId;
 
-    // Adjust source pane index if needed
     if (sourceIndex !== -1 && sourceIndex <= this.paneTabIndices[sourcePaneId] && this.paneTabIndices[sourcePaneId] > 0) {
       this.paneTabIndices[sourcePaneId]--;
     }
 
-    // Set target pane to show the moved tab
     queueMicrotask(() => {
       const targetPaneTabs = this.getTabsForPane(targetPaneId);
       this.paneTabIndices[targetPaneId] = targetPaneTabs.length - 1;
