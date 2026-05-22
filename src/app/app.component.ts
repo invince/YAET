@@ -13,7 +13,6 @@ import {menuAnimation} from './animations/menuAnimation';
 import {AiChatComponent} from './components/ai-chat/ai-chat.component';
 import {BottomToolbarComponent} from './components/bottom-toolbar/bottom-toolbar.component';
 import {FileExplorerComponent} from './components/file-explorer/file-explorer.component';
-import {CloudComponent} from './components/menu/cloud/cloud.component';
 import {ProfilesMenuComponent} from './components/menu/profiles-menu/profiles-menu.component';
 import {ProxyMenuComponent} from './components/menu/proxy-menu/proxy-menu.component';
 import {QuickconnectMenuComponent} from "./components/menu/quickconnect-menu/quickconnect-menu.component";
@@ -55,7 +54,6 @@ import {TabService} from './services/tab.service';
     ProxyMenuComponent,
     ProfilesMenuComponent,
     QuickconnectMenuComponent,
-    CloudComponent,
     SidebarComponent,
     BottomToolbarComponent,
     AiChatComponent,

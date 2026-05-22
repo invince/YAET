@@ -50,6 +50,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
 
   selectedProfileId: string | undefined;
   selectedProfile: Profile | undefined;
+  savingProfile = false;
 
   profilesCopy!: Profiles;
 
@@ -174,10 +175,17 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   }
 
   async onSaveOne($event: Profile) {
+    this.savingProfile = true;
     this.profilesCopy.update($event);
-    await this.commitChange();
-    this.notification.info('Profile saved');
-    this.refreshForm();
+    try {
+      await this.commitChange();
+      this.notification.success('Profile saved');
+    } catch {
+      this.notification.error('Failed to save profile');
+    } finally {
+      this.savingProfile = false;
+      this.refreshForm();
+    }
   }
 
   onCancel($event: Profile) {

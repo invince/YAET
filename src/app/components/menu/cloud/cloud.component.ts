@@ -3,7 +3,7 @@ import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatCheckbox} from '@angular/material/checkbox';
-import {MatDialog} from '@angular/material/dialog';
+import {MatDialog, MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle} from '@angular/material/dialog';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIcon} from '@angular/material/icon';
 import {MatInput} from '@angular/material/input';
@@ -42,6 +42,9 @@ import {MenuComponent} from '../menu.component';
     MatInput,
     MatCheckbox,
     TranslateModule,
+    MatDialogTitle,
+    MatDialogContent,
+    MatDialogActions,
   ],
   templateUrl: './cloud.component.html',
     styleUrl: './cloud.component.scss'
@@ -60,8 +63,8 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
 
   constructor(
     private fb: FormBuilder,
-    public masterKeyService: MasterKeyService, // in html
-    public secretStorageService: SecretStorageService, // in html
+    public masterKeyService: MasterKeyService,
+    public secretStorageService: SecretStorageService,
 
     public secretService: SecretService,
     private settingService: SettingService,
@@ -73,6 +76,7 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
     public dialog: MatDialog,
     public proxyService: ProxyService,
     public proxyStorage: ProxyStorageService,
+    public dialogRef: MatDialogRef<CloudComponent>,
     @Inject(TranslateService) private translate: TranslateService
   ) {
     super();
@@ -92,10 +96,10 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
 
     this.form = this.fb.group(
       {
-        url: [cloudSettings.url, [Validators.required]], // we shall avoid use ngModel and formControl at same time
+        url: [cloudSettings.url, [Validators.required]],
         items: [cloudSettings.items],
 
-        authType: [cloudSettings.authType, [Validators.required]], // we shall avoid use ngModel and formControl at same time
+        authType: [cloudSettings.authType, [Validators.required]],
         login: [cloudSettings.login],
         password: [cloudSettings.password],
         secretId: [cloudSettings.secretId],
@@ -243,5 +247,9 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
       [AuthType.SECRET]: 'CLOUD.SECRET',
     };
     return this.translate.instant(keyMap[type] || type);
+  }
+
+  override close() {
+    this.dialogRef.close();
   }
 }

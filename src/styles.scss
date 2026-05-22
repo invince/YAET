@@ -209,3 +209,19 @@ body {
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(2px);
 }
+
+// Snackbar styles
+.success-snackbar {
+  --mdc-snackbar-container-color: #2e7d32;
+  --mat-snack-bar-button-color: #fff;
+}
+
+.error-snackbar {
+  --mdc-snackbar-container-color: #c62828;
+  --mat-snack-bar-button-color: #fff;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

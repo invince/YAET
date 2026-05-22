@@ -6,6 +6,7 @@ import {MatIcon} from '@angular/material/icon';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {Subscription} from 'rxjs';
 import {MasterKeyComponent} from '../../components/dialog/master-key/master-key.component';
+import {CloudComponent} from '../../components/menu/cloud/cloud.component';
 import {MenuConsts} from '../../domain/MenuConsts';
 import {ProfileCategory, ProfileType} from '../../domain/profile/Profile';
 import {TabInstance} from '../../domain/TabInstance';
@@ -74,7 +75,12 @@ export class SidebarComponent implements OnDestroy {
     }
 
     cloudMenu() {
-        this.requireMasterKey(() => this.toggleMenu(this.MENU_CLOUD));
+        this.requireMasterKey(() => {
+            this.dialog.open(CloudComponent, {
+                width: '650px',
+                panelClass: 'cloud-dialog',
+            });
+        });
     }
 
     proxyMenu() {

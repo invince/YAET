@@ -108,6 +108,7 @@
         <mat-sidenav-content class="one-form">
           @if (selectedProfile) {
           <app-profile-form [profile]="selectedProfile" [buttons]="['close', 'delete', 'clone', 'save', 'connect' ]"
+            [saving]="savingProfile"
             (onProfileCancel)="onCancel($event)" (onProfileDelete)="onDelete($event)"
             (onProfileSave)="onSaveOne($event)" (onProfileClone)="onCloneOne($event)"
             (invalidStateChange)="onChildFormInvalidStateChange($event)"

@@ -63,6 +63,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   private _profile!: Profile;
 
   @Input() buttons = ['close', 'delete', 'save', 'connect'];
+  @Input() saving = false;
   @Output() onProfileSave = new EventEmitter<Profile>();
   @Output() onProfileClone = new EventEmitter<Profile>();
   @Output() onProfileDelete = new EventEmitter<Profile>();

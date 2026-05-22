@@ -1,30 +1,19 @@
 @use 'tokens' as t;
 
-.modal-content {
-  display: flex;
-  flex-direction: row;
-  gap: t.$spacing-lg;
-  padding: 0;
-  width: 900px;
-  max-width: 100%;
-}
-
 .cloud-form {
   display: flex;
   flex-direction: column;
-  flex: 1;
 }
 
 .field-long {
-  margin: t.$spacing-lg t.$spacing-lg 0;
   width: 100%;
-  max-width: 480px;
+  margin-top: t.$spacing-md;
 }
 
 .field {
-  margin: t.$spacing-lg t.$spacing-lg 0;
   width: 100%;
-  max-width: 280px;
+  max-width: 400px;
+  margin-top: t.$spacing-md;
 }
 
 .small-icon {
@@ -32,34 +21,88 @@
   background-color: t.$color-warning;
 }
 
-/* Compact mat-selection-list */
-.cloud-form mat-selection-list {
+mat-selection-list {
   padding-top: t.$spacing-xs !important;
-  margin: 0 t.$spacing-lg;
 }
 
-.cloud-form mat-selection-list mat-list-option {
+mat-selection-list mat-list-option {
   height: 32px !important;
   min-height: 32px !important;
   font-size: t.$font-size-sm !important;
 }
 
-/* Compact mat-checkbox */
-.cloud-form mat-checkbox {
-  margin: t.$spacing-sm t.$spacing-lg t.$spacing-xs;
+mat-checkbox {
+  margin: t.$spacing-sm 0 t.$spacing-xs;
   font-size: t.$font-size-sm !important;
 }
 
-.cloud-form mat-checkbox .mdc-checkbox {
+mat-checkbox .mdc-checkbox {
   width: 16px !important;
   height: 16px !important;
 }
 
-/* Reduce spacing for form fields */
-.cloud-form mat-form-field {
+mat-form-field {
   margin-bottom: t.$spacing-xs !important;
 }
 
-.cloud-form mat-radio-group {
-  margin: t.$spacing-lg t.$spacing-lg 0;
+::ng-deep .cloud-dialog .mat-mdc-dialog-content {
+  max-height: none;
+  overflow: hidden;
+}
+
+::ng-deep .cloud-dialog .mat-mdc-dialog-title {
+  padding: t.$spacing-md t.$spacing-2xl;
+  margin: 0;
+  font-size: t.$font-size-lg;
+  font-weight: t.$font-weight-medium;
+  background-color: var(--app-sidebar-bg-color);
+  border-bottom: 1px solid var(--app-border-color);
+}
+
+::ng-deep .cloud-dialog .mat-mdc-dialog-content {
+  padding: t.$spacing-2xl;
+  background-color: var(--app-bg-color);
+}
+
+::ng-deep .cloud-dialog .mat-mdc-dialog-actions {
+  padding: t.$spacing-md t.$spacing-2xl;
+  border-top: 1px solid var(--app-border-color);
+  background-color: var(--app-sidebar-bg-color);
+  margin: 0;
+}
+
+::ng-deep .cloud-dialog input.mat-mdc-input-element {
+  padding-left: t.$spacing-xs !important;
+  box-sizing: border-box !important;
+}
+
+::ng-deep .cloud-dialog .mat-mdc-select-value,
+::ng-deep .cloud-dialog .mat-mdc-select-trigger {
+  padding-left: t.$spacing-xs !important;
+  box-sizing: border-box !important;
+}
+
+::ng-deep .cloud-dialog .mat-mdc-select-panel {
+  background-color: var(--app-sidebar-bg-color) !important;
+  color: var(--app-text-color) !important;
+  border: 1px solid var(--app-border-color) !important;
+  border-radius: t.$radius-sm !important;
+}
+
+::ng-deep .cloud-dialog .mat-mdc-option {
+  color: var(--app-text-color) !important;
+  font-family: t.$font-family-ui !important;
+  font-size: t.$font-size-md !important;
+}
+
+::ng-deep .cloud-dialog .mat-mdc-option:hover:not(.mdc-list-item--disabled) {
+  background-color: var(--app-hover-bg-color) !important;
+}
+
+::ng-deep .cloud-dialog .mat-mdc-option.mdc-list-item--selected {
+  background-color: var(--app-active-bg-color) !important;
+}
+
+::ng-deep .cloud-dialog .mat-mdc-select-arrow svg {
+  fill: var(--app-text-color) !important;
 }

@@ -9,6 +9,9 @@
           <mat-icon>close</mat-icon>
         </button>
         }
+        @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
+        <mat-error>Name is required</mat-error>
+        }
       </mat-form-field>
 
       <mat-form-field class="field">
@@ -88,6 +91,9 @@
           <mat-option [value]="oneCat.value">{{ translateCategory(oneCat.value) }}</mat-option>
           }
         </mat-select>
+        @if (form.get('category')?.hasError('required') && form.get('category')?.touched) {
+        <mat-error>Category is required</mat-error>
+        }
       </mat-form-field>
       @if (form.get('category')?.value) {
       <mat-form-field class="field">
@@ -99,6 +105,9 @@
           </mat-option>
           }
         </mat-select>
+        @if (form.get('profileType')?.hasError('required') && form.get('profileType')?.touched) {
+        <mat-error>Connection type is required</mat-error>
+        }
       </mat-form-field>
       }
     </div>
@@ -176,8 +185,12 @@
     </button>
     }
     @if (masterKeyService.hasMasterKey && buttons.includes('save')) {
-    <button mat-raised-button class="mat-primary" (click)="onSave()" [disabled]="form.invalid || !form.dirty"
-      cdkFocusInitial>{{ 'COMMON.SAVE' | translate }}
+    <button mat-raised-button class="mat-primary" (click)="onSave()" [disabled]="form.invalid || !form.dirty || saving"
+      cdkFocusInitial>
+      @if (saving) {
+      <mat-icon class="saving-spinner" style="animation: spin 1s linear infinite; display: inline-block;">refresh</mat-icon>
+      }
+      {{ 'COMMON.SAVE' | translate }}
     </button>
     }
     @if (buttons.includes('connect')) {

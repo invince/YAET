@@ -1,3 +1,5 @@
+@use 'tokens' as t;
+
 :host {
   display: block;
   /* Or flex if required */
@@ -15,44 +17,38 @@
 }
 
 .profile-form {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: t.$spacing-xl;
   flex: 1 1 auto;
-  /* Allow form to take available space, but be scrollable */
   overflow-y: auto;
-  /* Enable vertical scrolling */
+  padding: 0 t.$spacing-lg;
 }
 
-
-.profile-form-left-part {
-  flex: 0 0 300px;
-  /* Fixed width for the left part */
+.profile-form-left-part,
+.profile-form-right-part {
   display: flex;
   flex-direction: column;
 }
 
-.profile-form-right-part {
-  flex: 0 0 300px;
-  /* Fixed width for the right part */
-  padding-left: 30px
-}
-
-//.profile-form-footer {
-//  margin-top: auto; /* Pushes it to the bottom */
-//  margin-bottom: 0; /* Adds the offset from the bottom */
-//}
-
 .profile-form-footer {
   flex-shrink: 0;
-  /* Prevent the footer from shrinking */
   margin-top: auto;
-  /* Push footer to the bottom */
+  padding: t.$spacing-md t.$spacing-lg;
+  display: flex;
+  gap: t.$spacing-sm;
+  justify-content: flex-end;
+  border-top: 1px solid var(--app-border-color);
 }
 
 .field {
-  margin-left: 16px;
-  margin-top: 16px;
-  width: 280px;
+  width: 100%;
+  padding: t.$spacing-sm 0;
+  margin-top: t.$spacing-md;
+}
+
+.mat-mdc-form-field-error {
+  font-size: t.$font-size-xs;
 }
 
 ::ng-deep .mat-mdc-form-field-hint {
