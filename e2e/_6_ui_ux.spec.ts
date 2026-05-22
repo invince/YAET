@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures';
+import {expect, test} from './fixtures';
 
 const THEMES = [
   { value: 'pink-bluegrey', label: /Pink.*Blue/i },
@@ -12,7 +12,7 @@ test.describe('6. UI/UX', () => {
   test.describe('Tab management', () => {
 
     test('open multiple tabs and count them', async ({ mainWindow }) => {
-      const btn = mainWindow.locator('app-sidebar button[aria-label="Add Local Terminal"]');
+      const btn = mainWindow.locator('app-sidebar button[aria-label="Local Terminal"]');
       const tabLabels = () => mainWindow.locator('#tab-group-0 .mat-mdc-tab-labels .mat-mdc-tab');
 
       await btn.click();
@@ -26,7 +26,7 @@ test.describe('6. UI/UX', () => {
     });
 
     test('close a tab via close button', async ({ mainWindow }) => {
-      const btn = mainWindow.locator('app-sidebar button[aria-label="Add Local Terminal"]');
+      const btn = mainWindow.locator('app-sidebar button[aria-label="Local Terminal"]');
       const tabLabels = () => mainWindow.locator('#tab-group-0 .mat-mdc-tab-labels .mat-mdc-tab');
 
       await btn.click();
@@ -42,7 +42,7 @@ test.describe('6. UI/UX', () => {
     });
 
     test('switch between tabs', async ({ mainWindow }) => {
-      const btn = mainWindow.locator('app-sidebar button[aria-label="Add Local Terminal"]');
+      const btn = mainWindow.locator('app-sidebar button[aria-label="Local Terminal"]');
 
       await btn.click();
       await mainWindow.waitForTimeout(200);
@@ -65,7 +65,7 @@ test.describe('6. UI/UX', () => {
 
     test('enable and disable vertical split', async ({ mainWindow }) => {
       // Open a terminal tab first
-      await mainWindow.locator('app-sidebar button[aria-label="Add Local Terminal"]').click();
+      await mainWindow.locator('app-sidebar button[aria-label="Local Terminal"]').click();
       await mainWindow.waitForTimeout(300);
 
       const splitBtn = mainWindow.locator('button[aria-label="Split View 50/50 Vertical"]');
@@ -82,7 +82,7 @@ test.describe('6. UI/UX', () => {
     });
 
     test('enable horizontal split', async ({ mainWindow }) => {
-      await mainWindow.locator('app-sidebar button[aria-label="Add Local Terminal"]').click();
+      await mainWindow.locator('app-sidebar button[aria-label="Local Terminal"]').click();
       await mainWindow.waitForTimeout(300);
 
       await mainWindow.locator('button[aria-label="Split View 60/40 Horizontal"]').click();
