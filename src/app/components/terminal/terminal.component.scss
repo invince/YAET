@@ -8,7 +8,6 @@
   height: 100%;
   width: 100%;
   background: black;
-  padding-left: t.$spacing-sm;
   box-sizing: border-box;
   overflow: hidden;
 
@@ -18,39 +17,79 @@
     min-height: 0;
     position: relative;
 
-    // Target xterm.js DOM elements (created outside Angular, use ::ng-deep)
+    margin-left: t.$spacing-sm;
+
+    // xterm root
     ::ng-deep .xterm {
       position: absolute !important;
       inset: 0 !important;
+      width: 100% !important;
       height: 100% !important;
+      background: transparent !important;
     }
 
-    // Customize xterm scrollbar - hidden by default, show on hover (Electron/Chromium only)
+    // viewport (scroll container)
+    ::ng-deep .xterm-viewport {
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+
+      background: transparent !important;
+
+      // Firefox
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+
+      // Prevent layout shift when scrollbar appears
+      scrollbar-gutter: stable;
+    }
+
+    // Chromium / Electron scrollbar
     ::ng-deep .xterm-viewport::-webkit-scrollbar {
-      width: 0;
-      height: 0;
-    }
-
-    ::ng-deep .xterm-viewport:hover::-webkit-scrollbar {
       width: 6px;
     }
 
     ::ng-deep .xterm-viewport::-webkit-scrollbar-track {
+      background: transparent !important;
+    }
+
+    ::ng-deep .xterm-viewport::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.35);
+      border-radius: 999px;
+      min-height: 24px;
+    }
+
+    ::ng-deep .xterm-viewport::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.55);
+    }
+
+    // Optional: smoother corner rendering
+    ::ng-deep .xterm-viewport::-webkit-scrollbar-corner {
       background: transparent;
     }
 
-    ::ng-deep .xterm-viewport:hover::-webkit-scrollbar-thumb {
-      background-color: rgba(255, 255, 255, 0.5);
-      border-radius: 3px;
+    // Ensure screen layer doesn't paint white background
+    ::ng-deep .xterm-screen {
+      background: transparent !important;
     }
+
+    // Optional:
+    // Uncomment ONLY if you don't need mouse text selection
+    //
+    // ::ng-deep .xterm-screen {
+    //   pointer-events: none;
+    // }
   }
 
   .terminal-toolbar {
     display: flex;
     align-items: center;
     padding: t.$spacing-sm t.$spacing-lg;
-    background-color: var(--app-surface-elevated, t.$color-surface-elevated-dark);
-    border-bottom: 1px solid var(--app-border-color, t.$color-border-dark);
+    background-color: var(
+      --app-surface-elevated,
+      t.$color-surface-elevated-dark
+    );
+    border-bottom: 1px solid
+    var(--app-border-color, t.$color-border-dark);
     flex-shrink: 0;
 
     .toolbar-button {

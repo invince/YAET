@@ -33,7 +33,7 @@
 
   &:hover {
     background: var(--app-hover-bg-color);
-    transform: scale(1.15);
+    transform: scale(1);
   }
 
   &:active {
@@ -43,16 +43,5 @@
   &.active {
     color: t.$color-accent;
     background: var(--app-active-bg-color);
-
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 6px;
-      bottom: 6px;
-      width: 3px;
-      background: t.$color-accent;
-      border-radius: 0 2px 2px 0;
-    }
   }
 }

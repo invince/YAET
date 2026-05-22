@@ -36,6 +36,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() session!: Session;
   @ViewChild('term', { static: false }) terminalDiv!: ElementRef;
   @ViewChild('termContainer', { static: false }) termContainer!: ElementRef;
+
   private isViewInitialized = false;
 
   private xtermUnderlying: Terminal;
@@ -65,6 +66,8 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   ngAfterViewInit(): void {
     this.xtermUnderlying.open(this.terminalDiv.nativeElement);
+    this.injectScrollbarStyles();
+
     this.terminalInstanceService.register(this.session.id, this.xtermUnderlying);
 
     this.xtermUnderlying.loadAddon(new WebLinksAddon((event: MouseEvent, uri: string) => {
@@ -98,8 +101,6 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     };
 
     requestAnimationFrame(() => doFit());
-    setTimeout(doFit, 200);
-    setTimeout(doFit, 800);
 
     const interval = setInterval(doFit, 300);
     setTimeout(() => clearInterval(interval), 3000);
@@ -225,5 +226,17 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     // Create and add new tab instance
     const tabInstance = new TabInstance(ProfileCategory.FILE_EXPLORER, session);
     this.tabService.addTab(tabInstance);
+  }
+
+
+  // Hack the scroll style for xtermJs
+  private injectScrollbarStyles() {
+    try {
+      const viewport = this.terminalDiv.nativeElement.querySelector('.xterm-viewport');
+      if (!viewport) return;
+      viewport.style.setProperty('scrollbar-width', 'thin');
+    } catch (e) {
+      console.error('Failed to inject scrollbar styles:', e);
+    }
   }
 }
