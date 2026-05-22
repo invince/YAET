@@ -7,10 +7,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   workers: 1,
-  reporter: [
-    ['list'],
-    ['html', { outputFolder: 'e2e-report' }],
-  ],
+  // Increase global timeout for Electron app to allow proper shutdown
+  timeout: 120000,
   use: {
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
@@ -27,8 +25,6 @@ export default defineConfig({
           ],
         },
       },
-      // Increase timeout for Electron app to allow proper shutdown
-      timeout: 60000,
     },
   ],
 });
