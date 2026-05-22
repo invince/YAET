@@ -32,7 +32,7 @@
             </div>
 
 
-            <div class="sidenav-content">
+            <div class="sidenav-content" [@listAnimation]="proxiesCopy.proxies.length">
               @for (proxy of proxiesCopy.proxies | filterKeyword:keywordsProviders:filter; track proxy.id) {
               <div class="sidenav-item">
                 <button mat-button [class.selected]="proxy.id === selectedId" (click)="onTabChange(proxy)">

@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { listAnimation } from '../../../animations/menuAnimation';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -43,7 +44,8 @@ import { SecretFormComponent } from './secret-form/secret-form.component';
   ],
   templateUrl: './secrets-menu.component.html',
   styleUrl: './secrets-menu.component.scss',
-  providers: [FilterKeywordPipe]
+  providers: [FilterKeywordPipe],
+  animations: [listAnimation]
 })
 export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
 

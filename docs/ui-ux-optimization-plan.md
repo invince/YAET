@@ -282,12 +282,12 @@
 
 **具体任务**:
 - [x] 8.1a 存在 `src/app/animations/menuAnimation.ts`（`slideInOut` 触发器，300ms 滑入滑出）
-- [ ] 8.1b 扩展动画配置文件，提取可复用常量/预设动画
+- [x] 8.1b 扩展动画配置文件，提取可复用常量/预设动画（`listAnimation` fade+slide+stagger 触发器）
 - [x] 8.2 模态框打开/关闭过渡（`[@slideInOut]` 应用到 5 个菜单面板 + backdrop blur(2px) + fadeIn/fadeOut keyframes）
-- [ ] 8.3 添加面板切换动画（标签切换、侧边栏展开/折叠）
+- [x] 8.3 添加面板切换动画（移除 `[@.disabled]="true"`，启用 Material tab 原生切换动画）
 - [x] 8.4a 部分按钮有 hover 过渡（sidebar `transition: background`，AI 聊天 hover 效果）
-- [ ] 8.4b 系统性按钮微交互（点击涟漪缩放、hover 缩放、状态变化动画）
-- [ ] 8.5 添加列表项进入/离开动画（`@listAnimation`、`@fade` 等）
+- [x] 8.4b 系统性按钮微交互（sidebar hover scale(1.15) + active press scale(0.92) + transform 过渡）
+- [x] 8.5 添加列表项进入/离开动画（`@listAnimation` 应用到 profiles/secrets/proxies 三个 menu 的列表）
 
 **涉及文件**:
 - `src/animations/` (扩展现有)
@@ -376,6 +376,6 @@
 | 5. AI 聊天面板优化 | ✅ 已完成 | 5.1 可拖拽 ✅, 5.2 可调整大小 ✅, 5.3 气泡样式优化 ✅, 5.4 打字指示器 ✅, 5.5 历史下拉优化 ✅ |
 | 6. 侧边栏 & 导航优化 | 🔄 部分完成 | 6.1 matTooltip 7 按钮 ✅; 6.2 激活状态蓝色指示条 ✅; 6.3 可折叠 ➖（已尝试，动画晃动，放弃）; 6.4 hover 微交互 ✅ |
 | 7. 表单体验优化 | 🔄 部分完成 | 7A: 7.1a ✅ 7.1b ⬜ 7.2a ✅ 7.3 ⬜ 7.4a ✅; 7B: secret 同步 ✅; 7C: proxy 同步 ✅ |
-| 8. 动画系统增强 | 🔄 部分完成 | 8.1a menuAnimation.ts 存在 ✅; 8.1b 扩展动画配置 ⬜; 8.2 模态框过渡 ✅; 8.3 面板切换 ⬜; 8.4a 部分按钮 hover ✅; 8.4b 系统微交互 ⬜; 8.5 列表动画 ⬜ |
+| 8. 动画系统增强 | ✅ 已完成 | 8.1a menuAnimation.ts ✅; 8.1b listAnimation 扩展 ✅; 8.2 模态框过渡 ✅; 8.3 tab 切换动画 ✅; 8.4a 部分按钮 hover ✅; 8.4b sidebar scale 微交互 ✅; 8.5 profiles/secrets/proxies 列表动画 ✅ |
 | 9. 空状态设计 | 🔄 部分完成 | 9.1 复用组件 ⬜; 9.2 标签空状态 ✅; 9.3 profiles 空状态 ⬜; 9.4 secrets 空状态 ⬜; 9.5 文件浏览器 ✅ |
 | 10. 可访问性 | 🔄 部分完成 | 10.1a 部分已有 ARIA ✅; 10.1b sidebar aria-label ⬜; 10.2 快捷键系统 ⬜; 10.3 提示面板 ⬜; 10.4 MatDialog 焦点陷阱 ✅; 10.5 WCAG 审核 ⬜ |

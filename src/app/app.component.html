@@ -19,7 +19,7 @@
                 (dragleave)="onPaneDragLeave(0)" (drop)="onPaneDrop($event, 0)"
                 style="display: flex; flex-direction: column;">
 
-                <mat-tab-group id="tab-group-0" [@.disabled]="true" [(selectedIndex)]="tabService.paneTabIndices[0]"
+                <mat-tab-group id="tab-group-0" [(selectedIndex)]="tabService.paneTabIndices[0]"
                     mat-stretch-tabs="false" style="flex: 1; overflow: hidden;">
                     @for (tab of tabService.getTabsForPane(0) ; let i = $index; track tab.id) {
                     <mat-tab>
@@ -50,7 +50,7 @@
                 [class.active-pane]="tabService.activePane === 1" [class.drag-over]="dragOverPane === 1"
                 (dragover)="onPaneDragOver($event, 1)" (dragleave)="onPaneDragLeave(1)" (drop)="onPaneDrop($event, 1)">
 
-                <mat-tab-group id="tab-group-1" [@.disabled]="true" [(selectedIndex)]="tabService.paneTabIndices[1]"
+                <mat-tab-group id="tab-group-1" [(selectedIndex)]="tabService.paneTabIndices[1]"
                     mat-stretch-tabs="false" style="flex: 1; overflow: hidden;">
                     @for (tab of tabService.getTabsForPane(1) ; let i = $index; track tab.id) {
                     <mat-tab>

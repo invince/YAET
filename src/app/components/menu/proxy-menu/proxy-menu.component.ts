@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { listAnimation } from '../../../animations/menuAnimation';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -42,7 +43,8 @@ import { ProxyFormComponent } from './proxy-form/proxy-form.component';
     ],
     templateUrl: './proxy-menu.component.html',
     styleUrl: './proxy-menu.component.scss',
-    providers: [FilterKeywordPipe]
+    providers: [FilterKeywordPipe],
+    animations: [listAnimation]
 })
 export class ProxyMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
 

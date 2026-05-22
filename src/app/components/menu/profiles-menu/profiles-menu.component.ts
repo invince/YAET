@@ -1,5 +1,6 @@
 import {NestedTreeControl} from '@angular/cdk/tree';
 import {CommonModule} from '@angular/common';
+import {listAnimation} from '../../../animations/menuAnimation';
 import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
@@ -44,7 +45,8 @@ import {ProfileFormComponent} from '../profile-form/profile-form.component';
   ],
   templateUrl: './profiles-menu.component.html',
   styleUrl: './profiles-menu.component.scss',
-  providers: [FilterKeywordPipe]
+  providers: [FilterKeywordPipe],
+  animations: [listAnimation]
 })
 export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
 

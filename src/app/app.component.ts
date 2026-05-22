@@ -9,7 +9,7 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {NgxSpinnerModule} from 'ngx-spinner';
 import {Subscription} from 'rxjs';
-import {menuAnimation} from './animations/menuAnimation';
+import {listAnimation, menuAnimation} from './animations/menuAnimation';
 import {AiChatComponent} from './components/ai-chat/ai-chat.component';
 import {BottomToolbarComponent} from './components/bottom-toolbar/bottom-toolbar.component';
 import {FileExplorerComponent} from './components/file-explorer/file-explorer.component';
@@ -64,6 +64,7 @@ import {TabService} from './services/tab.service';
   styleUrl: './app.component.scss',
   animations: [
     menuAnimation,
+    listAnimation,
   ]
 })
 export class AppComponent implements OnInit, OnDestroy {

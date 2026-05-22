@@ -32,7 +32,7 @@
               </button>
             </div>
 
-            <div class="sidenav-content">
+            <div class="sidenav-content" [@listAnimation]="profilesCopy.profiles.length">
               @if (sideNavType=='tree') {
               <mat-tree #tree [dataSource]="treeDataSource" [treeControl]="treeControl" class="group-tree">
                 <!-- Leaf Node -->
