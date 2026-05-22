@@ -32,19 +32,17 @@
   max-width: 90vw;
   min-width: unset;
   margin: 0;
-  border-radius: 0;
-  border-top-left-radius: t.$radius-md;
-  border-bottom-left-radius: t.$radius-md;
+  border-radius: 0 t.$radius-md t.$radius-md 0;
+  overflow: hidden;
   box-shadow: t.$shadow-xl;
 }
 
 .modal-container--panel .modal-header {
-  border-top-left-radius: t.$radius-md;
-  border-top-right-radius: 0;
+  border-radius: 0 t.$radius-md 0 0;
 }
 
 .modal-container--panel .modal-footer {
-  border-bottom-left-radius: t.$radius-md;
+  border-radius: 0 0 t.$radius-md 0;
   border-bottom-right-radius: 0;
 }
 

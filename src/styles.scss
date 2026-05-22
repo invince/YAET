@@ -221,6 +221,20 @@ body {
   --mat-snack-bar-button-color: #fff;
 }
 
+.mat-mdc-form-field-error {
+  font-size: t.$font-size-xs;
+  color: t.$color-error;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mat-mdc-form-field-error::before {
+  content: '\\2022';
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }

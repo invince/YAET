@@ -25,6 +25,21 @@
   padding: 0 t.$spacing-lg;
 }
 
+@media (max-width: 960px) {
+  .profile-form {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-form-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profile-form-footer button {
+    width: 100%;
+  }
+}
+
 .profile-form-left-part,
 .profile-form-right-part {
   display: flex;
@@ -36,19 +51,18 @@
   margin-top: auto;
   padding: t.$spacing-md t.$spacing-lg;
   display: flex;
+  flex-wrap: wrap;
   gap: t.$spacing-sm;
   justify-content: flex-end;
   border-top: 1px solid var(--app-border-color);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .field {
   width: 100%;
   padding: t.$spacing-sm 0;
   margin-top: t.$spacing-md;
-}
-
-.mat-mdc-form-field-error {
-  font-size: t.$font-size-xs;
 }
 
 ::ng-deep .mat-mdc-form-field-hint {
