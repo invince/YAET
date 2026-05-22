@@ -2,7 +2,7 @@
 
 ## Description
 
-YAET is a comprehensive remote connection and management tool built with Angular and Electron. It provides a unified interface for managing remote servers, executing commands, transferring files, and accessing remote desktops - all from a single application.
+YAET is a comprehensive remote connection and management tool built with Angular and Electron. It provides a unified interface for managing remote servers, executing commands, transferring files, and accessing remote desktops — all from a single application.
 
 ## Key Features
 
@@ -10,7 +10,7 @@ YAET is a comprehensive remote connection and management tool built with Angular
 - **SSH**: Secure shell connections with key-based and password authentication
 - **Telnet**: Legacy telnet protocol support
 - **WinRM**: Windows Remote Management for PowerShell sessions
-- **Local Terminal**: Integrated local shell access
+- **Local Terminal**: Integrated local shell access (CMD, PowerShell, PowerShell 7, Bash)
 - <img width="1300" height="1000" alt="image" src="https://github.com/user-attachments/assets/25587b0e-d83e-4592-949c-4a756de1180b" />
 
 - <img width="1500" height="800" alt="屏幕截图 2026-02-15 002126" src="https://github.com/user-attachments/assets/c174bcfc-3cd9-4b49-9e57-057eead922a6" />
@@ -28,7 +28,7 @@ YAET is a comprehensive remote connection and management tool built with Angular
 
 ### ⚡ Custom Commands
 - Create your own custom commands/connections
--  <img width="1400" height="700" alt="image" src="https://github.com/user-attachments/assets/596dedb1-e11b-4b8f-af12-aa989ef010cb" />
+- <img width="1400" height="700" alt="image" src="https://github.com/user-attachments/assets/596dedb1-e11b-4b8f-af12-aa989ef010cb" />
 
 
 ### 🔐 Secrets Management
@@ -40,17 +40,18 @@ YAET is a comprehensive remote connection and management tool built with Angular
 
 
 ### ☁️ Cloud Sync
-- Synchronize profiles and settings (all encrypted via system keychain) across devices via your own git repository (could be github, gitlab, or even your own git server). We don't provide cloud sync service. All is up to you.
+- Synchronize profiles and settings (all encrypted via system keychain) across devices via your own git repository (could be GitHub, GitLab, or even your own git server). We don't provide cloud sync service. All is up to you.
 - Seamless multi-device workflow
 - <img width="500" height="500" alt="屏幕截图 2026-02-15 003612" src="https://github.com/user-attachments/assets/394e3423-1957-4bec-afeb-40b54501e7ce" />
 
 
 ### 🎨 Additional Features
 - Tabbed interface for multiple concurrent connections
-- Split-screen view for side-by-side sessions
+- Split-screen view (vertical & horizontal) for side-by-side sessions
 - Connection profiles with custom groups and tags
 - Session reconnection after network interruptions
 - Customizable themes and color schemes
+- Flat and tree view modes for profile navigation
 
 ### 🤖 AI Assistant (ACP/MCP)
 - **Agent Client Protocol (ACP)**: Deep integration with AI agents for automated tasks and terminal interactions.
@@ -153,22 +154,23 @@ npx playwright test -g "add Password Only"
 **How it works:**
 - Angular is built first (`ng build`), then Electron loads the built files
 - Each test gets a fresh Electron instance with an isolated temp directory
-- Mock keychain (`security.mock.js`) replaces the OS keychain — no system creds touched
+- Mock keychain ([`security.mock.js`](src-electron/ipc/security.mock.js)) replaces the OS keychain — no system creds touched
 - Tests run **headless** by default. Set `YAET_SHOW_WINDOW=1` for a visible window
-- CI runs e2e on every PR/push (`.github/workflows/e2e.yml`) and before each release
+- CI runs e2e on every PR/push ([`.github/workflows/e2e.yml`](.github/workflows/e2e.yml)) and before each release
 
-**Current coverage (47 tests):**
+**Current coverage (92 tests):**
 | Section | Tests | Status |
 |---------|-------|--------|
+| 0. App Bootstrap | 4 | ✅ |
 | 1. Application Startup | 7 | ✅ |
-| 2. Master Key & Secrets | 22 | ✅ |
+| 2. Master Key & Secrets | 19 | ✅ |
 | 3. Settings Menu | 29 | ✅ |
 | 4. Incompatible Settings | 4 | ✅ |
-| 5. Local Terminal | 3 | ✅ |
-| 6. UI/UX | 10 | ✅ |
-| 7. Proxy Management | 4 | ✅ |
-| 8. Cloud Settings | 4 | ✅ |
-| 4. Profiles | 4 | ✅ |
+| 5. Profiles | 11 | ✅ |
+| 6. Local Terminal | 3 | ✅ |
+| 7. UI/UX | 7 | ✅ |
+| 8. Proxy Management | 4 | ✅ |
+| 9. Cloud Settings | 4 | ✅ |
 
 See [TestPlanE2E.md](./TestPlanE2E.md) for the full test plan.
 
@@ -186,14 +188,14 @@ This creates a distributable installer in the `dist` folder.
 
 Releases are now automated via **GitHub Actions**.
 
-**Important**: You MUST manually upgrade the version in `package.json` before creating a release tag. The GitHub Action uses the version from `package.json` to build and name the release artifacts.
+**Important**: You MUST manually upgrade the version in [`package.json`](package.json) before creating a release tag. The GitHub Action uses the version from `package.json` to build and name the release artifacts.
 
-1.  **Update version**: Update the `"version"` field in `package.json`.
+1.  **Update version**: Update the `"version"` field in [`package.json`](package.json).
 2.  **Commit, Tag, and Push**:
     ```bash
     git add package.json
-    git commit -m "chore: bump version to v4.x.x"
-    git tag v4.x.x
+    git commit -m "chore: bump version to v5.x.x"
+    git tag v5.x.x
     git push && git push --tags
     ```
 
@@ -224,5 +226,3 @@ Application logs can be found at:
 - **File Transfer**: ssh2, basic-ftp, v9u-smb2
 - **Remote Desktop**: @novnc/novnc
 - **AI Integration**: Agent Client Protocol (ACP) or OpenAI provider
-
-
