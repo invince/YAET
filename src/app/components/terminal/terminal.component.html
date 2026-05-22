@@ -1,11 +1,12 @@
 <div class="terminal-container" #termContainer>
-  <div class="terminal-toolbar" *ngIf="isSsh">
+  @if (isSsh) {
+  <div class="terminal-toolbar">
     <button mat-icon-button (click)="openScpExplorer($event)" title="Open File Explorer" class="toolbar-button">
       <mat-icon>folder_open</mat-icon>
     </button>
   </div>
+  }
   <div #term id="term">
     <!-- xterm.js will insert its DOM here -->
   </div>
-  <div class="terminal-footer"></div>
 </div>

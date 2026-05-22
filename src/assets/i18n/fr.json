@@ -22,7 +22,10 @@
         "HOST_NAME": "Nom d'hôte",
         "PORT": "Port",
         "SECRET": "Secret",
-        "NONE": "Aucun"
+        "NONE": "Aucun",
+        "CLONE": "Cloner",
+        "CONNECT": "Connecter",
+        "ADD_NEW": "Ajouter nouveau..."
     },
     "SETTINGS": {
         "TITLE": "Paramètres",
@@ -82,6 +85,7 @@
     },
     "PROXY": {
         "TITLE": "Proxies",
+        "NO_RESULTS": "Aucun proxy trouvé",
         "NAME": "Nom",
         "TYPE": "Type",
         "HOST": "Hôte",
@@ -92,6 +96,7 @@
     },
     "SECRETS": {
         "TITLE": "Secrets",
+        "NO_RESULTS": "Aucun secret trouvé",
         "NAME": "Nom",
         "TYPE": "Type",
         "LOGIN": "Identifiant",
@@ -109,6 +114,7 @@
     },
     "PROFILES": {
         "TITLE": "Profils",
+        "NO_RESULTS": "Aucun profil trouvé",
         "NAME": "Nom",
         "GROUP": "Groupe",
         "TAGS": "Tags",
@@ -117,7 +123,23 @@
         "SHARE_PATH": "Chemin de partage",
         "DOMAIN": "Domaine",
         "INIT_PATH": "Chemin initial",
-        "INIT_COMMAND": "Commande initiale"
+        "INIT_COMMAND": "Commande initiale",
+        "ADD_TAG": "Ajouter un tag...",
+        "PROXY": "Proxy",
+        "SOCKS_HINT": "Seuls les proxies SOCKS sont supportés",
+        "CATEGORY": "Catégorie",
+        "CONNECTION_TYPE": "Type de connexion",
+        "DESCRIPTION": "Description",
+        "LOCAL_TERMINAL": "Terminal local",
+        "SSH_TERMINAL": "Terminal SSH",
+        "TELNET_TERMINAL": "Terminal Telnet",
+        "WIN_RM_TERMINAL": "Terminal WinRM",
+        "VNC_REMOTE_DESKTOP": "Bureau à distance VNC",
+        "RDP_REMOTE_DESKTOP": "Bureau à distance RDP",
+        "SCP_FILE_EXPLORER": "Explorateur de fichiers SCP",
+        "FTP_FILE_EXPLORER": "Explorateur de fichiers FTP",
+        "SAMBA_FILE_EXPLORER": "Explorateur de fichiers Samba",
+        "CUSTOM": "Personnalisé"
     },
     "QUICKCONNECT": {
         "TITLE": "Connexion rapide"
@@ -128,5 +150,54 @@
     },
     "DIALOGS": {
         "DELETE_MASTER_KEY_CONFIRM": "Supprimer la clé principale. Si vous continuez, tous les secrets existants seront invalides. Voulez-vous continuer ?"
+    },
+    "FTP": {
+        "SECURED": "Sécurisé"
+    },
+    "RDP": {
+        "FULL_SCREEN": "Afficher en plein écran",
+        "LOG_AS_ADMIN": "Se connecter en tant qu'administrateur"
+    },
+    "CUSTOM": {
+        "COMMAND": "Commande",
+        "EXEC_HINT": "vous pouvez utiliser $login $password dans la commande"
+    },
+    "CLOUD": {
+        "TITLE": "Synchroniser",
+        "GIT_URL": "URL Git",
+        "PROXY": "Proxy",
+        "AUTH_TYPE": "Type d'authentification",
+        "LOGIN": "Identifiant",
+        "PASSWORD": "Mot de passe",
+        "SECRET": "Secret",
+        "CHECK_ALL": "Sélectionner tout",
+        "PASSWORD_REQUIRED": "Le mot de passe est requis",
+        "SECRET_REQUIRED": "Le secret est requis",
+        "UPLOAD": "Téléverser",
+        "DOWNLOAD": "Télécharger",
+        "UPLOADED": "Téléversé",
+        "DOWNLOADED": "Téléchargé",
+        "UPLOAD_FAILED": "Échec du téléversement",
+        "DOWNLOAD_FAILED": "Échec du téléchargement",
+        "ERROR_OCCURRED": "Une erreur est survenue",
+        "SYNC_SETTING": "Paramètres",
+        "SYNC_PROFILE": "Profils",
+        "SYNC_SECRET": "Secrets",
+        "SYNC_PROXY": "Proxies"
+    },
+    "TABS": {
+        "EMPTY_STATE": "Aucun onglet ouvert. Connectez-vous à un profil ou démarrez une nouvelle connexion."
+    },
+    "SHORTCUTS": {
+        "TITLE": "Raccourcis clavier",
+        "NEW_TERMINAL": "Nouveau terminal local",
+        "CLOSE_TAB": "Fermer l'onglet",
+        "QUICK_CONNECT": "Connexion rapide",
+        "NEXT_TAB": "Onglet suivant",
+        "PREV_TAB": "Onglet précédent",
+        "TOGGLE_PROFILES": "Basculer les profils",
+        "TOGGLE_SECRETS": "Basculer les secrets",
+        "TOGGLE_SETTINGS": "Basculer les paramètres",
+        "TOGGLE_AI_CHAT": "Basculer le chat IA"
     }
 }

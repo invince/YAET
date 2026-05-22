@@ -44,6 +44,14 @@ export class NotificationService implements OnDestroy {
    this.queue(message, btnLabel, { duration: 3000},  onAction);
   }
 
+  public success(
+    message: string,
+    btnLabel: string = 'OK',
+    onAction: () => void = () => {}
+  ): void {
+   this.queue(message, btnLabel, { duration: 3000, panelClass: [ 'success-snackbar' ] },  onAction);
+  }
+
   public error(
     message: string,
     btnLabel: string = 'OK',

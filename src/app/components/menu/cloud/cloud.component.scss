@@ -1,0 +1,108 @@
+@use 'tokens' as t;
+
+.cloud-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.field-long {
+  width: 100%;
+  margin-top: t.$spacing-md;
+}
+
+.field {
+  width: 100%;
+  max-width: 400px;
+  margin-top: t.$spacing-md;
+}
+
+.small-icon {
+  height: 36px;
+  background-color: t.$color-warning;
+}
+
+mat-selection-list {
+  padding-top: t.$spacing-xs !important;
+}
+
+mat-selection-list mat-list-option {
+  height: 32px !important;
+  min-height: 32px !important;
+  font-size: t.$font-size-sm !important;
+}
+
+mat-checkbox {
+  margin: t.$spacing-sm 0 t.$spacing-xs;
+  font-size: t.$font-size-sm !important;
+}
+
+mat-checkbox .mdc-checkbox {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+mat-form-field {
+  margin-bottom: t.$spacing-xs !important;
+}
+
+::ng-deep .cloud-dialog .mat-mdc-dialog-content {
+  max-height: none;
+  overflow: hidden;
+}
+
+::ng-deep .cloud-dialog .mat-mdc-dialog-title {
+  padding: t.$spacing-md t.$spacing-2xl;
+  margin: 0;
+  font-size: t.$font-size-lg;
+  font-weight: t.$font-weight-medium;
+  background-color: var(--app-sidebar-bg-color);
+  border-bottom: 1px solid var(--app-border-color);
+}
+
+::ng-deep .cloud-dialog .mat-mdc-dialog-content {
+  padding: t.$spacing-2xl;
+  background-color: var(--app-bg-color);
+}
+
+::ng-deep .cloud-dialog .mat-mdc-dialog-actions {
+  padding: t.$spacing-md t.$spacing-2xl;
+  border-top: 1px solid var(--app-border-color);
+  background-color: var(--app-sidebar-bg-color);
+  margin: 0;
+}
+
+::ng-deep .cloud-dialog input.mat-mdc-input-element {
+  padding-left: t.$spacing-xs !important;
+  box-sizing: border-box !important;
+}
+
+::ng-deep .cloud-dialog .mat-mdc-select-value,
+::ng-deep .cloud-dialog .mat-mdc-select-trigger {
+  padding-left: t.$spacing-xs !important;
+  box-sizing: border-box !important;
+}
+
+::ng-deep .cloud-dialog .mat-mdc-select-panel {
+  background-color: var(--app-sidebar-bg-color) !important;
+  color: var(--app-text-color) !important;
+  border: 1px solid var(--app-border-color) !important;
+  border-radius: t.$radius-sm !important;
+}
+
+::ng-deep .cloud-dialog .mat-mdc-option {
+  color: var(--app-text-color) !important;
+  font-family: t.$font-family-ui !important;
+  font-size: t.$font-size-md !important;
+}
+
+::ng-deep .cloud-dialog .mat-mdc-option:hover:not(.mdc-list-item--disabled) {
+  background-color: var(--app-hover-bg-color) !important;
+}
+
+::ng-deep .cloud-dialog .mat-mdc-option.mdc-list-item--selected {
+  background-color: var(--app-active-bg-color) !important;
+}
+
+::ng-deep .cloud-dialog .mat-mdc-select-arrow svg {
+  fill: var(--app-text-color) !important;
+}

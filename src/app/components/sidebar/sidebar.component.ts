@@ -1,20 +1,23 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnDestroy } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
-import { MatIcon } from '@angular/material/icon';
-import { Subscription } from 'rxjs';
-import { MasterKeyComponent } from '../../components/dialog/master-key/master-key.component';
-import { MenuConsts } from '../../domain/MenuConsts';
-import { ProfileCategory, ProfileType } from '../../domain/profile/Profile';
-import { TabInstance } from '../../domain/TabInstance';
-import { LogService } from '../../services/log.service';
-import { MasterKeyService } from '../../services/master-key.service';
-import { ModalControllerService } from '../../services/modal-controller.service';
-import { NotificationService } from '../../services/notification.service';
-import { SessionService } from '../../services/session.service';
-import { SettingService } from '../../services/setting.service';
-import { TabService } from '../../services/tab.service';
+import {CommonModule} from '@angular/common';
+import {Component, OnDestroy} from '@angular/core';
+import {MatButtonModule} from '@angular/material/button';
+import {MatDialog} from '@angular/material/dialog';
+import {MatIcon} from '@angular/material/icon';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {Subscription} from 'rxjs';
+import {MasterKeyComponent} from '../../components/dialog/master-key/master-key.component';
+import {CloudComponent} from '../../components/menu/cloud/cloud.component';
+import {MenuConsts} from '../../domain/MenuConsts';
+import {ProfileCategory, ProfileType} from '../../domain/profile/Profile';
+import {TabInstance} from '../../domain/TabInstance';
+import {LogService} from '../../services/log.service';
+import {MasterKeyService} from '../../services/master-key.service';
+import {ModalControllerService} from '../../services/modal-controller.service';
+import {NotificationService} from '../../services/notification.service';
+import {ShortcutService} from '../../services/shortcut.service';
+import {SessionService} from '../../services/session.service';
+import {SettingService} from '../../services/setting.service';
+import {TabService} from '../../services/tab.service';
 
 @Component({
     selector: 'app-sidebar',
@@ -22,9 +25,10 @@ import { TabService } from '../../services/tab.service';
         CommonModule,
         MatButtonModule,
         MatIcon,
+        MatTooltipModule,
     ],
     templateUrl: './sidebar.component.html',
-    styleUrl: './sidebar.component.css'
+    styleUrl: './sidebar.component.scss'
 })
 export class SidebarComponent implements OnDestroy {
 
@@ -46,6 +50,7 @@ export class SidebarComponent implements OnDestroy {
         public modalControl: ModalControllerService,
         private notification: NotificationService,
         public dialog: MatDialog,
+        private shortcutService: ShortcutService,
     ) { }
 
     ngOnDestroy() {
@@ -72,7 +77,12 @@ export class SidebarComponent implements OnDestroy {
     }
 
     cloudMenu() {
-        this.requireMasterKey(() => this.toggleMenu(this.MENU_CLOUD));
+        this.requireMasterKey(() => {
+            this.dialog.open(CloudComponent, {
+                width: '650px',
+                panelClass: 'cloud-dialog',
+            });
+        });
     }
 
     proxyMenu() {
@@ -81,6 +91,10 @@ export class SidebarComponent implements OnDestroy {
 
     settingMenu() {
         this.toggleMenu(this.MENU_SETTING);
+    }
+
+    showShortcutHelp() {
+        this.shortcutService.showShortcutHelp();
     }
 
     requireMasterKey(callback: () => void) {
@@ -105,6 +119,6 @@ export class SidebarComponent implements OnDestroy {
     }
 
     toggleMenu(menu: string) {
-        this.modalControl.toggleMenu(menu);
+        this.shortcutService.toggleMenu(menu);
     }
 }

@@ -33,6 +33,7 @@ import { SecretFormMixin } from './secretFormMixin';
 })
 export class SecretFormComponent extends IsAChildForm(MenuComponent) implements OnInit {
   private _secret!: Secret;
+  @Input() saving = false;
   @Output() onSecretSave = new EventEmitter<Secret>();
   @Output() onSecretDelete = new EventEmitter<Secret>();
   @Output() onSecretCancel = new EventEmitter<Secret>();

@@ -1,5 +1,5 @@
-import { test, expect } from './fixtures';
-import { AppPage } from './app.po';
+import {expect, test} from './fixtures';
+import {AppPage} from './app.po';
 
 const PASSWORD = 'test-password';
 
@@ -31,7 +31,7 @@ test.describe('4. Profiles', () => {
   test.describe('View Modes', () => {
 
     test('toggle between flat and tree view', async ({ mainWindow }) => {
-      await mainWindow.locator('app-sidebar button[aria-label="Favorite"]').click();
+      await mainWindow.locator('app-sidebar button[aria-label="Profiles"]').click();
       await expect(mainWindow.locator('app-profiles-menu .modal-container')).toBeVisible({ timeout: 5000 });
 
       await mainWindow.locator('app-profiles-menu button[aria-label="Tree Style"]').click();
@@ -46,7 +46,7 @@ test.describe('4. Profiles', () => {
   test.describe('Profile Operations', () => {
 
     test('add SSH profile (full form)', async ({ mainWindow }) => {
-      await mainWindow.locator('app-sidebar button[aria-label="Favorite"]').click();
+      await mainWindow.locator('app-sidebar button[aria-label="Profiles"]').click();
       await expect(mainWindow.locator('app-profiles-menu .modal-container')).toBeVisible({ timeout: 5000 });
 
       await mainWindow.locator('app-profiles-menu button[aria-label="Add Profile"]').click();
@@ -61,7 +61,7 @@ test.describe('4. Profiles', () => {
     });
 
     test('saved SSH profile fields persist after reopen', async ({ mainWindow }) => {
-      await mainWindow.locator('app-sidebar button[aria-label="Favorite"]').click();
+      await mainWindow.locator('app-sidebar button[aria-label="Profiles"]').click();
       await expect(mainWindow.locator('app-profiles-menu .modal-container')).toBeVisible({ timeout: 5000 });
 
       await mainWindow.locator('app-profiles-menu button[aria-label="Add Profile"]').click();
@@ -90,7 +90,7 @@ test.describe('4. Profiles', () => {
     });
 
     test('clone profile creates a copy with Clone suffix', async ({ mainWindow }) => {
-      await mainWindow.locator('app-sidebar button[aria-label="Favorite"]').click();
+      await mainWindow.locator('app-sidebar button[aria-label="Profiles"]').click();
       await expect(mainWindow.locator('app-profiles-menu .modal-container')).toBeVisible({ timeout: 5000 });
 
       await mainWindow.locator('app-profiles-menu button[aria-label="Add Profile"]').click();
@@ -118,7 +118,7 @@ test.describe('4. Profiles', () => {
     });
 
     test('clicking tag field without changes does not dirty form', async ({ mainWindow }) => {
-      await mainWindow.locator('app-sidebar button[aria-label="Favorite"]').click();
+      await mainWindow.locator('app-sidebar button[aria-label="Profiles"]').click();
       await expect(mainWindow.locator('app-profiles-menu .modal-container')).toBeVisible({ timeout: 5000 });
 
       // Add first profile
@@ -153,7 +153,7 @@ test.describe('4. Profiles', () => {
     });
 
     test('delete profile with confirmation', async ({ mainWindow }) => {
-      await mainWindow.locator('app-sidebar button[aria-label="Favorite"]').click();
+      await mainWindow.locator('app-sidebar button[aria-label="Profiles"]').click();
       await expect(mainWindow.locator('app-profiles-menu .modal-container')).toBeVisible({ timeout: 5000 });
 
       await mainWindow.locator('app-profiles-menu button[aria-label="Add Profile"]').click();
@@ -191,7 +191,7 @@ test.describe('4. Profiles', () => {
   test.describe('Quick Connect', () => {
 
     test('quick connect form opens and renders fields', async ({ mainWindow }) => {
-      await mainWindow.locator('app-sidebar button[aria-label="Add Profile"]').click();
+      await mainWindow.locator('app-sidebar button[aria-label="Quick Connect"]').click();
       await expect(mainWindow.locator('app-quickconnect-menu .modal-container')).toBeVisible({ timeout: 5000 });
 
       await expect(mainWindow.locator('app-profile-form input[formControlName="name"]')).toBeVisible();
@@ -203,7 +203,7 @@ test.describe('4. Profiles', () => {
   test.describe('Secrets with Profiles', () => {
 
     test('quick-add secret from profile form dropdown', async ({ mainWindow }) => {
-      await mainWindow.locator('app-sidebar button[aria-label="Favorite"]').click();
+      await mainWindow.locator('app-sidebar button[aria-label="Profiles"]').click();
       await expect(mainWindow.locator('app-profiles-menu .modal-container')).toBeVisible({ timeout: 5000 });
 
       await mainWindow.locator('app-profiles-menu button[aria-label="Add Profile"]').click();
@@ -253,15 +253,6 @@ test.describe('4. Profiles', () => {
       // Quick-add dialog should close
       await expect(mainWindow.locator('app-secret-quick-form')).not.toBeVisible({ timeout: 3000 });
 
-      // Verify secret was saved by checking the secret storage
-      const savedName = await mainWindow.evaluate(() => {
-        // Access the secret service through window.__ngContext__
-        const appRoot = document.querySelector('app-root');
-        if (!appRoot) return null;
-        // Use the preload IPC to request a reload, then check
-        return null; // can't easily access Angular services
-      });
-
       // As a proxy, verify no error toasts appeared
       const hasErrorToast = await mainWindow.locator('.mat-mdc-snack-bar-container').count();
       expect(hasErrorToast).toBe(0);
@@ -269,7 +260,7 @@ test.describe('4. Profiles', () => {
 
     test('delete secret clears profile reference', async ({ mainWindow }) => {
       // Step 1: Create a secret via secrets menu
-      await mainWindow.locator('app-sidebar button[aria-label="Save"]').click();
+      await mainWindow.locator('app-sidebar button[aria-label="Secrets"]').click();
       await expect(mainWindow.locator('app-secrets-menu .modal-container')).toBeVisible({ timeout: 5000 });
 
       await mainWindow.locator('app-secrets-menu button[aria-label="Add Secret"]').click();
@@ -282,7 +273,7 @@ test.describe('4. Profiles', () => {
       await mainWindow.waitForTimeout(500);
 
       // Step 2: Create SSH profile that references the secret
-      await mainWindow.locator('app-sidebar button[aria-label="Favorite"]').click();
+      await mainWindow.locator('app-sidebar button[aria-label="Profiles"]').click();
       await expect(mainWindow.locator('app-profiles-menu .modal-container')).toBeVisible({ timeout: 5000 });
 
       await mainWindow.locator('app-profiles-menu button[aria-label="Add Profile"]').click();
@@ -303,7 +294,7 @@ test.describe('4. Profiles', () => {
       await mainWindow.waitForTimeout(500);
 
       // Step 3: Delete the secret
-      await mainWindow.locator('app-sidebar button[aria-label="Save"]').click();
+      await mainWindow.locator('app-sidebar button[aria-label="Secrets"]').click();
       await expect(mainWindow.locator('app-secrets-menu .modal-container')).toBeVisible({ timeout: 5000 });
 
       // The secret list may need a moment to render
@@ -322,7 +313,7 @@ test.describe('4. Profiles', () => {
       await mainWindow.waitForTimeout(500);
 
       // Step 4: Verify profile reference is cleared
-      await mainWindow.locator('app-sidebar button[aria-label="Favorite"]').click();
+      await mainWindow.locator('app-sidebar button[aria-label="Profiles"]').click();
       await expect(mainWindow.locator('app-profiles-menu .modal-container')).toBeVisible({ timeout: 5000 });
 
       await mainWindow.waitForTimeout(300);
@@ -352,7 +343,7 @@ test.describe('4. Profiles', () => {
       await mainWindow.waitForTimeout(300);
 
       // Step 2: Create SSH profile with this tag
-      await mainWindow.locator('app-sidebar button[aria-label="Favorite"]').click();
+      await mainWindow.locator('app-sidebar button[aria-label="Profiles"]').click();
       await expect(mainWindow.locator('app-profiles-menu .modal-container')).toBeVisible({ timeout: 5000 });
       await mainWindow.locator('app-profiles-menu button[aria-label="Add Profile"]').click();
       await mainWindow.waitForTimeout(300);
@@ -390,7 +381,7 @@ test.describe('4. Profiles', () => {
       await mainWindow.waitForTimeout(300);
 
       // Step 4: Verify profile tag reference is cleared
-      await mainWindow.locator('app-sidebar button[aria-label="Favorite"]').click();
+      await mainWindow.locator('app-sidebar button[aria-label="Profiles"]').click();
       await expect(mainWindow.locator('app-profiles-menu .modal-container')).toBeVisible({ timeout: 5000 });
       await mainWindow.waitForTimeout(300);
 
@@ -414,7 +405,7 @@ test.describe('4. Profiles', () => {
       await mainWindow.waitForTimeout(300);
 
       // Step 2: Create SSH profile assigned to that group
-      await mainWindow.locator('app-sidebar button[aria-label="Favorite"]').click();
+      await mainWindow.locator('app-sidebar button[aria-label="Profiles"]').click();
       await expect(mainWindow.locator('app-profiles-menu .modal-container')).toBeVisible({ timeout: 5000 });
       await mainWindow.locator('app-profiles-menu button[aria-label="Add Profile"]').click();
       await mainWindow.waitForTimeout(300);
@@ -441,7 +432,7 @@ test.describe('4. Profiles', () => {
       await mainWindow.waitForTimeout(300);
 
       // Step 4: Verify profile group is cleared (moved to default)
-      await mainWindow.locator('app-sidebar button[aria-label="Favorite"]').click();
+      await mainWindow.locator('app-sidebar button[aria-label="Profiles"]').click();
       await expect(mainWindow.locator('app-profiles-menu .modal-container')).toBeVisible({ timeout: 5000 });
       await mainWindow.waitForTimeout(300);
 

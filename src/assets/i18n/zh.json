@@ -22,7 +22,10 @@
         "HOST_NAME": "主机名",
         "PORT": "端口",
         "SECRET": "密钥",
-        "NONE": "无"
+        "NONE": "无",
+        "CLONE": "克隆",
+        "CONNECT": "连接",
+        "ADD_NEW": "添加新项..."
     },
     "SETTINGS": {
         "TITLE": "设置",
@@ -82,6 +85,7 @@
     },
     "PROXY": {
         "TITLE": "代理",
+        "NO_RESULTS": "未找到代理",
         "NAME": "名称",
         "TYPE": "类型",
         "HOST": "主机",
@@ -92,6 +96,7 @@
     },
     "SECRETS": {
         "TITLE": "密钥",
+        "NO_RESULTS": "未找到密钥",
         "NAME": "名称",
         "TYPE": "类型",
         "LOGIN": "登录名",
@@ -109,6 +114,7 @@
     },
     "PROFILES": {
         "TITLE": "配置文件",
+        "NO_RESULTS": "未找到配置文件",
         "NAME": "名称",
         "GROUP": "组",
         "TAGS": "标签",
@@ -117,7 +123,23 @@
         "SHARE_PATH": "共享路径",
         "DOMAIN": "域",
         "INIT_PATH": "初始路径",
-        "INIT_COMMAND": "初始命令"
+        "INIT_COMMAND": "初始命令",
+        "ADD_TAG": "添加标签...",
+        "PROXY": "代理",
+        "SOCKS_HINT": "仅支持 SOCKS 代理",
+        "CATEGORY": "类别",
+        "CONNECTION_TYPE": "连接类型",
+        "DESCRIPTION": "描述",
+        "LOCAL_TERMINAL": "本地终端",
+        "SSH_TERMINAL": "SSH 终端",
+        "TELNET_TERMINAL": "Telnet 终端",
+        "WIN_RM_TERMINAL": "WinRM 终端",
+        "VNC_REMOTE_DESKTOP": "VNC 远程桌面",
+        "RDP_REMOTE_DESKTOP": "RDP 远程桌面",
+        "SCP_FILE_EXPLORER": "SCP 文件浏览器",
+        "FTP_FILE_EXPLORER": "FTP 文件浏览器",
+        "SAMBA_FILE_EXPLORER": "Samba 文件浏览器",
+        "CUSTOM": "自定义"
     },
     "QUICKCONNECT": {
         "TITLE": "快速连接"
@@ -128,5 +150,54 @@
     },
     "DIALOGS": {
         "DELETE_MASTER_KEY_CONFIRM": "删除主密钥，如果继续，所有现有密钥将失效。您要继续吗？"
+    },
+    "FTP": {
+        "SECURED": "安全连接"
+    },
+    "RDP": {
+        "FULL_SCREEN": "全屏显示",
+        "LOG_AS_ADMIN": "以管理员身份登录"
+    },
+    "CUSTOM": {
+        "COMMAND": "命令",
+        "EXEC_HINT": "您可以在命令中使用 $login $password"
+    },
+    "CLOUD": {
+        "TITLE": "同步",
+        "GIT_URL": "Git URL",
+        "PROXY": "代理",
+        "AUTH_TYPE": "认证类型",
+        "LOGIN": "登录名",
+        "PASSWORD": "密码",
+        "SECRET": "密钥",
+        "CHECK_ALL": "全选",
+        "PASSWORD_REQUIRED": "密码为必填项",
+        "SECRET_REQUIRED": "密钥为必填项",
+        "UPLOAD": "上传",
+        "DOWNLOAD": "下载",
+        "UPLOADED": "已上传",
+        "DOWNLOADED": "已下载",
+        "UPLOAD_FAILED": "上传失败",
+        "DOWNLOAD_FAILED": "下载失败",
+        "ERROR_OCCURRED": "发生错误",
+        "SYNC_SETTING": "设置",
+        "SYNC_PROFILE": "配置文件",
+        "SYNC_SECRET": "密钥",
+        "SYNC_PROXY": "代理"
+    },
+    "TABS": {
+        "EMPTY_STATE": "没有打开的标签页。连接配置文件或开始新连接以开始使用。"
+    },
+    "SHORTCUTS": {
+        "TITLE": "键盘快捷键",
+        "NEW_TERMINAL": "新建本地终端",
+        "CLOSE_TAB": "关闭当前标签",
+        "QUICK_CONNECT": "快速连接",
+        "NEXT_TAB": "下一个标签",
+        "PREV_TAB": "上一个标签",
+        "TOGGLE_PROFILES": "切换配置文件",
+        "TOGGLE_SECRETS": "切换密钥",
+        "TOGGLE_SETTINGS": "切换设置",
+        "TOGGLE_AI_CHAT": "切换 AI 聊天"
     }
 }

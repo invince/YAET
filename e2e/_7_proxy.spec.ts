@@ -1,5 +1,5 @@
-import { test, expect } from './fixtures';
-import { AppPage } from './app.po';
+import {expect, test} from './fixtures';
+import {AppPage} from './app.po';
 
 const PASSWORD = 'test-password';
 
@@ -12,12 +12,12 @@ test.describe('7. Proxy Management', () => {
   });
 
   test('open proxy menu from sidebar', async ({ mainWindow }) => {
-    await mainWindow.locator('app-sidebar button[aria-label="Proxy"]').click();
+    await mainWindow.locator('app-sidebar button[aria-label="Proxies"]').click();
     await expect(mainWindow.locator('app-proxy-menu .modal-container')).toBeVisible({ timeout: 5000 });
   });
 
   test('add proxy', async ({ mainWindow }) => {
-    await mainWindow.locator('app-sidebar button[aria-label="Proxy"]').click();
+    await mainWindow.locator('app-sidebar button[aria-label="Proxies"]').click();
     await expect(mainWindow.locator('app-proxy-menu .modal-container')).toBeVisible({ timeout: 5000 });
 
     await mainWindow.locator('app-proxy-menu button[aria-label="Add Proxy"]').click();
@@ -35,7 +35,7 @@ test.describe('7. Proxy Management', () => {
   });
 
   test('edit proxy name', async ({ mainWindow }) => {
-    await mainWindow.locator('app-sidebar button[aria-label="Proxy"]').click();
+    await mainWindow.locator('app-sidebar button[aria-label="Proxies"]').click();
     await expect(mainWindow.locator('app-proxy-menu .modal-container')).toBeVisible({ timeout: 5000 });
 
     await mainWindow.locator('app-proxy-menu button[aria-label="Add Proxy"]').click();
@@ -55,7 +55,7 @@ test.describe('7. Proxy Management', () => {
   });
 
   test('delete proxy with confirmation', async ({ mainWindow }) => {
-    await mainWindow.locator('app-sidebar button[aria-label="Proxy"]').click();
+    await mainWindow.locator('app-sidebar button[aria-label="Proxies"]').click();
     await expect(mainWindow.locator('app-proxy-menu .modal-container')).toBeVisible({ timeout: 5000 });
 
     await mainWindow.locator('app-proxy-menu button[aria-label="Add Proxy"]').click();

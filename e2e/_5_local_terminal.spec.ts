@@ -19,7 +19,7 @@ test.describe('5. Local Terminal (UI only)', () => {
   test.describe('sidebar button opens terminal', () => {
 
     test('clicking Add Local Terminal button opens a tab', async ({ mainWindow }) => {
-      const btn = mainWindow.locator('app-sidebar button[aria-label="Add Local Terminal"]');
+      const btn = mainWindow.locator('app-sidebar button[aria-label="Local Terminal"]');
       await expect(btn).toBeVisible();
 
       const tabLabels = mainWindow.locator('.mat-mdc-tab-labels .mat-mdc-tab');
@@ -74,7 +74,7 @@ test.describe('5. Local Terminal (UI only)', () => {
       await mainWindow.waitForTimeout(300);
 
       // Now click local terminal button — should still open a tab
-      await mainWindow.locator('app-sidebar button[aria-label="Add Local Terminal"]').click();
+      await mainWindow.locator('app-sidebar button[aria-label="Local Terminal"]').click();
       await mainWindow.waitForTimeout(1000);
 
       const tabLabels = mainWindow.locator('.mat-mdc-tab-labels .mat-mdc-tab');

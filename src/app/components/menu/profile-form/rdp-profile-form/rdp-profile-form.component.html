@@ -1,6 +1,6 @@
 <div [formGroup]="form">
   <mat-form-field class="field">
-    <mat-label>Host Name</mat-label>
+    <mat-label>{{ 'COMMON.HOST_NAME' | translate }}</mat-label>
     <input matInput type="text" formControlName="host" required/>
     @if (form.get('host')?.value) {
     <button
@@ -13,9 +13,9 @@
     }
   </mat-form-field>
 
-  <mat-slide-toggle formControlName="fullScreen">Show in full screen</mat-slide-toggle>
+  <mat-slide-toggle formControlName="fullScreen">{{ 'RDP.FULL_SCREEN' | translate }}</mat-slide-toggle>
   <br>
   <br>
-  <mat-slide-toggle formControlName="asAdmin">Log As Admin</mat-slide-toggle>
+  <mat-slide-toggle formControlName="asAdmin">{{ 'RDP.LOG_AS_ADMIN' | translate }}</mat-slide-toggle>
 
 </div>

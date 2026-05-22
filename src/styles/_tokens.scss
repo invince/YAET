@@ -1,0 +1,169 @@
+// ============================================================
+// YAET Design Tokens
+// Centralized SCSS variables for colors, spacing, typography, etc.
+// ============================================================
+
+// ============================================================
+// Color Tokens - Dark Theme (default)
+// ============================================================
+$color-bg-dark: #1e1e1e;
+$color-surface-dark: #252526;
+$color-surface-elevated-dark: #2d2d2d;
+$color-sidebar-dark: #252526;
+$color-border-dark: #696969;
+$color-border-light-dark: #6e6e6e;
+$color-text-dark: #e0e0e0;
+$color-text-secondary-dark: #aaa;
+$color-text-muted-dark: #949494;
+$color-header-text-dark: #fff;
+$color-hover-dark: #2a2d2e;
+$color-active-dark: #37373d;
+$color-modal-header-dark: #3a3a3a;
+$color-modal-content-dark: #2a2a2a;
+$color-scrollbar-dark: #6e6e6e;
+$color-scrollbar-hover-dark: #7e7e7e;
+
+// ============================================================
+// Color Tokens - Light Theme
+// ============================================================
+$color-bg-light: #fafafa;
+$color-surface-light: #ffffff;
+$color-surface-elevated-light: #f5f5f5;
+$color-sidebar-light: #f5f5f5;
+$color-border-light: #8e8e8e;
+$color-border-lighter-light: #969696;
+$color-text-light: rgba(0, 0, 0, 0.87);
+$color-text-secondary-light: rgba(0, 0, 0, 0.6);
+$color-text-muted-light: rgba(0, 0, 0, 0.54);
+$color-header-text-light: rgba(0, 0, 0, 0.87);
+$color-hover-light: #e0e0e0;
+$color-active-light: #d5d5d5;
+$color-modal-header-light: #e0e0e0;
+$color-modal-content-light: #f5f5f5;
+$color-scrollbar-light: #8a8a8a;
+$color-scrollbar-hover-light: #7a7a7a;
+
+// ============================================================
+// Accent & State Colors
+// ============================================================
+$color-accent: #007acc;
+$color-accent-hover: #1565c0;
+$color-accent-light: #4fc3f7;
+$color-error: #f44336;
+$color-error-hover: #d32f2f;
+$color-success: #4caf50;
+$color-warning: #ff9800;
+
+// ============================================================
+// Semantic Color Maps (for theme switching)
+// ============================================================
+$dark-theme-colors: (
+  'bg': $color-bg-dark,
+  'surface': $color-surface-dark,
+  'surface-elevated': $color-surface-elevated-dark,
+  'sidebar': $color-sidebar-dark,
+  'border': $color-border-dark,
+  'border-light': $color-border-light-dark,
+  'text': $color-text-dark,
+  'text-secondary': $color-text-secondary-dark,
+  'text-muted': $color-text-muted-dark,
+  'header-text': $color-header-text-dark,
+  'hover': $color-hover-dark,
+  'active': $color-active-dark,
+  'modal-header': $color-modal-header-dark,
+  'modal-content': $color-modal-content-dark,
+  'scrollbar': $color-scrollbar-dark,
+  'scrollbar-hover': $color-scrollbar-hover-dark,
+);
+
+$light-theme-colors: (
+  'bg': $color-bg-light,
+  'surface': $color-surface-light,
+  'surface-elevated': $color-surface-elevated-light,
+  'sidebar': $color-sidebar-light,
+  'border': $color-border-light,
+  'border-light': $color-border-lighter-light,
+  'text': $color-text-light,
+  'text-secondary': $color-text-secondary-light,
+  'text-muted': $color-text-muted-light,
+  'header-text': $color-header-text-light,
+  'hover': $color-hover-light,
+  'active': $color-active-light,
+  'modal-header': $color-modal-header-light,
+  'modal-content': $color-modal-content-light,
+  'scrollbar': $color-scrollbar-light,
+  'scrollbar-hover': $color-scrollbar-hover-light,
+);
+
+// ============================================================
+// Spacing Tokens
+// ============================================================
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 12px;
+$spacing-lg: 16px;
+$spacing-xl: 24px;
+$spacing-2xl: 32px;
+$spacing-3xl: 40px;
+
+// ============================================================
+// Border Radius Tokens
+// ============================================================
+$radius-sm: 4px;
+$radius-md: 8px;
+$radius-lg: 12px;
+$radius-xl: 16px;
+$radius-full: 50%;
+
+// ============================================================
+// Shadow Tokens
+// ============================================================
+$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+$shadow-md: 0 4px 10px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+$shadow-xl: 0 10px 30px rgba(0, 0, 0, 0.5);
+
+// ============================================================
+// Typography Tokens
+// ============================================================
+$font-family-base: Roboto, "Helvetica Neue", sans-serif;
+$font-family-ui: 'Segoe UI', sans-serif;
+$font-family-mono: "Cascadia Code", Menlo, monospace;
+
+$font-size-xs: 11px;
+$font-size-sm: 13px;
+$font-size-md: 14px;
+$font-size-lg: 16px;
+$font-size-xl: 18px;
+$font-size-2xl: 24px;
+
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// ============================================================
+// Layout Tokens
+// ============================================================
+$sidebar-width: 50px;
+$settings-sidebar-width: 220px;
+$modal-header-height: 36px;
+$bottom-toolbar-height: 48px;
+$sidebar-button-size: 40px;
+
+// ============================================================
+// Transition Tokens
+// ============================================================
+$transition-fast: 0.15s;
+$transition-normal: 0.2s;
+$transition-slow: 0.3s;
+$transition-slower: 0.5s;
+
+// ============================================================
+// Z-Index Tokens
+// ============================================================
+$z-dropdown: 100;
+$z-sticky: 200;
+$z-overlay: 1000;
+$z-modal: 1000;
+$z-toast: 1100;

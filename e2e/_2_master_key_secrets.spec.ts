@@ -1,5 +1,5 @@
-import { test, expect } from './fixtures';
-import { AppPage } from './app.po';
+import {expect, test} from './fixtures';
+import {AppPage} from './app.po';
 
 const PASSWORD = 'test-password';
 const NEW_PASSWORD = 'new-password';
@@ -11,7 +11,7 @@ test.describe('2. Master Key & Secrets', () => {
     test('guarded button shows snackbar prompting to set master key', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
 
-      await app.guardedButton('Add Profile').click();
+      await app.guardedButton('Quick Connect').click();
       await expect(app.snackbar).toBeVisible({ timeout: 5000 });
       await expect(app.snackbar).toContainText(/Master key/i);
 
@@ -48,7 +48,7 @@ test.describe('2. Master Key & Secrets', () => {
     test('UI: set master key for first time', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
 
-      await app.guardedButton('Add Profile').click();
+      await app.guardedButton('Quick Connect').click();
       await app.snackbarAction('Set it').click();
       await expect(app.masterKeyDialog).toBeVisible({ timeout: 3000 });
 
@@ -147,13 +147,13 @@ test.describe('2. Master Key & Secrets', () => {
     test('guarded buttons work after master key is set', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
 
-      await app.guardedButton('Save').click();
+      await app.guardedButton('Secrets').click();
       await expect(app.snackbar).toBeVisible({ timeout: 5000 });
 
       await app.invoke('masterkey.save', PASSWORD);
       await mainWindow.waitForTimeout(1000);
 
-      await app.guardedButton('Save').click();
+      await app.guardedButton('Secrets').click();
       await expect(app.secretsMenuContainer).toBeVisible({ timeout: 5000 });
     });
 
@@ -170,7 +170,7 @@ test.describe('2. Master Key & Secrets', () => {
     test('add Password Only secret', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
 
-      await app.guardedButton('Save').click();
+      await app.guardedButton('Secrets').click();
       await expect(app.secretsMenuContainer).toBeVisible({ timeout: 5000 });
       await app.secretsAddButton.click();
 
@@ -186,7 +186,7 @@ test.describe('2. Master Key & Secrets', () => {
     test('add Login + Password secret', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
 
-      await app.guardedButton('Save').click();
+      await app.guardedButton('Secrets').click();
       await expect(app.secretsMenuContainer).toBeVisible({ timeout: 5000 });
       await app.secretsAddButton.click();
 
@@ -202,13 +202,13 @@ test.describe('2. Master Key & Secrets', () => {
     test('add SSH Key secret', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
 
-      await app.guardedButton('Save').click();
+      await app.guardedButton('Secrets').click();
       await expect(app.secretsMenuContainer).toBeVisible({ timeout: 5000 });
       await app.secretsAddButton.click();
 
       await app.secretInput('name').fill('MySSHKey');
       await app.selectSecretType('SSH_KEY');
-      await app.secretInput('login').fill('user1');
+      await app.secretInput('login').fill('sshuser');
       await app.secretKeyTextarea.fill('-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----');
       await app.secretInput('passphrase').fill('keyphrase123');
       await app.secretsSaveBtn.click();
@@ -219,9 +219,8 @@ test.describe('2. Master Key & Secrets', () => {
     test('duplicate secret name shows error', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
 
-      await app.guardedButton('Save').click();
+      await app.guardedButton('Secrets').click();
       await expect(app.secretsMenuContainer).toBeVisible({ timeout: 5000 });
-
       await app.secretsAddButton.click();
       await app.selectSecretType('PASSWORD_ONLY');
       await app.secretInput('name').fill('DupTest');
@@ -241,7 +240,7 @@ test.describe('2. Master Key & Secrets', () => {
     test('switch between secrets without modification shows no errors', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
 
-      await app.guardedButton('Save').click();
+      await app.guardedButton('Secrets').click();
       await expect(app.secretsMenuContainer).toBeVisible({ timeout: 5000 });
 
       await app.secretsAddButton.click();
@@ -289,7 +288,7 @@ test.describe('2. Master Key & Secrets', () => {
     test('edit secret rename', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
 
-      await app.guardedButton('Save').click();
+      await app.guardedButton('Secrets').click();
       await expect(app.secretsMenuContainer).toBeVisible({ timeout: 5000 });
 
       await app.secretsAddButton.click();
@@ -310,7 +309,7 @@ test.describe('2. Master Key & Secrets', () => {
     test('edit secret: rename to existing name shows duplicate error', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
 
-      await app.guardedButton('Save').click();
+      await app.guardedButton('Secrets').click();
       await expect(app.secretsMenuContainer).toBeVisible({ timeout: 5000 });
 
       await app.secretsAddButton.click();
@@ -342,7 +341,7 @@ test.describe('2. Master Key & Secrets', () => {
     test('saved secret fields persist after reopen', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
 
-      await app.guardedButton('Save').click();
+      await app.guardedButton('Secrets').click();
       await expect(app.secretsMenuContainer).toBeVisible({ timeout: 5000 });
 
       await app.secretsAddButton.click();
@@ -363,7 +362,7 @@ test.describe('2. Master Key & Secrets', () => {
     test('edit secret: change type preserves appropriate fields', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
 
-      await app.guardedButton('Save').click();
+      await app.guardedButton('Secrets').click();
       await expect(app.secretsMenuContainer).toBeVisible({ timeout: 5000 });
 
       await app.secretsAddButton.click();
@@ -396,7 +395,7 @@ test.describe('2. Master Key & Secrets', () => {
     test('icons displayed correctly in secrets list', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
 
-      await app.guardedButton('Save').click();
+      await app.guardedButton('Secrets').click();
       await expect(app.secretsMenuContainer).toBeVisible({ timeout: 5000 });
 
       // Add PASSWORD_ONLY → icon should be 'password'
@@ -439,7 +438,7 @@ test.describe('2. Master Key & Secrets', () => {
     test('delete secret', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
 
-      await app.guardedButton('Save').click();
+      await app.guardedButton('Secrets').click();
       await expect(app.secretsMenuContainer).toBeVisible({ timeout: 5000 });
 
       await app.secretsAddButton.click();

@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { EmptyStateComponent } from '../../empty-state/empty-state.component';
+import { listAnimation } from '../../../animations/menuAnimation';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -38,11 +40,13 @@ import { ProxyFormComponent } from './proxy-form/proxy-form.component';
         MatIcon,
         FilterKeywordPipe,
         ProxyFormComponent,
-        TranslateModule
+        TranslateModule,
+        EmptyStateComponent
     ],
     templateUrl: './proxy-menu.component.html',
     styleUrl: './proxy-menu.component.scss',
-    providers: [FilterKeywordPipe]
+    providers: [FilterKeywordPipe],
+    animations: [listAnimation]
 })
 export class ProxyMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
 
@@ -50,6 +54,7 @@ export class ProxyMenuComponent extends HasChildForm(MenuComponent) implements O
     selectedProxy!: Proxy | undefined;
     subscriptions: Subscription[] = [];
     filter!: string;
+    savingProxy = false;
 
     proxiesCopy!: Proxies;
 
@@ -131,8 +136,16 @@ export class ProxyMenuComponent extends HasChildForm(MenuComponent) implements O
     }
 
     async onSaveOne($event: Proxy) {
-        this.proxyService.updateOne($event);
-        await this.commitChange();
+        this.savingProxy = true;
+        try {
+            this.proxyService.updateOne($event);
+            await this.commitChange();
+            this.notification.success('Proxy saved');
+        } catch {
+            this.notification.error('Failed to save proxy');
+        } finally {
+            this.savingProxy = false;
+        }
     }
 
     onCancel($event: Proxy) {

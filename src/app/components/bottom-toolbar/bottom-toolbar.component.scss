@@ -1,0 +1,11 @@
+@use 'tokens' as t;
+
+.bottom-toolbar {
+  height: t.$bottom-toolbar-height;
+  min-height: t.$bottom-toolbar-height;
+  padding: 0 t.$spacing-lg;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}

@@ -1,5 +1,7 @@
 import {NestedTreeControl} from '@angular/cdk/tree';
 import {CommonModule} from '@angular/common';
+import {EmptyStateComponent} from '../../empty-state/empty-state.component';
+import {listAnimation} from '../../../animations/menuAnimation';
 import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
@@ -40,16 +42,19 @@ import {ProfileFormComponent} from '../profile-form/profile-form.component';
     MatIcon,
     ProfileFormComponent,
     FilterKeywordPipe,
-    TranslateModule
+    TranslateModule,
+    EmptyStateComponent
   ],
   templateUrl: './profiles-menu.component.html',
   styleUrl: './profiles-menu.component.scss',
-  providers: [FilterKeywordPipe]
+  providers: [FilterKeywordPipe],
+  animations: [listAnimation]
 })
 export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
 
   selectedProfileId: string | undefined;
   selectedProfile: Profile | undefined;
+  savingProfile = false;
 
   profilesCopy!: Profiles;
 
@@ -174,10 +179,17 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
   }
 
   async onSaveOne($event: Profile) {
+    this.savingProfile = true;
     this.profilesCopy.update($event);
-    await this.commitChange();
-    this.notification.info('Profile saved');
-    this.refreshForm();
+    try {
+      await this.commitChange();
+      this.notification.success('Profile saved');
+    } catch {
+      this.notification.error('Failed to save profile');
+    } finally {
+      this.savingProfile = false;
+      this.refreshForm();
+    }
   }
 
   onCancel($event: Profile) {
@@ -262,6 +274,16 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
       this.keywordPipe.transform(this.profilesCopy.profiles, this.keywordsProviders, this.filter),
       false,
       true);
+  }
+
+  hasFilteredResults(): boolean {
+    if (!this.profilesCopy?.profiles) return false;
+    if (!this.filter) return this.profilesCopy.profiles.length > 0;
+    return this.keywordPipe.transform(this.profilesCopy.profiles, this.keywordsProviders, this.filter).length > 0;
+  }
+
+  hasTreeFilteredResults(): boolean {
+    return this.hasFilteredResults();
   }
 
   hasChild(_: number, node: GroupNode): boolean {

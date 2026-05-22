@@ -1,98 +1,193 @@
+@use 'tokens' as t;
 
 /* Overall modal container */
 .modal-container {
   position: fixed;
   top: 0;
+  left: 0;
+  width: 100%;
   height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: t.$z-modal;
   overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+}
+
+/* Panel variant - slides in from the left */
+.modal-container--panel {
+  justify-content: flex-start;
+  align-items: stretch;
+  backdrop-filter: none;
+  left: 50px;
+  width: calc(100% - 50px);
+}
+
+.modal-container--panel .modal {
+  width: auto;
+  height: 100%;
+  max-height: 100vh;
+  max-width: 90vw;
+  min-width: unset;
+  margin: 0;
+  border-radius: 0 t.$radius-md t.$radius-md 0;
+  overflow: hidden;
+  box-shadow: t.$shadow-xl;
+}
+
+.modal-container--panel .modal-header {
+  border-radius: 0 t.$radius-md 0 0;
+}
+
+.modal-container--panel .modal-footer {
+  border-radius: 0 0 t.$radius-md 0;
+  border-bottom-right-radius: 0;
 }
 
 /* Modal window */
 .modal {
-  background-color: #fff;
-  border-radius: 8px;
-  width: 100%;
+  background-color: var(--app-bg-color);
+  border-radius: t.$radius-md;
+  width: auto;
   height: 100%;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  max-width: 920px;
+  max-height: 85vh;
+  min-width: 500px;
+  box-shadow: t.$shadow-lg;
   display: flex;
   flex-direction: column;
+  margin: t.$spacing-lg;
 }
 
 /* Header section */
 .modal-header {
-  padding: 10px;
-  background-color: #A9A9A9;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+  padding: t.$spacing-sm t.$spacing-md;
+  background-color: var(--app-sidebar-bg-color);
+  border-top-left-radius: t.$radius-md;
+  border-top-right-radius: t.$radius-md;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 36px;
+  height: t.$modal-header-height;
+  border-bottom: 1px solid var(--app-border-color);
+  flex-shrink: 0;
 }
-
 
 .modal-header h3 {
   margin: 0;
-  font-size: 16px;
-  color: dimgrey;
+  font-size: t.$font-size-lg;
+  color: var(--app-header-text-color);
+  opacity: 0.9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Close button in the header */
-.modal-header button {
-  background: none;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
-  color: dimgrey;
-  transition: color 0.3s;
+.modal-header .modal-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: t.$radius-sm;
+  color: var(--app-text-color);
+  opacity: 0.6;
+  transition: opacity t.$transition-normal, background-color t.$transition-normal;
+  flex-shrink: 0;
 }
 
-.modal-header button:hover {
-  color: #f44336; /* Red on hover */
+.modal-header .modal-close-btn:hover {
+  opacity: 1;
+  background-color: rgba(128, 128, 128, 0.2);
+}
+
+.modal-header .modal-close-btn .mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
 }
 
 /* Content section */
 .modal-content {
-  padding: 16px;
+  padding: t.$spacing-md;
   overflow-y: auto;
-  flex-grow: 1;  /* This makes the content area take up remaining space */
-  background-color: #696969;
+  flex-grow: 1;
+  background-color: var(--app-bg-color);
+  color: var(--app-text-color);
 }
 
 /* Footer section */
 .modal-footer {
-  padding: 10px;
-  background-color: #A9A9A9;
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
+  padding: t.$spacing-sm t.$spacing-md;
+  background-color: var(--app-sidebar-bg-color);
+  border-bottom-left-radius: t.$radius-md;
+  border-bottom-right-radius: t.$radius-md;
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: t.$spacing-lg;
+  border-top: 1px solid var(--app-border-color);
+  flex-shrink: 0;
 }
 
 /* Footer buttons */
 .modal-footer button {
-  padding: 8px 16px;
+  padding: t.$spacing-sm t.$spacing-lg;
   border: none;
-  background-color: #1976d2; /* Blue color */
+  background-color: t.$color-accent;
   color: white;
-  border-radius: 4px;
+  border-radius: t.$radius-sm;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color t.$transition-normal;
 }
 
 .modal-footer button:hover {
-  background-color: #1565c0; /* Darker blue on hover */
+  background-color: t.$color-accent-hover;
 }
 
 .modal-footer button.cancel {
-  background-color: #f44336; /* Red for Cancel */
+  background-color: t.$color-error;
 }
 
 .modal-footer button.cancel:hover {
-  background-color: #d32f2f; /* Darker red on hover */
+  background-color: t.$color-error-hover;
+}
+
+/* Responsive: small screens */
+@media (max-width: 640px) {
+  .modal-container {
+    align-items: flex-start;
+    backdrop-filter: none;
+  }
+
+  .modal {
+    max-width: 100%;
+    max-height: 100%;
+    min-width: unset;
+    margin: 0;
+    border-radius: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .modal-container--panel {
+    align-items: stretch;
+    left: 0;
+    width: 100%;
+  }
+
+  .modal-container--panel .modal {
+    border-radius: 0;
+    max-width: 100%;
+  }
+
+  .modal-container--panel .modal-header {
+    border-radius: 0;
+  }
+
+  .modal-container--panel .modal-footer {
+    border-radius: 0;
+  }
 }

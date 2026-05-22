@@ -11,6 +11,7 @@ import {
 import {ChildFormAsFormControl} from '../../../EnhancedFormMixin';
 import {MenuComponent} from '../../menu.component';
 import {CommonModule} from '@angular/common';
+import {TranslateModule} from '@ngx-translate/core';
 import {MatSelectChange, MatSelectModule} from '@angular/material/select';
 import {MatRadioChange, MatRadioModule} from '@angular/material/radio';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -37,6 +38,7 @@ import {clearAuthFields, passwordMatchValidator} from '../../../../utils/Passwor
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
+        TranslateModule,
         MatSelectModule,
         MatRadioModule,
         MatFormFieldModule,
@@ -45,7 +47,7 @@ import {clearAuthFields, passwordMatchValidator} from '../../../../utils/Passwor
         MatIconButton,
     ],
     templateUrl: './vnc-profile-form.component.html',
-    styleUrl: './vnc-profile-form.component.css',
+    styleUrl: './vnc-profile-form.component.scss',
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,

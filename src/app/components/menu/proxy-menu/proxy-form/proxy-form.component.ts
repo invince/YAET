@@ -36,6 +36,7 @@ import { ProxyFormMixin } from './proxyFormMixin';
 export class ProxyFormComponent extends IsAChildForm(MenuComponent) implements OnInit {
   private _proxy!: Proxy;
 
+  @Input() saving = false;
   @Output() onProxySave = new EventEmitter<Proxy>();
   @Output() onProxyDelete = new EventEmitter<Proxy>();
   @Output() onProxyCancel = new EventEmitter<Proxy>();

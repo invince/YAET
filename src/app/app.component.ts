@@ -5,14 +5,14 @@ import {MatDialog} from '@angular/material/dialog';
 import {MatIcon} from '@angular/material/icon';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatTabsModule} from '@angular/material/tabs';
-import {TranslateService} from '@ngx-translate/core';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {NgxSpinnerModule} from 'ngx-spinner';
 import {Subscription} from 'rxjs';
-import {menuAnimation} from './animations/menuAnimation';
+import {listAnimation, menuAnimation} from './animations/menuAnimation';
 import {AiChatComponent} from './components/ai-chat/ai-chat.component';
 import {BottomToolbarComponent} from './components/bottom-toolbar/bottom-toolbar.component';
 import {FileExplorerComponent} from './components/file-explorer/file-explorer.component';
-import {CloudComponent} from './components/menu/cloud/cloud.component';
 import {ProfilesMenuComponent} from './components/menu/profiles-menu/profiles-menu.component';
 import {ProxyMenuComponent} from './components/menu/proxy-menu/proxy-menu.component';
 import {QuickconnectMenuComponent} from "./components/menu/quickconnect-menu/quickconnect-menu.component";
@@ -26,6 +26,7 @@ import {Profile, ProfileCategory, ProfileType} from './domain/profile/Profile';
 import {TabInstance} from './domain/TabInstance';
 import {CloudService} from './services/cloud.service';
 import {LogService} from './services/log.service';
+import {ShortcutService} from './services/shortcut.service';
 import {MasterKeyService} from './services/master-key.service';
 import {ModalControllerService} from './services/modal-controller.service';
 import {NotificationService} from './services/notification.service';
@@ -54,15 +55,17 @@ import {TabService} from './services/tab.service';
     ProxyMenuComponent,
     ProfilesMenuComponent,
     QuickconnectMenuComponent,
-    CloudComponent,
     SidebarComponent,
     BottomToolbarComponent,
     AiChatComponent,
+    MatTooltipModule,
+    TranslateModule,
   ],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css',
+  styleUrl: './app.component.scss',
   animations: [
     menuAnimation,
+    listAnimation,
   ]
 })
 export class AppComponent implements OnInit, OnDestroy {
@@ -80,7 +83,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   settingInitialized = false;
 
-  // Drag and drop state
+  // Drag and drop state for pane-level (split mode)
   draggedTab: { tab: TabInstance, index: number, paneId: number } | null = null;
   dragOverPane: number | null = null;
 
@@ -106,9 +109,11 @@ export class AppComponent implements OnInit, OnDestroy {
     @Inject(DOCUMENT) private document: Document,
     private renderer: Renderer2,
     private ngZone: NgZone,
+    private shortcut: ShortcutService,
   ) { }
 
   ngOnInit() {
+    this.shortcut.init();
     this.subscriptions.push(
       this.profileService.connectionEvent$.subscribe(
         profile => {
@@ -160,6 +165,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscriptions.forEach(one => one.unsubscribe());
+    this.shortcut.destroy();
   }
 
   allSettingLoaded() {
@@ -214,7 +220,6 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Only allow drop if dragging to different pane
     if (this.draggedTab.paneId !== paneId) {
       event.preventDefault();
       if (event.dataTransfer) {
@@ -237,7 +242,6 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Move tab to target pane
     if (this.draggedTab.paneId !== targetPaneId) {
       this.tabService.moveTabToPane(this.draggedTab.tab, targetPaneId);
     }

@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { EmptyStateComponent } from '../../empty-state/empty-state.component';
+import { listAnimation } from '../../../animations/menuAnimation';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -39,11 +41,13 @@ import { SecretFormComponent } from './secret-form/secret-form.component';
     MatDialogModule,
     SecretFormComponent,
     FilterKeywordPipe,
-    TranslateModule
+    TranslateModule,
+    EmptyStateComponent
   ],
   templateUrl: './secrets-menu.component.html',
   styleUrl: './secrets-menu.component.scss',
-  providers: [FilterKeywordPipe]
+  providers: [FilterKeywordPipe],
+  animations: [listAnimation]
 })
 export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements OnInit, OnDestroy {
 
@@ -51,6 +55,7 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
   selectedSecret!: Secret | undefined;
   subscriptions: Subscription[] = [];
   filter!: string;
+  savingSecret = false;
 
   secretsCopy!: Secrets;
 
@@ -162,9 +167,16 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
   }
 
   async onSaveOne($event: Secret) {
-    this.secretService.updateOne($event);
-    await this.commitChange();
-    // this.refreshSecretForm();
+    this.savingSecret = true;
+    try {
+      this.secretService.updateOne($event);
+      await this.commitChange();
+      this.notification.success('Secret saved');
+    } catch {
+      this.notification.error('Failed to save secret');
+    } finally {
+      this.savingSecret = false;
+    }
   }
 
   onCancel($event: Secret) {

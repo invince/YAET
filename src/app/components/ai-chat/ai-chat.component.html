@@ -1,5 +1,8 @@
-<div class="chat-container" [class.open]="aiChatService.isOpen$ | async">
-  <div class="chat-header">
+<div class="chat-container" [class.open]="aiChatService.isOpen$ | async"
+    [class.dragging]="isDragging"
+    [style.left.px]="position?.x" [style.top.px]="position?.y"
+    [style.width.px]="size.w" [style.height.px]="size.h">
+  <div class="chat-header" (mousedown)="onHeaderMouseDown($event)">
     <div class="header-left" (click)="toggleHistoryDropdown($event)">
       <mat-icon>smart_toy</mat-icon>
       <span class="session-name">{{ currentSessionName }}</span>
@@ -49,16 +52,24 @@
   <div class="chat-messages" #scrollMe [scrollTop]="scrollMe.scrollHeight">
     @for (msg of messages; track msg) {
     <div class="message" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'" [class.system]="msg.role === 'system'">
+      <div class="message-header">
+        <mat-icon class="message-avatar">{{ msg.role === 'user' ? 'person' : 'smart_toy' }}</mat-icon>
+        <span class="message-role">{{ msg.role === 'user' ? 'You' : 'AI' }}</span>
+      </div>
       <div class="message-content" [innerHTML]="parseMarkdown(msg.content)"></div>
     </div>
     }
     @if (isLoading) {
     <div class="message assistant">
-      <div class="message-content" style="display: flex; align-items: center; gap: 8px;">
+      <div class="message-content">
         @if (messages.length === 0 || messages[messages.length-1].role !== 'assistant' || messages[messages.length-1].content === '') {
-          <mat-spinner diameter="20"></mat-spinner>
+        <div class="typing-indicator">
+          <span class="typing-dot"></span>
+          <span class="typing-dot"></span>
+          <span class="typing-dot"></span>
+        </div>
         }
-        <button mat-icon-button (click)="stop()" title="Stop Generation" style="color: #ff5252;">
+        <button mat-icon-button (click)="stop()" title="Stop Generation" class="stop-btn">
           <mat-icon>stop_circle</mat-icon>
         </button>
       </div>
@@ -74,4 +85,6 @@
       </button>
     </mat-form-field>
   </div>
+  <div class="resize-handle resize-handle-se" (mousedown)="onResizeMouseDown($event, 'se')"></div>
+  <div class="resize-handle resize-handle-nw" (mousedown)="onResizeMouseDown($event, 'nw')"></div>
 </div>

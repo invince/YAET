@@ -1,59 +1,94 @@
+@use 'tokens' as t;
+
 .chat-container {
   position: fixed;
   bottom: 60px;
   right: 20px;
   width: 350px;
   height: 500px;
-  background: #1e1e1e;
-  border: 1px solid #333;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  background: var(--app-bg-color);
+  border: 1px solid var(--app-border-color);
+  border-radius: t.$radius-lg;
+  box-shadow: t.$shadow-xl;
   display: flex;
   flex-direction: column;
-  z-index: 1000;
-  transform: translateY(20px);
+  z-index: t.$z-modal;
   opacity: 0;
   pointer-events: none;
-  transition: all 0.3s ease;
+  transition: opacity t.$transition-slow ease, box-shadow t.$transition-slow ease;
+  color: var(--app-text-color);
 
   &.open {
-    transform: translateY(0);
     opacity: 1;
     pointer-events: auto;
+  }
+
+  &.dragging {
+    transition: none;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+  }
+
+  // Ensure all icons and text inherit proper colors
+  mat-icon {
+    color: inherit;
+  }
+
+  // Style Material components for theme compatibility
+  ::ng-deep .mat-mdc-icon-button {
+    --mdc-icon-button-icon-color: var(--app-text-color);
+    --mdc-icon-button-hover-icon-color: var(--app-header-text-color);
+  }
+
+  ::ng-deep .mat-mdc-slide-toggle {
+    --mdc-switch-selected-focus-state-layer-color: var(--mat-sys-primary);
+    --mdc-switch-selected-hover-state-layer-color: var(--mat-sys-primary);
+    --mdc-switch-selected-pressed-state-layer-color: var(--mat-sys-primary);
+    --mdc-switch-selected-focus-track-color: var(--mat-sys-primary);
+    --mdc-switch-selected-hover-track-color: var(--mat-sys-primary);
+    --mdc-switch-selected-pressed-track-color: var(--mat-sys-primary);
+    --mdc-switch-selected-track-color: var(--mat-sys-primary);
+  }
+
+  ::ng-deep .mat-mdc-progress-spinner {
+    .mdc-circular-progress__determinate-circle,
+    .mdc-circular-progress__indeterminate-circle-graphic {
+      stroke: var(--mat-sys-primary);
+    }
   }
 }
 
 .chat-header {
-  padding: 8px 12px;
-  background: #252526;
-  border-bottom: 1px solid #333;
+  padding: t.$spacing-sm t.$spacing-md;
+  cursor: grab;
+  background: var(--app-sidebar-bg-color);
+  border-bottom: 1px solid var(--app-border-color);
+  border-radius: t.$radius-lg t.$radius-lg 0 0;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  border-radius: 12px 12px 0 0;
   position: relative;
   min-height: 44px;
 
   .header-left {
     display: flex;
     align-items: center;
-    gap: 4px;
-    font-weight: 500;
-    color: #ccc;
+    gap: t.$spacing-xs;
+    font-weight: t.$font-weight-medium;
+    color: var(--app-text-color);
     cursor: pointer;
     user-select: none;
     padding: 2px 6px;
-    border-radius: 4px;
-    transition: background 0.15s;
+    border-radius: t.$radius-sm;
+    transition: background t.$transition-fast;
     justify-self: start;
-    &:hover { background: #333; }
+    &:hover { background: var(--app-hover-bg-color); }
     mat-icon { font-size: 20px; width: 20px; height: 20px; }
     .session-name {
       max-width: 120px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      font-size: 13px;
+      font-size: t.$font-size-sm;
     }
     .dropdown-arrow {
       font-size: 18px;
@@ -69,14 +104,14 @@
   }
 
   .close-btn {
-    mat-icon { color: #aaa; }
-    &:hover mat-icon { color: #fff; }
+    mat-icon { color: var(--app-text-color); opacity: 0.7; }
+    &:hover mat-icon { color: var(--app-header-text-color); opacity: 1; }
   }
 
   .header-right {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: t.$spacing-sm;
     justify-self: end;
   }
 
@@ -89,7 +124,8 @@
       font-size: 16px;
       width: 16px;
       height: 16px;
-      color: #888;
+      color: var(--app-text-color);
+      opacity: 0.7;
     }
   }
 }
@@ -97,32 +133,54 @@
 .history-dropdown {
   position: absolute;
   top: 100%;
-  left: 4px;
-  width: calc(100% - 8px);
+  left: t.$spacing-xs;
+  width: calc(100% - #{t.$spacing-sm * 2});
   max-height: 280px;
   overflow-y: auto;
-  background: #2d2d2d;
-  border: 1px solid #444;
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-  z-index: 1001;
-  padding: 4px 0;
+  background: var(--app-surface-elevated);
+  border: 1px solid var(--app-border-color);
+  border-radius: t.$radius-md;
+  box-shadow: t.$shadow-xl;
+  z-index: t.$z-overlay;
+  padding: t.$spacing-xs 0;
+  animation: dropdown-in 0.15s ease-out;
 
-  &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-thumb { background: #555; border-radius: 2px; }
+  &::-webkit-scrollbar { width: 5px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: var(--app-border-color); border-radius: 3px; }
+  &::-webkit-scrollbar-thumb:hover { background: var(--app-text-muted); }
+}
+
+@keyframes dropdown-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .history-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: t.$spacing-sm;
+  padding: t.$spacing-sm t.$spacing-md;
   cursor: pointer;
-  transition: background 0.15s;
-  color: #ccc;
-  font-size: 13px;
-  &:hover { background: #3a3a3a; }
-  &.active { background: #3a3a3a; color: #fff; }
+  transition: background t.$transition-fast;
+  color: var(--app-text-color);
+  font-size: t.$font-size-sm;
+  position: relative;
+  &:hover { background: var(--app-hover-bg-color); }
+  &.active {
+    background: var(--app-active-bg-color);
+    color: var(--app-header-text-color);
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 4px;
+      bottom: 4px;
+      width: 3px;
+      background: t.$color-accent;
+      border-radius: 0 2px 2px 0;
+    }
+  }
 
   .history-item-info {
     flex: 1;
@@ -133,83 +191,119 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    max-width: 180px;
   }
 
   .history-item-time {
-    font-size: 11px;
-    color: #888;
+    font-size: t.$font-size-xs;
+    color: var(--app-text-color);
+    opacity: 0.6;
     margin-top: 2px;
   }
 
   .rename-input {
     width: 100%;
     padding: 2px 4px;
-    font-size: 13px;
-    background: #1e1e1e;
-    border: 1px solid #007acc;
-    border-radius: 3px;
-    color: #fff;
+    font-size: t.$font-size-sm;
+    background: var(--app-bg-color);
+    border: 1px solid t.$color-accent;
+    border-radius: t.$radius-sm;
+    color: var(--app-text-color);
     outline: none;
     box-sizing: border-box;
   }
 
   .history-item-delete {
     opacity: 0;
-    transition: opacity 0.15s;
+    transition: opacity t.$transition-fast;
     width: 24px;
     height: 24px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     padding: 0;
-    mat-icon { font-size: 14px; width: 14px; height: 14px; color: #888; }
-    &:hover mat-icon { color: #ff5252; }
+    mat-icon { font-size: 14px; width: 14px; height: 14px; color: var(--app-text-color); opacity: 0.5; }
+    &:hover mat-icon { color: t.$color-error; opacity: 1; }
   }
   &:hover .history-item-delete { opacity: 1; }
 
   &.new-chat-item {
-    color: #4fc3f7;
+    color: t.$color-accent-light;
     mat-icon { font-size: 18px; width: 18px; height: 18px; }
+    &:hover { background: var(--app-hover-bg-color); }
   }
 }
 
 .history-divider {
   height: 1px;
-  background: #444;
-  margin: 4px 0;
+  background: var(--app-border-color);
+  margin: t.$spacing-xs 0;
 }
 
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: t.$spacing-lg;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: t.$spacing-md;
 
   &::-webkit-scrollbar { width: 6px; }
-  &::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+  &::-webkit-scrollbar-thumb { background: var(--app-border-color); border-radius: t.$radius-sm; }
 }
 
 .message {
   max-width: 85%;
-  padding: 8px 12px;
-  border-radius: 12px;
-  font-size: 14px;
+  padding: 0;
+  border-radius: t.$radius-lg;
+  font-size: t.$font-size-md;
   line-height: 1.4;
+  box-shadow: t.$shadow-sm;
+
+  .message-header {
+    display: flex;
+    align-items: center;
+    gap: t.$spacing-xs;
+    padding: t.$spacing-sm t.$spacing-md 0;
+
+    .message-avatar {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+      line-height: 14px;
+    }
+
+    .message-role {
+      font-size: t.$font-size-xs;
+      font-weight: t.$font-weight-semibold;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      opacity: 0.7;
+    }
+  }
+
+  .message-content {
+    word-break: break-word;
+    color: inherit;
+  }
 
   &.user {
     align-self: flex-end;
-    background: #007acc;
+    background: t.$color-accent;
     color: white;
-    border-bottom-right-radius: 2px;
+    border-bottom-right-radius: t.$radius-sm;
+
+    .message-header .message-role { color: rgba(255,255,255,0.75); }
   }
 
   &.assistant {
     align-self: flex-start;
-    background: #333;
-    color: #ddd;
-    border-bottom-left-radius: 2px;
+    max-width: 100%;
+    background: var(--app-surface-elevated);
+    color: var(--app-text-color);
+    border-bottom-left-radius: t.$radius-sm;
+
+    .message-header .message-role { color: var(--app-text-secondary); }
   }
 
   &.system {
@@ -217,28 +311,68 @@
   }
 }
 
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 0;
+}
+
+.typing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--app-text-color);
+  opacity: 0.4;
+  animation: typing-bounce 1.6s ease-in-out infinite;
+
+  &:nth-child(1) { animation-delay: 0s; }
+  &:nth-child(2) { animation-delay: 0.3s; }
+  &:nth-child(3) { animation-delay: 0.6s; }
+}
+
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-6px); opacity: 0.9; }
+}
+
 .chat-input-area {
-  padding: 8px 16px 16px 16px;
-  background: #252526;
-  border-top: 1px solid #333;
-  border-radius: 0 0 12px 12px;
+  padding: t.$spacing-sm t.$spacing-lg t.$spacing-lg t.$spacing-lg;
+  background: var(--app-sidebar-bg-color);
+  border-top: 1px solid var(--app-border-color);
+  border-radius: 0 0 t.$radius-lg t.$radius-lg;
 }
 
 .chat-input {
   width: 100%;
   ::ng-deep .mat-mdc-text-field-wrapper {
-    background-color: #1e1e1e !important;
-    padding-left: 12px !important;
-    padding-right: 12px !important;
+    background-color: var(--app-bg-color) !important;
+    padding-left: t.$spacing-md !important;
+    padding-right: t.$spacing-md !important;
+  }
+  ::ng-deep .mat-mdc-form-field-infix {
+    color: var(--app-text-color) !important;
+  }
+  ::ng-deep .mat-mdc-input-element {
+    color: var(--app-text-color) !important;
+  }
+  ::ng-deep .mat-mdc-form-field-label {
+    color: var(--app-text-color) !important;
+    opacity: 0.6;
   }
 }
 
 .message-content {
+  padding: 2px t.$spacing-md t.$spacing-sm;
   word-break: break-word;
+  color: inherit;
+  user-select: text;
 
   ::ng-deep {
+    * { user-select: text; }
+
     p {
-      margin: 8px 0;
+      margin: t.$spacing-sm 0;
       &:first-child { margin-top: 0; }
       &:last-child { margin-bottom: 0; }
     }
@@ -246,31 +380,65 @@
     code {
       background: rgba(0, 0, 0, 0.3);
       padding: 2px 4px;
-      border-radius: 4px;
-      font-family: 'Cascadia Code', 'Consolas', monospace;
+      border-radius: t.$radius-sm;
+      font-family: t.$font-family-mono;
       font-size: 0.9em;
+      color: inherit;
+    }
+
+    .code-block {
+      position: relative;
+      margin: t.$spacing-sm 0;
+
+      &:hover .code-copy-btn {
+        opacity: 0.8;
+      }
+    }
+
+    .code-copy-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.15s;
+      background: var(--app-bg-color);
+      border: 1px solid var(--app-border-color);
+      color: var(--app-text-color);
+      cursor: pointer;
+      padding: 2px 8px;
+      border-radius: t.$radius-sm;
+      font-size: 11px;
+      line-height: 1.4;
+      font-family: inherit;
+
+      &:hover {
+        opacity: 1;
+        background: var(--app-hover-bg-color);
+      }
     }
 
     pre {
       background: rgba(0, 0, 0, 0.5);
-      padding: 10px;
-      border-radius: 6px;
+      padding: t.$spacing-md;
+      border-radius: t.$radius-md;
       overflow-x: auto;
-      margin: 8px 0;
+      margin: 0;
 
       code {
         background: transparent;
         padding: 0;
+        color: inherit;
       }
     }
 
     ul, ol {
-      margin: 8px 0;
+      margin: t.$spacing-sm 0;
       padding-left: 20px;
     }
 
     li {
-      margin: 4px 0;
+      margin: t.$spacing-xs 0;
     }
 
     a {
@@ -282,4 +450,58 @@
 
 ::ng-deep .mat-mdc-form-field-subscript-wrapper {
   display: none;
+}
+
+.stop-btn {
+  mat-icon {
+    color: t.$color-error;
+  }
+  &:hover mat-icon {
+    color: t.$color-error-hover;
+  }
+}
+
+.resize-handle {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  z-index: 2;
+
+  &::after {
+    content: '';
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0.4;
+    transition: opacity t.$transition-fast;
+  }
+
+  &:hover::after { opacity: 0.8; }
+
+  &.resize-handle-se {
+    bottom: 0;
+    right: 0;
+    &::after {
+      bottom: 3px;
+      right: 3px;
+      border-right: 1px solid var(--app-text-color);
+      border-bottom: 1px solid var(--app-text-color);
+      border-left: 7px solid transparent;
+      border-top: 7px solid transparent;
+    }
+  }
+
+  &.resize-handle-nw {
+    top: 0;
+    left: 0;
+    &::after {
+      top: 3px;
+      left: 3px;
+      border-top: 1px solid var(--app-text-color);
+      border-left: 1px solid var(--app-text-color);
+      border-right: 7px solid transparent;
+      border-bottom: 7px solid transparent;
+    }
+  }
 }

@@ -1,119 +1,108 @@
-<div class="modal-container">
-  <div class="modal">
-    <div class="modal-header">
-      <h3>Sync</h3>
-      <button mat-icon-button (click)="close()">
+<h2 mat-dialog-title>{{ 'CLOUD.TITLE' | translate }}</h2>
+<div mat-dialog-content>
+  <div class="cloud-form" [formGroup]="form">
+    <mat-form-field class="field-long" appearance="outline">
+      <mat-label>{{ 'CLOUD.GIT_URL' | translate }}</mat-label>
+      <input matInput type="text" formControlName="url" required />
+      @if (form.get('url')?.value) {
+      <button matSuffix mat-icon-button aria-label="Clear" (click)="clear(form,'url')">
         <mat-icon>close</mat-icon>
       </button>
-    </div>
+      }
+    </mat-form-field>
 
-    <div class="modal-content">
-      <div class="cloud-form" [formGroup]="form">
-        <mat-form-field class="field-long">
-          <mat-label>Git URl</mat-label>
-          <input matInput type="text" formControlName="url" required />
-          @if (form.get('url')?.value) {
-          <button matSuffix mat-icon-button aria-label="Clear" (click)="clear(form,'url')">
-            <mat-icon>close</mat-icon>
-          </button>
-          }
-        </mat-form-field>
-
-        <mat-form-field class="field">
-          <mat-label>Proxy</mat-label>
-          <mat-select formControlName="proxyId">
-            <mat-option></mat-option>
-            @for (proxy of proxyStorage.dataCopy.proxies; track proxy.id) {
-            <mat-option [value]="proxy.id">{{ proxy.name }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-
-        <mat-radio-group class="field" aria-label="Auth Type" formControlName="authType" required>
-          @for (oneType of AUTH_OPTIONS | keyvalue : unordered; track oneType.value) {
-          <mat-radio-button [value]="oneType.value">{{ oneType.value }}</mat-radio-button>
-          }
-        </mat-radio-group>
-
-        @switch (form.get('authType')?.value) {
-        @case (AUTH_OPTIONS.LOGIN) {
-        <mat-form-field class="field" required>
-          <mat-label>Login</mat-label>
-          <input matInput type="text" formControlName="login" />
-          @if (form.get('login')?.value) {
-          <button matSuffix mat-icon-button aria-label="Clear" (click)="clear(form,'login')">
-            <mat-icon>close</mat-icon>
-          </button>
-          }
-        </mat-form-field>
-
-        <mat-form-field class="field" required>
-          <mat-label>Password</mat-label>
-          <input matInput type="password" formControlName="password" />
-        </mat-form-field>
-
+    <mat-form-field class="field" appearance="outline">
+      <mat-label>{{ 'CLOUD.PROXY' | translate }}</mat-label>
+      <mat-select formControlName="proxyId">
+        <mat-option></mat-option>
+        @for (proxy of proxyStorage.dataCopy.proxies; track proxy.id) {
+        <mat-option [value]="proxy.id">{{ proxy.name }}</mat-option>
         }
+      </mat-select>
+    </mat-form-field>
 
-        @case (AUTH_OPTIONS.SECRET) {
-        <mat-form-field class="field" required>
-          <mat-label>Secret</mat-label>
-          <mat-select (selectionChange)="onSelectSecret($event)" formControlName="secretId">
-            <mat-option (click)="quickCreateSecret()">
-              <mat-icon>add</mat-icon>
-              Add New...
-            </mat-option>
-            @for (oneSecret of filterSecret(); track oneSecret.id) {
-            <mat-option [value]="oneSecret.id">
-              @if (oneSecret.icon) {
-              <mat-icon>{{oneSecret.icon}}</mat-icon>
-              }
-              {{ secretService.displaySecretOptionName(oneSecret) }}
-            </mat-option>
-            }
-          </mat-select>
-          @if (form.get('secretId')?.value) {
-          <button matSuffix mat-icon-button aria-label="Clear" (click)="clear(form,'secretId')">
-            <mat-icon>close</mat-icon>
-          </button>
-          }
-        </mat-form-field>
-        }
-        }
-        <!-- Check All -->
-        <mat-checkbox (change)="toggleAll($event)" [checked]="allSelected" [indeterminate]="indeterminateState">
-          Check All
-        </mat-checkbox>
+    <mat-radio-group class="field" [attr.aria-label]="'CLOUD.AUTH_TYPE' | translate" formControlName="authType" required>
+      @for (oneType of AUTH_OPTIONS | keyvalue : unordered; track oneType.value) {
+      <mat-radio-button [value]="oneType.value">{{ translateAuthType(oneType.value) }}</mat-radio-button>
+      }
+    </mat-radio-group>
 
-        <mat-selection-list formControlName="items">
-          @for (item of SYNC_ITEMS; track item) {
-          <mat-list-option [value]="item" togglePosition='before'>
-            {{ item }}
-          </mat-list-option>
-          }
-        </mat-selection-list>
-        @if (form.hasError('passwordRequired')) {
-        <mat-error>
-          Password is required
-        </mat-error>
-        }
-        @if (form.hasError('secretRequired')) {
-        <mat-error>
-          Secret is required
-        </mat-error>
-        }
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button mat-button (click)="close()">Cancel</button>
-      <button mat-fab extended (click)="upload()" class="small-icon" [disabled]="form.invalid || processing">
-        <mat-icon>cloud_upload</mat-icon>
-        Upload
+    @switch (form.get('authType')?.value) {
+    @case (AUTH_OPTIONS.LOGIN) {
+        <mat-form-field class="field" appearance="outline" required>
+          <mat-label>{{ 'CLOUD.LOGIN' | translate }}</mat-label>
+      <input matInput type="text" formControlName="login" />
+      @if (form.get('login')?.value) {
+      <button matSuffix mat-icon-button aria-label="Clear" (click)="clear(form,'login')">
+        <mat-icon>close</mat-icon>
       </button>
-      <button mat-fab extended (click)="download()" class="small-icon" [disabled]="form.invalid || processing">
-        <mat-icon>cloud_download</mat-icon>
-        Download
+      }
+    </mat-form-field>
+
+        <mat-form-field class="field" appearance="outline" required>
+          <mat-label>{{ 'CLOUD.PASSWORD' | translate }}</mat-label>
+      <input matInput type="password" formControlName="password" />
+    </mat-form-field>
+
+    }
+
+    @case (AUTH_OPTIONS.SECRET) {
+        <mat-form-field class="field" appearance="outline" required>
+          <mat-label>{{ 'CLOUD.SECRET' | translate }}</mat-label>
+      <mat-select (selectionChange)="onSelectSecret($event)" formControlName="secretId">
+        <mat-option (click)="quickCreateSecret()">
+          <mat-icon>add</mat-icon>
+          {{ 'COMMON.ADD_NEW' | translate }}
+        </mat-option>
+        @for (oneSecret of filterSecret(); track oneSecret.id) {
+        <mat-option [value]="oneSecret.id">
+          @if (oneSecret.icon) {
+          <mat-icon>{{oneSecret.icon}}</mat-icon>
+          }
+          {{ secretService.displaySecretOptionName(oneSecret) }}
+        </mat-option>
+        }
+      </mat-select>
+      @if (form.get('secretId')?.value) {
+      <button matSuffix mat-icon-button aria-label="Clear" (click)="clear(form,'secretId')">
+        <mat-icon>close</mat-icon>
       </button>
-    </div>
+      }
+    </mat-form-field>
+    }
+    }
+    <mat-checkbox (change)="toggleAll($event)" [checked]="allSelected" [indeterminate]="indeterminateState">
+      {{ 'CLOUD.CHECK_ALL' | translate }}
+    </mat-checkbox>
+
+    <mat-selection-list formControlName="items">
+      @for (item of SYNC_ITEMS; track item) {
+      <mat-list-option [value]="item" togglePosition='before'>
+        {{ ('CLOUD.SYNC_' + item.toUpperCase()) | translate }}
+      </mat-list-option>
+      }
+    </mat-selection-list>
+    @if (form.hasError('passwordRequired')) {
+    <mat-error>
+      {{ 'CLOUD.PASSWORD_REQUIRED' | translate }}
+    </mat-error>
+    }
+    @if (form.hasError('secretRequired')) {
+    <mat-error>
+      {{ 'CLOUD.SECRET_REQUIRED' | translate }}
+    </mat-error>
+    }
   </div>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="close()">{{ 'COMMON.CANCEL' | translate }}</button>
+  <button mat-fab extended (click)="upload()" class="small-icon" [disabled]="form.invalid || processing">
+    <mat-icon>cloud_upload</mat-icon>
+    {{ 'CLOUD.UPLOAD' | translate }}
+  </button>
+  <button mat-fab extended (click)="download()" class="small-icon" [disabled]="form.invalid || processing">
+    <mat-icon>cloud_download</mat-icon>
+    {{ 'CLOUD.DOWNLOAD' | translate }}
+  </button>
 </div>

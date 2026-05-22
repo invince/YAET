@@ -1,3 +1,5 @@
+@use 'tokens' as t;
+
 :host {
     display: block;
     height: 100%;
@@ -9,18 +11,18 @@
     flex-direction: column;
     height: 100%;
     position: relative;
-    background-color: #1e1e1e;
-    color: #e0e0e0;
-    overflow: hidden; 
-    min-height: 0; // Also helpful if nested in flex
+    background-color: var(--app-bg-color);
+    color: var(--app-text-color);
+    overflow: hidden;
+    min-height: 0;
 }
 
 .toolbar {
     display: flex;
     align-items: center;
-    padding: 8px 16px;
-    background-color: #2d2d2d;
-    border-bottom: 1px solid #424242;
+    padding: t.$spacing-sm t.$spacing-lg;
+    background-color: var(--app-surface-elevated);
+    border-bottom: 1px solid var(--app-border-light);
     flex-shrink: 0;
     position: sticky;
     top: 0;
@@ -28,62 +30,62 @@
 
     .path-breadcrumb {
         flex: 1;
-        margin-left: 16px;
-        font-family: monospace;
-        font-size: 14px;
-        color: #bdbdbd;
+        margin-left: t.$spacing-lg;
+        font-family: t.$font-family-mono;
+        font-size: t.$font-size-md;
+        color: var(--app-text-secondary);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         cursor: pointer;
 
         &:hover {
-            color: #e0e0e0;
+            color: var(--app-text-color);
         }
     }
 
     .path-input-container {
         flex: 1;
-        margin-left: 16px;
+        margin-left: t.$spacing-lg;
         display: flex;
         align-items: center;
-        background-color: #1e1e1e;
-        border: 1px solid #424242;
-        border-radius: 4px;
-        padding-left: 4px;
+        background-color: var(--app-bg-color);
+        border: 1px solid var(--app-border-light);
+        border-radius: t.$radius-sm;
+        padding-left: t.$spacing-xs;
 
         &:focus-within {
-            border-color: #3f51b5;
+            border-color: var(--mat-sys-primary);
         }
 
         .favorite-button {
             width: 32px;
             height: 32px;
-            padding: 4px;
-            margin-right: 4px;
-            
+            padding: t.$spacing-xs;
+            margin-right: t.$spacing-xs;
+
             .mat-icon {
                 font-size: 20px;
                 width: 20px;
                 height: 20px;
                 line-height: 20px;
-                color: #bdbdbd;
-                transition: color 0.2s;
+                color: var(--app-text-secondary);
+                transition: color t.$transition-normal;
 
                 &.is-favorite {
-                    color: #ffc107;
+                    color: t.$color-warning;
                 }
             }
         }
 
         .path-input {
             flex: 1;
-            font-family: monospace;
-            font-size: 14px;
+            font-family: t.$font-family-mono;
+            font-size: t.$font-size-md;
             background-color: transparent;
-            color: #e0e0e0;
+            color: var(--app-text-color);
             border: none;
-            padding: 8px 8px 8px 0;
+            padding: t.$spacing-sm t.$spacing-sm t.$spacing-sm 0;
             outline: none;
             width: 100%;
         }
@@ -94,7 +96,7 @@
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    padding-right: 8px !important;
+    padding-right: t.$spacing-sm !important;
     height: auto !important;
     min-height: 48px !important;
 
@@ -103,15 +105,15 @@
         white-space: normal;
         line-height: 1.4;
         word-break: break-all;
-        padding: 8px 0;
-        margin-right: 8px;
+        padding: t.$spacing-sm 0;
+        margin-right: t.$spacing-sm;
     }
 
     .remove-fav-btn {
         width: 32px;
         height: 32px;
         flex-shrink: 0;
-        
+
         .mat-icon {
             font-size: 18px;
             width: 18px;
@@ -123,37 +125,33 @@
 
 .table-container {
     flex: 1;
-    overflow-y: auto; // Explicitly y-axis
+    overflow-y: auto;
     overflow-x: auto;
-    width: 100%; // Ensure it fills width
+    width: 100%;
     position: relative;
-    // min-height: 400px; // remove or reduce rigid min-height if it causes issues
-    min-height: 0; // CRITICAL for flex containers to scroll internally
+    min-height: 0;
 
     table {
         width: 100%;
         background-color: transparent;
-        table-layout: fixed; // Enable fixed table layout for resizing
+        table-layout: fixed;
 
-        // Use ::ng-deep to strongly override MDC styles
-        // We target both the old and new classes to cover bases, but MDC classes are priority for v15+
         ::ng-deep .mat-mdc-header-row, ::ng-deep .mat-header-row {
-             background: #1e1e1e !important;
+             background: var(--app-bg-color) !important;
              position: sticky !important;
-             // top: 0 !important; // MDC table handles sticky top usually
-             z-index: 100 !important; 
+             z-index: 100 !important;
         }
 
         ::ng-deep th.mat-mdc-header-cell, ::ng-deep th.mat-header-cell {
-            background: #1e1e1e !important;
-            color: #bdbdbd;
-            border-bottom-color: #424242;
+            background: var(--app-bg-color) !important;
+            color: var(--app-text-secondary);
+            border-bottom-color: var(--app-border-light);
             z-index: 100 !important;
-            
+
             user-select: none;
             overflow: visible;
             white-space: nowrap;
-            border-right: 1px solid #333;
+            border-right: 1px solid var(--app-border-color);
 
             &:last-child {
                 border-right: none;
@@ -161,28 +159,28 @@
         }
 
         td.mat-mdc-cell, td.mat-cell {
-            color: #e0e0e0;
-            border-bottom-color: #333;
+            color: var(--app-text-color);
+            border-bottom-color: var(--app-border-color);
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            border-right: 1px solid transparent; // Placeholder to align with header
+            border-right: 1px solid transparent;
         }
 
         tr.mat-mdc-row:hover, tr.mat-row:hover {
-            background-color: #333;
+            background-color: var(--app-hover-bg-color);
             cursor: pointer;
         }
 
         tr.mat-mdc-row, tr.mat-row {
-            user-select: none; // Prevent text highlighting during Shift-Click
+            user-select: none;
         }
 
         tr.mat-mdc-row.selected, tr.mat-row.selected {
-            background-color: rgba(63, 81, 181, 0.4) !important;
-            
+            background-color: color-mix(in srgb, var(--mat-sys-primary) 40%, transparent) !important;
+
             &:hover {
-                 background-color: rgba(63, 81, 181, 0.5) !important;
+                 background-color: color-mix(in srgb, var(--mat-sys-primary) 50%, transparent) !important;
             }
         }
     }
@@ -192,14 +190,13 @@
 .resize-handle {
     position: absolute;
     top: 0;
-    right: -5px; // Center over the border
-    width: 10px; // Larger hit area
+    right: -5px;
+    width: 10px;
     height: 100%;
     cursor: col-resize;
     background-color: transparent;
-    z-index: 10; // Ensure it's above everything
+    z-index: 10;
 
-    // Visible line indicator on hover/active
     &::after {
         content: '';
         position: absolute;
@@ -208,12 +205,12 @@
         width: 2px;
         height: 100%;
         background-color: transparent;
-        transition: background-color 0.2s;
+        transition: background-color t.$transition-normal;
     }
 
     &:hover::after,
     &:active::after {
-        background-color: #3f51b5; // Highlight on hover/drag
+        background-color: var(--mat-sys-primary);
     }
 }
 
@@ -223,8 +220,8 @@
     justify-content: center;
     height: 100%;
     min-height: 300px;
-    color: #757575;
-    font-size: 16px;
+    color: var(--app-text-muted);
+    font-size: t.$font-size-lg;
 }
 
 /* Custom Scrollbar for Webkit */
@@ -234,16 +231,16 @@
 }
 
 ::-webkit-scrollbar-track {
-    background: #1e1e1e;
+    background: var(--app-bg-color);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #424242;
-    border-radius: 4px;
+    background: var(--app-border-color);
+    border-radius: t.$radius-sm;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #616161;
+    background: var(--app-hover-bg-color);
 }
 
 .spinner-overlay {
@@ -257,20 +254,20 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: t.$z-overlay;
 
     .spinner-text {
-        margin-top: 16px;
+        margin-top: t.$spacing-lg;
         color: #ffffff;
-        font-size: 16px;
-        font-weight: 500;
+        font-size: t.$font-size-lg;
+        font-weight: t.$font-weight-medium;
     }
 }
 
 // Cross-tab drag indicator
 .table-container.drag-from-another-tab {
-    border: 2px dashed #3f51b5;
-    background-color: rgba(63, 81, 181, 0.1);
+    border: 2px dashed var(--mat-sys-primary);
+    background-color: color-mix(in srgb, var(--mat-sys-primary) 10%, transparent);
 }
 
 .cross-tab-indicator {
@@ -281,13 +278,13 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
-    padding: 24px;
-    background-color: rgba(63, 81, 181, 0.9);
-    border-radius: 8px;
+    gap: t.$spacing-lg;
+    padding: t.$spacing-xl;
+    background-color: color-mix(in srgb, var(--mat-sys-primary) 90%, transparent);
+    border-radius: t.$radius-md;
     color: white;
-    font-size: 16px;
-    font-weight: 500;
+    font-size: t.$font-size-lg;
+    font-weight: t.$font-weight-medium;
     z-index: 100;
     pointer-events: none;
 
