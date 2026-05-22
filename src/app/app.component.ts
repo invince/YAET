@@ -26,6 +26,7 @@ import {Profile, ProfileCategory, ProfileType} from './domain/profile/Profile';
 import {TabInstance} from './domain/TabInstance';
 import {CloudService} from './services/cloud.service';
 import {LogService} from './services/log.service';
+import {ShortcutService} from './services/shortcut.service';
 import {MasterKeyService} from './services/master-key.service';
 import {ModalControllerService} from './services/modal-controller.service';
 import {NotificationService} from './services/notification.service';
@@ -108,9 +109,11 @@ export class AppComponent implements OnInit, OnDestroy {
     @Inject(DOCUMENT) private document: Document,
     private renderer: Renderer2,
     private ngZone: NgZone,
+    private shortcut: ShortcutService,
   ) { }
 
   ngOnInit() {
+    this.shortcut.init();
     this.subscriptions.push(
       this.profileService.connectionEvent$.subscribe(
         profile => {
@@ -162,6 +165,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscriptions.forEach(one => one.unsubscribe());
+    this.shortcut.destroy();
   }
 
   allSettingLoaded() {

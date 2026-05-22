@@ -187,5 +187,17 @@
     },
     "TABS": {
         "EMPTY_STATE": "Keine offenen Tabs. Verbinden Sie sich mit einem Profil oder starten Sie eine neue Verbindung."
+    },
+    "SHORTCUTS": {
+        "TITLE": "Tastenkombinationen",
+        "NEW_TERMINAL": "Neues lokales Terminal",
+        "CLOSE_TAB": "Aktuellen Tab schließen",
+        "QUICK_CONNECT": "Schnellverbindung",
+        "NEXT_TAB": "Nächster Tab",
+        "PREV_TAB": "Vorheriger Tab",
+        "TOGGLE_PROFILES": "Profile umschalten",
+        "TOGGLE_SECRETS": "Geheimnisse umschalten",
+        "TOGGLE_SETTINGS": "Einstellungen umschalten",
+        "TOGGLE_AI_CHAT": "AI Chat umschalten"
     }
 }

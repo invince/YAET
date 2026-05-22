@@ -187,5 +187,17 @@
     },
     "TABS": {
         "EMPTY_STATE": "Aucun onglet ouvert. Connectez-vous à un profil ou démarrez une nouvelle connexion."
+    },
+    "SHORTCUTS": {
+        "TITLE": "Raccourcis clavier",
+        "NEW_TERMINAL": "Nouveau terminal local",
+        "CLOSE_TAB": "Fermer l'onglet",
+        "QUICK_CONNECT": "Connexion rapide",
+        "NEXT_TAB": "Onglet suivant",
+        "PREV_TAB": "Onglet précédent",
+        "TOGGLE_PROFILES": "Basculer les profils",
+        "TOGGLE_SECRETS": "Basculer les secrets",
+        "TOGGLE_SETTINGS": "Basculer les paramètres",
+        "TOGGLE_AI_CHAT": "Basculer le chat IA"
     }
 }

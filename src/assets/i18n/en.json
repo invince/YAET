@@ -187,5 +187,17 @@
     },
     "TABS": {
         "EMPTY_STATE": "No open tabs. Connect to a profile or start a new connection to begin."
+    },
+    "SHORTCUTS": {
+        "TITLE": "Keyboard Shortcuts",
+        "NEW_TERMINAL": "New Local Terminal",
+        "CLOSE_TAB": "Close Current Tab",
+        "QUICK_CONNECT": "Quick Connect",
+        "NEXT_TAB": "Next Tab",
+        "PREV_TAB": "Previous Tab",
+        "TOGGLE_PROFILES": "Toggle Profiles",
+        "TOGGLE_SECRETS": "Toggle Secrets",
+        "TOGGLE_SETTINGS": "Toggle Settings",
+        "TOGGLE_AI_CHAT": "Toggle AI Chat"
     }
 }

@@ -327,9 +327,9 @@
 
 **具体任务**:
 - [x] 10.1a 部分元素已有 ARIA 标签（删除按钮 `aria-label="remove"`，清除按钮 `aria-label="Clear"`，profile 树 `aria-label="Toggle ..."`）
-- [ ] 10.1b 为侧边栏 7 个导航按钮添加 `aria-label`
-- [ ] 10.2 实现键盘快捷键系统（`shortcut.service.ts` 新建，注册全局快捷键）
-- [ ] 10.3 添加快捷键提示面板（`Ctrl+Shift+H` 或帮助菜单触发）
+- [x] 10.1b 为侧边栏 7 个导航按钮添加 `aria-label`
+- [x] 10.2 实现键盘快捷键系统（`shortcut.service.ts` 新建，注册全局快捷键）
+- [x] 10.3 添加快捷键提示面板（`Ctrl+Shift+H` 触发 `ShortcutHelpComponent` 对话框）
 - [x] 10.4 MatDialog 默认提供焦点陷阱（表单模态框使用 MatDialog，无需额外改动）
 - [ ] 10.5 进行色彩对比度审核，确保符合 WCAG AA 标准（浅色/深色 4 套主题）
 
@@ -380,4 +380,4 @@
 | 7. 表单体验优化 | 🔄 部分完成 | 7A: 7.1a ✅ 7.1b ⬜ 7.2a ✅ 7.3 ⬜ 7.4a ✅; 7B: secret 同步 ✅; 7C: proxy 同步 ✅ |
 | 8. 动画系统增强 | ✅ 已完成 | 8.1a menuAnimation.ts ✅; 8.1b listAnimation 扩展 ✅; 8.2 模态框过渡 ✅; 8.3 tab 切换动画 ✅; 8.4a 部分按钮 hover ✅; 8.4b sidebar scale 微交互 ✅; 8.5 profiles/secrets/proxies 列表动画 ✅ |
 | 9. 空状态设计 | ✅ 已完成 | 9.1 复用组件 ✅; 9.2 标签空状态 ✅; 9.3 profiles 空状态 ✅; 9.4 secrets 空状态 ✅; 9.5 文件浏览器 ✅ |
-| 10. 可访问性 | 🔄 部分完成 | 10.1a 部分已有 ARIA ✅; 10.1b sidebar aria-label ⬜; 10.2 快捷键系统 ⬜; 10.3 提示面板 ⬜; 10.4 MatDialog 焦点陷阱 ✅; 10.5 WCAG 审核 ⬜ |
+| 10. 可访问性 | 🔄 部分完成 | 10.1a 部分已有 ARIA ✅; 10.1b sidebar aria-label ✅; 10.2 快捷键系统 ✅; 10.3 提示面板 ✅; 10.4 MatDialog 焦点陷阱 ✅; 10.5 WCAG 审核 ⬜ |

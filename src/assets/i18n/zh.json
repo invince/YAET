@@ -187,5 +187,17 @@
     },
     "TABS": {
         "EMPTY_STATE": "没有打开的标签页。连接配置文件或开始新连接以开始使用。"
+    },
+    "SHORTCUTS": {
+        "TITLE": "键盘快捷键",
+        "NEW_TERMINAL": "新建本地终端",
+        "CLOSE_TAB": "关闭当前标签",
+        "QUICK_CONNECT": "快速连接",
+        "NEXT_TAB": "下一个标签",
+        "PREV_TAB": "上一个标签",
+        "TOGGLE_PROFILES": "切换配置文件",
+        "TOGGLE_SECRETS": "切换密钥",
+        "TOGGLE_SETTINGS": "切换设置",
+        "TOGGLE_AI_CHAT": "切换 AI 聊天"
     }
 }

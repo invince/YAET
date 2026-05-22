@@ -17,7 +17,7 @@ export class BottomToolbarComponent {
     constructor(
         public tabService: TabService,
         public aiChatService: AiChatService,
-        private settingStorage: SettingStorageService
+        private settingStorage: SettingStorageService,
     ) { }
 
     get isAiConfigured(): boolean {

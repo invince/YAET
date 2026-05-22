@@ -187,5 +187,17 @@
     },
     "TABS": {
         "EMPTY_STATE": "No hay pestañas abiertas. Conéctese a un perfil o inicie una nueva conexión para comenzar."
+    },
+    "SHORTCUTS": {
+        "TITLE": "Atajos de teclado",
+        "NEW_TERMINAL": "Nueva terminal local",
+        "CLOSE_TAB": "Cerrar pestaña",
+        "QUICK_CONNECT": "Conexión rápida",
+        "NEXT_TAB": "Siguiente pestaña",
+        "PREV_TAB": "Pestaña anterior",
+        "TOGGLE_PROFILES": "Alternar perfiles",
+        "TOGGLE_SECRETS": "Alternar secretos",
+        "TOGGLE_SETTINGS": "Alternar configuración",
+        "TOGGLE_AI_CHAT": "Alternar chat IA"
     }
 }

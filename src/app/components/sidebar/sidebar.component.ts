@@ -14,6 +14,7 @@ import {LogService} from '../../services/log.service';
 import {MasterKeyService} from '../../services/master-key.service';
 import {ModalControllerService} from '../../services/modal-controller.service';
 import {NotificationService} from '../../services/notification.service';
+import {ShortcutService} from '../../services/shortcut.service';
 import {SessionService} from '../../services/session.service';
 import {SettingService} from '../../services/setting.service';
 import {TabService} from '../../services/tab.service';
@@ -49,6 +50,7 @@ export class SidebarComponent implements OnDestroy {
         public modalControl: ModalControllerService,
         private notification: NotificationService,
         public dialog: MatDialog,
+        private shortcutService: ShortcutService,
     ) { }
 
     ngOnDestroy() {
@@ -91,6 +93,10 @@ export class SidebarComponent implements OnDestroy {
         this.toggleMenu(this.MENU_SETTING);
     }
 
+    showShortcutHelp() {
+        this.shortcutService.showShortcutHelp();
+    }
+
     requireMasterKey(callback: () => void) {
         if (this.masterKeyService.hasMasterKey) {
             callback();
@@ -113,6 +119,6 @@ export class SidebarComponent implements OnDestroy {
     }
 
     toggleMenu(menu: string) {
-        this.modalControl.toggleMenu(menu);
+        this.shortcutService.toggleMenu(menu);
     }
 }
