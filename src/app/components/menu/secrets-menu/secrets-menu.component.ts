@@ -51,6 +51,7 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
   selectedSecret!: Secret | undefined;
   subscriptions: Subscription[] = [];
   filter!: string;
+  savingSecret = false;
 
   secretsCopy!: Secrets;
 
@@ -162,9 +163,16 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
   }
 
   async onSaveOne($event: Secret) {
-    this.secretService.updateOne($event);
-    await this.commitChange();
-    // this.refreshSecretForm();
+    this.savingSecret = true;
+    try {
+      this.secretService.updateOne($event);
+      await this.commitChange();
+      this.notification.success('Secret saved');
+    } catch {
+      this.notification.error('Failed to save secret');
+    } finally {
+      this.savingSecret = false;
+    }
   }
 
   onCancel($event: Secret) {

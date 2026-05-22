@@ -50,6 +50,7 @@ export class ProxyMenuComponent extends HasChildForm(MenuComponent) implements O
     selectedProxy!: Proxy | undefined;
     subscriptions: Subscription[] = [];
     filter!: string;
+    savingProxy = false;
 
     proxiesCopy!: Proxies;
 
@@ -131,8 +132,16 @@ export class ProxyMenuComponent extends HasChildForm(MenuComponent) implements O
     }
 
     async onSaveOne($event: Proxy) {
-        this.proxyService.updateOne($event);
-        await this.commitChange();
+        this.savingProxy = true;
+        try {
+            this.proxyService.updateOne($event);
+            await this.commitChange();
+            this.notification.success('Proxy saved');
+        } catch {
+            this.notification.error('Failed to save proxy');
+        } finally {
+            this.savingProxy = false;
+        }
     }
 
     onCancel($event: Proxy) {

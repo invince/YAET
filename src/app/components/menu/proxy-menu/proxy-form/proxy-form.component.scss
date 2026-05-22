@@ -1,36 +1,45 @@
+@use 'tokens' as t;
+
 :host {
-    display: block;
-    height: 100%;
-    width: 100%;
+  display: block;
+  height: 100%;
+  width: 100%;
 }
 
 .field {
-    margin: 16px;
-    width: 240px;
+  width: 100%;
+  padding: t.$spacing-sm 0;
+  margin-top: t.$spacing-md;
 }
 
 .proxy-form {
-    display: flex;
-    flex-direction: row;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: t.$spacing-xl;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 0 t.$spacing-lg;
 }
 
-.proxy-form-container h2 {
-    padding-left: 16px;
+.proxy-form-left-part,
+.proxy-form-right-part {
+  display: flex;
+  flex-direction: column;
 }
 
 .proxy-form-container {
-    margin: auto;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-.proxy-form-content {
-    display: flex;
-    flex-wrap: wrap;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .proxy-form-footer {
-    margin-top: auto;
-    margin-bottom: 0;
+  flex-shrink: 0;
+  margin-top: auto;
+  padding: t.$spacing-md t.$spacing-lg;
+  display: flex;
+  gap: t.$spacing-sm;
+  justify-content: flex-end;
+  border-top: 1px solid var(--app-border-color);
 }

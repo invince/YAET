@@ -14,6 +14,8 @@
 
 ---
 
+> 最后更新: 2026-05-22 — 基于代码审计更新了任务 7/8/9/10 的实际完成状态
+
 ## 高优先级
 
 ### 1. 统一样式方案 & 设计令牌系统
@@ -226,19 +228,46 @@
 ### 7. 表单体验优化
 
 **问题**:
-- Profile form 固定宽度 300px+300px
-- 缺少表单加载状态/保存反馈
+- Profile form 子表单无响应式布局
 - 验证错误提示样式不统一
+- 部分表单加载状态/保存反馈缺失
+- Secret/Proxy menu 未同步 Profile menu 已做的优化
 
-**具体任务**:
-- [ ] 7.1 Profile form 改为响应式 CSS Grid 布局
-- [ ] 7.2 添加表单保存加载状态（spinner + 禁用按钮）
-- [ ] 7.3 统一验证错误提示样式
-- [ ] 7.4 添加成功保存的 toast 反馈
+#### 7A. Profile Form（已优化，部分待完善）
+
+- [x] 7.1a 主 Profile form 使用 CSS Grid 双列布局（`grid-template-columns: 1fr 1fr`）
+- [ ] 7.1b 子表单（RDP、FTP、VNC 等）改为响应式布局，添加 `<640px` 媒体查询折叠为单列
+- [x] 7.2a Profile form 添加保存加载状态（spinner + 禁用按钮 `[disabled]="form.invalid || !form.dirty || saving"`）
+- [ ] 7.3 统一定义 `.mat-mdc-form-field-error` 验证错误样式（颜色、边框、图标），超出 Material 默认值
+- [x] 7.4a Profile 保存成功/失败 toast 反馈（`notification.success('Profile saved')` + `.success-snackbar` 绿色样式）
+
+#### 7B. Secret Form — 统一至 Profile 标准
+
+- [x] 7.2b 添加保存加载状态：`@Input() saving` + spinner + 禁用按钮
+- [x] 7.4b 添加保存成功/失败 toast（`notification.success()` / `notification.error()`）
+- [x] 7.1c 改用 CSS Grid 响应式布局 + `@use 'tokens'` 替代固定 px
+- [x] 7.1d parent `secrets-menu` 添加 try/catch/finally 状态重置
 
 **涉及文件**:
-- `src/app/components/menu/profile-form/`
-- `src/app/components/menu/setting-menu/`
+- `src/app/components/menu/secrets-menu/secret-form/secret-form.component.ts`
+- `src/app/components/menu/secrets-menu/secret-form/secret-form.component.html`
+- `src/app/components/menu/secrets-menu/secret-form/secret-form.component.scss`
+- `src/app/components/menu/secrets-menu/secrets-menu.component.ts`
+- `src/app/components/menu/secrets-menu/secrets-menu.component.html`
+
+#### 7C. Proxy Form — 统一至 Profile 标准
+
+- [x] 7.2c 添加保存加载状态：`@Input() saving` + spinner + 禁用按钮
+- [x] 7.4c 添加保存成功/失败 toast（`notification.success()` / `notification.error()`）
+- [x] 7.1e 改用 CSS Grid 响应式布局 + `@use 'tokens'` 替代固定 px
+- [x] 7.1f parent `proxy-menu` 添加 try/catch/finally 状态重置
+
+**涉及文件**:
+- `src/app/components/menu/proxy-menu/proxy-form/proxy-form.component.ts`
+- `src/app/components/menu/proxy-menu/proxy-form/proxy-form.component.html`
+- `src/app/components/menu/proxy-menu/proxy-form/proxy-form.component.scss`
+- `src/app/components/menu/proxy-menu/proxy-menu.component.ts`
+- `src/app/components/menu/proxy-menu/proxy-menu.component.html`
 
 ---
 
@@ -247,15 +276,18 @@
 ### 8. 动画系统增强
 
 **问题**:
-- 当前仅 menu 和 tab 有动画
-- 缺少面板切换、微交互动画
+- 面板切换、列表进入/离开动画缺失
+- 按钮微交互仅部分组件有 hover 过渡
+- 标签页组动画被显式禁用（`[@.disabled]="true"`）
 
 **具体任务**:
-- [ ] 8.1 创建统一动画配置文件 `src/animations/`
-- [ ] 8.2 添加模态框打开/关闭过渡
-- [ ] 8.3 添加面板切换动画
-- [ ] 8.4 添加按钮 hover/click 微交互
-- [ ] 8.5 添加列表项进入/离开动画
+- [x] 8.1a 存在 `src/app/animations/menuAnimation.ts`（`slideInOut` 触发器，300ms 滑入滑出）
+- [ ] 8.1b 扩展动画配置文件，提取可复用常量/预设动画
+- [x] 8.2 模态框打开/关闭过渡（`[@slideInOut]` 应用到 5 个菜单面板 + backdrop blur(2px) + fadeIn/fadeOut keyframes）
+- [ ] 8.3 添加面板切换动画（标签切换、侧边栏展开/折叠）
+- [x] 8.4a 部分按钮有 hover 过渡（sidebar `transition: background`，AI 聊天 hover 效果）
+- [ ] 8.4b 系统性按钮微交互（点击涟漪缩放、hover 缩放、状态变化动画）
+- [ ] 8.5 添加列表项进入/离开动画（`@listAnimation`、`@fade` 等）
 
 **涉及文件**:
 - `src/animations/` (扩展现有)
@@ -266,38 +298,43 @@
 ### 9. 空状态设计
 
 **问题**:
-- 无标签页、无配置文件、无密钥等场景无友好提示
+- 配置文件列表、密钥管理无空状态提示
+- 现有内联空状态（标签页、文件浏览器）散落各处，无可复用组件
 
 **具体任务**:
-- [ ] 9.1 设计空状态组件
-- [ ] 9.2 应用到标签页区域
-- [ ] 9.3 应用到配置文件列表
-- [ ] 9.4 应用到密钥管理
-- [ ] 9.5 应用到文件浏览器
+- [ ] 9.1 设计可复用的空状态组件 `src/app/components/empty-state/`
+- [x] 9.2 标签页区域空状态（内联：`.tab-empty-state` + 图标 + i18n）
+- [ ] 9.3 应用到配置文件列表（`profiles-menu` — 筛选无结果时显示空提示）
+- [ ] 9.4 应用到密钥管理（`secrets-menu` — 列表为空或筛选无结果时显示空提示）
+- [x] 9.5 文件浏览器空状态（内联：`.empty-state` 居中 + 300px min-height + muted 颜色）
 
 **涉及文件**:
 - `src/app/components/empty-state/` (新建)
-- 各相关组件
+- `src/app/components/menu/profiles-menu/`
+- `src/app/components/menu/secrets-menu/`
 
 ---
 
 ### 10. 可访问性 (a11y)
 
 **问题**:
-- 缺少 ARIA 标签
-- 无键盘快捷键支持
-- 焦点管理不完善
+- 侧边栏导航按钮缺少 `aria-label`
+- 无键盘快捷键系统 (Ctrl+N, Ctrl+W, Ctrl+Tab 等)
+- 无快捷键提示面板
+- 颜色对比度未经过 WCAG AA/AAA 审核
 
 **具体任务**:
-- [ ] 10.1 为交互元素添加 ARIA 标签
-- [ ] 10.2 实现键盘快捷键系统
-- [ ] 10.3 添加快捷键提示面板
-- [ ] 10.4 优化模态框焦点陷阱
-- [ ] 10.5 确保颜色对比度符合 WCAG 标准
+- [x] 10.1a 部分元素已有 ARIA 标签（删除按钮 `aria-label="remove"`，清除按钮 `aria-label="Clear"`，profile 树 `aria-label="Toggle ..."`）
+- [ ] 10.1b 为侧边栏 7 个导航按钮添加 `aria-label`
+- [ ] 10.2 实现键盘快捷键系统（`shortcut.service.ts` 新建，注册全局快捷键）
+- [ ] 10.3 添加快捷键提示面板（`Ctrl+Shift+H` 或帮助菜单触发）
+- [x] 10.4 MatDialog 默认提供焦点陷阱（表单模态框使用 MatDialog，无需额外改动）
+- [ ] 10.5 进行色彩对比度审核，确保符合 WCAG AA 标准（浅色/深色 4 套主题）
 
 **涉及文件**:
 - 全局模板文件
-- `src/app/services/shortcut.service.ts` (可能需要新建)
+- `src/app/components/sidebar/sidebar.component.html`
+- `src/app/services/shortcut.service.ts` (新建)
 
 ---
 
@@ -332,13 +369,13 @@
 | 1. 统一样式方案 & 设计令牌 | ✅ 已完成 | 19个CSS→SCSS迁移，tokens系统建立，硬编码颜色消除 |
 | 2. 主题系统修复 | ✅ 已完成 | sidebar !important 消除（mat-mini-fab→mat-icon-button），terminal ViewEncapsulation.ShadowDom，app.component 硬编码颜色修复，file-list/proxy-menu 颜色令牌化 |
 | 3. 模态框/对话框美化 | ✅ 已完成 | 3.1 backdrop blur ✅, 3.2 统一令牌样式 ✅, 3.3 过渡动画（已有）✅, 3.4 响应式布局 ✅, 3.5 头部样式统一 ✅ |
-| 4. 标签页优化 | ✅ 已完成 | 4.1 CSS text-overflow ellipsis + max-width 120px + matTooltip 显示完整名称 ✅, 4.2 tooltip 已实现 ✅, 4.3 tab-drop-indicator 竖线指示器 + tab-dragging 透明度反馈 ✅, 4.4 tab-empty-state 空状态组件（图标 + i18n 5 语言）✅ |
-| 4.5. Profile 页面 i18n | ✅ 已完成 | 14 个新翻译 key 添加到 5 个语言文件，profile-form 及 6 个子表单模板全部使用 translate pipe，Category/ConnectionType 动态值翻译方法，AuthType 单选按钮翻译 |
-| 4.6. Cloud 同步表单 i18n | ✅ 已完成 | CLOUD 翻译 key 添加到 5 个语言文件，表单模板全部使用 translate pipe，AuthType/Sync Items 动态翻译，上传/下载通知消息国际化 |
-| 4.7. 新式控制流语法迁移 | ✅ 已完成 | 7 个文件中 31 处旧式结构指令（29 `*ngIf` + 2 `*ngFor`）全部替换为 `@if`/`@for`，编译验证通过 |
-| 5. AI 聊天面板优化 | ✅ 已完成 | 5.1 可拖拽（header 拖拽，persist localStorage）✅, 5.2 可调整大小（右下角手柄 280-600×300-800px）✅, 5.3 气泡样式优化（avatar+role标签+阴影）✅, 5.4 打字指示器（3 点弹跳动画）✅, 5.5 历史下拉优化（活跃指示条+入场动画）✅ |
-| 6. 侧边栏 & 导航优化 | 🔄 部分完成 | sidebar `!important` 消除（归入 2.3）✅; ESC 键关闭拦截修复 ✅; 6.1 matTooltip 添加到 7 个按钮 ✅; 6.2 激活状态左侧蓝色指示条 ✅; 6.3 可折叠 ➖（已尝试，动画晃动，放弃）; 6.4 hover 微交互 ✅ |
-| 7. 表单体验优化 | ⬜ 未开始 | |
-| 8. 动画系统增强 | ⬜ 未开始 | |
-| 9. 空状态设计 | ⬜ 未开始 | |
-| 10. 可访问性 | ⬜ 未开始 | |
+| 4. 标签页优化 | ✅ 已完成 | 4.1 CSS text-overflow ellipsis + max-width 120px + matTooltip ✅, 4.2 tooltip ✅, 4.3 tab-drop-indicator + tab-dragging ✅, 4.4 tab-empty-state（图标 + i18n 5 语言）✅ |
+| 4.5. Profile 页面 i18n | ✅ 已完成 | 14+ 翻译 key 添加到 5 语言，profile-form 及 6 子表单全部 translate pipe，Category/ConnectionType/AuthType 动态翻译 |
+| 4.6. Cloud 同步表单 i18n | ✅ 已完成 | CLOUD 翻译 key 添加到 5 语言，AuthType/Sync Items 动态翻译，通知消息国际化 |
+| 4.7. 新式控制流语法迁移 | ✅ 已完成 | 7 文件 31 处 `*ngIf`/`*ngFor` → `@if`/`@for`，编译验证通过 |
+| 5. AI 聊天面板优化 | ✅ 已完成 | 5.1 可拖拽 ✅, 5.2 可调整大小 ✅, 5.3 气泡样式优化 ✅, 5.4 打字指示器 ✅, 5.5 历史下拉优化 ✅ |
+| 6. 侧边栏 & 导航优化 | 🔄 部分完成 | 6.1 matTooltip 7 按钮 ✅; 6.2 激活状态蓝色指示条 ✅; 6.3 可折叠 ➖（已尝试，动画晃动，放弃）; 6.4 hover 微交互 ✅ |
+| 7. 表单体验优化 | 🔄 部分完成 | 7A: 7.1a ✅ 7.1b ⬜ 7.2a ✅ 7.3 ⬜ 7.4a ✅; 7B: secret 同步 ✅; 7C: proxy 同步 ✅ |
+| 8. 动画系统增强 | 🔄 部分完成 | 8.1a menuAnimation.ts 存在 ✅; 8.1b 扩展动画配置 ⬜; 8.2 模态框过渡 ✅; 8.3 面板切换 ⬜; 8.4a 部分按钮 hover ✅; 8.4b 系统微交互 ⬜; 8.5 列表动画 ⬜ |
+| 9. 空状态设计 | 🔄 部分完成 | 9.1 复用组件 ⬜; 9.2 标签空状态 ✅; 9.3 profiles 空状态 ⬜; 9.4 secrets 空状态 ⬜; 9.5 文件浏览器 ✅ |
+| 10. 可访问性 | 🔄 部分完成 | 10.1a 部分已有 ARIA ✅; 10.1b sidebar aria-label ⬜; 10.2 快捷键系统 ⬜; 10.3 提示面板 ⬜; 10.4 MatDialog 焦点陷阱 ✅; 10.5 WCAG 审核 ⬜ |

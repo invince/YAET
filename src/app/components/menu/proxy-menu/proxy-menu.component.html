@@ -50,8 +50,9 @@
         <mat-sidenav-content class="one-form">
           @if (selectedProxy) {
           <ng-container>
-            <app-proxy-form [proxy]="selectedProxy" (onProxyCancel)="onCancel($event)"
-              (onProxyDelete)="onDelete($event)" (onProxySave)="onSaveOne($event)"
+            <app-proxy-form [proxy]="selectedProxy" [saving]="savingProxy"
+              (onProxyCancel)="onCancel($event)" (onProxyDelete)="onDelete($event)"
+              (onProxySave)="onSaveOne($event)"
               (invalidStateChange)="onChildFormInvalidStateChange($event)"
               (dirtyStateChange)="onChildFormDirtyStateChange($event)"></app-proxy-form>
           </ng-container>
