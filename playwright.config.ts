@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import {defineConfig, devices} from '@playwright/test';
 import path from 'path';
 
 export default defineConfig({
@@ -27,6 +27,8 @@ export default defineConfig({
           ],
         },
       },
+      // Increase timeout for Electron app to allow proper shutdown
+      timeout: 60000,
     },
   ],
 });
