@@ -37,6 +37,10 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   @ViewChild('term', { static: false }) terminalDiv!: ElementRef;
   @ViewChild('termContainer', { static: false }) termContainer!: ElementRef;
 
+  // xterm's scrollbar is too hard to manipulate we create our own custom to override it
+  @ViewChild('scrollbar', { static: false }) scrollbarRef!: ElementRef;
+  @ViewChild('scrollbarThumb', { static: false }) scrollbarThumbRef!: ElementRef;
+
   private isViewInitialized = false;
 
   private xtermUnderlying: Terminal;
@@ -45,6 +49,15 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   private resizeObserver: ResizeObserver | undefined;
   private contextMenuHandler: ((event: MouseEvent) => void) | null = null;
   private terminalOutputCleanup: (() => void) | null = null;
+
+  private scrollDisposable: { dispose: () => void } | null = null;
+  private scrollResizeDisposable: { dispose: () => void } | null = null;
+  private isDraggingScrollbar = false;
+  private dragStartY = 0;
+  private dragStartThumbTop = 0;
+  private onScrollbarDragMove: ((event: MouseEvent) => void) | null = null;
+  private onScrollbarDragEnd: ((event: MouseEvent) => void) | null = null;
+  private onViewportScroll: (() => void) | null = null;
 
   constructor(
     private electron: ElectronTerminalService,
@@ -67,6 +80,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   ngAfterViewInit(): void {
     this.xtermUnderlying.open(this.terminalDiv.nativeElement);
     this.injectScrollbarStyles();
+    this.initScrollbar();
 
     this.terminalInstanceService.register(this.session.id, this.xtermUnderlying);
 
@@ -92,6 +106,10 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     //   cursorBlink: true
     // });
 
+    this.scrollResizeDisposable = this.xtermUnderlying.onResize(() => {
+      this.updateScrollbarThumb();
+    });
+
     this.xtermUnderlying.onResize(size => {
       this.electron.sendTerminalResize(this.session.id, size.cols, size.rows);
     });
@@ -107,6 +125,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     this.resizeObserver = new ResizeObserver(() => {
       doFit();
+      this.updateScrollbarThumb();
       clearInterval(interval);
     });
     this.resizeObserver.observe(this.termContainer.nativeElement);
@@ -192,6 +211,28 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
       this.terminalInstanceService.unregister(this.session.id);
     }
 
+    this.scrollDisposable?.dispose();
+    this.scrollDisposable = null;
+    this.scrollResizeDisposable?.dispose();
+    this.scrollResizeDisposable = null;
+
+    if (this.onScrollbarDragMove) {
+      document.removeEventListener('mousemove', this.onScrollbarDragMove);
+      this.onScrollbarDragMove = null;
+    }
+    if (this.onScrollbarDragEnd) {
+      document.removeEventListener('mouseup', this.onScrollbarDragEnd);
+      this.onScrollbarDragEnd = null;
+    }
+
+    if (this.onViewportScroll) {
+      const viewport = this.terminalDiv?.nativeElement.querySelector('.xterm-viewport');
+      if (viewport) {
+        viewport.removeEventListener('scroll', this.onViewportScroll);
+      }
+      this.onViewportScroll = null;
+    }
+
     this.fitAddon?.dispose();
     this.resizeObserver?.disconnect();
   }
@@ -229,14 +270,122 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
 
-  // Hack the scroll style for xtermJs
   private injectScrollbarStyles() {
     try {
       const viewport = this.terminalDiv.nativeElement.querySelector('.xterm-viewport');
       if (!viewport) return;
-      viewport.style.setProperty('scrollbar-width', 'thin');
+      viewport.style.setProperty('scrollbar-width', 'none');
+
+      const style = document.createElement('style');
+      style.textContent = `
+        .xterm-viewport::-webkit-scrollbar {
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+        }
+      `;
+      viewport.appendChild(style);
     } catch (e) {
       console.error('Failed to inject scrollbar styles:', e);
+    }
+  }
+
+  private initScrollbar() {
+    this.updateScrollbarThumb();
+
+    this.scrollDisposable = this.xtermUnderlying.onScroll(() => {
+      this.updateScrollbarThumb();
+    });
+
+    const viewport = this.terminalDiv.nativeElement.querySelector('.xterm-viewport');
+    if (viewport) {
+      this.onViewportScroll = () => {
+        requestAnimationFrame(() => this.updateScrollbarThumb());
+      };
+      viewport.addEventListener('scroll', this.onViewportScroll);
+    }
+
+    this.onScrollbarDragMove = (event: MouseEvent) => {
+      if (!this.isDraggingScrollbar) return;
+      const track = this.scrollbarRef?.nativeElement;
+      const thumb = this.scrollbarThumbRef?.nativeElement;
+      if (!track || !thumb) return;
+
+      const trackHeight = track.clientHeight;
+      const thumbHeight = thumb.clientHeight;
+      const maxThumbTop = trackHeight - thumbHeight;
+      if (maxThumbTop <= 0) return;
+
+      const deltaY = event.clientY - this.dragStartY;
+      const newThumbTop = Math.max(0, Math.min(maxThumbTop, this.dragStartThumbTop + deltaY));
+      const scrollRatio = newThumbTop / maxThumbTop;
+      const baseY = this.xtermUnderlying.buffer.active.baseY;
+      if (baseY <= 0) return;
+
+      this.xtermUnderlying.scrollToLine(Math.round(scrollRatio * baseY));
+    };
+
+    this.onScrollbarDragEnd = () => {
+      if (!this.isDraggingScrollbar) return;
+      this.isDraggingScrollbar = false;
+      const thumb = this.scrollbarThumbRef?.nativeElement;
+      if (thumb) thumb.classList.remove('dragging');
+    };
+
+    document.addEventListener('mousemove', this.onScrollbarDragMove);
+    document.addEventListener('mouseup', this.onScrollbarDragEnd);
+  }
+
+  private updateScrollbarThumb() {
+    const thumb = this.scrollbarThumbRef?.nativeElement;
+    const track = this.scrollbarRef?.nativeElement;
+    if (!thumb || !track) return;
+
+    const baseY = this.xtermUnderlying.buffer.active.baseY;
+    const rows = this.xtermUnderlying.rows;
+    const trackHeight = track.clientHeight;
+
+    if (baseY <= 0 || trackHeight <= 0) {
+      thumb.style.height = Math.min(24, trackHeight) + 'px';
+      thumb.style.top = '0';
+      return;
+    }
+
+    const thumbRatio = rows / (baseY + rows);
+    const thumbHeight = Math.max(24, Math.min(trackHeight, trackHeight * thumbRatio));
+    const maxThumbTop = trackHeight - thumbHeight;
+
+    thumb.style.height = thumbHeight + 'px';
+
+    const viewportY = this.xtermUnderlying.buffer.active.viewportY;
+    const scrollRatio = viewportY / baseY;
+    thumb.style.top = (scrollRatio * maxThumbTop) + 'px';
+  }
+
+  onScrollbarThumbMouseDown(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.isDraggingScrollbar = true;
+    this.dragStartY = event.clientY;
+    this.dragStartThumbTop = parseInt(this.scrollbarThumbRef.nativeElement.style.top || '0', 10);
+    this.scrollbarThumbRef.nativeElement.classList.add('dragging');
+  }
+
+  onScrollbarTrackMouseDown(event: MouseEvent) {
+    if ((event.target as HTMLElement).classList.contains('terminal-scrollbar-thumb')) return;
+
+    const track = this.scrollbarRef.nativeElement;
+    const thumb = this.scrollbarThumbRef.nativeElement;
+    const trackRect = track.getBoundingClientRect();
+    const clickY = event.clientY - trackRect.top;
+    const thumbTop = parseInt(thumb.style.top || '0', 10);
+    const rows = this.xtermUnderlying.rows;
+
+    if (clickY < thumbTop) {
+      this.xtermUnderlying.scrollLines(-Math.max(1, rows - 1));
+    } else {
+      this.xtermUnderlying.scrollLines(Math.max(1, rows - 1));
     }
   }
 }
