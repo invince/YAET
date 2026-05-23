@@ -1,5 +1,7 @@
 # Yet Another Electron Terminal (YAET)
 
+English | [简体中文](./README.cn.md)
+
 ## Description
 
 YAET is a comprehensive remote connection and management tool built with Angular and Electron. It provides a unified interface for managing remote servers, executing commands, transferring files, and accessing remote desktops — all from a single application.
@@ -52,12 +54,19 @@ YAET is a comprehensive remote connection and management tool built with Angular
 - Customizable themes and color schemes
 - Flat and tree view modes for profile navigation
 
-### 🤖 AI Assistant (ACP/MCP)
-- **Agent Client Protocol (ACP)**: Deep integration with AI agents for automated tasks and terminal interactions.
-- **Agent Mode**: Enable the AI to execute commands directly in your terminal for autonomous problem solving.
-- **Context Awareness**: Ask questions about your active terminal output or specific session context.
-- **Model Management**: Support for multiple LLM models with easy switching via ACP.
-- **Persistent Chat History**: Manage multiple chat sessions with persistent storage, renaming, and history tracking.
+### 🌐 Proxy Management
+- **HTTP / SOCKS4 / SOCKS5**: Configure proxy servers for connections that need to go through a proxy
+- **Authenticated Proxies**: Reuse credentials from Secrets Management for proxy authentication
+- **Per-Profile Assignment**: Assign a specific proxy to each connection profile
+
+### 🤖 AI Assistant
+- **Two Provider Modes**:
+  - **Web Mode**: Connect to any OpenAI-compatible API (OpenAI, local LLM, etc.) with a URL and API key
+  - **ACP Mode**: Use the Agent Client Protocol to integrate with AI agents for automated terminal interactions
+- **Agent Mode**: Enable the AI to execute commands directly in your terminal for autonomous problem solving
+- **Context Awareness**: Ask questions about your active terminal output or specific session context
+- **Persistent Chat History**: Manage multiple chat sessions with persistent storage, renaming, and history tracking
+- **Draggable Chat Panel**: Resizable, repositionable floating chat window
 
 ## Prerequisites
 
