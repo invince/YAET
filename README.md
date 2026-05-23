@@ -11,7 +11,7 @@ YAET is a comprehensive remote connection and management tool built with Angular
 - **Telnet**: Legacy telnet protocol support
 - **WinRM**: Windows Remote Management for PowerShell sessions
 - **Local Terminal**: Integrated local shell access (CMD, PowerShell, PowerShell 7, Bash)
-- <img width="2829" height="2138" alt="image" src="https://github.com/user-attachments/assets/3357a0ca-47a7-4620-b30d-c88ce580d40e" />
+- <img width="3552" height="2094" alt="image" src="https://github.com/user-attachments/assets/6a55a46b-0dfe-46cd-bcf8-16967a791a5e" />
 - <img width="3530" height="2190" alt="image" src="https://github.com/user-attachments/assets/da9e3f0b-5b67-412d-b179-556899d9e120" />
 
 
