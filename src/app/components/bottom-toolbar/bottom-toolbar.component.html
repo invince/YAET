@@ -10,6 +10,6 @@
     </button>
     <button [disabled]="!isAiConfigured" mat-icon-button (click)="toggleAi()" aria-label="Toggle AI Assistant"
         [color]="(aiChatService.isOpen$ | async) ? 'accent' : ''">
-        <mat-icon>smart_toy</mat-icon>
+        <mat-icon>chat</mat-icon>
     </button>
 </mat-toolbar>
