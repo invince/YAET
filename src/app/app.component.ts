@@ -250,6 +250,51 @@ export class AppComponent implements OnInit, OnDestroy {
     this.dragOverPane = null;
   }
 
+  onTabGroupDragOver(event: DragEvent, paneId: number) {
+    if (!this.draggedTab) return;
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+  }
+
+  onTabGroupDrop(event: DragEvent, paneId: number) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!this.draggedTab) return;
+
+    if (this.draggedTab.paneId === paneId) {
+      const tabGroupEl = (event.target as HTMLElement).closest('mat-tab-group');
+      if (tabGroupEl) {
+        const tabLabels = tabGroupEl.querySelectorAll('.mdc-tab');
+        const mouseX = event.clientX;
+        const groupLeft = tabGroupEl.getBoundingClientRect().left;
+        let dropIndex = tabLabels.length;
+
+        if (mouseX < groupLeft) {
+          dropIndex = 0;
+        } else {
+          tabLabels.forEach((label, index) => {
+            const rect = label.getBoundingClientRect();
+            if (mouseX >= rect.left && mouseX <= rect.right) {
+              dropIndex = mouseX < rect.left + rect.width / 2 ? index : index + 1;
+            }
+          });
+        }
+
+        if (dropIndex >= 0 && dropIndex <= tabLabels.length) {
+          this.tabService.moveTabWithinPane(this.draggedTab.tab, this.draggedTab.index, dropIndex, paneId);
+        }
+      }
+    } else if (this.tabService.splitMode) {
+      this.tabService.moveTabToPane(this.draggedTab.tab, paneId);
+    }
+
+    this.draggedTab = null;
+    this.dragOverPane = null;
+  }
+
   applyTheme(theme: string | undefined) {
     if (!theme) {
       theme = 'pink-bluegrey';
