@@ -9,6 +9,7 @@ import {
   ACP_SEND,
   AI_FETCH_MODELS,
   AI_SEND_CHAT,
+  AI_SEND_WITH_TOOLS,
   CHECK_FOR_UPDATES,
   CLOUD_DOWNLOAD,
   CLOUD_RELOAD,
@@ -155,6 +156,13 @@ export class ElectronService extends AbstractElectronService {
   async sendAiChat(apiUrl: string, token: string, model: string, messages: any[]): Promise<any> {
     if (this.ipc) {
       return await this.ipc.invoke(AI_SEND_CHAT, { apiUrl, token, model, messages });
+    }
+    throw new Error('Electron IPC not available');
+  }
+
+  async sendAiWithTools(apiUrl: string, token: string, model: string, messages: any[]): Promise<any> {
+    if (this.ipc) {
+      return await this.ipc.invoke(AI_SEND_WITH_TOOLS, { apiUrl, token, model, messages });
     }
     throw new Error('Electron IPC not available');
   }

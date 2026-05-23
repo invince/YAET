@@ -40,6 +40,9 @@ const { initTelnetIpcHandler } = require("./ipc/terminal/telnet");
 const { initLocalTerminalIpcHandler } = require("./ipc/terminal/localTerminal");
 const { initWinRmIpcHandler } = require("./ipc/terminal/winRM");
 const { initSambaHandler } = require("./ipc/file-explorer/samba");
+const { initAiToolsIpcHandler } = require("./ipc/ai-tools");
+const { ToolExecutor } = require("./services/toolExecutor");
+const { ConfigService } = require("./services/configService");
 
 const logPath = path.join(app.getPath('userData'), 'logs/main.log');
 console.log(logPath);
@@ -138,6 +141,11 @@ function initHandlerBeforeSettingLoad() {
   initAcpIpcHandler(log);
   initAiIpcHandler(log);
   initAiChatIpcHandler(log);
+
+  const toolExecutor = new ToolExecutor(log, new ConfigService(log));
+  toolExecutor.setSecretsGetter(() => allSecrets);
+  initAiToolsIpcHandler(log, toolExecutor);
+
   initLocalFileHandler(log, mainWindow);
 
   // Allow renderer to check if settings were already loaded before its listener registered

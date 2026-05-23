@@ -410,11 +410,9 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
         payload.push({ role: 'user', content: `Current terminal context:\n${context}` });
     }
 
-    if (this.agentMode) {
-      payload.push({ role: 'user', content: `You are in Agent Mode. Please respond ONLY with the raw command to execute in the shell. Do NOT wrap it in markdown block. Do NOT include any other text.` });
-    }
-
-    if (mode === 'acp') {
+    if (this.agentMode && mode === 'web') {
+      this.sendWebMessageWithTools(aiSettings, payload, activeTab);
+    } else if (mode === 'acp') {
       this.sendAcpMessage(aiSettings, payload, activeTab);
     } else {
       this.sendWebMessage(aiSettings, payload, activeTab);
@@ -423,6 +421,25 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
 
   private sendWebMessage(aiSettings: any, payload: any[], activeTab: any) {
     this.aiService.sendWebMessage(
+      aiSettings.apiUrl,
+      aiSettings.token,
+      aiSettings.model,
+      payload
+    ).subscribe({
+      next: (resp) => {
+        let aiResponse = this.aiService.extractWebContent(resp);
+        this.handleResponse(aiResponse, activeTab);
+      },
+      error: (err) => {
+        console.error(err);
+        this.messages.push({ role: 'assistant', content: 'Error communicating with AI. Please check your configuration.' });
+        this.isLoading = false;
+      }
+    });
+  }
+
+  private sendWebMessageWithTools(aiSettings: any, payload: any[], activeTab: any) {
+    this.aiService.sendWithTools(
       aiSettings.apiUrl,
       aiSettings.token,
       aiSettings.model,
@@ -500,26 +517,12 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
 
     if (!aiResponse) return;
 
-    if (this.agentMode) {
-        const codeBlockRegex = /```[\s\S]*?\n([\s\S]*?)```/g;
-        const match = codeBlockRegex.exec(aiResponse);
-        if (match) {
-            aiResponse = match[1].trim();
-        } else {
-            aiResponse = aiResponse.trim();
-        }
-    }
-
     const lastMsg = this.messages[this.messages.length - 1];
     if (!lastMsg || lastMsg.role !== 'assistant') {
       this.messages.push({ role: 'assistant', content: aiResponse });
     }
     this.saveMessages();
     this.autoRenameSession();
-
-    if (this.agentMode && activeTab && activeTab.category === 'TERMINAL') {
-        this.electronTerminalService.sendTerminalInput(activeTab.id, aiResponse + '\r');
-    }
 
     this.isLoading = false;
     this.cdr.detectChanges();

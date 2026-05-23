@@ -36,6 +36,7 @@ const ALLOWED_INVOKE_CHANNELS = [
   'acp.fetch-models',
   'ai.fetch-models',
   'ai.send-chat',
+  'ai.send-with-tools',
   'session.open.rd.vnc',
   'session.fe.scp.register',
   'session.fe.ftp.register',
