@@ -11,9 +11,8 @@ YAET is a comprehensive remote connection and management tool built with Angular
 - **Telnet**: Legacy telnet protocol support
 - **WinRM**: Windows Remote Management for PowerShell sessions
 - **Local Terminal**: Integrated local shell access (CMD, PowerShell, PowerShell 7, Bash)
-- <img width="1300" height="1000" alt="image" src="https://github.com/user-attachments/assets/25587b0e-d83e-4592-949c-4a756de1180b" />
-
-- <img width="1500" height="800" alt="屏幕截图 2026-02-15 002126" src="https://github.com/user-attachments/assets/c174bcfc-3cd9-4b49-9e57-057eead922a6" />
+- <img width="2829" height="2138" alt="image" src="https://github.com/user-attachments/assets/3357a0ca-47a7-4620-b30d-c88ce580d40e" />
+- <img width="3530" height="2190" alt="image" src="https://github.com/user-attachments/assets/da9e3f0b-5b67-412d-b179-556899d9e120" />
 
 
 ### 📁 Remote File Explorer
@@ -24,11 +23,11 @@ YAET is a comprehensive remote connection and management tool built with Angular
 ### 🖼️ Remote Desktop
 - **VNC**: Virtual Network Computing for remote desktop access
 - **RDP**: Remote Desktop Protocol (Windows)
-- <img width="1000" height="800" alt="屏幕截图 2026-02-15 002447" src="https://github.com/user-attachments/assets/0fc0ca62-eb2e-4c07-8cb5-8a8b18788025" />
+- <img width="3540" height="2177" alt="image" src="https://github.com/user-attachments/assets/6d73f239-5061-42d9-bc66-d4ed000843a7" />
 
 ### ⚡ Custom Commands
 - Create your own custom commands/connections
-- <img width="1400" height="700" alt="image" src="https://github.com/user-attachments/assets/596dedb1-e11b-4b8f-af12-aa989ef010cb" />
+- <img width="2809" height="2035" alt="image" src="https://github.com/user-attachments/assets/0269e8f0-5f74-4bff-a590-0d6172f93e17" />
 
 
 ### 🔐 Secrets Management
@@ -36,13 +35,13 @@ YAET is a comprehensive remote connection and management tool built with Angular
 - SSH key management with passphrase support
 - Reusable credentials across multiple profiles
 - Support for login/password and SSH key authentication
-- <img width="1400" height="700" alt="屏幕截图 2026-02-15 002636" src="https://github.com/user-attachments/assets/2a709927-7001-48b1-89b3-d1c482a87d78" />
+- <img width="2879" height="1653" alt="image" src="https://github.com/user-attachments/assets/3ea5f344-2c70-4eb9-a310-bca7f8451cd1" />
 
 
 ### ☁️ Cloud Sync
 - Synchronize profiles and settings (all encrypted via system keychain) across devices via your own git repository (could be GitHub, GitLab, or even your own git server). We don't provide cloud sync service. All is up to you.
 - Seamless multi-device workflow
-- <img width="500" height="500" alt="屏幕截图 2026-02-15 003612" src="https://github.com/user-attachments/assets/394e3423-1957-4bec-afeb-40b54501e7ce" />
+- <img width="2366" height="2058" alt="image" src="https://github.com/user-attachments/assets/48432c20-cabc-44e5-86ac-83c30c7bca71" />
 
 
 ### 🎨 Additional Features
