@@ -38,14 +38,18 @@
 - [ ] URL handling:
   - [ ] Click → copied to clipboard
   - [ ] Ctrl+Click → opened in external browser
+- <img width="2819" height="1245" alt="image" src="https://github.com/user-attachments/assets/6636bca5-ded2-4659-81f2-115f8de9cc84" />
 
 ### Telnet
 - [ ] Configure telnet connection
 - [ ] Send commands
+- <img width="1981" height="1073" alt="image" src="https://github.com/user-attachments/assets/c619d238-37b0-4f9e-b94c-560dc3bf0247" />
 
 ### WinRM (PowerShell Remoting)
 - [ ] Configure WinRM connection
 - [ ] PowerShell commands execute remotely
+- <img width="2065" height="982" alt="image" src="https://github.com/user-attachments/assets/f2ddf406-f090-4b9f-81d5-069e25bcea33" />
+
 
 ## 4. Remote Desktop
 
@@ -56,6 +60,7 @@
 - [ ] Connection succeeds
 - [ ] Copy/paste text works bidirectionally
 - [ ] Resize works
+- <img width="3201" height="1778" alt="image" src="https://github.com/user-attachments/assets/7990bfe9-48d3-4eed-bce7-8eaf3839b4df" />
 
 ## 5. File Explorer
 
@@ -133,6 +138,12 @@
 - [ ] Agent mode: AI response sent directly to terminal
 - [ ] Messages are scrollable
 - [ ] Loading state shown during API call
+- [ ] Ai Tools: using ssh
+- <img width="1261" height="754" alt="image" src="https://github.com/user-attachments/assets/ec6c181e-274c-424b-a563-c14289668fc8" />
+- [ ] Ai Tools: using winrm
+- <img width="2065" height="1112" alt="image" src="https://github.com/user-attachments/assets/1eb8d91e-0512-4878-a900-6569baf9a3f0" />
+- [ ] Ai Tools: using telnet
+- <img width="1445" height="1058" alt="image" src="https://github.com/user-attachments/assets/b1518253-3bd7-462a-970b-2fa5db1a82d6" />
 
 ## 9. Security & Error Handling
 
