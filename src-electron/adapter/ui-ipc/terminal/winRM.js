@@ -1,5 +1,5 @@
 const { ipcMain } = require('electron');
-const { WinRMService } = require('../../services/winrmService');
+const { WinRMService } = require('../../../services/winrmService');
 
 let winrmService = null;
 const sessionSenders = new Map();

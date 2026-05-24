@@ -1,13 +1,13 @@
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
-const { SSHService } = require('../../../src-electron/services/sshService');
+const { SshTerminalSession } = require('../../../src-electron/runtime/connectors/terminal/ssh');
 const { Logger } = require('../../common/logger');
 
 const log = new Logger('mcp-ssh');
 
 function createSSHTools() {
-  const sshService = new SSHService(log);
+  const sessions = new Map();
 
   return [
     {
@@ -27,7 +27,6 @@ function createSSHTools() {
       },
       handler: async (args) => {
         const { host, port = 22, username, password, privateKey, command } = args;
-
         const sshConfig = { host, port, username };
         if (password) sshConfig.password = password;
         if (privateKey) {
@@ -38,33 +37,10 @@ function createSSHTools() {
             sshConfig.privateKey = fs.readFileSync(keyPath, 'utf8');
           }
         }
-
-        const sessionId = `mcp-ssh-${Date.now()}`;
-        let output = '';
-
-        return new Promise((resolve, reject) => {
-          sshService.on('output', ({ id, data }) => {
-            if (id === sessionId) output += data;
-          });
-
-          sshService.on('error', ({ id, error }) => {
-            if (id === sessionId) reject(new Error(error));
-          });
-
-          sshService.on('disconnect', ({ id }) => {
-            if (id === sessionId) resolve(output || '(no output)');
-          });
-
-          sshService.connect(sshConfig, { id: sessionId })
-            .then(() => {
-              sshService.write(sessionId, command + '\n');
-              setTimeout(() => {
-                sshService.disconnect(sessionId);
-                resolve(output || '(no output)');
-              }, 10000);
-            })
-            .catch(reject);
-        });
+        const session = new SshTerminalSession(log, sshConfig);
+        const result = await session.exec(command);
+        const output = (result.stdout || '') + (result.stderr || '');
+        return output || '(no output)';
       },
     },
     {
@@ -84,7 +60,6 @@ function createSSHTools() {
       },
       handler: async (args) => {
         const { host, port = 22, username, password, privateKey, initCommand } = args;
-
         const sshConfig = { host, port, username };
         if (password) sshConfig.password = password;
         if (privateKey) {
@@ -95,14 +70,10 @@ function createSSHTools() {
             sshConfig.privateKey = fs.readFileSync(keyPath, 'utf8');
           }
         }
-
         const sessionId = `mcp-ssh-${Date.now()}`;
-
-        await sshService.connect(sshConfig, {
-          id: sessionId,
-          initCmd: initCommand,
-        });
-
+        const session = new SshTerminalSession(log);
+        await session.connect({ ...sshConfig, initCmd: initCommand });
+        sessions.set(sessionId, session);
         return JSON.stringify({ sessionId, status: 'connected' });
       },
     },
@@ -118,8 +89,9 @@ function createSSHTools() {
         required: ['sessionId', 'input'],
       },
       handler: async (args) => {
-        const { sessionId, input } = args;
-        sshService.write(sessionId, input + '\n');
+        const session = sessions.get(args.sessionId);
+        if (!session) throw new Error(`Session not found: ${args.sessionId}`);
+        await session.write(args.input + '\n');
         return JSON.stringify({ sent: true });
       },
     },
@@ -134,7 +106,11 @@ function createSSHTools() {
         required: ['sessionId'],
       },
       handler: async (args) => {
-        sshService.disconnect(args.sessionId);
+        const session = sessions.get(args.sessionId);
+        if (session) {
+          await session.close();
+          sessions.delete(args.sessionId);
+        }
         return 'Disconnected';
       },
     },

@@ -1,5 +1,5 @@
 const { ipcMain } = require('electron');
-const { TelnetService } = require('../../services/telnetService');
+const { TelnetService } = require('../../../services/telnetService');
 
 let telnetService = null;
 const sessionSenders = new Map();

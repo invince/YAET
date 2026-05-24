@@ -1,9 +1,9 @@
 const { ipcMain } = require('electron');
 const path = require("path");
-const { SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, PROXIES_JSON, GIT_FOLDER, APP_CONFIG_PATH, BACKUP_FOLDER } = require("../common");
+const { SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, PROXIES_JSON, GIT_FOLDER, APP_CONFIG_PATH, BACKUP_FOLDER } = require("../../common");
 const { promises: fsPromise } = require("fs");
 const simpleGit = require("simple-git");
-const { getProxyUrl } = require("../utils/proxyUtils");
+const { getProxyUrl } = require("../../utils/proxyUtils");
 
 function initCloudIpcHandler(log, getProxies, getSecrets) {
 

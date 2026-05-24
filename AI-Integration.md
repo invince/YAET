@@ -125,6 +125,87 @@ Protocol methods:
 | \	ools/list\ | List available tools |
 | \	ools/call\ | Call a specific tool |
 
+### 5. AI Chat Function Calling
+
+> Built-in AI Chat supports OpenAI-compatible function calling, allowing the AI to directly execute remote operations via saved profiles — no credentials exposed to the AI.
+
+```mermaid
+sequenceDiagram
+    participant User as User
+    participant Angular as Angular Chat UI
+    participant IPC as IPC (electronMain)
+    participant AILoop as Function Call Loop
+    participant OpenAI as OpenAI API
+    participant TE as ToolExecutor
+    participant SSH as ssh2 Client
+
+    User->>Angular: Type message & send
+    Angular->>IPC: invoke('ai.send-with-tools', {messages})
+    IPC->>AILoop: _functionCallLoop()
+    AILoop->>OpenAI: POST /chat/completions<br/>(messages + tools[])
+    OpenAI-->>AILoop: tool_calls: profile_list({})
+    AILoop->>TE: execute('profile_list', {})
+    TE->>TE: decrypt profiles.json
+    TE-->>AILoop: {profiles: [{id, name, host, ...}]}
+    AILoop->>OpenAI: POST /chat/completions<br/>(messages + tool result)
+    OpenAI-->>AILoop: tool_calls: ssh_execute({profileId, command})
+    AILoop->>TE: execute('ssh_execute', ...)
+    TE->>TE: resolve profile + secret
+    TE->>SSH: Client.exec(command)
+    SSH-->>TE: {stdout, stderr, exitCode}
+    TE-->>AILoop: command result
+    AILoop->>OpenAI: POST /chat/completions<br/>(messages + tool result)
+    OpenAI-->>AILoop: final text response
+    AILoop-->>IPC: response.choices[0].message
+    IPC-->>Angular: resolved Promise
+    Angular->>User: Display AI response
+```
+
+#### AI Tools (5)
+
+| Tool | Parameters | Service Used | Description |
+|---|---|---|---|
+| `profile_list` | `keyword?` | ConfigService | List/search saved profiles by name or host |
+| `ssh_execute` | `profileId, command` | ssh2 Client.exec() | Execute command on remote server |
+| `scp_list_files` | `profileId, path` | SCPService | List remote directory entries |
+| `scp_read_file` | `profileId, path` | SCPService | Read remote file content |
+| `scp_write_file` | `profileId, path, content` | SCPService | Write content to remote file |
+
+#### Security Model
+
+**Only IDs cross the process boundary — never plaintext credentials.**
+
+```
+   ┌─ Angular (Renderer) ──────────────────────────┐
+   │  messages: ["check disk on web-server"]       │
+   │  AI sees: profile_list → [{id:"abc",          │  ← 只有 id，无 host/login/密码
+   │                           name:"web-server"}] │
+   │  AI calls: ssh_execute({profileId:"abc",      │  ← 只有 profileId
+   │                          command:"df -h"})    │
+   └───────────────────────────────────────────────┘
+                         │ IPC (安全通道)
+                         ▼
+   ┌─ Electron Main Process ───────────────────────┐
+   │  ToolExecutor:                                 │
+   │    1. reads ~/.yaet/profiles.json              │  ← 加密存储
+   │    2. decrypts with master key (keytar)        │  ← OS 密钥链
+   │    3. finds profile by ID                      │
+   │    4. resolves secretId → secrets.json         │  ← 加密存储
+   │    5. decrypts secret → login/password/key     │
+   │    6. ssh2 Client.exec(config)                 │  ← 凭据仅在主进程内存中
+   │    7. returns {stdout, stderr} only            │  ← 无凭据泄漏
+   └───────────────────────────────────────────────┘
+```
+
+Key guarantees:
+
+- **AI 永远看不到明文凭据** — 它只知道 `profileId`，不知道 host/port/username/password/privateKey
+- **Angular renderer 也看不到** — profile_list 返回的安全字段只包含 `{id, name, type, host, port}`，不包含 login/password/secretId
+- **凭据仅在主进程内存中存在** — ToolExecutor 解密后用完即丢，不持久化、不序列化、不回传 renderer
+- **加密存储** — `profiles.json` 和 `secrets.json` 使用 AES + master key (OS keychain via keytar) 加密
+- **AI 无法直接访问** — 即使 AI 被注入恶意 prompt，它能调的工具只有 5 个，参数只有 profileId + command，无法枚举 secretId 或直接读取文件
+- **No proxy support** in v1 — SSH/SCP connections are direct
+
 ## Running the Server
 
 \\\ash

@@ -1,5 +1,5 @@
 const { ipcMain } = require('electron');
-const { VNCService } = require('../../services/vncService');
+const { VNCService } = require('../../../services/vncService');
 
 let vncService = null;
 const sessionSenders = new Map();

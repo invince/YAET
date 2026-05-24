@@ -10,7 +10,7 @@ const fsPromise = require('fs/promises');
 const os = require('os');
 const uuid = require('uuid');
 const { Readable } = require('stream');
-const { createProxyConnection } = require('../../utils/proxyUtils');
+const { createProxyConnection } = require('../../../utils/proxyUtils');
 
 
 function initScpSftpHandler(log, scpMap, expressApp, getProxies, getSecrets) {

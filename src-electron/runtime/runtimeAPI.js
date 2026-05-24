@@ -1,0 +1,135 @@
+const { SshTerminalSession } = require('./connectors/terminal/ssh');
+const { LocalTerminalSession } = require('./connectors/terminal/local');
+const { ScpFileExplorer } = require('./connectors/file/scp');
+const { ConfigService } = require('../services/configService');
+const { decrypt } = require('../adapter/ui-ipc/security');
+
+class RuntimeAPI {
+  constructor(log) {
+    this.log = log;
+    this.configService = new ConfigService(log);
+    this.getSecrets = null;
+  }
+
+  setSecretsGetter(getter) {
+    this.getSecrets = getter;
+  }
+
+  async listProfiles(keyword) {
+    const encrypted = await this.configService.getProfiles();
+    if (!encrypted) return { profiles: [] };
+
+    const decrypted = await decrypt(encrypted);
+    const data = JSON.parse(decrypted);
+    const profiles = data.profiles || [];
+
+    const kw = keyword ? keyword.toLowerCase() : '';
+
+    const safe = profiles
+      .filter(p => {
+        if (!kw) return true;
+        const name = (p.name || '').toLowerCase();
+        const host = p.sshProfile?.host || p.telnetProfile?.host || p.winRmProfile?.host || '';
+        return name.includes(kw) || host.includes(kw);
+      })
+      .map(p => ({
+        id: p.id,
+        name: p.name || '',
+        type: p.profileType || '',
+        host: p.sshProfile?.host || p.telnetProfile?.host || p.winRmProfile?.host || '',
+        port: p.sshProfile?.port || p.telnetProfile?.port || p.winRmProfile?.port || null,
+      }));
+
+    return { profiles: safe };
+  }
+
+  async getConnector(profileId) {
+    const config = await this._resolveSshConfig(profileId);
+    const encrypted = await this.configService.getProfiles();
+    if (!encrypted) throw new Error('No profiles found');
+
+    const decrypted = await decrypt(encrypted);
+    const data = JSON.parse(decrypted);
+    const profile = data.profiles?.find(p => p.id === profileId);
+    if (!profile) throw new Error(`Profile not found: ${profileId}`);
+
+    const profileType = profile.profileType || '';
+
+    switch (profileType) {
+      case 'SSH_TERMINAL':
+      case 'TELNET_TERMINAL':
+      case 'WIN_RM_TERMINAL':
+        return new SshTerminalSession(this.log, config);
+      case 'SCP_FILE_EXPLORER':
+        return new ScpFileExplorer(this.log, config);
+      case 'LOCAL_TERMINAL':
+        return new LocalTerminalSession(this.log);
+      case 'FTP_FILE_EXPLORER':
+        throw new Error(`Connector ${profileType} not implemented yet`);
+      case 'SAMBA_FILE_EXPLORER':
+        throw new Error(`Connector ${profileType} not implemented yet`);
+      case 'VNC_REMOTE_DESKTOP':
+        throw new Error(`Connector ${profileType} not implemented yet`);
+      case 'RDP_REMOTE_DESKTOP':
+        throw new Error(`Connector ${profileType} not implemented yet`);
+      case 'CUSTOM':
+        throw new Error(`Connector ${profileType} not supported for runtime operations`);
+      default:
+        throw new Error(`Unsupported profile type for connector: ${profileType}`);
+    }
+  }
+
+  async _resolveSshConfig(profileId) {
+    const encrypted = await this.configService.getProfiles();
+    if (!encrypted) throw new Error('No profiles found');
+
+    const decrypted = await decrypt(encrypted);
+    const data = JSON.parse(decrypted);
+    const profiles = data.profiles || [];
+    const profile = profiles.find(p => p.id === profileId);
+    if (!profile) throw new Error(`Profile not found: ${profileId}`);
+
+    const connProfile = profile.sshProfile || profile.telnetProfile || profile.winRmProfile;
+    if (!connProfile) throw new Error(`Profile ${profileId} has no remote connection configuration`);
+    if (!connProfile.host) throw new Error(`Profile ${profileId} has no host configured`);
+
+    const config = {
+      host: connProfile.host,
+      port: connProfile.port || 22,
+    };
+
+    if (connProfile.authType === 'login' || connProfile.authType === 'LOGIN') {
+      config.username = connProfile.login;
+      config.password = connProfile.password;
+    } else if (connProfile.authType === 'secret' || connProfile.authType === 'SECRET') {
+      const secrets = this.getSecrets ? this.getSecrets() : null;
+      if (!secrets || !secrets.secrets) throw new Error('No secrets loaded');
+
+      const secretId = connProfile.secretId;
+      if (!secretId) throw new Error(`Profile ${profileId} has authType=secret but no secretId`);
+
+      const secret = secrets.secrets.find(s => s.id === secretId);
+      if (!secret) throw new Error(`Secret not found: ${secretId}`);
+
+      const secretType = secret.secretType || '';
+      if (secretType === 'LOGIN_PASSWORD' || secretType === 'login_password') {
+        config.username = secret.login;
+        config.password = secret.password;
+      } else if (secretType === 'SSH_KEY' || secretType === 'ssh_key') {
+        config.username = secret.login;
+        config.privateKey = (secret.key || '').replace(/\\n/g, '\n');
+        if (secret.passphrase) {
+          config.passphrase = secret.passphrase;
+        }
+      }
+    } else {
+      if (connProfile.login) {
+        config.username = connProfile.login;
+      }
+    }
+
+    return config;
+  }
+}
+
+module.exports = { RuntimeAPI };

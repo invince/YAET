@@ -1,6 +1,6 @@
 const { autoUpdater } = require('electron-updater');
 const { dialog, ipcMain } = require("electron");
-const { getProxyUrl } = require("../utils/proxyUtils");
+const { getProxyUrl } = require("../../utils/proxyUtils");
 
 function initAutoUpdater(log, settings, getProxies, getSecrets) {
 

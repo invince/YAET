@@ -1,7 +1,7 @@
 const { ipcMain } = require('electron');
 const { load, save,
   SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, PROXIES_JSON
-  , updateManifest } = require("../common");
+  , updateManifest } = require("../../common");
 function initConfigFilesIpcHandler(log, mainWindow, reloadProxies, reloadSecrets) {
 
   ipcMain.on('settings.reload', (event, obj) => {

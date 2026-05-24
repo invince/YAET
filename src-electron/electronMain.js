@@ -4,19 +4,19 @@ const { app, globalShortcut, BrowserWindow, Tray, ipcMain } = require('electron'
 
 const { createMenu } = require('./ui/menu');
 const { SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON, APP_CONFIG_PATH, PROXIES_JSON } = require("./common");
-const { initConfigFilesIpcHandler } = require('./ipc/configFiles');
-const { initTerminalIpcHandler } = require('./ipc/terminal/terminal');
-const { initCloudIpcHandler } = require('./ipc/cloud');
-const { initSecurityIpcHandler, decrypt } = require('./ipc/security');
-const { initRdpHandler } = require('./ipc/remote-desktop/rdp');
-const { initClipboard } = require('./ipc/clipboard');
-const { initVncHandler } = require("./ipc/remote-desktop/vnc");
-const { initCustomSessionHandler } = require("./ipc/customSession");
-const { initScpSftpHandler } = require("./ipc/file-explorer/scp");
-const { initAutoUpdater } = require("./ipc/autoUpdater");
-const { initBackend } = require("./ipc/backend");
-const { initFtpHandler } = require("./ipc/file-explorer/ftp");
-const { initLocalFileHandler } = require("./ipc/localFile");
+const { initConfigFilesIpcHandler } = require('./adapter/ui-ipc/configFiles');
+const { initTerminalIpcHandler } = require('./adapter/ui-ipc/terminal/terminal');
+const { initCloudIpcHandler } = require('./adapter/ui-ipc/cloud');
+const { initSecurityIpcHandler, decrypt } = require('./adapter/ui-ipc/security');
+const { initRdpHandler } = require('./adapter/ui-ipc/remote-desktop/rdp');
+const { initClipboard } = require('./adapter/ui-ipc/clipboard');
+const { initVncHandler } = require("./adapter/ui-ipc/remote-desktop/vnc");
+const { initCustomSessionHandler } = require("./adapter/ui-ipc/customSession");
+const { initScpSftpHandler } = require("./adapter/ui-ipc/file-explorer/scp");
+const { initAutoUpdater } = require("./adapter/ui-ipc/autoUpdater");
+const { initBackend } = require("./adapter/ui-ipc/backend");
+const { initFtpHandler } = require("./adapter/ui-ipc/file-explorer/ftp");
+const { initLocalFileHandler } = require("./adapter/ui-ipc/localFile");
 
 let tray;
 let expressApp;
@@ -32,17 +32,15 @@ let allProxies = null;
 let allSecrets = null;
 
 const log = require("electron-log")
-const { initCommonIpc } = require("./ipc/commonIpc");
-const { initAcpIpcHandler } = require("./ipc/acp");
-const { initAiIpcHandler, initAiChatIpcHandler } = require("./ipc/ai");
-const { initSSHTerminalIpcHandler } = require("./ipc/terminal/ssh");
-const { initTelnetIpcHandler } = require("./ipc/terminal/telnet");
-const { initLocalTerminalIpcHandler } = require("./ipc/terminal/localTerminal");
-const { initWinRmIpcHandler } = require("./ipc/terminal/winRM");
-const { initSambaHandler } = require("./ipc/file-explorer/samba");
-const { initAiToolsIpcHandler } = require("./ipc/ai-tools");
-const { ToolExecutor } = require("./services/toolExecutor");
-const { ConfigService } = require("./services/configService");
+const { initCommonIpc } = require("./adapter/ui-ipc/commonIpc");
+const { initAcpIpcHandler } = require("./adapter/ui-ipc/acp");
+const { initAiIpcHandler, initAiChatIpcHandler, initAiToolsIpcHandler } = require("./adapter/ui-ipc/ai");
+const { initSSHTerminalIpcHandler } = require("./adapter/ui-ipc/terminal/ssh");
+const { initTelnetIpcHandler } = require("./adapter/ui-ipc/terminal/telnet");
+const { initLocalTerminalIpcHandler } = require("./adapter/ui-ipc/terminal/localTerminal");
+const { initWinRmIpcHandler } = require("./adapter/ui-ipc/terminal/winRM");
+const { initSambaHandler } = require("./adapter/ui-ipc/file-explorer/samba");
+const { RuntimeAPI } = require("./runtime/runtimeAPI");
 
 const logPath = path.join(app.getPath('userData'), 'logs/main.log');
 console.log(logPath);
@@ -142,9 +140,9 @@ function initHandlerBeforeSettingLoad() {
   initAiIpcHandler(log);
   initAiChatIpcHandler(log);
 
-  const toolExecutor = new ToolExecutor(log, new ConfigService(log));
-  toolExecutor.setSecretsGetter(() => allSecrets);
-  initAiToolsIpcHandler(log, toolExecutor);
+  const runtime = new RuntimeAPI(log);
+  runtime.setSecretsGetter(() => allSecrets);
+  initAiToolsIpcHandler(log, runtime);
 
   initLocalFileHandler(log, mainWindow);
 
