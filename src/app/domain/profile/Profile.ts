@@ -113,7 +113,7 @@ export class Profile {
     this.localTerminal = new LocalTerminalProfile();
     this.sshProfile = new RemoteTerminalProfile();
     this.telnetProfile = new RemoteTerminalProfile(23);
-    this.winRmProfile = new RemoteTerminalProfile();
+    this.winRmProfile = new RemoteTerminalProfile(5985);
 
     this.ftpProfile = new FTPProfile();
     this.sambaProfile = new SambaProfile();

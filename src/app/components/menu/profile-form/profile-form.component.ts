@@ -72,7 +72,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   CATEGORY_OPTIONS = ProfileCategory;
   CATEGORY_TYPE_MAP = ProfileCategoryTypeMap;
   SecretType = SecretType;
-  TELNET_SUPPORTED_SECRETS = [SecretType.LOGIN_PASSWORD];
+  TELNET_SUPPORTED_SECRETS = [SecretType.PASSWORD_ONLY, SecretType.LOGIN_PASSWORD];
   WINRM_SUPPORTED_SECRETS = [SecretType.LOGIN_PASSWORD];
 
   groupColor: string | undefined = '';

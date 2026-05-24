@@ -14,7 +14,7 @@ class WinRMSession extends TerminalRuntimeApi {
   async connect(options = {}) {
     const { initPath, initCmd, rows, cols, settings } = options;
     const config = { ...(this._initialConfig || {}), ...options };
-    const { host, username, password } = config;
+    const { host, username, password, port } = config;
 
     let localTermForWinRM = 'powershell.exe';
     if (settings?.terminal?.localTerminal?.type === 'powershell 7') {
@@ -56,15 +56,16 @@ class WinRMSession extends TerminalRuntimeApi {
     });
 
     const esc = (s) => (s || '').replace(/'/g, "''");
+    const portOption = config.port ? ` -Port ${config.port}` : '';
     let connectionCommand = [];
     if (password && username) {
       connectionCommand = [
         `$secPassword = ConvertTo-SecureString '${esc(password)}' -AsPlainText -Force`,
         `$cred = New-Object System.Management.Automation.PSCredential('${esc(username)}', $secPassword)`,
-        `Enter-PSSession -ComputerName '${esc(host)}' -Credential $cred`,
+        `Enter-PSSession -ComputerName '${esc(host)}' -Credential $cred${portOption}`,
       ];
     } else {
-      connectionCommand = [`Enter-PSSession -ComputerName '${esc(host)}'`];
+      connectionCommand = [`Enter-PSSession -ComputerName '${esc(host)}'${portOption}`];
     }
 
     for (const oneCmd of connectionCommand) {
@@ -108,13 +109,14 @@ class WinRMSession extends TerminalRuntimeApi {
     const config = this._initialConfig;
     if (!config || !config.host) throw new Error('No WinRM config available for exec');
 
-    const { host, username, password } = config;
+    const { host, username, password, port } = config;
+    const portOption = port ? ` -Port ${port}` : '';
 
     const esc = (s) => (s || '').replace(/'/g, "''");
     const script = [
       `$secPassword = ConvertTo-SecureString '${esc(password)}' -AsPlainText -Force`,
       `$cred = New-Object System.Management.Automation.PSCredential('${esc(username)}', $secPassword)`,
-      `Invoke-Command -ComputerName '${esc(host)}' -Credential $cred -ScriptBlock { ${command} }`,
+      `Invoke-Command -ComputerName '${esc(host)}'${portOption} -Credential $cred -ScriptBlock { ${command} }`,
     ].join('; ');
 
     return new Promise((resolve) => {

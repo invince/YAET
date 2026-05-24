@@ -9,7 +9,6 @@ class TelnetSession extends TerminalRuntimeApi {
     this._initialConfig = config || null;
     this.client = null;
     this._inputBuffer = '';
-    this._isLoginPrompt = false;
     this._connected = false;
   }
 
@@ -35,11 +34,7 @@ class TelnetSession extends TerminalRuntimeApi {
     this.log.info('Telnet connection established');
 
     this.client.on('data', (data) => {
-      const message = data.toString();
-      if (message.toLowerCase().includes('login:') || message.toLowerCase().includes('username:')) {
-        this._isLoginPrompt = true;
-      }
-      this.emit('output', { data: message });
+      this.emit('output', { data: data.toString() });
     });
 
     this._connected = true;
@@ -50,22 +45,16 @@ class TelnetSession extends TerminalRuntimeApi {
     if (!this.client) return false;
 
     if (data === '\r') {
-      if (this._isLoginPrompt) {
-        this._isLoginPrompt = false;
+      if (this._inputBuffer) {
+        this.client.send(this._inputBuffer).catch(() => {});
       }
-      await this.client.send(this._inputBuffer);
-      this.emit('output', { data: '\r' });
       this._inputBuffer = '';
     } else if (data === '\x7F' || data === '\b') {
       if (this._inputBuffer.length > 0) {
         this._inputBuffer = this._inputBuffer.slice(0, -1);
-        this.emit('output', { data: '\b \b' });
       }
     } else {
       this._inputBuffer += data;
-      if (!this._isLoginPrompt) {
-        this.emit('output', { data });
-      }
     }
     return true;
   }
@@ -94,15 +83,26 @@ class TelnetSession extends TerminalRuntimeApi {
       ownsConnection = true;
     }
 
+    if (telnet.state !== 'standby') {
+      await new Promise((resolve) => {
+        const fallback = setTimeout(resolve, 3000);
+        telnet.once('ready', () => { clearTimeout(fallback); resolve(); });
+      });
+    }
+
     try {
-      const shellPrompt = await telnet.exec(command, { timeout: 15000 });
-      const stdout = shellPrompt || '';
-      return { stdout, stderr: '', exitCode: 0 };
-    } catch (err) {
-      if (err.message && err.message.includes('timeout')) {
-        return { stdout: '', stderr: err.message, exitCode: 1 };
-      }
-      throw err;
+      return await new Promise((resolve) => {
+        let collected = '';
+        const onData = (data) => { collected += data.toString(); };
+        telnet.on('data', onData);
+
+        const timer = setTimeout(() => {
+          telnet.removeListener('data', onData);
+          resolve({ stdout: collected, stderr: '', exitCode: 0 });
+        }, 15000);
+
+        telnet.socket.write(command + '\r\n', () => {});
+      });
     } finally {
       if (ownsConnection) {
         telnet.end();

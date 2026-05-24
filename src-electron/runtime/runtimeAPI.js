@@ -1,11 +1,11 @@
-const { SshTerminalSession } = require('./connectors/terminal/ssh');
-const { LocalTerminalSession } = require('./connectors/terminal/local');
-const { TelnetSession } = require('./connectors/terminal/telnet');
-const { WinRMSession } = require('./connectors/terminal/winrm');
-const { ScpFileExplorer } = require('./connectors/file/scp');
-const { ConfigService } = require('../services/configService');
-const { ProxyService } = require('../services/proxyService');
-const { decrypt } = require('../adapter/ui-ipc/security');
+const {SshTerminalSession} = require('./connectors/terminal/ssh');
+const {LocalTerminalSession} = require('./connectors/terminal/local');
+const {TelnetSession} = require('./connectors/terminal/telnet');
+const {WinRMSession} = require('./connectors/terminal/winrm');
+const {ScpFileExplorer} = require('./connectors/file/scp');
+const {ConfigService} = require('../services/configService');
+const {ProxyService} = require('../services/proxyService');
+const {decrypt} = require('../adapter/ui-ipc/security');
 
 class RuntimeAPI {
   constructor(log) {
@@ -25,7 +25,7 @@ class RuntimeAPI {
 
   async listProfiles(keyword) {
     const encrypted = await this.configService.getProfiles();
-    if (!encrypted) return { profiles: [] };
+    if (!encrypted) return {profiles: []};
 
     const decrypted = await decrypt(encrypted);
     const data = JSON.parse(decrypted);
@@ -40,15 +40,20 @@ class RuntimeAPI {
         const host = p.sshProfile?.host || p.telnetProfile?.host || p.winRmProfile?.host || '';
         return name.includes(kw) || host.includes(kw);
       })
-      .map(p => ({
-        id: p.id,
-        name: p.name || '',
-        type: p.profileType || '',
-        host: p.sshProfile?.host || p.telnetProfile?.host || p.winRmProfile?.host || '',
-        port: p.sshProfile?.port || p.telnetProfile?.port || p.winRmProfile?.port || null,
-      }));
+      .map(p => {
+        const profile = p.profileType === 'TELNET_TERMINAL' ? p.telnetProfile
+          : p.profileType === 'WIN_RM_TERMINAL' ? p.winRmProfile
+            : p.sshProfile;
+        return {
+          id: p.id,
+          name: p.name || '',
+          type: p.profileType || '',
+          host: profile?.host || '',
+          port: profile?.port || -1,
+        };
+      });
 
-    return { profiles: safe };
+    return {profiles: safe};
   }
 
   async getConnector(profileId, options = {}) {
@@ -99,14 +104,27 @@ class RuntimeAPI {
     const profile = profiles.find(p => p.id === profileId);
     if (!profile) throw new Error(`Profile not found: ${profileId}`);
 
-    const connProfile = profile.sshProfile || profile.telnetProfile || profile.winRmProfile;
+    const connProfile = profile.sshProfile?.host ? profile.sshProfile
+      : profile.telnetProfile?.host ? profile.telnetProfile
+        : profile.winRmProfile?.host ? profile.winRmProfile
+          : null;
     if (!connProfile) throw new Error(`Profile ${profileId} has no remote connection configuration`);
     if (!connProfile.host) throw new Error(`Profile ${profileId} has no host configured`);
 
+    const defaultPort = profile.profileType === 'TELNET_TERMINAL' ? 23
+      : profile.profileType === 'WIN_RM_TERMINAL' ? 5985
+        : 22;
     const config = {
       host: connProfile.host,
-      port: connProfile.port || 22,
+      port: connProfile.port || defaultPort,
     };
+
+    if (profile.profileType === 'TELNET_TERMINAL') {
+      config.negotiationMandatory = false;
+      config.timeout = 15000;
+      config.loginPrompt = /[Ll]ogin|[Uu]ser(|name)[:\s]*$/i;
+      config.passwordPrompt = /[Pp]ass(word|wd)?[:\s]*$/i;
+    }
 
     const secretId = options.secretId || connProfile.secretId;
     if (connProfile.authType === 'login' || connProfile.authType === 'LOGIN') {
@@ -131,6 +149,11 @@ class RuntimeAPI {
         if (secret.passphrase) {
           config.passphrase = secret.passphrase;
         }
+      } else if (secretType === 'PASSWORD_ONLY' || secretType === 'password_only') {
+        config.password = secret.password;
+        if (secret.login) {
+          config.username = secret.login;
+        }
       }
     } else {
       if (connProfile.login) {
@@ -151,7 +174,7 @@ class RuntimeAPI {
         proxy,
         config.host,
         config.port,
-        () => secrets || { secrets: [] }
+        () => secrets || {secrets: []}
       );
       config.sock = sock;
     }
@@ -160,4 +183,4 @@ class RuntimeAPI {
   }
 }
 
-module.exports = { RuntimeAPI };
+module.exports = {RuntimeAPI};

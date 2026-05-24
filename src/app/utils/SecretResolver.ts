@@ -79,6 +79,10 @@ function applySecretToConfig(
     }
 
     case SecretType.PASSWORD_ONLY:
+      config[p] = secret.password;
+      if (secret.login) {
+        config[u] = secret.login;
+      }
       break;
   }
 }
