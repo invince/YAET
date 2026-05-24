@@ -5,7 +5,7 @@ const { promises: fsPromise } = require("fs");
 const simpleGit = require("simple-git");
 const { getProxyUrl } = require("../../utils/proxyUtils");
 
-function initCloudIpcHandler(log, getProxies, getSecrets) {
+function initCloudIpcHandler(log, proxyRepo, secretRepo) {
 
   ipcMain.handle('cloud.upload', async (event, data) => {
 
@@ -45,11 +45,11 @@ function initCloudIpcHandler(log, getProxies, getSecrets) {
       // Configure Proxy
       let proxyId = cloudSettings.proxyId;
       log.info(`Looking for proxy with ID: ${proxyId}`);
-      const proxies = getProxies();
+      const proxies = proxyRepo();
       log.info(`Available proxies: ${JSON.stringify(proxies?.proxies?.map(p => ({ id: p.id, name: p.name })))}`);
       let proxy = proxies?.proxies?.find(p => p.id === proxyId);
       log.info(`Found proxy: ${proxy ? proxy.name : 'undefined'}`);
-      const proxyUrl = getProxyUrl(proxy, getSecrets, log);
+      const proxyUrl = getProxyUrl(proxy, secretRepo, log);
       if (proxyUrl) {
         log.info(`Using proxy: ${proxyUrl}`);
         // await git.addConfig('http.proxy', proxyUrl);
@@ -171,11 +171,11 @@ function initCloudIpcHandler(log, getProxies, getSecrets) {
       // Configure Proxy
       let proxyId = cloudSettings.proxyId;
       log.info(`Looking for proxy with ID: ${proxyId}`);
-      const proxies = getProxies();
+      const proxies = proxyRepo();
       log.info(`Available proxies: ${JSON.stringify(proxies?.proxies?.map(p => ({ id: p.id, name: p.name })))}`);
       let proxy = proxies?.proxies?.find(p => p.id === proxyId);
       log.info(`Found proxy: ${proxy ? proxy.name : 'undefined'}`);
-      const proxyUrl = getProxyUrl(proxy, getSecrets, log);
+      const proxyUrl = getProxyUrl(proxy, secretRepo, log);
       if (proxyUrl) {
         log.info(`Using proxy: ${proxyUrl}`);
         // await git.addConfig('http.proxy', proxyUrl);

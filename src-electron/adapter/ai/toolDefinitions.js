@@ -16,13 +16,15 @@ function getToolDefinitions() {
     {
       type: 'function',
       function: {
-        name: 'ssh_execute',
-        description: 'Execute a command on a remote server via SSH using a saved profile',
+        name: 'terminal_execute',
+        description: 'Execute a command on a remote server (SSH/Telnet/WinRM) using a saved profile',
         parameters: {
           type: 'object',
           properties: {
             profileId: { type: 'string', description: 'ID of the profile to use' },
             command: { type: 'string', description: 'Command to execute on the remote server' },
+            proxyId: { type: 'string', description: 'Optional proxy ID to route the connection through' },
+            secretId: { type: 'string', description: 'Optional secret ID override for authentication' },
           },
           required: ['profileId', 'command'],
         },
@@ -81,8 +83,11 @@ async function executeTool(runtime, toolName, args) {
   switch (toolName) {
     case 'profile_list':
       return runtime.listProfiles(args.keyword);
-    case 'ssh_execute': {
-      const t = await runtime.getConnector(args.profileId);
+    case 'terminal_execute': {
+      const t = await runtime.getConnector(args.profileId, {
+        proxyId: args.proxyId,
+        secretId: args.secretId,
+      });
       return t.exec(args.command);
     }
     case 'scp_list_files': {

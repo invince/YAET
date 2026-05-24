@@ -141,7 +141,8 @@ function initHandlerBeforeSettingLoad() {
   initAiChatIpcHandler(log);
 
   const runtime = new RuntimeAPI(log);
-  runtime.setSecretsGetter(() => allSecrets);
+  runtime.setSecretRepo(() => allSecrets);
+  runtime.setProxyRepo(() => allProxies);
   initAiToolsIpcHandler(log, runtime);
 
   initLocalFileHandler(log, mainWindow);

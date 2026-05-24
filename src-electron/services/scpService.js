@@ -27,16 +27,16 @@ class SCPService {
     const proxyId = configData.proxyId;
 
     if (proxyId) {
-      const getProxies = configData.getProxies || (() => null);
-      const getSecrets = configData.getSecrets || (() => null);
+      const proxyRepo = configData.getProxies || (() => null);
+      const secretRepo = configData.getSecrets || (() => null);
       try {
         this.log.info(`SCP connection: Using proxy ${proxyId}`);
-        const proxies = getProxies();
+        const proxies = proxyRepo();
         if (proxies && proxies.proxies) {
           const proxy = proxies.proxies.find(p => p.id === proxyId);
           if (proxy) {
             const sock = await this.proxyService.createProxyConnection(
-              proxy, config.host, config.port || 22, getSecrets
+              proxy, config.host, config.port || 22, secretRepo
             );
             config.sock = sock;
           }

@@ -1,18 +1,26 @@
 const { SshTerminalSession } = require('./connectors/terminal/ssh');
 const { LocalTerminalSession } = require('./connectors/terminal/local');
+const { TelnetSession } = require('./connectors/terminal/telnet');
+const { WinRMSession } = require('./connectors/terminal/winrm');
 const { ScpFileExplorer } = require('./connectors/file/scp');
 const { ConfigService } = require('../services/configService');
+const { ProxyService } = require('../services/proxyService');
 const { decrypt } = require('../adapter/ui-ipc/security');
 
 class RuntimeAPI {
   constructor(log) {
     this.log = log;
     this.configService = new ConfigService(log);
-    this.getSecrets = null;
+    this.secretRepo = null;
+    this.proxyRepo = null;
   }
 
-  setSecretsGetter(getter) {
-    this.getSecrets = getter;
+  setSecretRepo(getter) {
+    this.secretRepo = getter;
+  }
+
+  setProxyRepo(getter) {
+    this.proxyRepo = getter;
   }
 
   async listProfiles(keyword) {
@@ -43,8 +51,8 @@ class RuntimeAPI {
     return { profiles: safe };
   }
 
-  async getConnector(profileId) {
-    const config = await this._resolveSshConfig(profileId);
+  async getConnector(profileId, options = {}) {
+    const config = await this._resolveRemoteConfig(profileId, options);
     const encrypted = await this.configService.getProfiles();
     if (!encrypted) throw new Error('No profiles found');
 
@@ -57,9 +65,11 @@ class RuntimeAPI {
 
     switch (profileType) {
       case 'SSH_TERMINAL':
-      case 'TELNET_TERMINAL':
-      case 'WIN_RM_TERMINAL':
         return new SshTerminalSession(this.log, config);
+      case 'TELNET_TERMINAL':
+        return new TelnetSession(this.log, config);
+      case 'WIN_RM_TERMINAL':
+        return new WinRMSession(this.log, config);
       case 'SCP_FILE_EXPLORER':
         return new ScpFileExplorer(this.log, config);
       case 'LOCAL_TERMINAL':
@@ -79,7 +89,7 @@ class RuntimeAPI {
     }
   }
 
-  async _resolveSshConfig(profileId) {
+  async _resolveRemoteConfig(profileId, options = {}) {
     const encrypted = await this.configService.getProfiles();
     if (!encrypted) throw new Error('No profiles found');
 
@@ -98,15 +108,15 @@ class RuntimeAPI {
       port: connProfile.port || 22,
     };
 
+    const secretId = options.secretId || connProfile.secretId;
     if (connProfile.authType === 'login' || connProfile.authType === 'LOGIN') {
       config.username = connProfile.login;
       config.password = connProfile.password;
-    } else if (connProfile.authType === 'secret' || connProfile.authType === 'SECRET') {
-      const secrets = this.getSecrets ? this.getSecrets() : null;
+    } else if (connProfile.authType === 'secret' || connProfile.authType === 'SECRET' || options.secretId) {
+      const secrets = this.secretRepo ? this.secretRepo() : null;
       if (!secrets || !secrets.secrets) throw new Error('No secrets loaded');
 
-      const secretId = connProfile.secretId;
-      if (!secretId) throw new Error(`Profile ${profileId} has authType=secret but no secretId`);
+      if (!secretId) throw new Error(`Profile ${profileId} has no secretId`);
 
       const secret = secrets.secrets.find(s => s.id === secretId);
       if (!secret) throw new Error(`Secret not found: ${secretId}`);
@@ -126,6 +136,24 @@ class RuntimeAPI {
       if (connProfile.login) {
         config.username = connProfile.login;
       }
+    }
+
+    if (options.proxyId) {
+      const proxies = this.proxyRepo ? this.proxyRepo() : null;
+      if (!proxies || !proxies.proxies) throw new Error('No proxies loaded');
+
+      const proxy = proxies.proxies.find(p => p.id === options.proxyId);
+      if (!proxy) throw new Error(`Proxy not found: ${options.proxyId}`);
+
+      const proxyService = new ProxyService(this.log);
+      const secrets = this.secretRepo ? this.secretRepo() : null;
+      const sock = await proxyService.createProxyConnection(
+        proxy,
+        config.host,
+        config.port,
+        () => secrets || { secrets: [] }
+      );
+      config.sock = sock;
     }
 
     return config;

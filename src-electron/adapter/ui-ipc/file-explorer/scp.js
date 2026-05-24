@@ -13,7 +13,7 @@ const { Readable } = require('stream');
 const { createProxyConnection } = require('../../../utils/proxyUtils');
 
 
-function initScpSftpHandler(log, scpMap, expressApp, getProxies, getSecrets) {
+function initScpSftpHandler(log, scpMap, expressApp, proxyRepo, secretRepo) {
 
   ipcMain.handle('session.fe.scp.register', async (event, { id, config }) => {
     scpMap.set(id, config);
@@ -33,7 +33,7 @@ function initScpSftpHandler(log, scpMap, expressApp, getProxies, getSecrets) {
     if (proxyId) {
       try {
         log.info(`SCP connection ${configId}: Using proxy ${proxyId}`);
-        const proxies = getProxies();
+        const proxies = proxyRepo();
         if (proxies && proxies.proxies) {
           const proxy = proxies.proxies.find(p => p.id === proxyId);
           if (proxy) {
@@ -43,7 +43,7 @@ function initScpSftpHandler(log, scpMap, expressApp, getProxies, getSecrets) {
               proxy,
               config.host,
               config.port || 22,
-              getSecrets,
+              secretRepo,
               log
             );
             config.sock = sock;
@@ -260,7 +260,7 @@ function initScpSftpHandler(log, scpMap, expressApp, getProxies, getSecrets) {
       const result = await withSftpClient(configId, async (sftp) => {
         const { overwrite } = req.body;
         let remotePath;
-        
+
         if (overwrite === 'true' || overwrite === true) {
             remotePath = `${path}/${filename}`;
         } else {

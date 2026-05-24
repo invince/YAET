@@ -2,7 +2,7 @@ const { autoUpdater } = require('electron-updater');
 const { dialog, ipcMain } = require("electron");
 const { getProxyUrl } = require("../../utils/proxyUtils");
 
-function initAutoUpdater(log, settings, getProxies, getSecrets) {
+function initAutoUpdater(log, settings, proxyRepo, secretRepo) {
 
   log.info("AutoUpdate is active");
 
@@ -18,10 +18,10 @@ function initAutoUpdater(log, settings, getProxies, getSecrets) {
 
   let proxyUrl = null;
   let savedProxyUrl = null;
-  if (settings?.general?.proxyId && getProxies()?.proxies) {
-    const proxy = getProxies()?.proxies.find(p => p.id === settings.general.proxyId);
+  if (settings?.general?.proxyId && proxyRepo()?.proxies) {
+    const proxy = proxyRepo()?.proxies.find(p => p.id === settings.general.proxyId);
     if (proxy) {
-      proxyUrl = getProxyUrl(proxy, getSecrets, log);
+      proxyUrl = getProxyUrl(proxy, secretRepo, log);
       savedProxyUrl = proxyUrl;
     }
   }

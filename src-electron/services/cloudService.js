@@ -33,7 +33,7 @@ class CloudService {
     return result;
   }
 
-  async upload(cloudSettings, getProxies, getSecrets) {
+  async upload(cloudSettings, proxyRepo, secretRepo) {
     const response = { succeed: false, ok: [], ko: [] };
 
     if (!cloudSettings) {
@@ -60,11 +60,11 @@ class CloudService {
 
       let proxyId = cloudSettings.proxyId;
       let proxy = null;
-      if (proxyId && getProxies) {
-        const proxies = getProxies();
+      if (proxyId && proxyRepo) {
+        const proxies = proxyRepo();
         proxy = proxies?.proxies?.find(p => p.id === proxyId);
       }
-      const proxyUrl = proxy ? this.proxyService.getProxyUrl(proxy, getSecrets) : null;
+      const proxyUrl = proxy ? this.proxyService.getProxyUrl(proxy, secretRepo) : null;
 
       const cloneOptions = [];
       if (proxyUrl) cloneOptions.push('-c', `http.proxy=${proxyUrl}`);
@@ -111,7 +111,7 @@ class CloudService {
     return response;
   }
 
-  async download(cloudSettings, getProxies, getSecrets) {
+  async download(cloudSettings, proxyRepo, secretRepo) {
     const response = { succeed: false, ok: [], ko: [] };
 
     if (!cloudSettings) {
@@ -156,11 +156,11 @@ class CloudService {
       const git = simpleGit();
 
       let proxy = null;
-      if (cloudSettings.proxyId && getProxies) {
-        const proxies = getProxies();
+      if (cloudSettings.proxyId && proxyRepo) {
+        const proxies = proxyRepo();
         proxy = proxies?.proxies?.find(p => p.id === cloudSettings.proxyId);
       }
-      const proxyUrl = proxy ? this.proxyService.getProxyUrl(proxy, getSecrets) : null;
+      const proxyUrl = proxy ? this.proxyService.getProxyUrl(proxy, secretRepo) : null;
 
       const cloneOptions = [];
       if (proxyUrl) cloneOptions.push('-c', `http.proxy=${proxyUrl}`);

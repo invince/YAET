@@ -1,30 +1,9 @@
 const { ipcMain } = require('electron');
-const { WinRMService } = require('../../../services/winrmService');
+const { WinRMSession } = require('../../../runtime/connectors/terminal/winrm');
 
-let winrmService = null;
-const sessionSenders = new Map();
+const sessions = new Map();
 
 function initWinRmIpcHandler(settings, log, terminalMap) {
-  winrmService = new WinRMService(log);
-
-  winrmService.on('output', ({ id, data }) => {
-    const sender = sessionSenders.get(id);
-    if (sender) sender.send('terminal.output', { id, data });
-  });
-
-  winrmService.on('error', ({ id, error }) => {
-    const sender = sessionSenders.get(id);
-    if (sender) sender.send('error', { category: 'winrm', id, error });
-  });
-
-  winrmService.on('opened', ({ id }) => {
-    const sender = sessionSenders.get(id);
-    if (sender) sender.send('terminal.opened', { id });
-  });
-
-  winrmService.on('closed', ({ id }) => {
-    sessionSenders.delete(id);
-  });
 
   ipcMain.on('session.open.terminal.winrm', (event, data) => {
     if (process.platform !== 'win32') {
@@ -36,25 +15,41 @@ function initWinRmIpcHandler(settings, log, terminalMap) {
       return;
     }
 
-    sessionSenders.set(data.terminalId, event.sender);
+    const session = new WinRMSession(log);
 
-    const session = winrmService.connect(data.config, {
-      id: data.terminalId,
-      initPath: data.initPath,
-      initCmd: data.initCmd,
-      settings,
+    session.on('output', ({ data: output }) => {
+      event.sender.send('terminal.output', { id: data.terminalId, data: output });
     });
 
-    terminalMap.set(data.terminalId, {
-      type: 'winrm',
-      process: session.process,
-      callback: (data) => winrmService.write(data.terminalId, data),
+    session.on('error', ({ error }) => {
+      event.sender.send('error', { category: 'winrm', id: data.terminalId, error });
+    });
+
+    session.on('opened', () => {
+      event.sender.send('terminal.opened', { id: data.terminalId });
+    });
+
+    session.connect({
+      ...data.config,
+      settings,
+      initPath: data.initPath,
+      initCmd: data.initCmd,
+    }).then(() => {
+      terminalMap.set(data.terminalId, {
+        type: 'winrm',
+        process: session.process,
+        callback: (input) => session.write(input),
+      });
+      sessions.set(data.terminalId, session);
+    }).catch((err) => {
+      event.sender.send('error', { category: 'winrm', id: data.terminalId, error: err.message });
     });
   });
 
   ipcMain.on('session.close.terminal.winrm', (event, data) => {
-    winrmService.disconnect(data.terminalId);
-    sessionSenders.delete(data.terminalId);
+    const session = sessions.get(data.terminalId);
+    if (session) session.close();
+    sessions.delete(data.terminalId);
   });
 }
 

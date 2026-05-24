@@ -14,7 +14,7 @@ class SshTerminalSession extends TerminalRuntimeApi {
 
   async connect(options = {}) {
     const merged = { ...(this._initialConfig || {}), ...options };
-    const { proxy, getSecrets, initPath, initCmd, rows, cols, id, ...sshConfig } = merged;
+    const { proxy, secretRepo, initPath, initCmd, rows, cols, id, ...sshConfig } = merged;
 
     sshConfig.debug = (info) => {
       this.log.info('SSH DEBUG:', info);
@@ -28,7 +28,7 @@ class SshTerminalSession extends TerminalRuntimeApi {
           proxy,
           sshConfig.host,
           sshConfig.port || 22,
-          getSecrets
+          secretRepo
         );
         sshConfig.sock = sock;
         this.log.info('SSH session: Proxy tunnel established');
@@ -122,7 +122,7 @@ class SshTerminalSession extends TerminalRuntimeApi {
     if (!config) throw new Error('No SSH config available for exec');
 
     const merged = { ...config };
-    const { proxy, getSecrets, ...sshConfig } = merged;
+    const { proxy, secretRepo, ...sshConfig } = merged;
 
     return new Promise((resolve, reject) => {
       const conn = new Client();

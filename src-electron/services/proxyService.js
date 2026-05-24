@@ -8,13 +8,13 @@ class ProxyService extends EventEmitter {
     this.log = log;
   }
 
-  getProxyUrl(proxy, getSecrets) {
+  getProxyUrl(proxy, secretRepo) {
     if (!proxy) return null;
 
     let proxyUrl = '';
 
     if (proxy.secretId) {
-      const secrets = getSecrets();
+      const secrets = secretRepo();
       if (secrets && secrets.secrets) {
         const secret = secrets.secrets.find(s => s.id === proxy.secretId);
         if (secret && secret.login && secret.password) {
@@ -33,7 +33,7 @@ class ProxyService extends EventEmitter {
     return `http://${proxy.host}:${proxy.port}`;
   }
 
-  async createSOCKSConnection(proxy, targetHost, targetPort, getSecrets) {
+  async createSOCKSConnection(proxy, targetHost, targetPort, secretRepo) {
     if (!proxy) throw new Error('Proxy configuration is required');
 
     let socksVersion = 5;
@@ -53,7 +53,7 @@ class ProxyService extends EventEmitter {
     };
 
     if (proxy.secretId) {
-      const secrets = getSecrets();
+      const secrets = secretRepo();
       if (secrets && secrets.secrets) {
         const secret = secrets.secrets.find(s => s.id === proxy.secretId);
         if (secret && secret.login && secret.password) {
@@ -77,14 +77,14 @@ class ProxyService extends EventEmitter {
     }
   }
 
-  createHTTPProxyConnection(proxy, targetHost, targetPort, getSecrets) {
+  createHTTPProxyConnection(proxy, targetHost, targetPort, secretRepo) {
     return new Promise((resolve, reject) => {
       const proxySocket = net.connect(proxy.port, proxy.host, () => {
         this.log.info(`Connected to HTTP proxy: ${proxy.host}:${proxy.port}`);
 
         let authHeader = '';
         if (proxy.secretId) {
-          const secrets = getSecrets();
+          const secrets = secretRepo();
           if (secrets && secrets.secrets) {
             const secret = secrets.secrets.find(s => s.id === proxy.secretId);
             if (secret && secret.login && secret.password) {
@@ -137,13 +137,13 @@ class ProxyService extends EventEmitter {
     });
   }
 
-  async createProxyConnection(proxy, targetHost, targetPort, getSecrets) {
+  async createProxyConnection(proxy, targetHost, targetPort, secretRepo) {
     if (!proxy) throw new Error('Proxy configuration is required');
 
     if (proxy.type === 'HTTP') {
-      return await this.createHTTPProxyConnection(proxy, targetHost, targetPort, getSecrets);
+      return await this.createHTTPProxyConnection(proxy, targetHost, targetPort, secretRepo);
     } else if (proxy.type === 'SOCKS4' || proxy.type === 'SOCKS5') {
-      return await this.createSOCKSConnection(proxy, targetHost, targetPort, getSecrets);
+      return await this.createSOCKSConnection(proxy, targetHost, targetPort, secretRepo);
     } else {
       throw new Error(`Unsupported proxy type: ${proxy.type}`);
     }

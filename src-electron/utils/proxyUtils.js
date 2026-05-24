@@ -6,24 +6,24 @@ const _defaultService = new ProxyService({
   error: (msg) => { /* silent by default */ }
 });
 
-function getProxyUrl(proxy, getSecrets, log) {
+function getProxyUrl(proxy, secretRepo, log) {
   const svc = log ? new ProxyService(log) : _defaultService;
-  return svc.getProxyUrl(proxy, getSecrets);
+  return svc.getProxyUrl(proxy, secretRepo);
 }
 
-async function createSOCKSConnection(proxy, targetHost, targetPort, getSecrets, log) {
+async function createSOCKSConnection(proxy, targetHost, targetPort, secretRepo, log) {
   const svc = log ? new ProxyService(log) : _defaultService;
-  return svc.createSOCKSConnection(proxy, targetHost, targetPort, getSecrets);
+  return svc.createSOCKSConnection(proxy, targetHost, targetPort, secretRepo);
 }
 
-async function createHTTPProxyConnection(proxy, targetHost, targetPort, getSecrets, log) {
+async function createHTTPProxyConnection(proxy, targetHost, targetPort, secretRepo, log) {
   const svc = log ? new ProxyService(log) : _defaultService;
-  return svc.createHTTPProxyConnection(proxy, targetHost, targetPort, getSecrets);
+  return svc.createHTTPProxyConnection(proxy, targetHost, targetPort, secretRepo);
 }
 
-async function createProxyConnection(proxy, targetHost, targetPort, getSecrets, log) {
+async function createProxyConnection(proxy, targetHost, targetPort, secretRepo, log) {
   const svc = log ? new ProxyService(log) : _defaultService;
-  return svc.createProxyConnection(proxy, targetHost, targetPort, getSecrets);
+  return svc.createProxyConnection(proxy, targetHost, targetPort, secretRepo);
 }
 
 module.exports = { getProxyUrl, createSOCKSConnection, createHTTPProxyConnection, createProxyConnection };

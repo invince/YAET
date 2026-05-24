@@ -3,7 +3,7 @@ const { SshTerminalSession } = require('../../../runtime/connectors/terminal/ssh
 
 const sessions = new Map();
 
-function initSSHTerminalIpcHandler(log, terminalMap, getProxies, getSecrets) {
+function initSSHTerminalIpcHandler(log, terminalMap, proxyRepo, secretRepo) {
 
   ipcMain.on('session.open.terminal.ssh', async (event, data) => {
     const session = new SshTerminalSession(log);
@@ -23,8 +23,8 @@ function initSSHTerminalIpcHandler(log, terminalMap, getProxies, getSecrets) {
 
     try {
       let proxy = null;
-      if (data.proxyId && getProxies) {
-        const proxies = getProxies();
+      if (data.proxyId && proxyRepo) {
+        const proxies = proxyRepo();
         if (proxies && proxies.proxies) {
           proxy = proxies.proxies.find(p => p.id === data.proxyId);
         }
@@ -33,7 +33,7 @@ function initSSHTerminalIpcHandler(log, terminalMap, getProxies, getSecrets) {
       await session.connect({
         ...data.config,
         proxy,
-        getSecrets,
+        secretRepo,
         id: data.terminalId,
         initPath: data.initPath,
         initCmd: data.initCmd,
