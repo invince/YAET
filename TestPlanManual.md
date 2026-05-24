@@ -22,7 +22,7 @@
 - [ ] Proxy settings are respected during update check
 - [ ] Dev mode does NOT trigger auto update
 
-## 3. Terminal — Remote Connections
+## 3. TerminalHandler — Remote Connections
 
 ### SSH
 - [ ] Connection succeeds

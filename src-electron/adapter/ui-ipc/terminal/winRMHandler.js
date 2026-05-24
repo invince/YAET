@@ -1,5 +1,5 @@
 const { ipcMain } = require('electron');
-const { WinRMSession } = require('../../../runtime/connectors/terminal/winrm');
+const { WinRMSession } = require('../../../runtime/connectors/terminal/winRM');
 
 const sessions = new Map();
 

@@ -47,7 +47,7 @@
 ## 3. Settings Menu
 
 > Navigation: click `[aria-label="Settings"]` in sidebar → opens `.settings-container`.
-> Tabs: General(0) / UI(1) / Groups(2) / Tags(3) / Terminal(4) / Remote Desktop(5) / AI Assistant(7).
+> Tabs: General(0) / UI(1) / Groups(2) / Tags(3) / TerminalHandler(4) / Remote Desktop(5) / AI Assistant(7).
 > Footer: Cancel / Reload / Save & Close / Save buttons.
 
 ### General (tab 0)
@@ -64,7 +64,7 @@
 - [x] Theme selection applies correctly
 - [x] Secret label length (sidenav + dropdown)
 
-### Terminal (tab 4)
+### TerminalHandler (tab 4)
 - [x] Local terminal type selection (CMD / PowerShell / PowerShell 7 / Bash)
 - [x] Default terminal on startup option
 - [ ] Custom exec path (excluded from UI options; only settable via saved settings)
@@ -118,7 +118,7 @@
 ### Quick Connect
 - [x] Quick connect form opens and renders fields
 
-## 5. Local Terminal (UI only)
+## 5. Local TerminalHandler (UI only)
 
 - [x] Clicking local terminal button on sidebar opens a terminal tab immediately
 - [x] "Open terminal at startup" setting works (seed `defaultOpen: true` → tab appears)

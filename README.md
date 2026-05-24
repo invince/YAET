@@ -1,4 +1,4 @@
-# Yet Another Electron Terminal (YAET)
+# Yet Another Electron TerminalHandler (YAET)
 
 English | [简体中文](./README.cn.md)
 
@@ -8,11 +8,11 @@ YAET is a comprehensive remote connection and management tool built with Angular
 
 ## Key Features
 
-### 🖥️ Terminal Connections
+### 🖥️ TerminalHandler Connections
 - **SSH**: Secure shell connections with key-based and password authentication
 - **Telnet**: Legacy telnet protocol support
 - **WinRM**: Windows Remote Management for PowerShell sessions
-- **Local Terminal**: Integrated local shell access (CMD, PowerShell, PowerShell 7, Bash)
+- **Local TerminalHandler**: Integrated local shell access (CMD, PowerShell, PowerShell 7, Bash)
 - <img width="3552" height="2094" alt="image" src="https://github.com/user-attachments/assets/6a55a46b-0dfe-46cd-bcf8-16967a791a5e" />
 - <img width="3530" height="2190" alt="image" src="https://github.com/user-attachments/assets/da9e3f0b-5b67-412d-b179-556899d9e120" />
 
@@ -117,10 +117,10 @@ npm run start
 
 **Option 2: Separate processes** (recommended for debugging)
 ```bash
-# Terminal 1: Angular dev server
+# TerminalHandler 1: Angular dev server
 npm run ng:serve
 
-# Terminal 2: Electron app
+# TerminalHandler 2: Electron app
 npm run electron:dev
 ```
 
@@ -175,7 +175,7 @@ npx playwright test -g "add Password Only"
 | 3. Settings Menu | 29 | ✅ |
 | 4. Incompatible Settings | 4 | ✅ |
 | 5. Profiles | 11 | ✅ |
-| 6. Local Terminal | 3 | ✅ |
+| 6. Local TerminalHandler | 3 | ✅ |
 | 7. UI/UX | 7 | ✅ |
 | 8. Proxy Management | 4 | ✅ |
 | 9. Cloud Settings | 4 | ✅ |
@@ -230,7 +230,7 @@ Application logs can be found at:
 
 - **Frontend**: Angular 20, Angular Material
 - **Desktop**: Electron 39
-- **Terminal**: xterm.js
-- **File Transfer**: ssh2, basic-ftp, v9u-smb2
+- **TerminalHandler**: xterm.js
+- **File Transfer**: ssh2, basic-ftpHandler, v9u-smb2
 - **Remote Desktop**: @novnc/novnc
 - **AI Integration**: Agent Client Protocol (ACP) or OpenAI provider

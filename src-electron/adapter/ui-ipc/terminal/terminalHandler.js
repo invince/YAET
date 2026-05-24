@@ -1,5 +1,5 @@
 const {ipcMain} = require('electron');
-const {Terminal} = require("@xterm/xterm");
+const {Terminal: TerminalHandler} = require("@xterm/xterm");
 
 function initTerminalIpcHandler(log, terminalMap) {
 
@@ -7,12 +7,12 @@ function initTerminalIpcHandler(log, terminalMap) {
     const id = data.terminalId; // cf terminal.component.ts
     const input = data.input;
     const terminalCallback = terminalMap.get(id)?.callback;
-    log.info('Terminal id to find ' + id);
+    log.info('TerminalHandler id to find ' + id);
     if (terminalCallback) {
-      log.info('Terminal found. Sending input.');
+      log.info('TerminalHandler found. Sending input.');
       terminalCallback(input, id); // Send input to the correct terminal
     } else {
-      log.info('Terminal not found for id:', id);
+      log.info('TerminalHandler not found for id:', id);
     }
   });
 

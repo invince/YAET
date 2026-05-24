@@ -1,5 +1,5 @@
 const { ipcMain, shell } = require('electron');
-const ftp = require('basic-ftp');
+const ftpHandler = require('basic-ftp');
 const multer = require('multer');
 const _ = require('lodash');
 const upload = multer();
@@ -13,7 +13,7 @@ const uuid = require('uuid');
 
 function initFtpHandler(log, ftpMap, expressApp) {
 
-  ipcMain.handle('session.fe.ftp.register', async (event, { id, config }) => {
+  ipcMain.handle('session.fe.ftpHandler.register', async (event, { id, config }) => {
     ftpMap.set(id, config);
   });
 
@@ -24,7 +24,7 @@ function initFtpHandler(log, ftpMap, expressApp) {
       throw new Error('Error connection config not found');
     }
 
-    const client = new ftp.Client();
+    const client = new ftpHandler.Client();
     client.ftp.verbose = true; // Enable verbose logging for debugging
 
     try {
@@ -345,7 +345,7 @@ function initFtpHandler(log, ftpMap, expressApp) {
     try {
       await withFtpClient(configId, async (client) => {
         const fullRemotePath = remotePath + fileName;
-        const tempDir = path.join(os.tmpdir(), 'ftp-temp-files');
+        const tempDir = path.join(os.tmpdir(), 'ftpHandler-temp-files');
         if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
         const tempFilePath = path.join(tempDir, uuid.v4() + fileName);
         const writableStream = fs.createWriteStream(tempFilePath);

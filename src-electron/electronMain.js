@@ -5,18 +5,19 @@ const { app, globalShortcut, BrowserWindow, Tray, ipcMain } = require('electron'
 const { createMenu } = require('./ui/menu');
 const { SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON, APP_CONFIG_PATH, PROXIES_JSON } = require("./common");
 const { initConfigFilesIpcHandler } = require('./adapter/ui-ipc/configFiles');
-const { initTerminalIpcHandler } = require('./adapter/ui-ipc/terminal/terminal');
+const { initTerminalIpcHandler } = require('./adapter/ui-ipc/terminal/terminalHandler');
 const { initCloudIpcHandler } = require('./adapter/ui-ipc/cloud');
 const { initSecurityIpcHandler, decrypt } = require('./adapter/ui-ipc/security');
-const { initRdpHandler } = require('./adapter/ui-ipc/remote-desktop/rdp');
+const { initRdpHandler } = require('./adapter/ui-ipc/remote-desktop/rdpHandler');
 const { initClipboard } = require('./adapter/ui-ipc/clipboard');
-const { initVncHandler } = require("./adapter/ui-ipc/remote-desktop/vnc");
+const { initVncHandler } = require("./adapter/ui-ipc/remote-desktop/vncHandler");
 const { initCustomSessionHandler } = require("./adapter/ui-ipc/customSession");
-const { initScpSftpHandler } = require("./adapter/ui-ipc/file-explorer/scp");
+const { initScpSftpHandler } = require("./adapter/ui-ipc/file-explorer/scpHandler");
 const { initAutoUpdater } = require("./adapter/ui-ipc/autoUpdater");
 const { initBackend } = require("./adapter/ui-ipc/backend");
-const { initFtpHandler } = require("./adapter/ui-ipc/file-explorer/ftp");
+const { initFtpHandler } = require("./adapter/ui-ipc/file-explorer/ftpHandler");
 const { initLocalFileHandler } = require("./adapter/ui-ipc/localFile");
+
 
 let tray;
 let expressApp;
@@ -35,11 +36,11 @@ const log = require("electron-log")
 const { initCommonIpc } = require("./adapter/ui-ipc/commonIpc");
 const { initAcpIpcHandler } = require("./adapter/ui-ipc/acp");
 const { initAiIpcHandler, initAiChatIpcHandler, initAiToolsIpcHandler } = require("./adapter/ui-ipc/ai");
-const { initSSHTerminalIpcHandler } = require("./adapter/ui-ipc/terminal/ssh");
-const { initTelnetIpcHandler } = require("./adapter/ui-ipc/terminal/telnet");
-const { initLocalTerminalIpcHandler } = require("./adapter/ui-ipc/terminal/localTerminal");
-const { initWinRmIpcHandler } = require("./adapter/ui-ipc/terminal/winRM");
-const { initSambaHandler } = require("./adapter/ui-ipc/file-explorer/samba");
+const { initSSHTerminalIpcHandler } = require("./adapter/ui-ipc/terminal/sshHandler");
+const { initTelnetIpcHandler } = require("./adapter/ui-ipc/terminal/telnetHandler");
+const { initLocalTerminalIpcHandler } = require("./adapter/ui-ipc/terminal/localHandler");
+const { initWinRmIpcHandler } = require("./adapter/ui-ipc/terminal/winRMHandler");
+const { initSambaHandler } = require("./adapter/ui-ipc/file-explorer/sambaHandler");
 const { RuntimeAPI } = require("./runtime/runtimeAPI");
 
 const logPath = path.join(app.getPath('userData'), 'logs/main.log');

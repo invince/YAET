@@ -1,7 +1,7 @@
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
-const { SCPService } = require('../../../src-electron/services/scpService');
+const { ScpFileExplorer } = require('../../../src-electron/runtime/connectors/file/scp');
 const { Logger } = require('../../common/logger');
 
 const log = new Logger('mcp-scp');
@@ -22,8 +22,6 @@ function buildSshConfig(args) {
 }
 
 function createSCPTools() {
-  const scpService = new SCPService(log);
-
   return [
     {
       name: 'scp_list_files',
@@ -42,8 +40,8 @@ function createSCPTools() {
       },
       handler: async (args) => {
         const config = buildSshConfig(args);
-        const result = await scpService.listFiles(config, args.path);
-        return result;
+        const explorer = new ScpFileExplorer(log, config);
+        return explorer.listFiles(args.path);
       },
     },
     {
@@ -63,7 +61,8 @@ function createSCPTools() {
       },
       handler: async (args) => {
         const config = buildSshConfig(args);
-        const buffer = await scpService.readFile(config, args.path);
+        const explorer = new ScpFileExplorer(log, config);
+        const buffer = await explorer.readFile(args.path);
         return buffer.toString('utf-8');
       },
     },
@@ -86,10 +85,10 @@ function createSCPTools() {
       },
       handler: async (args) => {
         const config = buildSshConfig(args);
-        const result = await scpService.writeFile(config, args.path, Buffer.from(args.content, 'utf-8'), {
+        const explorer = new ScpFileExplorer(log, config);
+        return explorer.writeFile(args.path, Buffer.from(args.content, 'utf-8'), {
           overwrite: args.overwrite,
         });
-        return result;
       },
     },
     {
@@ -110,10 +109,10 @@ function createSCPTools() {
       },
       handler: async (args) => {
         const config = buildSshConfig(args);
-        const result = await scpService.deleteFiles(config, args.path, [
+        const explorer = new ScpFileExplorer(log, config);
+        return explorer.deleteFiles(args.path, [
           { name: args.name, type: 'file' },
         ]);
-        return result;
       },
     },
   ];
