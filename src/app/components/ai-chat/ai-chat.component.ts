@@ -291,14 +291,22 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   }
 
   @HostListener('click', ['$event'])
-  onCodeCopyClick(event: MouseEvent) {
+  onMessageClick(event: MouseEvent) {
     const btn = (event.target as HTMLElement).closest('.code-copy-btn');
-    if (!btn) return;
-    const pre = btn.parentElement?.querySelector('pre');
-    if (!pre) return;
-    navigator.clipboard.writeText(pre.textContent || '').catch(() => {});
-    btn.textContent = 'done';
-    setTimeout(() => { btn.textContent = 'copy'; }, 2000);
+    if (btn) {
+      const pre = btn.parentElement?.querySelector('pre');
+      if (!pre) return;
+      navigator.clipboard.writeText(pre.textContent || '').catch(() => {});
+      btn.textContent = 'done';
+      setTimeout(() => { btn.textContent = 'copy'; }, 2000);
+      return;
+    }
+
+    const anchor = (event.target as HTMLElement).closest('a');
+    if (anchor?.href) {
+      event.preventDefault();
+      this.electronService.openUrl(anchor.href);
+    }
   }
 
   @HostListener('window:resize')
