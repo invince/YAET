@@ -3,20 +3,20 @@ const fs = require("fs");
 const { app, globalShortcut, BrowserWindow, Tray, ipcMain } = require('electron');
 
 const { createMenu } = require('./ui/menu');
-const { SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON, APP_CONFIG_PATH, PROXIES_JSON } = require("./common");
-const { initConfigFilesIpcHandler } = require('./adapter/ui-ipc/configFiles');
-const { initTerminalIpcHandler } = require('./adapter/ui-ipc/terminal/terminalHandler');
-const { initCloudIpcHandler } = require('./adapter/ui-ipc/cloud');
-const { initSecurityIpcHandler, decrypt } = require('./adapter/ui-ipc/security');
-const { initRdpHandler } = require('./adapter/ui-ipc/remote-desktop/rdpHandler');
-const { initClipboard } = require('./adapter/ui-ipc/clipboard');
-const { initVncHandler } = require("./adapter/ui-ipc/remote-desktop/vncHandler");
-const { initCustomSessionHandler } = require("./adapter/ui-ipc/customSession");
-const { initScpSftpHandler } = require("./adapter/ui-ipc/file-explorer/scpHandler");
-const { initAutoUpdater } = require("./adapter/ui-ipc/autoUpdater");
-const { initBackend } = require("./adapter/ui-ipc/backend");
-const { initFtpHandler } = require("./adapter/ui-ipc/file-explorer/ftpHandler");
-const { initLocalFileHandler } = require("./adapter/ui-ipc/localFile");
+const { SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON, APP_CONFIG_PATH, PROXIES_JSON } = require("./services/common");
+const { initConfigFilesIpcHandler } = require('./adapter/ipc/configFiles');
+const { initTerminalIpcHandler } = require('./adapter/ipc/terminal/terminalHandler');
+const { initCloudIpcHandler } = require('./adapter/ipc/cloud');
+const { initSecurityIpcHandler, decrypt } = require('./adapter/ipc/security');
+const { initRdpHandler } = require('./adapter/ipc/remote-desktop/rdpHandler');
+const { initClipboard } = require('./adapter/ipc/clipboard');
+const { initVncHandler } = require("./adapter/ipc/remote-desktop/vncHandler");
+const { initCustomSessionHandler } = require("./adapter/ipc/customSession");
+const { initScpSftpHandler } = require("./adapter/ipc/file-explorer/scpHandler");
+const { initAutoUpdater } = require("./adapter/ipc/autoUpdater");
+const { initBackend } = require("./adapter/ipc/backend");
+const { initFtpHandler } = require("./adapter/ipc/file-explorer/ftpHandler");
+const { initLocalFileHandler } = require("./adapter/ipc/localFile");
 
 
 let tray;
@@ -33,14 +33,14 @@ let allProxies = null;
 let allSecrets = null;
 
 const log = require("electron-log")
-const { initCommonIpc } = require("./adapter/ui-ipc/commonIpc");
-const { initAcpIpcHandler } = require("./adapter/ui-ipc/acp");
-const { initAiIpcHandler, initAiChatIpcHandler, initAiToolsIpcHandler } = require("./adapter/ui-ipc/ai");
-const { initSSHTerminalIpcHandler } = require("./adapter/ui-ipc/terminal/sshHandler");
-const { initTelnetIpcHandler } = require("./adapter/ui-ipc/terminal/telnetHandler");
-const { initLocalTerminalIpcHandler } = require("./adapter/ui-ipc/terminal/localHandler");
-const { initWinRmIpcHandler } = require("./adapter/ui-ipc/terminal/winRMHandler");
-const { initSambaHandler } = require("./adapter/ui-ipc/file-explorer/sambaHandler");
+const { initCommonIpc } = require("./adapter/ipc/commonIpc");
+const { initAcpClientIpcHandler } = require("./adapter/ipc/ai/acpClient");
+const { initAiIpcHandler, initAiChatIpcHandler, initAiToolsIpcHandler } = require("./adapter/ipc/ai/aiChat");
+const { initSSHTerminalIpcHandler } = require("./adapter/ipc/terminal/sshHandler");
+const { initTelnetIpcHandler } = require("./adapter/ipc/terminal/telnetHandler");
+const { initLocalTerminalIpcHandler } = require("./adapter/ipc/terminal/localHandler");
+const { initWinRmIpcHandler } = require("./adapter/ipc/terminal/winRMHandler");
+const { initSambaHandler } = require("./adapter/ipc/file-explorer/sambaHandler");
 const { RuntimeAPI } = require("./runtime/runtimeAPI");
 
 const logPath = path.join(app.getPath('userData'), 'logs/main.log');
@@ -137,7 +137,7 @@ function initHandlerBeforeSettingLoad() {
 
   initClipboard(log, mainWindow);
   initCustomSessionHandler(log);
-  initAcpIpcHandler(log);
+  initAcpClientIpcHandler(log);
   initAiIpcHandler(log);
   initAiChatIpcHandler(log);
 

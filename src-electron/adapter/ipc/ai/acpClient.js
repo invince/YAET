@@ -19,7 +19,7 @@ async function readJsonLine(rl) {
   return new Promise((resolve, reject) => {
     // Increase timeout to 5 minutes for LLM generation
     const to = setTimeout(() => reject(new Error('ACP read timeout')), 300000);
-    
+
     const onLine = (line) => {
       clearTimeout(to);
       rl.removeListener('close', onClose);
@@ -31,7 +31,7 @@ async function readJsonLine(rl) {
         reject(new Error('ACP invalid JSON: ' + line));
       }
     };
-    
+
     const onClose = () => {
       clearTimeout(to);
       rl.removeListener('line', onLine);
@@ -79,10 +79,10 @@ async function ensureSession(command, argList, log, model) {
 
   // Step 1: initialize
   const initId = nextId();
-  sendJson(child, { 
-    jsonrpc: '2.0', 
-    id: initId, 
-    method: 'initialize', 
+  sendJson(child, {
+    jsonrpc: '2.0',
+    id: initId,
+    method: 'initialize',
     params: {
       protocolVersion: 1,
       clientCapabilities: {
@@ -92,7 +92,7 @@ async function ensureSession(command, argList, log, model) {
         name: "yaet",
         version: "1.0.0"
       }
-    } 
+    }
   });
   let msg;
   do {
@@ -102,15 +102,15 @@ async function ensureSession(command, argList, log, model) {
 
   // Step 2: session/new
   const sessId = nextId();
-  sendJson(child, { 
-    jsonrpc: '2.0', 
-    id: sessId, 
-    method: 'session/new', 
-    params: { 
+  sendJson(child, {
+    jsonrpc: '2.0',
+    id: sessId,
+    method: 'session/new',
+    params: {
       cwd: process.cwd(),
       mcpServers: [],
       model: model || undefined
-    } 
+    }
   });
   do {
     msg = await readJsonLine(rl);
@@ -123,13 +123,14 @@ async function ensureSession(command, argList, log, model) {
   log.info('ACP session ready: ' + session.sessionId);
   return session;
 }
-function initAcpIpcHandler(log) {
+
+function initAcpClientIpcHandler(log) {
   ipcMain.handle('acp.fetch-models', async (event, { command, args }) => {
     if (!command) {
       throw new Error('ACP command is not configured');
     }
     const isWin = os.platform() === 'win32';
-    
+
     // Replace 'acp' with 'models' in the command string
     let finalCommand = command.replace(/\bacp\b/g, 'models');
     if (!finalCommand.includes('models')) {
@@ -198,7 +199,7 @@ function initAcpIpcHandler(log) {
     if (model) {
       promptParams.model = model;
     }
-    
+
     log.info(`ACP sending prompt (id=${promptId}, model=${model || 'default'}): ${promptText.substring(0, 50)}...`);
     sendJson(child, {
       jsonrpc: '2.0',
@@ -211,7 +212,7 @@ function initAcpIpcHandler(log) {
     while (true) {
       const msg = await readJsonLine(rl);
       // log.info(`ACP message: ${JSON.stringify(msg)}`);
-      
+
       // notifications
       if (msg.method === 'session/update' && msg.params?.update) {
         const u = msg.params.update;
@@ -243,8 +244,8 @@ function initAcpIpcHandler(log) {
                 event.sender.send('acp.chunk', { chunk });
             }
         }
-        
-        const isDone = u.sessionUpdate === 'agent_message' || 
+
+        const isDone = u.sessionUpdate === 'agent_message' ||
                       u.sessionUpdate === 'usage_update' ||
                       (u.sessionUpdate === 'status' && (u.status === 'completed' || u.status === 'error')) ||
                       u.finishReason ||
@@ -270,7 +271,7 @@ function initAcpIpcHandler(log) {
             log.error(`ACP prompt error: ${JSON.stringify(msg.error)}`);
             throw new Error('ACP session/prompt error: ' + JSON.stringify(msg.error));
         }
-        
+
         let finalResult = '';
         if (msg.result) {
             if (typeof msg.result.content === 'string') {
@@ -281,7 +282,7 @@ function initAcpIpcHandler(log) {
                 finalResult = msg.result.content.text;
             }
         }
-        
+
         const responseText = accumulatedText || finalResult || '';
         log.info(`ACP final response received (${responseText.length} chars)`);
         return responseText;
@@ -300,4 +301,4 @@ function initAcpIpcHandler(log) {
   });
 }
 
-module.exports = { initAcpIpcHandler };
+module.exports = { initAcpClientIpcHandler };

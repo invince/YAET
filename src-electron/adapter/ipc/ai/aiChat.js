@@ -1,7 +1,7 @@
 const { ipcMain } = require('electron');
-const { fetchModels, callChat } = require('../ai/aiClient');
-const { getToolDefinitions } = require('../ai/toolDefinitions');
-const { functionCallLoop } = require('../ai/functionLoop');
+const { fetchModels, callChat } = require('../../ai/aiClient');
+const { getToolDefinitions } = require('../../ai/toolDefinitions');
+const { functionCallLoop } = require('../../ai/functionLoop');
 
 function initAiIpcHandler(log) {
   ipcMain.handle('ai.fetch-models', async (event, { apiUrl, token }) => {
