@@ -36,6 +36,20 @@ function getToolDefinitions() {
     {
       type: 'function',
       function: {
+        name: 'local_execute',
+        description: 'Execute a command on the local machine directly (no profile needed)',
+        parameters: {
+          type: 'object',
+          properties: {
+            command: { type: 'string', description: 'Command to execute on the local machine' },
+          },
+          required: ['command'],
+        },
+      },
+    },
+    {
+      type: 'function',
+      function: {
         name: 'scp_list_files',
         description: 'List files in a remote directory via SFTP using a saved profile',
         parameters: {
@@ -615,154 +629,64 @@ async function executeTool(runtime, toolName, args) {
   switch (toolName) {
     case 'profile_list':
       return runtime.listProfiles(args.keyword);
-    case 'terminal_execute': {
+    case 'terminal_execute':
+    case 'local_execute': {
       const t = await runtime.getConnector(args.profileId, opts);
       return t.exec(args.command);
     }
-    case 'scp_list_files': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.listFiles(args.path);
-    }
-    case 'scp_read_file': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      const buffer = await f.readFile(args.path);
-      return { content: buffer.toString('utf-8') };
-    }
-    case 'scp_write_file': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.writeFile(args.path, Buffer.from(args.content, 'utf-8'), { overwrite: true });
-    }
-    case 'scp_delete_files': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.deleteFiles(args.path, args.items);
-    }
-    case 'scp_rename_file': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.renameFile(args.path, args.name, args.newName);
-    }
-    case 'scp_copy_files': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.copyFiles(args.path, args.names, args.targetPath);
-    }
-    case 'scp_move_files': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.moveFiles(args.path, args.names, args.targetPath);
-    }
-    case 'scp_create_folder': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.createFolder(args.path, args.name);
-    }
-    case 'scp_search_files': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.search(args.path, args.searchString, {
-        caseSensitive: args.caseSensitive,
-        showHiddenItems: args.showHiddenItems,
-      });
-    }
-    case 'scp_download_file': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      const buffer = await f.downloadFile(args.path);
-      const filename = args.path.split('/').pop() || args.path;
-      if (args.localPath) {
-        const dir = path.dirname(args.localPath);
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        fs.writeFileSync(args.localPath, buffer);
-        return { savedTo: path.resolve(args.localPath), size: buffer.length };
-      }
-      return { content: buffer.toString('base64'), encoding: 'base64', filename };
-    }
-    case 'ftp_list_files': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.listFiles(args.path);
-    }
-    case 'ftp_read_file': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      const buffer = await f.readFile(args.path);
-      return { content: buffer.toString('utf-8') };
-    }
-    case 'ftp_write_file': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.writeFile(args.path, Buffer.from(args.content, 'utf-8'), { overwrite: true });
-    }
-    case 'ftp_delete_files': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.deleteFiles(args.path, args.items);
-    }
-    case 'ftp_rename_file': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.renameFile(args.path, args.name, args.newName);
-    }
-    case 'ftp_copy_files': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.copyFiles(args.path, args.names, args.targetPath);
-    }
-    case 'ftp_move_files': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.moveFiles(args.path, args.names, args.targetPath);
-    }
-    case 'ftp_create_folder': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.createFolder(args.path, args.name);
-    }
-    case 'ftp_search_files': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.search(args.path, args.searchString, {
-        caseSensitive: args.caseSensitive,
-        showHiddenItems: args.showHiddenItems,
-      });
-    }
-    case 'ftp_download_file': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      const buffer = await f.downloadFile(args.path);
-      const filename = args.path.split('/').pop() || args.path;
-      if (args.localPath) {
-        const dir = path.dirname(args.localPath);
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        fs.writeFileSync(args.localPath, buffer);
-        return { savedTo: path.resolve(args.localPath), size: buffer.length };
-      }
-      return { content: buffer.toString('base64'), encoding: 'base64', filename };
-    }
+
+    case 'scp_list_files':
+    case 'ftp_list_files':
     case 'samba_list_files': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.listFiles(args.path);
+      return (await runtime.getConnector(args.profileId, opts)).listFiles(args.path);
     }
+    case 'scp_read_file':
+    case 'ftp_read_file':
     case 'samba_read_file': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      const buffer = await f.readFile(args.path);
-      return { content: buffer.toString('utf-8') };
+      const buf = await (await runtime.getConnector(args.profileId, opts)).readFile(args.path);
+      return { content: buf.toString('utf-8') };
     }
+    case 'scp_write_file':
+    case 'ftp_write_file':
     case 'samba_write_file': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.writeFile(args.path, Buffer.from(args.content, 'utf-8'), { overwrite: true });
+      return (await runtime.getConnector(args.profileId, opts)).writeFile(
+        args.path, Buffer.from(args.content, 'utf-8'), { overwrite: true });
     }
+    case 'scp_delete_files':
+    case 'ftp_delete_files':
     case 'samba_delete_files': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.deleteFiles(args.path, args.items);
+      return (await runtime.getConnector(args.profileId, opts)).deleteFiles(args.path, args.items);
     }
+    case 'scp_rename_file':
+    case 'ftp_rename_file':
     case 'samba_rename_file': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.renameFile(args.path, args.name, args.newName);
+      return (await runtime.getConnector(args.profileId, opts)).renameFile(args.path, args.name, args.newName);
     }
+    case 'scp_copy_files':
+    case 'ftp_copy_files':
     case 'samba_copy_files': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.copyFiles(args.path, args.names, args.targetPath);
+      return (await runtime.getConnector(args.profileId, opts)).copyFiles(args.path, args.names, args.targetPath);
     }
+    case 'scp_move_files':
+    case 'ftp_move_files':
     case 'samba_move_files': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.moveFiles(args.path, args.names, args.targetPath);
+      return (await runtime.getConnector(args.profileId, opts)).moveFiles(args.path, args.names, args.targetPath);
     }
+    case 'scp_create_folder':
+    case 'ftp_create_folder':
     case 'samba_create_folder': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.createFolder(args.path, args.name);
+      return (await runtime.getConnector(args.profileId, opts)).createFolder(args.path, args.name);
     }
+    case 'scp_search_files':
+    case 'ftp_search_files':
     case 'samba_search_files': {
-      const f = await runtime.getConnector(args.profileId, opts);
-      return f.search(args.path, args.searchString, {
+      return (await runtime.getConnector(args.profileId, opts)).search(args.path, args.searchString, {
         caseSensitive: args.caseSensitive,
         showHiddenItems: args.showHiddenItems,
       });
     }
+    case 'scp_download_file':
+    case 'ftp_download_file':
     case 'samba_download_file': {
       const f = await runtime.getConnector(args.profileId, opts);
       const buffer = await f.downloadFile(args.path);

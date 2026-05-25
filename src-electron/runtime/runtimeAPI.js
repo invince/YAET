@@ -63,6 +63,10 @@ class RuntimeAPI {
   }
 
   async getConnector(profileId, options = {}) {
+    if (!profileId) {
+      return new LocalTerminalSession(this.log);
+    }
+
     const config = await this._resolveRemoteConfig(profileId, options);
     const encrypted = await this.configService.getProfiles();
     if (!encrypted) throw new Error('No profiles found');
