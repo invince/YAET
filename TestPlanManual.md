@@ -118,6 +118,7 @@
 - [ ] Rename folder/file
 - [ ] Delete file/folder (empty and with contents)
 - [ ] Double-click open → edit → auto-upload
+<img width="3297" height="1472" alt="image" src="https://github.com/user-attachments/assets/62ca7028-89d6-4cb8-933a-f91d80b1d552" />
 
 ## 6. Custom Commands
 
@@ -150,6 +151,8 @@
 <img width="1345" height="1066" alt="image" src="https://github.com/user-attachments/assets/3c5ae059-6cf6-4974-ad85-0bed80be3b8c" />
 - [ ] Ai Tools: using FTP
 <img width="1548" height="687" alt="image" src="https://github.com/user-attachments/assets/0c63c798-258f-425b-a802-9d40f03c450a" />
+- [ ] Ai Tools: using smb
+<img width="1358" height="1183" alt="image" src="https://github.com/user-attachments/assets/4cb66605-916f-4229-bdea-4a9583d454cf" />
   
 
 ## 9. Security & Error Handling
