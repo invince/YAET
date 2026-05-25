@@ -3,7 +3,7 @@ const fs = require("fs");
 const { app, globalShortcut, BrowserWindow, Tray, ipcMain } = require('electron');
 
 const { createMenu } = require('./ui/menu');
-const { SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON, APP_CONFIG_PATH, PROXIES_JSON } = require("./services/common");
+const { ConfigService, APP_CONFIG_PATH, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, PROXIES_JSON } = require("./services/configService");
 const { initConfigFilesIpcHandler } = require('./adapter/ipc/configFiles');
 const { initTerminalIpcHandler } = require('./adapter/ipc/terminal/terminalHandler');
 const { initCloudIpcHandler } = require('./adapter/ipc/cloud');
@@ -33,6 +33,7 @@ let allProxies = null;
 let allSecrets = null;
 
 const log = require("electron-log")
+const configService = new ConfigService(log);
 const { initCommonIpc } = require("./adapter/ipc/commonIpc");
 const { initAcpClientIpcHandler } = require("./adapter/ipc/ai/acpClient");
 const { initAiIpcHandler, initAiChatIpcHandler, initAiToolsIpcHandler } = require("./adapter/ipc/ai/aiChat");
@@ -93,20 +94,21 @@ app.on('ready', () => {
 
   // Ensure `load` runs on every page reload
   mainWindow.webContents.on('did-finish-load', () => {
-    load(log, mainWindow, PROFILES_JSON, "profiles.loaded", true)
-      .then(r => log.info(PROFILES_JSON + " loaded, event sent"))
+    configService.load(PROFILES_JSON, true)
+      .then(r => { mainWindow.webContents.send("profiles.loaded", r); log.info(PROFILES_JSON + " loaded, event sent"); })
       .catch(log.error);
 
     reloadSecrets();
 
-    load(log, mainWindow, CLOUD_JSON, "cloud.loaded", true)
-      .then(r => log.info(CLOUD_JSON + " loaded, event sent"))
+    configService.load(CLOUD_JSON, true)
+      .then(r => { mainWindow.webContents.send("cloud.loaded", r); log.info(CLOUD_JSON + " loaded, event sent"); })
       .catch(log.error);
 
     reloadProxies();
 
-    load(log, mainWindow, SETTINGS_JSON, "settings.loaded", false)
+    configService.load(SETTINGS_JSON, false)
       .then(settings => {
+        mainWindow.webContents.send("settings.loaded", settings);
         lastSettings = settings;
         initHandlerAfterSettingLoad(settings);
       })
@@ -224,8 +226,9 @@ process.on('uncaughtException', (error) => {
 
 
 function reloadSecrets() {
-  return load(log, mainWindow, SECRETS_JSON, "secrets.loaded", true)
+  return configService.load(SECRETS_JSON, true)
     .then(r => {
+      mainWindow.webContents.send("secrets.loaded", r);
       log.info(SECRETS_JSON + " loaded, event sent");
       return decrypt(r);
     })
@@ -237,8 +240,9 @@ function reloadSecrets() {
 }
 
 function reloadProxies() {
-  return load(log, mainWindow, PROXIES_JSON, "proxies.loaded", true)
+  return configService.load(PROXIES_JSON, true)
     .then(r => {
+      mainWindow.webContents.send("proxies.loaded", r);
       log.info(PROXIES_JSON + " loaded, event sent");
       return decrypt(r);
     })

@@ -1,38 +1,23 @@
 const { ipcMain } = require('electron');
-const keytar = require("keytar");
-const CryptoJS = require("crypto-js");
-
-const service = 'io.github.invince.YAET';
-const account = 'ac13ba1ac2f841d19a9f73bd8c335086';
+const { SecurityService, decrypt } = require('../../services/securityService');
 
 function initSecurityIpcHandler(log) {
+  const securityService = new SecurityService(log);
 
   ipcMain.handle('masterkey.save', async (event, password) => {
     log.info("master key saving...");
-    await keytar.setPassword(service, account, password);
+    await securityService.save(password);
     event.sender.send('masterkey-changed');
   });
 
-  ipcMain.handle('masterkey.get', async (event,) => {
-    return keytar.getPassword(service, account);
+  ipcMain.handle('masterkey.get', async () => {
+    return securityService.get();
   });
 
   ipcMain.handle('masterkey.delete', async (event) => {
     log.info("master key deleting...");
-    await keytar.deletePassword(service, account);
+    await securityService.delete();
     event.sender.send('masterkey-changed');
-  });
-
-}
-
-
-function decrypt(data) {
-  return keytar.getPassword(service, account).then(password => {
-    if (!password) {
-      throw new Error('Master key not found');
-    }
-    const bytes = CryptoJS.AES.decrypt(data, password);
-    return bytes.toString(CryptoJS.enc.Utf8);
   });
 }
 

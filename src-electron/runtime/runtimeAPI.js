@@ -8,7 +8,7 @@ const {SambaFileExplorer} = require('./connectors/file/samba');
 const {VncDesktop} = require('./connectors/desktop/vnc');
 const {ConfigService} = require('../services/configService');
 const {ProxyService} = require('../services/proxyService');
-const {decrypt} = require('../adapter/ipc/security');
+const {decrypt} = require('../services/securityService');
 
 class RuntimeAPI {
   constructor(log) {

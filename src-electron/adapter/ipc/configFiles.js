@@ -1,59 +1,69 @@
 const { ipcMain } = require('electron');
-const { load, save,
-  SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, PROXIES_JSON
-  , updateManifest } = require("../../services/common");
-function initConfigFilesIpcHandler(log, mainWindow, reloadProxies, reloadSecrets) {
+const { ConfigService, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, PROXIES_JSON } = require("../../services/configService");
 
-  ipcMain.on('settings.reload', (event, obj) => {
+function initConfigFilesIpcHandler(log, mainWindow, reloadProxies, reloadSecrets) {
+  const configService = new ConfigService(log);
+
+  ipcMain.on('settings.reload', async () => {
     log.info("reload " + SETTINGS_JSON);
-    load(log, mainWindow, SETTINGS_JSON, "settings.loaded", false)
-      .then(r => log.info(SETTINGS_JSON + " reloaded"))
-      .catch(err => log.error(err));
+    try {
+      const data = await configService.load(SETTINGS_JSON, false);
+      mainWindow.webContents.send("settings.loaded", data);
+      log.info(SETTINGS_JSON + " reloaded");
+    } catch (err) {
+      log.error(err);
+    }
   });
 
   ipcMain.on('settings.save', (event, obj) => {
-    save(log, SETTINGS_JSON, obj.data, false)
+    configService.save(SETTINGS_JSON, obj.data, false)
       .then(() => {
         log.info('Setting saved successfully!');
-        updateManifest(log, 'settings.json');
+        configService.updateManifest('settings.json');
       })
       .catch((error) => log.error('Error saving file:', error));
   });
 
-
-  ipcMain.on('profiles.reload', (event, obj) => {
+  ipcMain.on('profiles.reload', async () => {
     log.info("reload " + PROFILES_JSON);
-    load(log, mainWindow, PROFILES_JSON, "profiles.loaded", true)
-      .then(r => log.info(PROFILES_JSON + " reloaded"))
-      .catch(err => log.error(err));
+    try {
+      const data = await configService.load(PROFILES_JSON, true);
+      mainWindow.webContents.send("profiles.loaded", data);
+      log.info(PROFILES_JSON + " reloaded");
+    } catch (err) {
+      log.error(err);
+    }
   });
-
 
   ipcMain.on('profiles.save', (event, obj) => {
-    save(log, PROFILES_JSON, obj.data, true)
+    configService.save(PROFILES_JSON, obj.data, true)
       .then(() => {
         log.info('Profiles saved successfully!');
-        updateManifest(log, 'profiles.json');
+        configService.updateManifest('profiles.json');
       })
       .catch((error) => log.error('Error saving file:', error));
   });
 
-  ipcMain.on('secrets.reload', (event, obj) => {
+  ipcMain.on('secrets.reload', async () => {
     log.info("reload " + SECRETS_JSON);
-    if (reloadSecrets) {
-      reloadSecrets();
-    } else {
-      load(log, mainWindow, SECRETS_JSON, "secrets.loaded", true)
-        .then(r => log.info(SECRETS_JSON + " reloaded"))
-        .catch(err => log.error(err));
+    try {
+      if (reloadSecrets) {
+        await reloadSecrets();
+      } else {
+        const data = await configService.load(SECRETS_JSON, true);
+        mainWindow.webContents.send("secrets.loaded", data);
+      }
+      log.info(SECRETS_JSON + " reloaded");
+    } catch (err) {
+      log.error(err);
     }
   });
 
   ipcMain.on('secrets.save', (event, obj) => {
-    save(log, SECRETS_JSON, obj.data, true)
+    configService.save(SECRETS_JSON, obj.data, true)
       .then(() => {
         log.info('Secrets saved successfully!');
-        updateManifest(log, 'secrets.json');
+        configService.updateManifest('secrets.json');
         if (reloadSecrets) {
           reloadSecrets();
         }
@@ -61,45 +71,52 @@ function initConfigFilesIpcHandler(log, mainWindow, reloadProxies, reloadSecrets
       .catch((error) => log.error('Error saving file:', error));
   });
 
-  ipcMain.on('cloud.reload', (event, obj) => {
+  ipcMain.on('cloud.reload', async () => {
     log.info("reload " + CLOUD_JSON);
-    load(log, mainWindow, CLOUD_JSON, "cloud.loaded", true)
-      .then(r => log.info(CLOUD_JSON + " reloaded"))
-      .catch(err => log.error(err));
+    try {
+      const data = await configService.load(CLOUD_JSON, true);
+      mainWindow.webContents.send("cloud.loaded", data);
+      log.info(CLOUD_JSON + " reloaded");
+    } catch (err) {
+      log.error(err);
+    }
   });
 
   ipcMain.on('cloud.save', (event, obj) => {
-    save(log, CLOUD_JSON, obj.data, true)
+    configService.save(CLOUD_JSON, obj.data, true)
       .then(() => {
         log.info('Cloud saved successfully!');
-        updateManifest(log, 'cloud.json');
+        configService.updateManifest('cloud.json');
       })
       .catch((error) => log.error('Error saving file:', error));
   });
 
-  ipcMain.on('proxies.reload', (event, obj) => {
+  ipcMain.on('proxies.reload', async () => {
     log.info("reload " + PROXIES_JSON);
-    if (reloadProxies) {
-      reloadProxies();
-    } else {
-      load(log, mainWindow, PROXIES_JSON, "proxies.loaded", true)
-        .then(r => log.info(PROXIES_JSON + " reloaded"))
-        .catch(err => log.error(err));
+    try {
+      if (reloadProxies) {
+        await reloadProxies();
+      } else {
+        const data = await configService.load(PROXIES_JSON, true);
+        mainWindow.webContents.send("proxies.loaded", data);
+      }
+      log.info(PROXIES_JSON + " reloaded");
+    } catch (err) {
+      log.error(err);
     }
   });
 
   ipcMain.on('proxies.save', (event, obj) => {
-    save(log, PROXIES_JSON, obj.data, true)
+    configService.save(PROXIES_JSON, obj.data, true)
       .then(() => {
         log.info('Proxies saved successfully!');
-        updateManifest(log, 'proxies.json');
+        configService.updateManifest('proxies.json');
         if (reloadProxies) {
           reloadProxies();
         }
       })
       .catch((error) => log.error('Error saving file:', error));
   });
-
 }
 
 module.exports = { initConfigFilesIpcHandler };
