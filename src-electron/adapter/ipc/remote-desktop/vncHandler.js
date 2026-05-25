@@ -2,9 +2,8 @@ const { ipcMain } = require('electron');
 const { VncDesktop } = require('../../../runtime/connectors/desktop/vnc');
 
 const sessionSenders = new Map();
-const sessions = new Map();
 
-function initVncHandler(log, vncMap) {
+function initVncHandler(log, vncMap, proxyRepo, secretRepo, registry) {
   ipcMain.handle('session.open.rd.vnc', async (event, { id, host, port }) => {
     sessionSenders.set(id, event.sender);
     const desktop = new VncDesktop(log, { host, port });
@@ -25,17 +24,18 @@ function initVncHandler(log, vncMap) {
     });
 
     const { proxyPort } = await desktop.connect();
-    sessions.set(id, desktop);
+    if (registry) registry.register(id, 'vnc', 'user', desktop);
     vncMap.set(id, desktop.getWss());
     return proxyPort;
   });
 
   ipcMain.on('session.disconnect.rd.vnc', (event, { id }) => {
-    const desktop = sessions.get(id);
+    const entry = registry ? registry.get(id) : null;
+    const desktop = entry ? entry.session : null;
     if (desktop) {
       desktop.disconnect();
-      sessions.delete(id);
     }
+    if (registry) registry.unregister(id);
     sessionSenders.delete(id);
   });
 }

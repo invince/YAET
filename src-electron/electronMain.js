@@ -31,6 +31,8 @@ let initialized = false;
 let lastSettings = null;
 let allProxies = null;
 let allSecrets = null;
+let runtime = null;
+let sessionRegistry = null;
 
 const log = require("electron-log")
 const configService = new ConfigService(log);
@@ -43,6 +45,7 @@ const { initLocalTerminalIpcHandler } = require("./adapter/ipc/terminal/localHan
 const { initWinRmIpcHandler } = require("./adapter/ipc/terminal/winRMHandler");
 const { initSambaHandler } = require("./adapter/ipc/file-explorer/sambaHandler");
 const { RuntimeAPI } = require("./runtime/runtimeAPI");
+const { SessionRegistry } = require("./runtime/sessionRegistry");
 
 const logPath = path.join(app.getPath('userData'), 'logs/main.log');
 console.log(logPath);
@@ -123,19 +126,20 @@ function initHandlerBeforeSettingLoad() {
 
   expressApp = initBackend(log);
 
-  initConfigFilesIpcHandler(log, mainWindow, reloadProxies, reloadSecrets);
+  initConfigFilesIpcHandler(log, mainWindow, reloadProxies, reloadSecrets,
+    (settings) => { lastSettings = settings; });
   initCloudIpcHandler(log, () => allProxies, () => allSecrets);
   initSecurityIpcHandler(log);
   initTerminalIpcHandler(log, terminalMap);
-  initSSHTerminalIpcHandler(log, terminalMap, () => allProxies, () => allSecrets);
-  initTelnetIpcHandler(log, terminalMap, () => allProxies, () => allSecrets);
+  initSSHTerminalIpcHandler(log, terminalMap, () => allProxies, () => allSecrets, sessionRegistry);
+  initTelnetIpcHandler(log, terminalMap, () => allProxies, () => allSecrets, sessionRegistry);
 
   initScpSftpHandler(log, scpMap, expressApp, () => allProxies, () => allSecrets);
   initFtpHandler(log, ftpMap, expressApp, () => allProxies, () => allSecrets);
   initSambaHandler(log, sambaMap, expressApp, () => allProxies, () => allSecrets);
 
   initRdpHandler(log);
-  initVncHandler(log, vncMap, () => allProxies, () => allSecrets);
+  initVncHandler(log, vncMap, () => allProxies, () => allSecrets, sessionRegistry);
 
   initClipboard(log, mainWindow);
   initCustomSessionHandler(log);
@@ -143,10 +147,14 @@ function initHandlerBeforeSettingLoad() {
   initAiIpcHandler(log);
   initAiChatIpcHandler(log);
 
-  const runtime = new RuntimeAPI(log);
+  runtime = new RuntimeAPI(log);
   runtime.setSecretRepo(() => allSecrets);
   runtime.setProxyRepo(() => allProxies);
-  initAiToolsIpcHandler(log, runtime);
+
+  sessionRegistry = new SessionRegistry({ maxBufferLines: 50 });
+  runtime.sessionRegistry = sessionRegistry;
+
+  initAiToolsIpcHandler(log, runtime, () => lastSettings);
 
   initLocalFileHandler(log, mainWindow);
 
@@ -164,11 +172,16 @@ function initHandlerAfterSettingLoad(settings) {
     if (autoUpdate) {
       initAutoUpdater(log, settings, () => allProxies, () => allSecrets);
     }
-    initLocalTerminalIpcHandler(settings, log, terminalMap);
-    initWinRmIpcHandler(settings, log, terminalMap);
+    initLocalTerminalIpcHandler(settings, log, terminalMap, sessionRegistry);
+    initWinRmIpcHandler(settings, log, terminalMap, sessionRegistry);
     initialized = true;
   }
 
+  const maxLines = settings?.ai?.contextMaxLines;
+  if (maxLines && sessionRegistry) {
+    sessionRegistry.maxBufferLines = maxLines;
+    log.info(`SessionRegistry maxBufferLines set to ${maxLines}`);
+  }
 }
 
 app.on('window-all-closed', () => {

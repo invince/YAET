@@ -1,9 +1,7 @@
 const { ipcMain } = require('electron');
 const { WinRMSession } = require('../../../runtime/connectors/terminal/winRM');
 
-const sessions = new Map();
-
-function initWinRmIpcHandler(settings, log, terminalMap) {
+function initWinRmIpcHandler(settings, log, terminalMap, registry) {
 
   ipcMain.on('session.open.terminal.winrm', (event, data) => {
     if (process.platform !== 'win32') {
@@ -40,16 +38,17 @@ function initWinRmIpcHandler(settings, log, terminalMap) {
         process: session.process,
         callback: (input) => session.write(input),
       });
-      sessions.set(data.terminalId, session);
+      if (registry) registry.register(data.terminalId, 'winrm', 'user', session);
     }).catch((err) => {
       event.sender.send('error', { category: 'winrm', id: data.terminalId, error: err.message });
     });
   });
 
   ipcMain.on('session.close.terminal.winrm', (event, data) => {
-    const session = sessions.get(data.terminalId);
+    const entry = registry ? registry.get(data.terminalId) : null;
+    const session = entry ? entry.session : null;
     if (session) session.close();
-    sessions.delete(data.terminalId);
+    if (registry) registry.unregister(data.terminalId);
   });
 }
 

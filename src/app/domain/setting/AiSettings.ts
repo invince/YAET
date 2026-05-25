@@ -13,4 +13,5 @@ export class AiSettings {
 
   useContext: boolean = true;
   agentMode: boolean = false;
+  contextMaxLines: number = 50;
 }

@@ -85,7 +85,8 @@
                 <button mat-stroked-button color="warn" (click)="openDeleteMasterKeyConfirmationDialog()">
                   <mat-icon>remove_circle</mat-icon> {{ 'SETTINGS.REMOVE_MASTER_KEY' | translate }}
                 </button>
-                }
+              }
+
               </div>
             </div>
           </div>
@@ -312,6 +313,23 @@
                 </button>
               </div>
               }
+
+              <mat-form-field class="field" appearance="outline">
+                <mat-label>{{ 'SETTINGS.AI_CONTEXT_MAX_LINES' | translate }}</mat-label>
+                <input matInput type="number" formControlName="aiContextMaxLines" min="10" />
+                <mat-hint>{{ 'SETTINGS.AI_CONTEXT_MAX_LINES_HINT' | translate }}</mat-hint>
+              </mat-form-field>
+
+              <div style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
+                <mat-slide-toggle formControlName="aiUseContext">
+                  {{ 'SETTINGS.AI_USE_CONTEXT' | translate }}
+                </mat-slide-toggle>
+                <mat-slide-toggle formControlName="aiAgentMode">
+                  {{ 'SETTINGS.AI_AGENT_MODE' | translate }}
+                </mat-slide-toggle>
+              </div>
+
+
             </div>
           </div>
         </div>

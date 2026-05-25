@@ -1,9 +1,7 @@
 const { ipcMain } = require('electron');
 const { TelnetSession } = require('../../../runtime/connectors/terminal/telnet');
 
-const sessions = new Map();
-
-function initTelnetIpcHandler(log, terminalMap, proxyRepo, secretRepo) {
+function initTelnetIpcHandler(log, terminalMap, proxyRepo, secretRepo, registry) {
 
   ipcMain.on('session.open.terminal.telnet', async (event, data) => {
     const session = new TelnetSession(log);
@@ -37,21 +35,21 @@ function initTelnetIpcHandler(log, terminalMap, proxyRepo, secretRepo) {
         callback: (input) => session.write(input),
       });
 
-      sessions.set(data.terminalId, session);
+      if (registry) registry.register(data.terminalId, 'telnet', 'user', session);
     } catch (error) {
       event.sender.send('error', {
         category: 'telnet',
         id: data.terminalId,
         error: error.message,
       });
-      sessions.delete(data.terminalId);
     }
   });
 
   ipcMain.on('session.close.terminal.telnet', (event, data) => {
-    const session = sessions.get(data.terminalId);
+    const entry = registry ? registry.get(data.terminalId) : null;
+    const session = entry ? entry.session : null;
     if (session) session.close();
-    sessions.delete(data.terminalId);
+    if (registry) registry.unregister(data.terminalId);
   });
 }
 

@@ -1,7 +1,7 @@
 const { ipcMain } = require('electron');
 const { ConfigService, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, PROXIES_JSON } = require("../../services/configService");
 
-function initConfigFilesIpcHandler(log, mainWindow, reloadProxies, reloadSecrets) {
+function initConfigFilesIpcHandler(log, mainWindow, reloadProxies, reloadSecrets, onSettingsSaved) {
   const configService = new ConfigService(log);
 
   ipcMain.on('settings.reload', async () => {
@@ -17,6 +17,9 @@ function initConfigFilesIpcHandler(log, mainWindow, reloadProxies, reloadSecrets
 
   ipcMain.on('settings.save', (event, obj) => {
     configService.save(SETTINGS_JSON, obj.data, false)
+      .then(() => {
+        if (onSettingsSaved) onSettingsSaved(obj.data);
+      })
       .then(() => {
         log.info('Setting saved successfully!');
         configService.updateManifest('settings.json');

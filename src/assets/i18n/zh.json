@@ -74,6 +74,10 @@
         "AI_MODEL": "模型",
         "AI_ACP_COMMAND": "ACP 命令",
         "AI_ACP_ARGS": "ACP 参数",
+        "AI_CONTEXT_MAX_LINES": "上下文缓冲区行数",
+        "AI_CONTEXT_MAX_LINES_HINT": "每个会话为 AI 上下文缓冲的最大输出行数（最小 10）",
+        "AI_USE_CONTEXT": "包含会话上下文",
+        "AI_AGENT_MODE": "Agent 模式",
         "ADD_NEW_GROUP": "添加新组"
     },
     "LANGUAGES": {

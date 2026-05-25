@@ -1,9 +1,7 @@
 const { ipcMain } = require('electron');
 const { LocalTerminalSession } = require('../../../runtime/connectors/terminal/local');
 
-const sessions = new Map();
-
-function initLocalTerminalIpcHandler(settings, log, terminalMap) {
+function initLocalTerminalIpcHandler(settings, log, terminalMap, registry) {
 
   ipcMain.on('session.open.terminal.local', (event, data) => {
     const session = new LocalTerminalSession(log);
@@ -18,16 +16,17 @@ function initLocalTerminalIpcHandler(settings, log, terminalMap) {
         process: session.process,
         callback: (input) => session.write(input),
       });
-      sessions.set(data.terminalId, session);
+      if (registry) registry.register(data.terminalId, 'local', 'user', session);
     }).catch((err) => {
       event.sender.send('error', { category: 'local', id: data.terminalId, error: err.message });
     });
   });
 
   ipcMain.on('session.close.terminal.local', (event, data) => {
-    const session = sessions.get(data.terminalId);
+    const entry = registry ? registry.get(data.terminalId) : null;
+    const session = entry ? entry.session : null;
     if (session) session.close();
-    sessions.delete(data.terminalId);
+    if (registry) registry.unregister(data.terminalId);
   });
 }
 

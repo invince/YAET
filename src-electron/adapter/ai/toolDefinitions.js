@@ -605,6 +605,62 @@ function getToolDefinitions() {
     {
       type: 'function',
       function: {
+        name: 'session_list',
+        description: 'List all active terminal sessions (SSH, Local, Telnet, WinRM, VNC) visible to the AI',
+        parameters: {
+          type: 'object',
+          properties: {},
+        },
+      },
+    },
+    {
+      type: 'function',
+      function: {
+        name: 'session_read',
+        description: 'Read recent output from a terminal session by session ID. Returns the buffered output lines.',
+        parameters: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', description: 'Session ID (from session_list)' },
+            lastN: { type: 'number', description: 'Optional number of recent output lines to read (default: use maxBufferLines setting)' },
+          },
+          required: ['id'],
+        },
+      },
+    },
+    {
+      type: 'function',
+      function: {
+        name: 'terminal_open',
+        description: 'Open a persistent terminal session for AI interaction. The session stays connected and can be used with session_write/session_read.',
+        parameters: {
+          type: 'object',
+          properties: {
+            profileId: { type: 'string', description: 'ID of the profile to use. Omit for local terminal.' },
+            proxyId: { type: 'string', description: 'Optional proxy ID to route the connection through' },
+            secretId: { type: 'string', description: 'Optional secret ID override for authentication' },
+          },
+        },
+      },
+    },
+    {
+      type: 'function',
+      function: {
+        name: 'session_write',
+        description: 'Send input to an AI-owned terminal session. Only works on sessions created by terminal_open.',
+        parameters: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', description: 'Session ID (must be AI-owned, from session_list)' },
+            input: { type: 'string', description: 'Input to send to the session (e.g. a shell command)' },
+          },
+          required: ['id', 'input'],
+        },
+      },
+    },
+    {
+      type: 'function',
+      function: {
         name: 'samba_search_files',
         description: 'Search for files on a remote server via Samba/SMB using a saved profile',
         parameters: {
@@ -684,6 +740,31 @@ async function executeTool(runtime, toolName, args) {
         caseSensitive: args.caseSensitive,
         showHiddenItems: args.showHiddenItems,
       });
+    }
+    case 'session_list':
+      return runtime.sessionRegistry.list();
+    case 'session_read':
+      return runtime.sessionRegistry.read(args.id, args.lastN);
+    case 'terminal_open': {
+      const session = await runtime.getConnector(args.profileId, opts);
+      await session.connect({ rows: 24, cols: 80 });
+      const sessionId = `ai_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const profileType = args.profileId
+        ? ((await runtime.listProfiles()).profiles.find(p => p.id === args.profileId)?.type || 'remote').toLowerCase()
+        : 'local';
+      const typeMap = { ssh_terminal: 'ssh', telnet_terminal: 'telnet', win_rm_terminal: 'winrm', local_terminal: 'local' };
+      runtime.sessionRegistry.register(sessionId, typeMap[profileType] || profileType, 'ai', session);
+      return { sessionId, type: typeMap[profileType] || profileType, message: `Session ${sessionId} opened` };
+    }
+    case 'session_write': {
+      const entry = runtime.sessionRegistry.get(args.id);
+      if (!entry) throw new Error(`Session not found: ${args.id}`);
+      if (entry.owner !== 'ai') throw new Error(`Cannot write to session ${args.id}: not AI-owned (owner: ${entry.owner})`);
+      const isRunning = entry.session._connected !== undefined ? entry.session._connected : true;
+      if (!isRunning) throw new Error(`Session ${args.id} is no longer running`);
+      const data = args.input.endsWith('\n') ? args.input : args.input + '\n';
+      await entry.session.write(data);
+      return { success: true, sessionId: args.id };
     }
     case 'scp_download_file':
     case 'ftp_download_file':

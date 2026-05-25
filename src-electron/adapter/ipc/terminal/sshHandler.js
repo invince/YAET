@@ -1,9 +1,7 @@
 const { ipcMain } = require('electron');
 const { SshTerminalSession } = require('../../../runtime/connectors/terminal/ssh');
 
-const sessions = new Map();
-
-function initSSHTerminalIpcHandler(log, terminalMap, proxyRepo, secretRepo) {
+function initSSHTerminalIpcHandler(log, terminalMap, proxyRepo, secretRepo, registry) {
 
   ipcMain.on('session.open.terminal.ssh', async (event, data) => {
     const session = new SshTerminalSession(log);
@@ -18,7 +16,6 @@ function initSSHTerminalIpcHandler(log, terminalMap, proxyRepo, secretRepo) {
 
     session.on('disconnect', ({ error }) => {
       event.sender.send('session.disconnect.terminal.ssh', { id: data.terminalId, error: !!error });
-      sessions.delete(data.terminalId);
     });
 
     try {
@@ -48,21 +45,21 @@ function initSSHTerminalIpcHandler(log, terminalMap, proxyRepo, secretRepo) {
         callback: (input) => session.write(input),
       });
 
-      sessions.set(data.terminalId, session);
+      if (registry) registry.register(data.terminalId, 'ssh', 'user', session);
     } catch (error) {
       event.sender.send('error', {
         category: 'ssh',
         id: data.terminalId,
         error: error.message,
       });
-      sessions.delete(data.terminalId);
     }
   });
 
   ipcMain.on('session.close.terminal.ssh', (event, data) => {
-    const session = sessions.get(data.terminalId);
+    const entry = registry ? registry.get(data.terminalId) : null;
+    const session = entry ? entry.session : null;
     if (session) session.close();
-    sessions.delete(data.terminalId);
+    if (registry) registry.unregister(data.terminalId);
   });
 }
 
