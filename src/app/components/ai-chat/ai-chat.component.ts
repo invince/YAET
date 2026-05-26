@@ -29,6 +29,15 @@ import {TerminalInstanceService} from '../../services/terminal-instance.service'
 import {ElectronService} from '../../services/electron/electron.service';
 import {SettingService} from '../../services/setting.service';
 
+export interface ToolProgressEntry {
+  toolName: string;
+  args: any;
+  result?: any;
+  error?: string;
+  ts: number;
+  expanded: boolean;
+}
+
 @Component({
   selector: 'app-ai-chat',
   templateUrl: './ai-chat.component.html',
@@ -51,6 +60,8 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   userInput = '';
   messages: { role: string, content: string }[] = [];
   isLoading = false;
+  toolProgress: ToolProgressEntry[] = [];
+  activeToolProgressMessageIndex = -1;
   showHistoryDropdown = false;
   renamingId: string | null = null;
   renameInput = '';
@@ -181,6 +192,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     this.historyService.createNew();
     this.messages = [...(this.historyService.current?.messages ?? [])];
     this.showHistoryDropdown = false;
+    this.clearToolProgress();
     this.cdr.detectChanges();
   }
 
@@ -189,6 +201,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     this.historyService.switchTo(id);
     this.messages = [...(this.historyService.current?.messages ?? [])];
     this.showHistoryDropdown = false;
+    this.clearToolProgress();
     this.cdr.detectChanges();
   }
 
@@ -404,6 +417,8 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     this.userInput = '';
     this.saveMessages();
     this.isLoading = true;
+    this.clearToolProgress();
+    this.activeToolProgressMessageIndex = this.messages.length - 1;
 
     const activeTab = this.tabService.getSelectedTab();
     let context = '';
@@ -447,6 +462,17 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   }
 
   private sendWebMessageWithTools(aiSettings: any, payload: any[], activeTab: any) {
+    this.toolProgress = [];
+    this.electronService.removeToolProgressListeners();
+    this.electronService.onToolProgress((data: ToolProgressEntry) => {
+      const existing = this.toolProgress.find(t => t.toolName === data.toolName && t.args === data.args);
+      if (!existing) {
+        this.toolProgress.push({ ...data, expanded: !!data.error });
+        this.cdr.detectChanges();
+        this.scrollToBottom();
+      }
+    });
+
     this.aiService.sendWithTools(
       aiSettings.apiUrl,
       aiSettings.token,
@@ -454,10 +480,12 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
       payload
     ).subscribe({
       next: (resp) => {
+        this.electronService.removeToolProgressListeners();
         let aiResponse = this.aiService.extractWebContent(resp);
         this.handleResponse(aiResponse, activeTab);
       },
       error: (err) => {
+        this.electronService.removeToolProgressListeners();
         console.error(err);
         this.messages.push({ role: 'assistant', content: 'Error communicating with AI. Please check your configuration.' });
         this.isLoading = false;
@@ -540,7 +568,18 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   stop() {
     this.isLoading = false;
     this.electronService.removeAcpChunkListeners();
+    this.electronService.removeToolProgressListeners();
     this.cdr.detectChanges();
+  }
+
+  private clearToolProgress() {
+    this.toolProgress = [];
+    this.activeToolProgressMessageIndex = -1;
+    this.electronService.removeToolProgressListeners();
+  }
+
+  toggleToolEntry(entry: ToolProgressEntry) {
+    entry.expanded = !entry.expanded;
   }
 
   private saveSettings() {

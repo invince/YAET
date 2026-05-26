@@ -67,6 +67,7 @@ const ALLOWED_ON_CHANNELS = [
   'proxies.loaded',
   'masterkey-changed',
   'acp.chunk',
+  'ai.tool-progress',
 ];
 
 contextBridge.exposeInMainWorld('electronAPI', {

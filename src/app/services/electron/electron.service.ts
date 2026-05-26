@@ -10,6 +10,7 @@ import {
   AI_FETCH_MODELS,
   AI_SEND_CHAT,
   AI_SEND_WITH_TOOLS,
+  AI_TOOL_PROGRESS,
   CHECK_FOR_UPDATES,
   CLOUD_DOWNLOAD,
   CLOUD_RELOAD,
@@ -308,6 +309,20 @@ export class ElectronService extends AbstractElectronService {
     }
   }
   //#endregion "ACP"
+
+  //#region "AI Tool Progress"
+  onToolProgress(callback: (data: any) => void) {
+    if (this.ipc) {
+      this.ipc.on(AI_TOOL_PROGRESS, (event: any, data: any) => callback(data));
+    }
+  }
+
+  removeToolProgressListeners() {
+    if (this.ipc) {
+      this.ipc.removeAllListeners(AI_TOOL_PROGRESS);
+    }
+  }
+  //#endregion "AI Tool Progress"
 }
 
 export class TermOutput {

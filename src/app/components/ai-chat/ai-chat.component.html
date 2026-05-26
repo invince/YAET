@@ -50,7 +50,7 @@
   </div>
 
   <div class="chat-messages" #scrollMe [scrollTop]="scrollMe.scrollHeight">
-    @for (msg of messages; track msg) {
+    @for (msg of messages; track msg; let i = $index) {
     <div class="message" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'" [class.system]="msg.role === 'system'">
       <div class="message-header">
         <mat-icon class="message-avatar">{{ msg.role === 'user' ? 'person' : 'smart_toy' }}</mat-icon>
@@ -58,6 +58,29 @@
       </div>
       <div class="message-content" [innerHTML]="parseMarkdown(msg.content)"></div>
     </div>
+    @if (msg.role === 'user' && i === activeToolProgressMessageIndex && toolProgress.length > 0) {
+    <div class="tool-progress">
+      @for (entry of toolProgress; track entry.ts) {
+      <div class="tool-entry" [class.expanded]="entry.expanded" [class.error]="!!entry.error" (click)="toggleToolEntry(entry)">
+        <div class="tool-entry-header">
+          <mat-icon class="tool-status-icon">{{ entry.error ? 'error' : entry.result ? 'check_circle' : 'hourglass_empty' }}</mat-icon>
+          <span class="tool-name">{{ entry.toolName }}</span>
+          <span class="tool-args">{{ entry.args | json }}</span>
+          <mat-icon class="expand-icon">{{ entry.expanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </div>
+        @if (entry.expanded) {
+        <div class="tool-entry-detail">
+          @if (entry.error) {
+          <div class="tool-error">{{ entry.error }}</div>
+          } @else if (entry.result) {
+          <pre class="tool-result">{{ entry.result | json }}</pre>
+          }
+        </div>
+        }
+      </div>
+      }
+    </div>
+    }
     }
     @if (isLoading) {
     <div class="message assistant">

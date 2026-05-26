@@ -28,7 +28,10 @@ function initAiToolsIpcHandler(log, runtime, getSettings) {
     const activeDefs = useContext
       ? toolDefs.filter(t => !oneShotToolNames.includes(t.function.name))
       : toolDefs.filter(t => !sessionToolNames.includes(t.function.name));
-    return functionCallLoop(log, runtime, apiUrl, token, model, messages, activeDefs, 0);
+    const sendEvent = (data) => {
+      try { event.sender.send('ai.tool-progress', data); } catch (_) {}
+    };
+    return functionCallLoop(log, runtime, apiUrl, token, model, messages, activeDefs, 0, sendEvent);
   });
 }
 

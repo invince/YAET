@@ -93,3 +93,4 @@ export const ACP_FETCH_MODELS = 'acp.fetch-models';
 export const AI_FETCH_MODELS = 'ai.fetch-models';
 export const AI_SEND_CHAT = 'ai.send-chat';
 export const AI_SEND_WITH_TOOLS = 'ai.send-with-tools';
+export const AI_TOOL_PROGRESS = 'ai.tool-progress';
