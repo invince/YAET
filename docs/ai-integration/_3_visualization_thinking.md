@@ -1,7 +1,7 @@
 # Phase 3: AI Thinking Process Visualization
 
 > Show the AI's intermediate reasoning steps in the chat UI so users understand what the AI is doing in real time.
-> Last updated: 2026-05-26
+> Last updated: 2026-05-27
 
 ---
 
@@ -86,34 +86,64 @@ AI: The server is running normally...
 
 ### Main Process (`functionLoop.js`)
 
-After each `executeTool()` call, before pushing the tool result to the messages array, send a progress event:
+`functionCallLoop` now accepts a `sendEvent` callback. After each `executeTool()` call:
 
 ```js
-if (event.sender) {
-  event.sender.send('ai.tool-progress', {
-    toolName: tc.function.name,
-    args,
-    result,
-    error: null,
-    ts: Date.now(),
-  });
+if (sendEvent) {
+  sendEvent({ toolName, args, result, error: null, ts: Date.now() });
 }
 ```
 
-Requires passing `event` (or `event.sender`) to `functionCallLoop`.
+`aiChat.js` provides `event.sender.send('ai.tool-progress', data)` as `sendEvent`.
 
 ### Renderer
 
-- `AiChatService` listens for `ai.tool-progress`
-- Stores progress events per conversation
-- `AiChatComponent` renders them between user message and response
-- New `ToolCallStepComponent` for rendering individual steps
+- `ElectronService` listens for `ai.tool-progress`
+- `AiChatComponent.onToolProgress()` pushes entries to `toolProgress[]`
+- Tool progress rendered **inline** in `ai-chat.component.html` (no separate component)
+- Renders between user message and approval banner / loading indicator
+
+### Redact Pipe
+
+Added `RedactPipe` (`src/app/pipes/redact.pipe.ts`) to hide sensitive fields in tool args/results:
+
+```ts
+const SENSITIVE_KEYS = new Set([
+  'id', 'profileId', 'profile_id',
+  'secretId', 'secret_id',
+  'sessionId', 'session_id'
+]);
+```
+
+Applied as `{{ entry.args | redact | json }}` and `{{ entry.result | redact | json }}` in the template. Recursively walks nested objects.
+
+### Ordering
+
+```
+User message
+  └─ Tool progress entries (collapsible, expand on click)
+    └─ Approval banner (if pending command)
+      └─ Loading indicator / AI response
+```
 
 ---
 
-## Future
+## Progress
+
+| Feature | Status |
+|---|---|
+| `ai.tool-progress` IPC channel | ✅ Implemented |
+| `sendEvent` callback in `functionCallLoop` | ✅ Implemented |
+| Tool progress inline rendering | ✅ Implemented |
+| Status icons (hourglass / check / error) | ✅ Implemented |
+| Collapse/expand per entry | ✅ Implemented |
+| Error auto-expand | ✅ Implemented |
+| Redact pipe for sensitive fields | ✅ Implemented |
+| Progress cards above approval banner | ✅ Implemented |
+| Scrolling follows new progress entries | ✅ Implemented |
+
+### Future
 
 - Stream tool results character-by-character (vs. batch per loop iteration)
-- Cancel button next to pending tool calls
 - Collapse/expand all toggle
 - Animated transitions between steps

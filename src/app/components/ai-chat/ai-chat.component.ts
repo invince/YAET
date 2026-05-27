@@ -28,6 +28,7 @@ import {TabService} from '../../services/tab.service';
 import {TerminalInstanceService} from '../../services/terminal-instance.service';
 import {ElectronService} from '../../services/electron/electron.service';
 import {SettingService} from '../../services/setting.service';
+import {NotificationService} from '../../services/notification.service';
 import {RedactPipe} from '../../pipes/redact.pipe';
 
 export interface ToolProgressEntry {
@@ -127,6 +128,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     private cdr: ChangeDetectorRef,
     private sanitizer: DomSanitizer,
     private historyService: AiChatHistoryService,
+    private notificationService: NotificationService,
     private el: ElementRef
   ) { }
 
@@ -176,6 +178,9 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   }
 
   toggleChat() {
+    if (this.aiChatService.isOpen) {
+      this.clearToolProgress();
+    }
     this.aiChatService.toggle();
   }
 
@@ -626,6 +631,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     this.activeToolProgressMessageIndex = -1;
     if (this.pendingCommand) {
       this.electronService.rejectCommand(this.pendingCommand.requestId);
+      this.notificationService.info('Command rejected');
     }
     this.pendingCommand = null;
     this.isLoading = false;

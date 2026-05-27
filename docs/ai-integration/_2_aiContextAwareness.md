@@ -1,7 +1,7 @@
 # Phase 2: AI Context Awareness via Session Registry
 
 > Give the AI visibility into running sessions so it can understand context beyond one-shot function calls.
-> Last updated: 2026-05-25
+> Last updated: 2026-05-27
 
 ---
 
@@ -142,13 +142,19 @@ class SessionRegistry {
 
 ### Owner-Based Access Control
 
-| Tool | Read Scope | Write Scope |
-|---|---|---|
-| `session_list` | All (user + ai) | - |
-| `session_read` | All (user + ai) | - |
-| `session_write` (future) | - | AI-owned only |
+The AI can only **write** to sessions it created (`owner === 'ai'`). **Reading** is governed by two flags:
 
-The AI can **see** all sessions for context, but can only **write** to sessions it created.
+| Flag | `session_list` | `session_read` |
+|---|---|---|
+| `useContext === true` + `crossSessionAccess === true` | All AI-owned sessions | Any AI-owned session |
+| `useContext === true` + `crossSessionAccess === false` | Current chat's AI-owned only (`chatSessionId`) | Current chat's AI-owned only |
+| `useContext === false` | Empty `[]` | Only AI-owned (by any chat) |
+
+### chatSessionId
+
+Each AI-owned session is tagged with the `chatSessionId` (the AI chat history UUID) that created it. When `crossSessionAccess === false`, `session_list` and `session_read` filter by this ID, preventing chat1 from seeing sessions created by chat2.
+
+Passed through the IPC chain: `component → ai.service → electron.service → aiChat.js → sessionContext → executeTool`.
 
 ---
 
@@ -266,16 +272,62 @@ No changes needed. `executeTool(runtime, toolName, args)` already receives `runt
 | **Modify** | `src-electron/adapter/ipc/terminal/winRMHandler.js` |
 | **Modify** | `src-electron/adapter/ipc/remote-desktop/vncHandler.js` |
 | **Modify** (optional) | `src-electron/runtime/runtimeAPI.js` (facade methods) |
-| **Modify** | `src/app/domain/setting/AiSettings.ts` (add `contextMaxLines`) |
-| **Modify** | `src/app/services/setting.service.ts` (validate `contextMaxLines`)
+| **Modify** | `src/app/domain/setting/AiSettings.ts` (add `contextMaxLines`, `crossSessionAccess`) |
+| **Modify** | `src/app/services/setting.service.ts` (validate `contextMaxLines`, `crossSessionAccess`) |
+| **Modify** | `src/app/services/electron/electron.service.ts` (pass `crossSessionAccess`, `useContext`, `chatSessionId` via IPC) |
+| **Modify** | `src/app/services/ai.service.ts` (forward params) |
+| **Modify** | `src/app/components/ai-chat/ai-chat.component.ts` (terminal content injection, pass flags) |
+| **Modify** | `src-electron/adapter/ai/functionLoop.js` (pass `sessionContext`) |
+| **Modify** | `src-electron/adapter/ipc/ai/aiChat.js` (`injectSessionContext`, `sessionContext` builder) |
 
 ---
 
-## Future Extensions (Not in Scope)
+## Phase 5: Context Optimization
 
-- `session_write` tool -- send input to a running AI-owned session
-- `session_close` tool -- terminate a session from AI
-- `terminal_execute` auto-registration -- one-shot exec commands also register their session
-- UI session indicator -- show which sessions are AI-accessible
-- Session output streaming to AI -- real-time output push (vs. poll-based `session_read`)
-- User-configurable `contextMaxLines` in Settings UI (currently `AiSettings.contextMaxLines: number = 50`)
+Implemented in `injectSessionContext()` (`src-electron/adapter/ipc/ai/aiChat.js`):
+
+- **Level 1**: IDLE/disconnected/INPUT_REQUIRED sessions are summarized as one-liners instead of full buffer dump
+- **Level 2**: Incremental delivery — only new output (since last sent timestamp) is appended per session
+- **`maxContextTokens`** hard cap (default 4000): drops oldest session entries when exceeded
+- **`idleSummary`** flag: compresses IDLE and INPUT_REQUIRED states into short status strings
+- **`contextOptimization`** settings: `{ enabled, level, idleSummary, maxContextTokens }`
+
+Configured in `AiSettings.contextOptimization`.
+
+### Context Injection (Dual Path)
+
+| Path | Location | Role | Content |
+|---|---|---|---|
+| Renderer → User message | `ai-chat.component.ts:430-438` | Full xterm content | `getTerminalContent(activeTab.id)` |
+| Backend → System message | `aiChat.js:injectSessionContext()` | Buffer summary + status | Session output, state summary |
+
+Both paths gated by `useContext`. First path always injected for the current active terminal. Second path filtered by `crossSessionAccess` + `chatSessionId`.
+
+---
+
+## Progress
+
+| Component | Status |
+|---|---|
+| `SessionRegistry` class | ✅ Implemented |
+| Registry wired into all 5 terminal IPC handlers | ✅ Implemented |
+| `session_list` tool | ✅ Implemented |
+| `session_read` tool | ✅ Implemented |
+| `session_write` tool | ✅ Implemented (AI-owned only) |
+| `terminal_execute` removed | ✅ Removed |
+| `contextMaxLines` setting | ✅ Implemented |
+| Owner-based access control | ✅ Implemented |
+| `chatSessionId` isolation | ✅ Implemented |
+| `crossSessionAccess` / `useContext` flags | ✅ Implemented |
+| `injectSessionContext()` (Phase 5) | ✅ Implemented |
+| Context optimization (Level 1 + 2) | ✅ Implemented |
+| `maxContextTokens` cap | ✅ Implemented |
+| Dual-path context injection (renderer + backend) | ✅ Documented |
+| `terminal_open` + `session_write` streaming | ✅ Implemented |
+| Redact pipe (hide IDs) | ✅ Implemented |
+
+### Future (Not Started)
+
+- `session_close` tool — terminate a session from AI
+- UI session indicator — show which sessions are AI-accessible
+- Session output streaming to AI — real-time output push (vs. poll-based `session_read`)

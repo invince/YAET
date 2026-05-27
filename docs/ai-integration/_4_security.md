@@ -1,7 +1,7 @@
 # Phase 4: Command Approval Gate
 
 > Require user consent before the AI executes sensitive commands, preventing accidental or malicious destructive operations.
-> Last updated: 2026-05-26
+> Last updated: 2026-05-27
 
 ---
 
@@ -128,16 +128,17 @@ A non-modal banner that slides in from the top of the chat panel.
 
 ```js
 async function executeTool(runtime, toolName, args) {
-  if (isCommandTool(toolName) && runtime.approvalManager) {
-    const request = await runtime.approvalManager.request(toolName, args);
-    if (!request.approved) {
-      return { error: `Command rejected by user: ${request.reason}` };
+  if (SENSITIVE_TOOLS.includes(toolName) && runtime?.approvalManager) {
+    const result = await runtime.approvalManager.request(toolName, args);
+    if (!result.approved) {
+      return { error: `Command rejected: ${result.reason}` };
     }
-    // args may have been modified by user edit (future)
   }
   // ... existing execution logic
 }
 ```
+
+`SENSITIVE_TOOLS = ['local_execute', 'session_write']` (defined in `toolDefinitions.js`).
 
 ### functionLoop
 
@@ -145,11 +146,49 @@ No changes needed — `executeTool` already returns the result or throws. The aw
 
 ### Settings
 
-Add `AiSettings.safetyRules` domain model, validated in `SettingService`.
+`safetyRules` is **backend-only** — not exposed in the Angular frontend domain model. `ApprovalManager` reads from `settings.json?.ai?.safetyRules` or falls back to hardcoded defaults:
+
+```js
+const DEFAULT_DANGEROUS_COMMANDS = ['rm', 'dd', 'shutdown', 'reboot', 'mkfs',
+  'fdisk', 'format', 'sudo', 'su', 'passwd', 'kill', 'pkill', 'systemctl'];
+const DEFAULT_DANGEROUS_PATTERNS = ['rm\\s+-rf\\s+/', '>\\s*/dev/sd',
+  'dd\\s+if=', 'chmod\\s+777', 'chown\\s+[^:]+:',
+  'wget\\s+http.*\\|\\s*bash', 'curl\\s+http.*\\|\\s*bash'];
+```
+
+### Auto-Reject on Chat Switch
+
+When user switches AI chat, creates a new chat, or closes the chat panel while an approval is pending:
+
+1. `clearToolProgress()` calls `electronService.rejectCommand(requestId)` → backend resolves pending approval with `{ approved: false }`
+2. `NotificationService.info('Command rejected')` shows a snackbar at the bottom
+3. Backend `ApprovalManager` pending Promise resolves, tool call returns error to AI, function loop continues
+
+This prevents dangling approval requests when the user navigates away.
 
 ---
 
-## Future
+## Progress
+
+| Component | Status |
+|---|---|
+| `ApprovalManager` class | ✅ Implemented |
+| Approval check in `executeTool` | ✅ Implemented |
+| `ai.command-pending` / `ai.command-approved` / `ai.command-rejected` IPC channels | ✅ Implemented |
+| Approval banner in chat UI | ✅ Implemented |
+| Approval modes (`auto` / `all` / `off`) | ✅ Implemented |
+| Dangerous commands list | ✅ Implemented |
+| Dangerous patterns (regex) | ✅ Implemented |
+| 60s timeout auto-reject | ✅ Implemented |
+| `safetyRules` backend-only (no frontend model) | ✅ Implemented |
+| Default rules hardcoded in `ApprovalManager` | ✅ Implemented |
+| Auto-reject on chat switch / new / close | ✅ Implemented |
+| Notification on auto-reject | ✅ Implemented |
+| Preload channel allowlist fix (approved/rejected in SEND) | ✅ Implemented |
+| `terminal_execute` removed from `SENSITIVE_TOOLS` | ✅ Implemented |
+| Session-level access control in `session_list`/`session_read` | ✅ Implemented (Phase 2) |
+
+### Future
 
 - **Per-session trust**: approve once for the same command in a session
 - **Edit command**: user edits the command parameters before approval
