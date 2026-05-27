@@ -12,12 +12,13 @@ class SessionRegistry {
     if (n >= 10) this._maxBufferLines = n;
   }
 
-  register(id, type, owner, session) {
+  register(id, type, owner, session, chatSessionId) {
     const entry = {
       id,
       type,
       owner,
       session,
+      chatSessionId,
       buffer: [],
       createdAt: Date.now(),
     };
@@ -52,6 +53,7 @@ class SessionRegistry {
         id: entry.id,
         type: entry.type,
         owner: entry.owner,
+        chatSessionId: entry.chatSessionId,
         runningSince: entry.createdAt,
       });
     }

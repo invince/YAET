@@ -65,7 +65,7 @@
         <div class="tool-entry-header">
           <mat-icon class="tool-status-icon">{{ entry.error ? 'error' : entry.result ? 'check_circle' : 'hourglass_empty' }}</mat-icon>
           <span class="tool-name">{{ entry.toolName }}</span>
-          <span class="tool-args">{{ entry.args | json }}</span>
+          <span class="tool-args">{{ entry.args | redact | json }}</span>
           <mat-icon class="expand-icon">{{ entry.expanded ? 'expand_less' : 'expand_more' }}</mat-icon>
         </div>
         @if (entry.expanded) {
@@ -73,12 +73,24 @@
           @if (entry.error) {
           <div class="tool-error">{{ entry.error }}</div>
           } @else if (entry.result) {
-          <pre class="tool-result">{{ entry.result | json }}</pre>
+          <pre class="tool-result">{{ entry.result | redact | json }}</pre>
           }
         </div>
         }
       </div>
       }
+    </div>
+    }
+    @if (pendingCommand && msg.role === 'user' && i === activeToolProgressMessageIndex) {
+    <div class="approval-banner">
+      <div class="approval-banner-content">
+        <mat-icon class="approval-icon">warning</mat-icon>
+        <span class="approval-text">AI wants to execute: <strong>{{ pendingCommand.preview }}</strong></span>
+      </div>
+      <div class="approval-banner-actions">
+        <button mat-stroked-button color="warn" (click)="rejectCommand()">Reject</button>
+        <button mat-flat-button color="primary" (click)="approveCommand()">Approve</button>
+      </div>
     </div>
     }
     }

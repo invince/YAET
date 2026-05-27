@@ -46,6 +46,7 @@ const { initWinRmIpcHandler } = require("./adapter/ipc/terminal/winRMHandler");
 const { initSambaHandler } = require("./adapter/ipc/file-explorer/sambaHandler");
 const { RuntimeAPI } = require("./runtime/runtimeAPI");
 const { SessionRegistry } = require("./runtime/sessionRegistry");
+const { ApprovalManager } = require("./runtime/approvalManager");
 
 const logPath = path.join(app.getPath('userData'), 'logs/main.log');
 console.log(logPath);
@@ -154,6 +155,22 @@ function initHandlerBeforeSettingLoad() {
   sessionRegistry = new SessionRegistry({ maxBufferLines: 50 });
   runtime.sessionRegistry = sessionRegistry;
 
+  runtime.approvalManager = new ApprovalManager(log, () => lastSettings);
+  runtime.approvalManager.setBroadcast((requestId, toolName, args) => {
+    const preview = _getApprovalPreview(toolName, args);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('ai.command-pending', { requestId, toolName, args, preview });
+    }
+  });
+
+  ipcMain.on('ai.command-approved', (_event, { requestId }) => {
+    runtime.approvalManager?.resolve(requestId, true);
+  });
+
+  ipcMain.on('ai.command-rejected', (_event, { requestId }) => {
+    runtime.approvalManager?.resolve(requestId, false);
+  });
+
   initAiToolsIpcHandler(log, runtime, () => lastSettings);
 
   initLocalFileHandler(log, mainWindow);
@@ -250,6 +267,12 @@ function reloadSecrets() {
       log.info("Secrets updated in backend memory");
     })
     .catch(log.error);
+}
+
+function _getApprovalPreview(toolName, args) {
+  if (toolName === 'local_execute') return args.command;
+  if (toolName === 'session_write') return args.input;
+  return '';
 }
 
 function reloadProxies() {

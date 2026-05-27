@@ -320,14 +320,19 @@
                 <mat-hint>{{ 'SETTINGS.AI_CONTEXT_MAX_LINES_HINT' | translate }}</mat-hint>
               </mat-form-field>
 
-              <div style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
-                <mat-slide-toggle formControlName="aiUseContext">
+              <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 8px;">
+                <mat-checkbox formControlName="aiUseContext">
                   {{ 'SETTINGS.AI_USE_CONTEXT' | translate }}
-                </mat-slide-toggle>
-                <mat-slide-toggle formControlName="aiAgentMode">
+                </mat-checkbox>
+                <mat-checkbox formControlName="aiAgentMode">
                   {{ 'SETTINGS.AI_AGENT_MODE' | translate }}
-                </mat-slide-toggle>
+                </mat-checkbox>
+                <mat-checkbox formControlName="aiCrossSessionAccess">
+                  {{ 'SETTINGS.AI_CROSS_SESSION_ACCESS' | translate }}
+                </mat-checkbox>
               </div>
+
+
 
 
             </div>

@@ -19,23 +19,6 @@ function getToolDefinitions() {
     {
       type: 'function',
       function: {
-        name: 'terminal_execute',
-        description: 'Execute a command on a remote server (SSH/Telnet/WinRM) using a saved profile',
-        parameters: {
-          type: 'object',
-          properties: {
-            profileId: { type: 'string', description: 'ID of the profile to use' },
-            command: { type: 'string', description: 'Command to execute on the remote server' },
-            proxyId: { type: 'string', description: 'Optional proxy ID to route the connection through' },
-            secretId: { type: 'string', description: 'Optional secret ID override for authentication' },
-          },
-          required: ['profileId', 'command'],
-        },
-      },
-    },
-    {
-      type: 'function',
-      function: {
         name: 'local_execute',
         description: 'Execute a command on the local machine directly (no profile needed)',
         parameters: {
@@ -679,13 +662,21 @@ function getToolDefinitions() {
   ];
 }
 
-async function executeTool(runtime, toolName, args) {
+const SENSITIVE_TOOLS = ['local_execute', 'session_write'];
+
+async function executeTool(runtime, toolName, args, sessionContext = {}) {
+  if (SENSITIVE_TOOLS.includes(toolName) && runtime?.approvalManager) {
+    const result = await runtime.approvalManager.request(toolName, args);
+    if (!result.approved) {
+      return { error: `Command rejected: ${result.reason}` };
+    }
+  }
+
   const opts = { proxyId: args.proxyId, secretId: args.secretId };
 
   switch (toolName) {
     case 'profile_list':
       return runtime.listProfiles(args.keyword);
-    case 'terminal_execute':
     case 'local_execute': {
       const t = await runtime.getConnector(args.profileId, opts);
       return t.exec(args.command);
@@ -741,10 +732,25 @@ async function executeTool(runtime, toolName, args) {
         showHiddenItems: args.showHiddenItems,
       });
     }
-    case 'session_list':
-      return runtime.sessionRegistry.list();
-    case 'session_read':
+    case 'session_list': {
+      if (!sessionContext.useContext) return [];
+      const sessions = runtime.sessionRegistry.list();
+      if (sessionContext.crossSessionAccess) {
+        return sessions.filter(s => s.owner === 'ai');
+      }
+      return sessions.filter(s => s.owner === 'ai' && s.chatSessionId === sessionContext.chatSessionId);
+    }
+    case 'session_read': {
+      const entry = runtime.sessionRegistry.get(args.id);
+      if (!entry) return null;
+      if (sessionContext.crossSessionAccess === false && entry.owner !== 'ai') {
+        throw new Error(`Access denied: session ${args.id} is not accessible`);
+      }
+      if (sessionContext.crossSessionAccess === false && entry.owner === 'ai' && sessionContext.chatSessionId && entry.chatSessionId !== sessionContext.chatSessionId) {
+        throw new Error(`Access denied: session ${args.id} belongs to a different chat`);
+      }
       return runtime.sessionRegistry.read(args.id, args.lastN);
+    }
     case 'terminal_open': {
       const session = await runtime.getConnector(args.profileId, opts);
       await session.connect({ rows: 24, cols: 80 });
@@ -753,7 +759,7 @@ async function executeTool(runtime, toolName, args) {
         ? ((await runtime.listProfiles()).profiles.find(p => p.id === args.profileId)?.type || 'remote').toLowerCase()
         : 'local';
       const typeMap = { ssh_terminal: 'ssh', telnet_terminal: 'telnet', win_rm_terminal: 'winrm', local_terminal: 'local' };
-      runtime.sessionRegistry.register(sessionId, typeMap[profileType] || profileType, 'ai', session);
+      runtime.sessionRegistry.register(sessionId, typeMap[profileType] || profileType, 'ai', session, sessionContext.chatSessionId);
       return { sessionId, type: typeMap[profileType] || profileType, message: `Session ${sessionId} opened` };
     }
     case 'session_write': {

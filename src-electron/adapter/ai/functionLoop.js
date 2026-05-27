@@ -1,4 +1,4 @@
-async function functionCallLoop(log, runtime, apiUrl, token, model, messages, toolDefs, depth, sendEvent) {
+async function functionCallLoop(log, runtime, apiUrl, token, model, messages, toolDefs, depth, sendEvent, sessionContext = {}) {
   if (depth > 10) {
     messages.push({ role: 'assistant', content: 'Tool call limit reached. Please refine your request.' });
     return { choices: [{ message: { role: 'assistant', content: 'Tool call limit reached. Please refine your request.' } }] };
@@ -25,7 +25,7 @@ async function functionCallLoop(log, runtime, apiUrl, token, model, messages, to
     try {
       const args = JSON.parse(tc.function.arguments);
       log.info(`AI tool call: ${tc.function.name}(${JSON.stringify(args)})`);
-      const result = await executeTool(runtime, tc.function.name, args);
+      const result = await executeTool(runtime, tc.function.name, args, sessionContext);
       if (sendEvent) {
         try { sendEvent({ toolName: tc.function.name, args, result, error: null, ts: Date.now() }); } catch (_) {}
       }
@@ -47,7 +47,7 @@ async function functionCallLoop(log, runtime, apiUrl, token, model, messages, to
     }
   }
 
-  return functionCallLoop(log, runtime, apiUrl, token, model, messages, toolDefs, depth + 1, sendEvent);
+  return functionCallLoop(log, runtime, apiUrl, token, model, messages, toolDefs, depth + 1, sendEvent, sessionContext);
 }
 
 module.exports = { functionCallLoop };

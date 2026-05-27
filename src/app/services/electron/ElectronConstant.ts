@@ -94,3 +94,6 @@ export const AI_FETCH_MODELS = 'ai.fetch-models';
 export const AI_SEND_CHAT = 'ai.send-chat';
 export const AI_SEND_WITH_TOOLS = 'ai.send-with-tools';
 export const AI_TOOL_PROGRESS = 'ai.tool-progress';
+export const AI_COMMAND_PENDING = 'ai.command-pending';
+export const AI_COMMAND_APPROVED = 'ai.command-approved';
+export const AI_COMMAND_REJECTED = 'ai.command-rejected';

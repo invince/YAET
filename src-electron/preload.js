@@ -28,6 +28,8 @@ const ALLOWED_SEND_CHANNELS = [
   'proxies.reload',
   'trigger-native-clipboard-paste',
   'check-for-updates',
+  'ai.command-approved',
+  'ai.command-rejected',
 ];
 
 const ALLOWED_INVOKE_CHANNELS = [
@@ -68,6 +70,7 @@ const ALLOWED_ON_CHANNELS = [
   'masterkey-changed',
   'acp.chunk',
   'ai.tool-progress',
+  'ai.command-pending',
 ];
 
 contextBridge.exposeInMainWorld('electronAPI', {
