@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 function getToolDefinitions() {
   return [
@@ -754,7 +755,7 @@ async function executeTool(runtime, toolName, args, sessionContext = {}) {
     case 'terminal_open': {
       const session = await runtime.getConnector(args.profileId, opts);
       await session.connect({ rows: 24, cols: 80 });
-      const sessionId = `ai_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const sessionId = `ai_${Date.now()}_${crypto.randomBytes(6).toString('hex')}`;
       const profileType = args.profileId
         ? ((await runtime.listProfiles()).profiles.find(p => p.id === args.profileId)?.type || 'remote').toLowerCase()
         : 'local';
