@@ -179,7 +179,10 @@ function initHandlerBeforeSettingLoad() {
   ipcMain.handle('settings.get', () => lastSettings);
 
   // Start API
-  expressApp.listen(13012, () => log.info('API listening on port 13012'));
+  const apiServer = expressApp.listen(13012, () => log.info('API listening on port 13012'));
+  apiServer.on('error', (err) => {
+    log.error('Failed to start API server:', err.message);
+  });
 }
 
 
