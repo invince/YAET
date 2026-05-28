@@ -109,6 +109,34 @@ export class TabService {
     this.activePane = paneId;
   }
 
+  moveTabWithinPane(tab: TabInstance, fromIndex: number, toIndex: number, paneId: number) {
+    const paneTabs = this.getTabsForPane(paneId);
+    if (fromIndex < 0 || fromIndex >= paneTabs.length || toIndex < 0 || toIndex > paneTabs.length) {
+      return;
+    }
+    if (fromIndex === toIndex) return;
+
+    const globalIndices = this._tabs
+      .map((t, i) => t.paneId === paneId ? i : -1)
+      .filter(i => i !== -1);
+
+    const fromGlobalIndex = globalIndices[fromIndex];
+    const toGlobalIndex = toIndex < globalIndices.length ? globalIndices[toIndex] : this._tabs.length;
+
+    const [removed] = this._tabs.splice(fromGlobalIndex, 1);
+    const adjustedToIndex = fromGlobalIndex < toGlobalIndex ? toGlobalIndex - 1 : toGlobalIndex;
+    this._tabs.splice(adjustedToIndex, 0, removed);
+
+    const selectedIndex = this.paneTabIndices[paneId];
+    if (fromIndex === selectedIndex) {
+      this.paneTabIndices[paneId] = toIndex > fromIndex ? toIndex - 1 : toIndex;
+    } else if (fromIndex < selectedIndex && toIndex >= selectedIndex) {
+      this.paneTabIndices[paneId]--;
+    } else if (fromIndex > selectedIndex && toIndex <= selectedIndex) {
+      this.paneTabIndices[paneId]++;
+    }
+  }
+
   moveTabToPane(tab: TabInstance, targetPaneId: number) {
     const sourcePaneId = tab.paneId;
 

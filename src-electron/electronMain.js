@@ -3,20 +3,21 @@ const fs = require("fs");
 const { app, globalShortcut, BrowserWindow, Tray, ipcMain } = require('electron');
 
 const { createMenu } = require('./ui/menu');
-const { SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, load, CLOUD_JSON, APP_CONFIG_PATH, PROXIES_JSON } = require("./common");
-const { initConfigFilesIpcHandler } = require('./ipc/configFiles');
-const { initTerminalIpcHandler } = require('./ipc/terminal/terminal');
-const { initCloudIpcHandler } = require('./ipc/cloud');
-const { initSecurityIpcHandler, decrypt } = require('./ipc/security');
-const { initRdpHandler } = require('./ipc/remote-desktop/rdp');
-const { initClipboard } = require('./ipc/clipboard');
-const { initVncHandler } = require("./ipc/remote-desktop/vnc");
-const { initCustomSessionHandler } = require("./ipc/customSession");
-const { initScpSftpHandler } = require("./ipc/file-explorer/scp");
-const { initAutoUpdater } = require("./ipc/autoUpdater");
-const { initBackend } = require("./ipc/backend");
-const { initFtpHandler } = require("./ipc/file-explorer/ftp");
-const { initLocalFileHandler } = require("./ipc/localFile");
+const { ConfigService, APP_CONFIG_PATH, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, PROXIES_JSON } = require("./services/configService");
+const { initConfigFilesIpcHandler } = require('./adapter/ipc/configFiles');
+const { initTerminalIpcHandler } = require('./adapter/ipc/terminal/terminalHandler');
+const { initCloudIpcHandler } = require('./adapter/ipc/cloud');
+const { initSecurityIpcHandler, decrypt } = require('./adapter/ipc/security');
+const { initRdpHandler } = require('./adapter/ipc/remote-desktop/rdpHandler');
+const { initClipboard } = require('./adapter/ipc/clipboard');
+const { initVncHandler } = require("./adapter/ipc/remote-desktop/vncHandler");
+const { initCustomSessionHandler } = require("./adapter/ipc/customSession");
+const { initScpSftpHandler } = require("./adapter/ipc/file-explorer/scpHandler");
+const { initAutoUpdater } = require("./adapter/ipc/autoUpdater");
+const { initBackend } = require("./adapter/ipc/backend");
+const { initFtpHandler } = require("./adapter/ipc/file-explorer/ftpHandler");
+const { initLocalFileHandler } = require("./adapter/ipc/localFile");
+
 
 let tray;
 let expressApp;
@@ -30,16 +31,22 @@ let initialized = false;
 let lastSettings = null;
 let allProxies = null;
 let allSecrets = null;
+let runtime = null;
+let sessionRegistry = null;
 
 const log = require("electron-log")
-const { initCommonIpc } = require("./ipc/commonIpc");
-const { initAcpIpcHandler } = require("./ipc/acp");
-const { initAiIpcHandler, initAiChatIpcHandler } = require("./ipc/ai");
-const { initSSHTerminalIpcHandler } = require("./ipc/terminal/ssh");
-const { initTelnetIpcHandler } = require("./ipc/terminal/telnet");
-const { initLocalTerminalIpcHandler } = require("./ipc/terminal/localTerminal");
-const { initWinRmIpcHandler } = require("./ipc/terminal/winRM");
-const { initSambaHandler } = require("./ipc/file-explorer/samba");
+const configService = new ConfigService(log);
+const { initCommonIpc } = require("./adapter/ipc/commonIpc");
+const { initAcpClientIpcHandler } = require("./adapter/ipc/ai/acpClient");
+const { initAiIpcHandler, initAiChatIpcHandler, initAiToolsIpcHandler } = require("./adapter/ipc/ai/aiChat");
+const { initSSHTerminalIpcHandler } = require("./adapter/ipc/terminal/sshHandler");
+const { initTelnetIpcHandler } = require("./adapter/ipc/terminal/telnetHandler");
+const { initLocalTerminalIpcHandler } = require("./adapter/ipc/terminal/localHandler");
+const { initWinRmIpcHandler } = require("./adapter/ipc/terminal/winRMHandler");
+const { initSambaHandler } = require("./adapter/ipc/file-explorer/sambaHandler");
+const { RuntimeAPI } = require("./runtime/runtimeAPI");
+const { SessionRegistry } = require("./runtime/sessionRegistry");
+const { ApprovalManager } = require("./runtime/approvalManager");
 
 const logPath = path.join(app.getPath('userData'), 'logs/main.log');
 console.log(logPath);
@@ -91,20 +98,21 @@ app.on('ready', () => {
 
   // Ensure `load` runs on every page reload
   mainWindow.webContents.on('did-finish-load', () => {
-    load(log, mainWindow, PROFILES_JSON, "profiles.loaded", true)
-      .then(r => log.info(PROFILES_JSON + " loaded, event sent"))
+    configService.load(PROFILES_JSON, true)
+      .then(r => { mainWindow.webContents.send("profiles.loaded", r); log.info(PROFILES_JSON + " loaded, event sent"); })
       .catch(log.error);
 
     reloadSecrets();
 
-    load(log, mainWindow, CLOUD_JSON, "cloud.loaded", true)
-      .then(r => log.info(CLOUD_JSON + " loaded, event sent"))
+    configService.load(CLOUD_JSON, true)
+      .then(r => { mainWindow.webContents.send("cloud.loaded", r); log.info(CLOUD_JSON + " loaded, event sent"); })
       .catch(log.error);
 
     reloadProxies();
 
-    load(log, mainWindow, SETTINGS_JSON, "settings.loaded", false)
+    configService.load(SETTINGS_JSON, false)
       .then(settings => {
+        mainWindow.webContents.send("settings.loaded", settings);
         lastSettings = settings;
         initHandlerAfterSettingLoad(settings);
       })
@@ -119,25 +127,52 @@ function initHandlerBeforeSettingLoad() {
 
   expressApp = initBackend(log);
 
-  initConfigFilesIpcHandler(log, mainWindow, reloadProxies, reloadSecrets);
+  initConfigFilesIpcHandler(log, mainWindow, reloadProxies, reloadSecrets,
+    (settings) => { lastSettings = settings; });
   initCloudIpcHandler(log, () => allProxies, () => allSecrets);
   initSecurityIpcHandler(log);
   initTerminalIpcHandler(log, terminalMap);
-  initSSHTerminalIpcHandler(log, terminalMap, () => allProxies, () => allSecrets);
-  initTelnetIpcHandler(log, terminalMap, () => allProxies, () => allSecrets);
+  initSSHTerminalIpcHandler(log, terminalMap, () => allProxies, () => allSecrets, sessionRegistry);
+  initTelnetIpcHandler(log, terminalMap, () => allProxies, () => allSecrets, sessionRegistry);
 
   initScpSftpHandler(log, scpMap, expressApp, () => allProxies, () => allSecrets);
   initFtpHandler(log, ftpMap, expressApp, () => allProxies, () => allSecrets);
   initSambaHandler(log, sambaMap, expressApp, () => allProxies, () => allSecrets);
 
   initRdpHandler(log);
-  initVncHandler(log, vncMap, () => allProxies, () => allSecrets);
+  initVncHandler(log, vncMap, () => allProxies, () => allSecrets, sessionRegistry);
 
   initClipboard(log, mainWindow);
   initCustomSessionHandler(log);
-  initAcpIpcHandler(log);
+  initAcpClientIpcHandler(log);
   initAiIpcHandler(log);
   initAiChatIpcHandler(log);
+
+  runtime = new RuntimeAPI(log);
+  runtime.setSecretRepo(() => allSecrets);
+  runtime.setProxyRepo(() => allProxies);
+
+  sessionRegistry = new SessionRegistry({ maxBufferLines: 50 });
+  runtime.sessionRegistry = sessionRegistry;
+
+  runtime.approvalManager = new ApprovalManager(log, () => lastSettings);
+  runtime.approvalManager.setBroadcast((requestId, toolName, args) => {
+    const preview = _getApprovalPreview(toolName, args);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('ai.command-pending', { requestId, toolName, args, preview });
+    }
+  });
+
+  ipcMain.on('ai.command-approved', (_event, { requestId }) => {
+    runtime.approvalManager?.resolve(requestId, true);
+  });
+
+  ipcMain.on('ai.command-rejected', (_event, { requestId }) => {
+    runtime.approvalManager?.resolve(requestId, false);
+  });
+
+  initAiToolsIpcHandler(log, runtime, () => lastSettings);
+
   initLocalFileHandler(log, mainWindow);
 
   // Allow renderer to check if settings were already loaded before its listener registered
@@ -154,11 +189,16 @@ function initHandlerAfterSettingLoad(settings) {
     if (autoUpdate) {
       initAutoUpdater(log, settings, () => allProxies, () => allSecrets);
     }
-    initLocalTerminalIpcHandler(settings, log, terminalMap);
-    initWinRmIpcHandler(settings, log, terminalMap);
+    initLocalTerminalIpcHandler(settings, log, terminalMap, sessionRegistry);
+    initWinRmIpcHandler(settings, log, terminalMap, sessionRegistry);
     initialized = true;
   }
 
+  const maxLines = settings?.ai?.contextMaxLines;
+  if (maxLines && sessionRegistry) {
+    sessionRegistry.maxBufferLines = maxLines;
+    log.info(`SessionRegistry maxBufferLines set to ${maxLines}`);
+  }
 }
 
 app.on('window-all-closed', () => {
@@ -216,8 +256,9 @@ process.on('uncaughtException', (error) => {
 
 
 function reloadSecrets() {
-  return load(log, mainWindow, SECRETS_JSON, "secrets.loaded", true)
+  return configService.load(SECRETS_JSON, true)
     .then(r => {
+      mainWindow.webContents.send("secrets.loaded", r);
       log.info(SECRETS_JSON + " loaded, event sent");
       return decrypt(r);
     })
@@ -228,9 +269,16 @@ function reloadSecrets() {
     .catch(log.error);
 }
 
+function _getApprovalPreview(toolName, args) {
+  if (toolName === 'local_execute') return args.command;
+  if (toolName === 'session_write') return args.input;
+  return '';
+}
+
 function reloadProxies() {
-  return load(log, mainWindow, PROXIES_JSON, "proxies.loaded", true)
+  return configService.load(PROXIES_JSON, true)
     .then(r => {
+      mainWindow.webContents.send("proxies.loaded", r);
       log.info(PROXIES_JSON + " loaded, event sent");
       return decrypt(r);
     })

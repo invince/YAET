@@ -1,8 +1,8 @@
-# Extending the Terminal
+# Extending the TerminalHandler
 
 This guide explains how to add new terminal features, customize the PTY backend, or integrate new terminal Add-ons in YAET.
 
-## 1. Understanding the Terminal Architecture
+## 1. Understanding the TerminalHandler Architecture
 
 YAET builds on top of **Xterm.js** and connects to native shells via **Node-pty** (or via SSH streams).
 
@@ -62,4 +62,4 @@ startAwsSsmTerminal(target: string) {
 
 ## 4. Hooking it to the UI
 
-Create a new menu item, or Session Profile (similar to SSH and Local Terminal profiles) that triggers `startAwsSsmTerminal` dynamically when clicked in the sidebar.
+Create a new menu item, or Session Profile (similar to SSH and Local TerminalHandler profiles) that triggers `startAwsSsmTerminal` dynamically when clicked in the sidebar.

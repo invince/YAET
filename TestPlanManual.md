@@ -22,7 +22,7 @@
 - [ ] Proxy settings are respected during update check
 - [ ] Dev mode does NOT trigger auto update
 
-## 3. Terminal — Remote Connections
+## 3. TerminalHandler — Remote Connections
 
 ### SSH
 - [ ] Connection succeeds
@@ -153,7 +153,6 @@
 <img width="1548" height="687" alt="image" src="https://github.com/user-attachments/assets/0c63c798-258f-425b-a802-9d40f03c450a" />
 - [ ] Ai Tools: using smb
 <img width="1358" height="1183" alt="image" src="https://github.com/user-attachments/assets/4cb66605-916f-4229-bdea-4a9583d454cf" />
-  
 
 ## 9. Security & Error Handling
 

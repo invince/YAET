@@ -20,7 +20,9 @@
     "electron:dev": "wait-on http://localhost:4200 && cross-env NODE_ENV=development electron .",
     "postinstall": "patch-package",
     "rebuild-native": "electron-builder install-app-deps",
-    "build:release-win-local": "npm run clean && patch-package && ng build --base-href ./ && electron-builder --windows --publish always"
+    "build:release-win-local": "npm run clean && patch-package && ng build --base-href ./ && electron-builder --windows --publish always",
+    "mcp": "node src-protocol/cli.js mcp",
+    "acp": "node src-protocol/cli.js acp"
   },
   "build": {
     "appId": "io.github.invince",
@@ -94,6 +96,7 @@
     "electron-log": "^5.2.4",
     "electron-updater": "^6.3.9",
     "express": "^4.22.2",
+    "express-rate-limit": "^8.5.2",
     "find-free-ports": "^3.1.1",
     "https-proxy-agent": "^7.0.6",
     "keytar": "^7.9.0",

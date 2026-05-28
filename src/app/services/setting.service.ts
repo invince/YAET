@@ -119,6 +119,11 @@ export class SettingService {
     }
     if (ai.useContext === undefined) ai.useContext = true;
     if (ai.agentMode === undefined) ai.agentMode = false;
+    if (ai.crossSessionAccess === undefined) ai.crossSessionAccess = false;
+    if (!ai.contextMaxLines || ai.contextMaxLines < 10) ai.contextMaxLines = 50;
+    if (!ai.contextOptimization) {
+      ai.contextOptimization = { enabled: true, level: 2, idleSummary: true, maxContextTokens: 4000 };
+    }
   }
 
   private validateFileExplorerSettings(fileExplorer: FileExplorerSettings) {

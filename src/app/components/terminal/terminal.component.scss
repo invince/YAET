@@ -10,6 +10,7 @@
   background: black;
   box-sizing: border-box;
   overflow: hidden;
+  position: relative;
 
   // Terminal wrapper
   #term {
@@ -35,36 +36,12 @@
 
       background: transparent !important;
 
-      // Firefox
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+      scrollbar-width: none;
 
-      // Prevent layout shift when scrollbar appears
-      scrollbar-gutter: stable;
-    }
-
-    // Chromium / Electron scrollbar
-    ::ng-deep .xterm-viewport::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    ::ng-deep .xterm-viewport::-webkit-scrollbar-track {
-      background: transparent !important;
-    }
-
-    ::ng-deep .xterm-viewport::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.35);
-      border-radius: 999px;
-      min-height: 24px;
-    }
-
-    ::ng-deep .xterm-viewport::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.55);
-    }
-
-    // Optional: smoother corner rendering
-    ::ng-deep .xterm-viewport::-webkit-scrollbar-corner {
-      background: transparent;
+      &::-webkit-scrollbar {
+        display: none;
+        width: 0;
+      }
     }
 
     // Ensure screen layer doesn't paint white background
@@ -78,6 +55,44 @@
     // ::ng-deep .xterm-screen {
     //   pointer-events: none;
     // }
+  }
+
+  .terminal-scrollbar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 10px;
+    height: 100%;
+    z-index: 10;
+    cursor: default;
+    background: rgba(0, 0, 0, 0.35);
+    border-left: 1px solid rgba(255, 255, 255, 0.06);
+    transition: opacity 0.2s ease;
+    opacity: 0.5;
+
+    &:hover {
+      opacity: 1;
+    }
+
+    .terminal-scrollbar-thumb {
+      position: absolute;
+      top: 0;
+      left: 2px;
+      width: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.25);
+      min-height: 24px;
+      cursor: grab;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      &:active, &.dragging {
+        background: rgba(255, 255, 255, 0.65);
+        cursor: grabbing;
+      }
+    }
   }
 
   .terminal-toolbar {

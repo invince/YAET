@@ -74,6 +74,11 @@
         "AI_MODEL": "Modèle",
         "AI_ACP_COMMAND": "Commande ACP",
         "AI_ACP_ARGS": "Arguments ACP",
+        "AI_CONTEXT_MAX_LINES": "Context Buffer Lines",
+        "AI_CONTEXT_MAX_LINES_HINT": "Max output lines buffered per session for AI context (min 10)",
+        "AI_USE_CONTEXT": "Inclure le contexte de session",
+        "AI_AGENT_MODE": "Mode agent",
+        "AI_CROSS_SESSION_ACCESS": "Accéder à tous les terminaux",
         "ADD_NEW_GROUP": "Ajouter un nouveau groupe"
     },
     "LANGUAGES": {

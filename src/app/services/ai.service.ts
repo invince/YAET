@@ -53,6 +53,20 @@ export class AiService {
     });
   }
 
+  sendWithTools(apiUrl: string, token: string, model: string, messages: any[], crossSessionAccess: boolean = false, useContext: boolean = true, chatSessionId?: string | null): Observable<any> {
+    return new Observable<any>(observer => {
+      this.electronService.sendAiWithTools(apiUrl, token, model, messages, crossSessionAccess, useContext, chatSessionId).then(
+        (resp) => {
+          observer.next(resp);
+          observer.complete();
+        },
+        (err) => {
+          observer.error(err);
+        }
+      );
+    });
+  }
+
   async sendAcpMessage(command: string, args: string, model: string, messages: any[]): Promise<string> {
     return this.electronService.sendAcpChat(command, args, model, messages);
   }

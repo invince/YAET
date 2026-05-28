@@ -24,7 +24,7 @@
         <mat-icon>desktop_windows</mat-icon> {{ 'SETTINGS.REMOTE_DESKTOP' | translate }}
       </div>
       <div class="sidebar-item" [class.active]="currentTabIndex === 7" (click)="currentTabIndex = 7">
-        <mat-icon>smart_toy</mat-icon> {{ 'SETTINGS.AI_ASSISTANT' | translate }}
+        <mat-icon>chat</mat-icon> {{ 'SETTINGS.AI_ASSISTANT' | translate }}
       </div>
     </div>
 
@@ -85,7 +85,8 @@
                 <button mat-stroked-button color="warn" (click)="openDeleteMasterKeyConfirmationDialog()">
                   <mat-icon>remove_circle</mat-icon> {{ 'SETTINGS.REMOVE_MASTER_KEY' | translate }}
                 </button>
-                }
+              }
+
               </div>
             </div>
           </div>
@@ -312,6 +313,28 @@
                 </button>
               </div>
               }
+
+              <mat-form-field class="field" appearance="outline">
+                <mat-label>{{ 'SETTINGS.AI_CONTEXT_MAX_LINES' | translate }}</mat-label>
+                <input matInput type="number" formControlName="aiContextMaxLines" min="10" />
+                <mat-hint>{{ 'SETTINGS.AI_CONTEXT_MAX_LINES_HINT' | translate }}</mat-hint>
+              </mat-form-field>
+
+              <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 8px;">
+                <mat-checkbox formControlName="aiUseContext">
+                  {{ 'SETTINGS.AI_USE_CONTEXT' | translate }}
+                </mat-checkbox>
+                <mat-checkbox formControlName="aiAgentMode">
+                  {{ 'SETTINGS.AI_AGENT_MODE' | translate }}
+                </mat-checkbox>
+                <mat-checkbox formControlName="aiCrossSessionAccess">
+                  {{ 'SETTINGS.AI_CROSS_SESSION_ACCESS' | translate }}
+                </mat-checkbox>
+              </div>
+
+
+
+
             </div>
           </div>
         </div>

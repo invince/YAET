@@ -18,7 +18,7 @@
   margin-top: 0;
 }
 
-.field-row > .field:last-child {
+.field-row > .field:last-child:not(:only-child) {
   flex: 0 0 90px;
   margin-top: 0;
 }

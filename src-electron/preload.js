@@ -28,6 +28,8 @@ const ALLOWED_SEND_CHANNELS = [
   'proxies.reload',
   'trigger-native-clipboard-paste',
   'check-for-updates',
+  'ai.command-approved',
+  'ai.command-rejected',
 ];
 
 const ALLOWED_INVOKE_CHANNELS = [
@@ -36,6 +38,7 @@ const ALLOWED_INVOKE_CHANNELS = [
   'acp.fetch-models',
   'ai.fetch-models',
   'ai.send-chat',
+  'ai.send-with-tools',
   'session.open.rd.vnc',
   'session.fe.scp.register',
   'session.fe.ftp.register',
@@ -66,6 +69,8 @@ const ALLOWED_ON_CHANNELS = [
   'proxies.loaded',
   'masterkey-changed',
   'acp.chunk',
+  'ai.tool-progress',
+  'ai.command-pending',
 ];
 
 contextBridge.exposeInMainWorld('electronAPI', {

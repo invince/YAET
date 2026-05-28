@@ -16,7 +16,7 @@ import {MatInputModule} from '@angular/material/input';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
-import {firstValueFrom} from 'rxjs';
+import {firstValueFrom, Subscription} from 'rxjs';
 import DOMPurify from 'dompurify';
 import {marked} from 'marked';
 import {AiChatHistoryService} from '../../services/ai-chat-history.service';
@@ -28,6 +28,17 @@ import {TabService} from '../../services/tab.service';
 import {TerminalInstanceService} from '../../services/terminal-instance.service';
 import {ElectronService} from '../../services/electron/electron.service';
 import {SettingService} from '../../services/setting.service';
+import {NotificationService} from '../../services/notification.service';
+import {RedactPipe} from '../../pipes/redact.pipe';
+
+export interface ToolProgressEntry {
+  toolName: string;
+  args: any;
+  result?: any;
+  error?: string;
+  ts: number;
+  expanded: boolean;
+}
 
 @Component({
   selector: 'app-ai-chat',
@@ -42,7 +53,8 @@ import {SettingService} from '../../services/setting.service';
     MatInputModule,
     MatFormFieldModule,
     MatProgressSpinnerModule,
-    MatSlideToggleModule
+    MatSlideToggleModule,
+    RedactPipe
   ]
 })
 export class AiChatComponent implements OnInit, AfterViewChecked {
@@ -51,6 +63,11 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   userInput = '';
   messages: { role: string, content: string }[] = [];
   isLoading = false;
+  toolProgress: ToolProgressEntry[] = [];
+  activeToolProgressMessageIndex = -1;
+  pendingCommand: { requestId: string; toolName: string; args: any; preview: string } | null = null;
+  private currentSubscription: Subscription | null = null;
+  private _requestGeneration = 0;
   showHistoryDropdown = false;
   renamingId: string | null = null;
   renameInput = '';
@@ -111,6 +128,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     private cdr: ChangeDetectorRef,
     private sanitizer: DomSanitizer,
     private historyService: AiChatHistoryService,
+    private notificationService: NotificationService,
     private el: ElementRef
   ) { }
 
@@ -160,6 +178,9 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   }
 
   toggleChat() {
+    if (this.aiChatService.isOpen) {
+      this.clearToolProgress();
+    }
     this.aiChatService.toggle();
   }
 
@@ -177,6 +198,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   }
 
   newChat() {
+    this.clearToolProgress();
     this.saveMessages();
     this.historyService.createNew();
     this.messages = [...(this.historyService.current?.messages ?? [])];
@@ -185,6 +207,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   }
 
   switchSession(id: string) {
+    this.clearToolProgress();
     this.saveMessages();
     this.historyService.switchTo(id);
     this.messages = [...(this.historyService.current?.messages ?? [])];
@@ -291,14 +314,22 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   }
 
   @HostListener('click', ['$event'])
-  onCodeCopyClick(event: MouseEvent) {
+  onMessageClick(event: MouseEvent) {
     const btn = (event.target as HTMLElement).closest('.code-copy-btn');
-    if (!btn) return;
-    const pre = btn.parentElement?.querySelector('pre');
-    if (!pre) return;
-    navigator.clipboard.writeText(pre.textContent || '').catch(() => {});
-    btn.textContent = 'done';
-    setTimeout(() => { btn.textContent = 'copy'; }, 2000);
+    if (btn) {
+      const pre = btn.parentElement?.querySelector('pre');
+      if (!pre) return;
+      navigator.clipboard.writeText(pre.textContent || '').catch(() => {});
+      btn.textContent = 'done';
+      setTimeout(() => { btn.textContent = 'copy'; }, 2000);
+      return;
+    }
+
+    const anchor = (event.target as HTMLElement).closest('a');
+    if (anchor?.href) {
+      event.preventDefault();
+      this.electronService.openUrl(anchor.href);
+    }
   }
 
   @HostListener('window:resize')
@@ -396,6 +427,8 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     this.userInput = '';
     this.saveMessages();
     this.isLoading = true;
+    this.clearToolProgress();
+    this.activeToolProgressMessageIndex = this.messages.length - 1;
 
     const activeTab = this.tabService.getSelectedTab();
     let context = '';
@@ -405,16 +438,18 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
       }
     }
 
+    // NOTE: this injects xterm full content as a user message.
+    // There is a parallel injection on the backend side:
+    //   src-electron/adapter/ipc/ai/aiChat.js :: injectSessionContext()
+    //   which injects session buffer + status summary as a system message.
     const payload = [...this.messages];
     if (context) {
         payload.push({ role: 'user', content: `Current terminal context:\n${context}` });
     }
 
-    if (this.agentMode) {
-      payload.push({ role: 'user', content: `You are in Agent Mode. Please respond ONLY with the raw command to execute in the shell. Do NOT wrap it in markdown block. Do NOT include any other text.` });
-    }
-
-    if (mode === 'acp') {
+    if (this.agentMode && mode === 'web') {
+      this.sendWebMessageWithTools(aiSettings, payload, activeTab);
+    } else if (mode === 'acp') {
       this.sendAcpMessage(aiSettings, payload, activeTab);
     } else {
       this.sendWebMessage(aiSettings, payload, activeTab);
@@ -422,17 +457,77 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   }
 
   private sendWebMessage(aiSettings: any, payload: any[], activeTab: any) {
-    this.aiService.sendWebMessage(
+    const gen = this._requestGeneration;
+    this.currentSubscription?.unsubscribe();
+    this.currentSubscription = this.aiService.sendWebMessage(
       aiSettings.apiUrl,
       aiSettings.token,
       aiSettings.model,
       payload
     ).subscribe({
       next: (resp) => {
+        this.currentSubscription = null;
+        if (gen !== this._requestGeneration) return;
         let aiResponse = this.aiService.extractWebContent(resp);
         this.handleResponse(aiResponse, activeTab);
       },
       error: (err) => {
+        this.currentSubscription = null;
+        if (gen !== this._requestGeneration) return;
+        console.error(err);
+        this.messages.push({ role: 'assistant', content: 'Error communicating with AI. Please check your configuration.' });
+        this.isLoading = false;
+      }
+    });
+  }
+
+  private sendWebMessageWithTools(aiSettings: any, payload: any[], activeTab: any) {
+    this.toolProgress = [];
+    this.pendingCommand = null;
+    this.electronService.removeToolProgressListeners();
+    this.electronService.removeCommandPendingListeners();
+    this.electronService.onCommandPending((data: any) => {
+      console.log('[AI Chat] Command pending received:', data);
+      this.pendingCommand = data;
+      this.cdr.detectChanges();
+    });
+    this.electronService.onToolProgress((data: ToolProgressEntry) => {
+      const existing = this.toolProgress.find(t => t.toolName === data.toolName && t.args === data.args);
+      if (!existing) {
+        this.toolProgress.push({ ...data, expanded: !!data.error });
+        this.cdr.detectChanges();
+        this.scrollToBottom();
+      }
+    });
+
+    const gen = this._requestGeneration;
+    const useContext = aiSettings.useContext !== false;
+    const chatSessionId = this.currentSessionId;
+    this.currentSubscription?.unsubscribe();
+    this.currentSubscription = this.aiService.sendWithTools(
+      aiSettings.apiUrl,
+      aiSettings.token,
+      aiSettings.model,
+      payload,
+      aiSettings.crossSessionAccess,
+      useContext,
+      chatSessionId
+    ).subscribe({
+      next: (resp) => {
+        this.currentSubscription = null;
+        if (gen !== this._requestGeneration) return;
+        this.electronService.removeToolProgressListeners();
+        this.electronService.removeCommandPendingListeners();
+        this.pendingCommand = null;
+        let aiResponse = this.aiService.extractWebContent(resp);
+        this.handleResponse(aiResponse, activeTab);
+      },
+      error: (err) => {
+        this.currentSubscription = null;
+        if (gen !== this._requestGeneration) return;
+        this.electronService.removeToolProgressListeners();
+        this.electronService.removeCommandPendingListeners();
+        this.pendingCommand = null;
         console.error(err);
         this.messages.push({ role: 'assistant', content: 'Error communicating with AI. Please check your configuration.' });
         this.isLoading = false;
@@ -441,11 +536,13 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   }
 
   private async sendAcpMessage(aiSettings: any, payload: any[], activeTab: any) {
+    const gen = this._requestGeneration;
     let assistantMessage = { role: 'assistant', content: '' };
     this.messages.push(assistantMessage);
 
     this.electronService.removeAcpChunkListeners();
     this.electronService.onAcpChunk((data: any) => {
+      if (gen !== this._requestGeneration) return;
       if (data.done) {
           this.isLoading = false;
           this.cdr.detectChanges();
@@ -457,7 +554,6 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
           this.scrollToBottom();
           return;
       }
-      // Avoid duplication if the same chunk is somehow received twice or overlapping
       if (data.chunk && !assistantMessage.content.endsWith(data.chunk)) {
           assistantMessage.content += data.chunk;
           this.cdr.detectChanges();
@@ -473,9 +569,10 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
         payload
       );
 
+      if (gen !== this._requestGeneration) return;
+
       this.electronService.removeAcpChunkListeners();
 
-      // Stop the global spinner once we have a final response
       this.isLoading = false;
       this.cdr.detectChanges();
 
@@ -485,6 +582,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
 
       this.handleResponse(assistantMessage.content, activeTab);
     } catch (err) {
+      if (gen !== this._requestGeneration) return;
       this.electronService.removeAcpChunkListeners();
       console.error(err);
       assistantMessage.content = 'Error communicating with AI. Please check your configuration.';
@@ -500,16 +598,6 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
 
     if (!aiResponse) return;
 
-    if (this.agentMode) {
-        const codeBlockRegex = /```[\s\S]*?\n([\s\S]*?)```/g;
-        const match = codeBlockRegex.exec(aiResponse);
-        if (match) {
-            aiResponse = match[1].trim();
-        } else {
-            aiResponse = aiResponse.trim();
-        }
-    }
-
     const lastMsg = this.messages[this.messages.length - 1];
     if (!lastMsg || lastMsg.role !== 'assistant') {
       this.messages.push({ role: 'assistant', content: aiResponse });
@@ -517,19 +605,60 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     this.saveMessages();
     this.autoRenameSession();
 
-    if (this.agentMode && activeTab && activeTab.category === 'TERMINAL') {
-        this.electronTerminalService.sendTerminalInput(activeTab.id, aiResponse + '\r');
-    }
-
     this.isLoading = false;
     this.cdr.detectChanges();
     this.scrollToBottom();
   }
 
   stop() {
+    this._requestGeneration++;
     this.isLoading = false;
+    this.currentSubscription?.unsubscribe();
+    this.currentSubscription = null;
     this.electronService.removeAcpChunkListeners();
+    this.electronService.removeToolProgressListeners();
+    this.electronService.removeCommandPendingListeners();
+    if (this.pendingCommand) {
+      this.electronService.rejectCommand(this.pendingCommand.requestId);
+    }
+    this.pendingCommand = null;
     this.cdr.detectChanges();
+  }
+
+  private clearToolProgress() {
+    this._requestGeneration++;
+    this.toolProgress = [];
+    this.activeToolProgressMessageIndex = -1;
+    if (this.pendingCommand) {
+      this.electronService.rejectCommand(this.pendingCommand.requestId);
+      this.notificationService.info('Command rejected');
+    }
+    this.pendingCommand = null;
+    this.isLoading = false;
+    this.currentSubscription?.unsubscribe();
+    this.currentSubscription = null;
+    this.electronService.removeToolProgressListeners();
+    this.electronService.removeCommandPendingListeners();
+  }
+
+  toggleToolEntry(entry: ToolProgressEntry) {
+    entry.expanded = !entry.expanded;
+  }
+
+  approveCommand() {
+    if (this.pendingCommand) {
+      this.electronService.approveCommand(this.pendingCommand.requestId);
+      this.pendingCommand = null;
+      this.cdr.detectChanges();
+    }
+  }
+
+  rejectCommand() {
+    if (this.pendingCommand) {
+      this.electronService.rejectCommand(this.pendingCommand.requestId);
+      this.pendingCommand = null;
+      this.cdr.detectChanges();
+    }
   }
 
   private saveSettings() {

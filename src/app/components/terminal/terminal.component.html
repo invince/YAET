@@ -8,5 +8,12 @@
   }
   <div #term id="term">
     <!-- xterm.js will insert its DOM here -->
+
+<!--    xterm's scrollbar is too hard to manipulate we create our own custom to override it -->
+    <div class="terminal-scrollbar" #scrollbar
+      (mousedown)="onScrollbarTrackMouseDown($event)">
+      <div class="terminal-scrollbar-thumb" #scrollbarThumb
+        (mousedown)="onScrollbarThumbMouseDown($event)"></div>
+    </div>
   </div>
 </div>

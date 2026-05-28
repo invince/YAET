@@ -198,6 +198,10 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
         ['acpCommand', { name: 'acpCommand', formControlOption: [''] }],
         ['acpArgs', { name: 'acpArgs', formControlOption: [''] }],
         ['acpModel', { name: 'acpModel', formControlOption: [''] }],
+        ['useContext', { name: 'aiUseContext', formControlOption: [true] }],
+        ['agentMode', { name: 'aiAgentMode', formControlOption: [false] }],
+        ['crossSessionAccess', { name: 'aiCrossSessionAccess', formControlOption: [false] }],
+        ['contextMaxLines', { name: 'aiContextMaxLines', formControlOption: ['', [Validators.required, Validators.min(10)]] }],
       ])
     );
   }

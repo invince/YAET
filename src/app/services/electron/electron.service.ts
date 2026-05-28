@@ -7,8 +7,13 @@ import {Log} from '../../domain/Log';
 import {
   ACP_FETCH_MODELS,
   ACP_SEND,
+  AI_COMMAND_APPROVED,
+  AI_COMMAND_PENDING,
+  AI_COMMAND_REJECTED,
   AI_FETCH_MODELS,
   AI_SEND_CHAT,
+  AI_SEND_WITH_TOOLS,
+  AI_TOOL_PROGRESS,
   CHECK_FOR_UPDATES,
   CLOUD_DOWNLOAD,
   CLOUD_RELOAD,
@@ -158,6 +163,13 @@ export class ElectronService extends AbstractElectronService {
     }
     throw new Error('Electron IPC not available');
   }
+
+  async sendAiWithTools(apiUrl: string, token: string, model: string, messages: any[], crossSessionAccess: boolean = false, useContext: boolean = true, chatSessionId?: string | null): Promise<any> {
+    if (this.ipc) {
+      return await this.ipc.invoke(AI_SEND_WITH_TOOLS, { apiUrl, token, model, messages, crossSessionAccess, useContext, chatSessionId });
+    }
+    throw new Error('Electron IPC not available');
+  }
   //#endregion "Settings"
 
 
@@ -300,6 +312,46 @@ export class ElectronService extends AbstractElectronService {
     }
   }
   //#endregion "ACP"
+
+  //#region "AI Tool Progress"
+  onToolProgress(callback: (data: any) => void) {
+    if (this.ipc) {
+      this.ipc.on(AI_TOOL_PROGRESS, (event: any, data: any) => callback(data));
+    }
+  }
+
+  removeToolProgressListeners() {
+    if (this.ipc) {
+      this.ipc.removeAllListeners(AI_TOOL_PROGRESS);
+    }
+  }
+  //#endregion "AI Tool Progress"
+
+  //#region "Command Approval"
+  onCommandPending(callback: (data: any) => void) {
+    if (this.ipc) {
+      this.ipc.on(AI_COMMAND_PENDING, (event: any, data: any) => callback(data));
+    }
+  }
+
+  removeCommandPendingListeners() {
+    if (this.ipc) {
+      this.ipc.removeAllListeners(AI_COMMAND_PENDING);
+    }
+  }
+
+  approveCommand(requestId: string) {
+    if (this.ipc) {
+      this.ipc.send(AI_COMMAND_APPROVED, { requestId });
+    }
+  }
+
+  rejectCommand(requestId: string) {
+    if (this.ipc) {
+      this.ipc.send(AI_COMMAND_REJECTED, { requestId });
+    }
+  }
+  //#endregion "Command Approval"
 }
 
 export class TermOutput {

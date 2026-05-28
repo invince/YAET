@@ -6,7 +6,7 @@
         <button mat-icon-button (click)="refresh()">
             <mat-icon>refresh</mat-icon>
         </button>
-        
+
         <!-- Selection Actions -->
         @if (selection.size > 0) {
             <!-- Single Select Actions -->
@@ -29,14 +29,14 @@
             <button mat-icon-button (click)="deleteSelected()" title="Delete Selected">
                 <mat-icon>delete</mat-icon>
             </button>
-            
+
             <span style="margin-left: 8px; font-size: 12px; color: #bdbdbd;">{{ selection.size }} selected</span>
             <button mat-icon-button (click)="clearSelection()" title="Clear Selection">
                  <mat-icon>close</mat-icon>
             </button>
         } @else {
             @if (session?.profileType === 'SCP_FILE_EXPLORER') {
-                <button mat-icon-button (click)="openSshTerminal($event)" title="Open SSH Terminal">
+                <button mat-icon-button (click)="openSshTerminal($event)" title="Open SSH TerminalHandler">
                     <mat-icon>terminal</mat-icon>
                 </button>
             }
@@ -52,19 +52,19 @@
         }
         @if (!isEditingPath) {<div class="path-breadcrumb" (click)="enablePathEdit()" title="Click to edit path">{{
             path }}</div>}
-        
+
         @if (isEditingPath) {<div class="path-input-container">
-            <button mat-icon-button class="favorite-button" (click)="toggleFavorite()" 
+            <button mat-icon-button class="favorite-button" (click)="toggleFavorite()"
                     [title]="isFavorite() ? 'Remove from favorites' : 'Add to favorites'">
                 <mat-icon [class.is-favorite]="isFavorite()">{{ isFavorite() ? 'star' : 'star_border' }}</mat-icon>
             </button>
-            <input class="path-input" 
-                   [(ngModel)]="editPath" 
+            <input class="path-input"
+                   [(ngModel)]="editPath"
                    (ngModelChange)="filterFavorites()"
                    (keydown.enter)="navigateToPath()"
                    (keydown.escape)="cancelPathEdit()"
                    (blur)="cancelPathEdit()"
-                   autofocus 
+                   autofocus
                    [matAutocomplete]="auto" />
             <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onFavoriteSelected($event)">
                 @for (fav of filteredFavorites; track fav) {<mat-option [value]="fav" class="favorite-option">
