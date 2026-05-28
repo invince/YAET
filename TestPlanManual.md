@@ -88,6 +88,7 @@
 - [ ] Copy current path
 - [ ] Detail view toggle
 - [ ] Proxy support
+<img width="3317" height="1345" alt="image" src="https://github.com/user-attachments/assets/c2f160e3-04d3-4fb7-845b-1750add53d14" />
 
 ### FTP
 - [ ] Connect
@@ -103,6 +104,7 @@
 - [ ] Double-click open → edit → auto-upload
 - [ ] Init path
 - [ ] FTPS (secure) — *not yet implemented*
+<img width="3377" height="1277" alt="image" src="https://github.com/user-attachments/assets/de93b9b3-d9a8-467d-a69e-15edbe6e994d" />
 
 ### SMB/Samba
 - [ ] Connect
@@ -116,6 +118,7 @@
 - [ ] Rename folder/file
 - [ ] Delete file/folder (empty and with contents)
 - [ ] Double-click open → edit → auto-upload
+<img width="3297" height="1472" alt="image" src="https://github.com/user-attachments/assets/62ca7028-89d6-4cb8-933a-f91d80b1d552" />
 
 ## 6. Custom Commands
 
@@ -144,6 +147,12 @@
 - <img width="2065" height="1112" alt="image" src="https://github.com/user-attachments/assets/1eb8d91e-0512-4878-a900-6569baf9a3f0" />
 - [ ] Ai Tools: using telnet
 - <img width="1445" height="1058" alt="image" src="https://github.com/user-attachments/assets/b1518253-3bd7-462a-970b-2fa5db1a82d6" />
+- [ ] Ai Tools: using scp
+<img width="1345" height="1066" alt="image" src="https://github.com/user-attachments/assets/3c5ae059-6cf6-4974-ad85-0bed80be3b8c" />
+- [ ] Ai Tools: using FTP
+<img width="1548" height="687" alt="image" src="https://github.com/user-attachments/assets/0c63c798-258f-425b-a802-9d40f03c450a" />
+- [ ] Ai Tools: using smb
+<img width="1358" height="1183" alt="image" src="https://github.com/user-attachments/assets/4cb66605-916f-4229-bdea-4a9583d454cf" />
 
 ## 9. Security & Error Handling
 
