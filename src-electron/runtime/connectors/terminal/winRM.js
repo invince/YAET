@@ -21,13 +21,21 @@ class WinRMSession extends TerminalRuntimeApi {
       localTermForWinRM = 'pwsh.exe';
     }
 
+    const isWindows = process.platform === 'win32';
+    const isDebuggerAttached = typeof v8debug === 'object' || 
+                               /--debug|--inspect/.test(process.execArgv.join(' ')) || 
+                               (process.env.VSCODE_INSPECTOR_OPTIONS !== undefined) ||
+                               (require('inspector').url() !== undefined);
+
+    const useConpty = isWindows && !isDebuggerAttached;
+
     const ptyProcess = pty.spawn(localTermForWinRM, [], {
       name: 'xterm-color',
       cols: cols || 80,
       rows: rows || 30,
       cwd: process.env.HOME,
       env: process.env,
-      useConpty: false,
+      useConpty: useConpty,
     });
 
     let initialized = false;

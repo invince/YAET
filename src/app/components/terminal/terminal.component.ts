@@ -65,13 +65,16 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     private scpService: ScpService,
     private terminalInstanceService: TerminalInstanceService,
   ) {
+    const isWin = (window as any).electronAPI?.platform === 'win32';
     this.xtermUnderlying = new Terminal({
       fontFamily: '"Cascadia Code", Menlo, monospace',
       // theme: {
       //   background: 'rgba(0, 0, 0, 0)' // Fully transparent background
       // },
       convertEol: false,
-      cursorBlink: true
+      cursorBlink: true,
+      windowsMode: false,
+      ...(isWin ? { windowsPty: { backend: 'conpty' } } : {})
     });
 
 

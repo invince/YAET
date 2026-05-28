@@ -14,13 +14,21 @@ class LocalTerminalSession extends TerminalRuntimeApi {
     const { terminalExec, rows, cols, cwd } = options;
     const shell = terminalExec || (process.platform === 'win32' ? 'cmd.exe' : 'bash');
 
+    const isWindows = process.platform === 'win32';
+    const isDebuggerAttached = typeof v8debug === 'object' || 
+                               /--debug|--inspect/.test(process.execArgv.join(' ')) || 
+                               (process.env.VSCODE_INSPECTOR_OPTIONS !== undefined) ||
+                               (require('inspector').url() !== undefined);
+
+    const useConpty = isWindows && !isDebuggerAttached;
+
     const ptyProcess = pty.spawn(shell, [], {
       name: 'xterm-color',
       cols: cols || 80,
       rows: rows || 30,
       cwd: cwd || process.env.HOME,
       env: process.env,
-      useConpty: false,
+      useConpty: useConpty,
     });
 
     ptyProcess.onData((data) => {
