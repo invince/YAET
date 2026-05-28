@@ -10,6 +10,7 @@ const fsPromise = require('fs/promises');
 const os = require('os');
 const uuid = require('uuid');
 const { Readable } = require('stream');
+const { generalLimiter, uploadLimiter, downloadLimiter, openLimiter } = require('../rateLimiter');
 
 function initFtpHandler(log, ftpMap, expressApp, proxyRepo, secretRepo) {
 
@@ -39,7 +40,7 @@ function initFtpHandler(log, ftpMap, expressApp, proxyRepo, secretRepo) {
   });
 
   //==================== API ==========================================================
-  expressApp.post('/api/v1/ftp/:id', async (req, res) => {
+  expressApp.post('/api/v1/ftp/:id', generalLimiter, async (req, res) => {
     const action = req.body.action || 'read';
     const pathParam = req.body.path || '/';
     const configId = req.params['id'];
@@ -102,7 +103,7 @@ function initFtpHandler(log, ftpMap, expressApp, proxyRepo, secretRepo) {
     }
   });
 
-  expressApp.post('/api/v1/ftp/upload/:id', upload.single('uploadFiles'), async (req, res) => {
+  expressApp.post('/api/v1/ftp/upload/:id', uploadLimiter, upload.single('uploadFiles'), async (req, res) => {
     const { data, filename } = req.body;
     let directoryPath;
     try {
@@ -138,7 +139,7 @@ function initFtpHandler(log, ftpMap, expressApp, proxyRepo, secretRepo) {
     }
   });
 
-  expressApp.post('/api/v1/ftp/download/:id', upload.none(), async (req, res) => {
+  expressApp.post('/api/v1/ftp/download/:id', downloadLimiter, upload.none(), async (req, res) => {
     let downloadInput;
     try {
       downloadInput = JSON.parse(req.body.downloadInput);
@@ -183,7 +184,7 @@ function initFtpHandler(log, ftpMap, expressApp, proxyRepo, secretRepo) {
     }
   });
 
-  expressApp.post('/api/v1/ftp/open/:id', upload.none(), async (req, res) => {
+  expressApp.post('/api/v1/ftp/open/:id', openLimiter, upload.none(), async (req, res) => {
     let downloadInput;
     try {
       downloadInput = JSON.parse(req.body.downloadInput);

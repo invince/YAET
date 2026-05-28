@@ -11,13 +11,14 @@ const fsPromise = require('fs/promises');
 const os = require('os');
 const uuid = require('uuid');
 const { Readable } = require('stream');
+const { generalLimiter, uploadLimiter, downloadLimiter, openLimiter } = require('../rateLimiter');
 
 function initScpSftpHandler(log, scpMap, expressApp, proxyRepo, secretRepo) {
   const runtime = new RuntimeAPI(log);
   runtime.setProxyRepo(proxyRepo);
   runtime.setSecretRepo(secretRepo);
 
-  expressApp.post('/api/v1/scp/download', async (req, res) => {
+  expressApp.post('/api/v1/scp/download', downloadLimiter, async (req, res) => {
     const { profileId, path, proxyId, secretId } = req.body;
     if (!profileId || !path) {
       return res.status(400).json({ error: 'profileId and path are required' });
@@ -61,7 +62,7 @@ function initScpSftpHandler(log, scpMap, expressApp, proxyRepo, secretRepo) {
     scpMap.set(id, explorer);
   });
 
-  expressApp.post('/api/v1/scp/:id', async (req, res) => {
+  expressApp.post('/api/v1/scp/:id', generalLimiter, async (req, res) => {
     const action = req.body.action || 'read';
     const pathParam = req.body.path || '/';
     const configId = req.params['id'];
@@ -124,7 +125,7 @@ function initScpSftpHandler(log, scpMap, expressApp, proxyRepo, secretRepo) {
     }
   });
 
-  expressApp.post('/api/v1/scp/upload/:id', upload.single('uploadFiles'), async (req, res) => {
+  expressApp.post('/api/v1/scp/upload/:id', uploadLimiter, upload.single('uploadFiles'), async (req, res) => {
     let targetDir;
     try {
       targetDir = JSON.parse(req.body.data).name;
@@ -155,7 +156,7 @@ function initScpSftpHandler(log, scpMap, expressApp, proxyRepo, secretRepo) {
     }
   });
 
-  expressApp.post('/api/v1/scp/download/:id', upload.none(), async (req, res) => {
+  expressApp.post('/api/v1/scp/download/:id', downloadLimiter, upload.none(), async (req, res) => {
     let downloadInput;
     try {
       downloadInput = JSON.parse(req.body.downloadInput);
@@ -198,7 +199,7 @@ function initScpSftpHandler(log, scpMap, expressApp, proxyRepo, secretRepo) {
     }
   });
 
-  expressApp.post('/api/v1/scp/open/:id', upload.none(), async (req, res) => {
+  expressApp.post('/api/v1/scp/open/:id', openLimiter, upload.none(), async (req, res) => {
     let downloadInput;
     try {
       downloadInput = JSON.parse(req.body.downloadInput);

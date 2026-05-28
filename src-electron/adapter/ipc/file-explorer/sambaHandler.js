@@ -9,6 +9,7 @@ const fs = require('fs');
 const fsPromise = require('fs/promises');
 const os = require('os');
 const uuid = require('uuid');
+const { generalLimiter, uploadLimiter, downloadLimiter, openLimiter } = require('../rateLimiter');
 
 function initSambaHandler(log, sambaMap, expressApp, proxyRepo, secretRepo) {
 
@@ -45,7 +46,7 @@ function initSambaHandler(log, sambaMap, expressApp, proxyRepo, secretRepo) {
   }
 
   //==================== API ====================================================
-  expressApp.post('/api/v1/samba/:id', async (req, res) => {
+  expressApp.post('/api/v1/samba/:id', generalLimiter, async (req, res) => {
     const action = req.body.action || 'read';
     req.body.targetPath = fixPath(req.body.targetPath);
     req.body.path = fixPath(req.body.path);
@@ -106,7 +107,7 @@ function initSambaHandler(log, sambaMap, expressApp, proxyRepo, secretRepo) {
     }
   });
 
-  expressApp.post('/api/v1/samba/upload/:id', upload.single('uploadFiles'), async (req, res) => {
+  expressApp.post('/api/v1/samba/upload/:id', uploadLimiter, upload.single('uploadFiles'), async (req, res) => {
     const { data, filename } = req.body;
     let targetDir;
     try {
@@ -139,7 +140,7 @@ function initSambaHandler(log, sambaMap, expressApp, proxyRepo, secretRepo) {
     }
   });
 
-  expressApp.post('/api/v1/samba/download/:id', upload.none(), async (req, res) => {
+  expressApp.post('/api/v1/samba/download/:id', downloadLimiter, upload.none(), async (req, res) => {
     let downloadInput;
     try {
       downloadInput = JSON.parse(req.body.downloadInput);
@@ -185,7 +186,7 @@ function initSambaHandler(log, sambaMap, expressApp, proxyRepo, secretRepo) {
     }
   });
 
-  expressApp.post('/api/v1/samba/open/:id', upload.none(), async (req, res) => {
+  expressApp.post('/api/v1/samba/open/:id', openLimiter, upload.none(), async (req, res) => {
     let downloadInput;
     try {
       downloadInput = JSON.parse(req.body.downloadInput);
