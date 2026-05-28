@@ -1,4 +1,5 @@
 const readline = require('readline');
+const crypto = require('crypto');
 
 class ACPServer {
   constructor(serverInfo = { name: 'yaet', version: '5.0.0' }) {
@@ -55,7 +56,7 @@ class ACPServer {
   }
 
   _handleSessionNew(params, id) {
-    const sessionId = `acp-session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const sessionId = `acp-session-${Date.now()}-${crypto.randomBytes(8).toString('hex')}`;
     this.sessions.set(sessionId, {
       id: sessionId,
       cwd: params?.cwd || process.cwd(),
