@@ -12,7 +12,6 @@ function _httpRequest(log, url, method, headers, body) {
       'Content-Type': 'application/json',
       ...headers,
     },
-    rejectUnauthorized: false,
   };
 
   const lib = urlObj.protocol === 'https:' ? https : http;
