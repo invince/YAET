@@ -30,7 +30,7 @@ import {
 } from '../../../../utils/ModelFormController';
 import {SecretQuickFormComponent} from '../../../dialog/secret-quick-form/secret-quick-form.component';
 import {MatDialog} from '@angular/material/dialog';
-import {clearAuthFields, passwordMatchValidator} from '../../../../utils/PasswordValidators';
+import {clearAuthFields} from '../../../../utils/PasswordValidators';
 
 @Component({
     selector: 'app-vnc-profile-form',
@@ -79,7 +79,6 @@ export class VncProfileFormComponent extends ChildFormAsFormControl(MenuComponen
     mappings.set('port' , {name: 'port', formControlOption:  ['', [Validators.required]]});
     mappings.set('authType' , {name: 'authType', formControlOption:  ['', [Validators.required]]});
     mappings.set({name: 'password', precondition: form => this.form.get('authType')?.value  == 'login'} , 'password');
-    mappings.set({name: 'password', precondition: form => false} , 'confirmPassword'); // we don't set model.password via confirmPassword control
     mappings.set({name: 'secretId', precondition: form => this.form.get('authType')?.value  == 'secret' } , 'secretId');
 
     this.modelFormController = new ModelFormController<VncProfile>(mappings);
@@ -95,21 +94,18 @@ export class VncProfileFormComponent extends ChildFormAsFormControl(MenuComponen
     let authType = group.get('authType')?.value;
     if (authType == AuthType.LOGIN) {
       group.get('password')?.addValidators(Validators.required);
-      group.get('confirmPassword')?.addValidators(Validators.required);
       group.get('secretId')?.removeValidators(Validators.required);
       const password = group.get('password')?.value;
       if (!password) {
         return {passwordRequired: true};
       }
-      return passwordMatchValidator(group);
+      return null;
     } else if (authType == AuthType.SECRET) {
       group.get('password')?.removeValidators(Validators.required);
-      group.get('confirmPassword')?.removeValidators(Validators.required);
       group.get('secretId')?.addValidators(Validators.required);
       return group.get('secretId')?.value ? null : {secretRequired: true};
     } else {
       group.get('password')?.removeValidators(Validators.required);
-      group.get('confirmPassword')?.removeValidators(Validators.required);
       group.get('secretId')?.removeValidators(Validators.required);
       return null;
     }
