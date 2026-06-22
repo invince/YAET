@@ -17,6 +17,7 @@ const { initAutoUpdater } = require("./adapter/ipc/autoUpdater");
 const { initBackend } = require("./adapter/ipc/backend");
 const { initFtpHandler } = require("./adapter/ipc/file-explorer/ftpHandler");
 const { initLocalFileHandler } = require("./adapter/ipc/localFile");
+const { PluginManager } = require("./plugin/pluginManager");
 
 
 let tray;
@@ -33,14 +34,13 @@ let allProxies = null;
 let allSecrets = null;
 let runtime = null;
 let sessionRegistry = null;
+let pluginManager = null;
 
 const log = require("electron-log")
 const configService = new ConfigService(log);
 const { initCommonIpc } = require("./adapter/ipc/commonIpc");
 const { initAcpClientIpcHandler } = require("./adapter/ipc/ai/acpClient");
 const { initAiIpcHandler, initAiChatIpcHandler, initAiToolsIpcHandler } = require("./adapter/ipc/ai/aiChat");
-const { initSSHTerminalIpcHandler } = require("./adapter/ipc/terminal/sshHandler");
-const { initTelnetIpcHandler } = require("./adapter/ipc/terminal/telnetHandler");
 const { initLocalTerminalIpcHandler } = require("./adapter/ipc/terminal/localHandler");
 const { initWinRmIpcHandler } = require("./adapter/ipc/terminal/winRMHandler");
 const { initSambaHandler } = require("./adapter/ipc/file-explorer/sambaHandler");
@@ -61,6 +61,11 @@ app.on('ready', () => {
 
   const isDev = process.env.NODE_ENV === 'development';
 
+  // ── Phase 1: Discover plugins and write merged manifest for preload.js ──
+  pluginManager = new PluginManager(__dirname, log);
+  pluginManager.discover();
+  pluginManager.writeMergedManifest();
+
   tray = new Tray(__dirname + '/assets/icons/app-icon.png',);
   tray.setToolTip('Yet Another Electron Terminal');
 
@@ -72,6 +77,7 @@ app.on('ready', () => {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      sandbox: false, // for plugin, we need load add require other path
       enableRemoteModule: false,
       enableBlinkFeatures: 'Accelerated2dCanvas',
       preload: path.join(__dirname, 'preload.js'),
@@ -94,6 +100,48 @@ app.on('ready', () => {
   }
 
   initHandlerBeforeSettingLoad();
+
+  // ── Phase 2: Load plugin backends (after sessionRegistry is created) ────
+  pluginManager.loadAll({
+    ipcMain,
+    logger: log,
+    terminalMap,
+    sessionRegistry: () => sessionRegistry,
+    runtimeAPI: () => runtime,
+    proxyService: () => allProxies,
+    secretService: () => allSecrets,
+    expressApp: () => expressApp,
+  });
+
+  // Allow renderer to check if plugins were loaded
+  ipcMain.handle('plugins.list', () => pluginManager.getPluginList());
+  ipcMain.handle('plugins.getMergedManifest', () => {
+    const path = require('path');
+    const os = require('os');
+    const fs = require('fs');
+    const bundledPath = path.join(__dirname, '..', 'plugins', '.plugin-manifest.json');
+    const externalPath = path.join(os.homedir(), '.yaet', 'plugins', '.plugin-manifest.json');
+    const manifestPath = fs.existsSync(externalPath) ? externalPath : bundledPath;
+    if (!fs.existsSync(manifestPath)) return null;
+    try {
+      return JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+    } catch {
+      return null;
+    }
+  });
+  ipcMain.handle('plugins.getExternalDir', () => {
+    const path = require('path');
+    const os = require('os');
+    return path.join(os.homedir(), '.yaet', 'plugins');
+  });
+  ipcMain.handle('plugins.readFrontend', (event, pluginId) => {
+    const path = require('path');
+    const fs = require('fs');
+    const os = require('os');
+    const filePath = path.join(os.homedir(), '.yaet', 'plugins', pluginId, 'frontend', 'index.js');
+    if (!fs.existsSync(filePath)) return null;
+    return fs.readFileSync(filePath, 'utf-8');
+  });
 
 
   // Ensure `load` runs on every page reload
@@ -132,8 +180,6 @@ function initHandlerBeforeSettingLoad() {
   initCloudIpcHandler(log, () => allProxies, () => allSecrets);
   initSecurityIpcHandler(log);
   initTerminalIpcHandler(log, terminalMap);
-  initSSHTerminalIpcHandler(log, terminalMap, () => allProxies, () => allSecrets, sessionRegistry);
-  initTelnetIpcHandler(log, terminalMap, () => allProxies, () => allSecrets, sessionRegistry);
 
   initScpSftpHandler(log, scpMap, expressApp, () => allProxies, () => allSecrets);
   initFtpHandler(log, ftpMap, expressApp, () => allProxies, () => allSecrets);

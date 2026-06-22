@@ -13,6 +13,7 @@ import {MatInput} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
 import {Profile, ProfileCategory, ProfileCategoryTypeMap, ProfileType} from '../../../domain/profile/Profile';
 import {SecretType} from '../../../domain/Secret';
+import {PluginRegistryService} from '../../../services/plugin/plugin-registry.service';
 import {Tag} from '../../../domain/Tag';
 import {LogService} from '../../../services/log.service';
 import {MasterKeyService} from '../../../services/master-key.service';
@@ -90,6 +91,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     public proxyStorage: ProxyStorageService,
     private settingService: SettingService,
     private translate: TranslateService,
+    private registry: PluginRegistryService,
   ) {
     super();
   }
@@ -272,7 +274,10 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   }
 
   getTypeOptions() {
-    return ProfileCategoryTypeMap.get(this.form.get('category')?.value) || [];
+    const baseTypes = ProfileCategoryTypeMap.get(this.form.get('category')?.value) || [];
+    const externalTypes = this.registry.getExternalPluginsByCategory(this.form.get('category')?.value)
+      .map(p => p.profileType);
+    return [...baseTypes, ...externalTypes];
   }
 
   translateCategory(cat: ProfileCategory): string {
@@ -298,7 +303,10 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       [ProfileType.SAMBA_FILE_EXPLORER]: 'PROFILES.SAMBA_FILE_EXPLORER',
       [ProfileType.CUSTOM]: 'PROFILES.CUSTOM',
     };
-    return this.translate.instant(keyMap[type] || type);
+    if (keyMap[type]) return this.translate.instant(keyMap[type]);
+    // External plugin: use plugin name from registry
+    const ext = this.registry.getExternalPlugin(type);
+    return ext?.name || type;
   }
 
   override unordered = (a: any, b: any) => 0;
@@ -306,5 +314,17 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   override clear(form: any, field: string) {
     form.get(field)?.setValue('');
     form.get(field)?.markAsDirty();
+  }
+
+  isExternalTerminalPlugin(): boolean {
+    const profileType = this.form?.get('profileType')?.value;
+    return this.registry.hasExternalPlugin(profileType);
+  }
+
+  getExternalPluginType(): string {
+    const profileType = this.form?.get('profileType')?.value;
+    if (profileType?.includes('TELNET')) return 'telnet';
+    if (profileType?.includes('WINRM')) return 'winrm';
+    return '';
   }
 }

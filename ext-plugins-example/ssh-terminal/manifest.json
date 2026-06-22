@@ -1,0 +1,23 @@
+{
+  "id": "ssh-terminal",
+  "name": "SSH Terminal (External)",
+  "version": "1.0.0",
+  "description": "External SSH terminal plugin — self-contained, no bundled dependency",
+  "category": "TERMINAL",
+  "profileType": "SSH_TERMINAL",
+  "defaultPort": 22,
+  "icon": "terminal",
+  "enabled": true,
+  "secretTypes": ["LOGIN_PASSWORD", "SSH_KEY"],
+  "supportedAuthTypes": ["N/A", "login", "secret"],
+  "backend": "./backend/index.js",
+  "frontend": {
+    "entry": "./frontend/index.js",
+    "profileFormElement": "demo-ssh-profile-form"
+  },
+  "ipc": {
+    "send": ["session.open.terminal.ssh", "session.close.terminal.ssh"],
+    "invoke": [],
+    "on": ["session.disconnect.terminal.ssh"]
+  }
+}

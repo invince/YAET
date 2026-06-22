@@ -1,24 +1,26 @@
 import {Profile, ProfileType} from '../profile/Profile';
 import {TabService} from '../../services/tab.service';
 import {Session} from './Session';
-import {ElectronTerminalService} from '../../services/electron/electron-terminal.service';
 
 export class TelnetSession extends Session {
 
+  private telnetService: any;
+
   constructor(profile: Profile, profileType: ProfileType,
               tabService: TabService,
-              private electron: ElectronTerminalService,
+              telnetService: any,
   ) {
     super(profile, profileType, tabService);
+    this.telnetService = telnetService;
   }
 
   override close(): void {
-    this.electron.closeTelnetTerminalSession(this);
+    this.telnetService.closeTelnetTerminalSession(this);
     super.close();
   }
 
   override open(): void {
-    this.electron.openTelnetTerminalSession(this);
+    this.telnetService.openTelnetTerminalSession(this);
     super.open();
   }
 }

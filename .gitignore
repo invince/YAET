@@ -45,12 +45,15 @@ settings.json
 profiles.json
 secrets.json
 cloud.json
-manifest.json
+
 
 config
 
 src-electron/logs
 build.log
+
+# Plugin generated files
+plugins/.plugin-manifest.json
 
 docs/ai/
 

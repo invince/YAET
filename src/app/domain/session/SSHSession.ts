@@ -1,24 +1,32 @@
 import {Profile, ProfileType} from '../profile/Profile';
 import {TabService} from '../../services/tab.service';
 import {Session} from './Session';
-import {ElectronTerminalService} from '../../services/electron/electron-terminal.service';
 
+/**
+ * SSH Session — thin wrapper that delegates to a pluggable SSH service.
+ *
+ * The sshService is injected via constructor so the plugin can provide
+ * its own implementation without the core knowing about the plugin.
+ */
 export class SSHSession extends Session {
+
+  private sshService: any;
 
   constructor(profile: Profile, profileType: ProfileType,
               tabService: TabService,
-              private electron: ElectronTerminalService
+              sshService: any
   ) {
     super(profile, profileType, tabService);
+    this.sshService = sshService;
   }
 
   override close(): void {
-    this.electron.closeSSHTerminalSession(this);
+    this.sshService.closeSSHTerminalSession(this);
     super.close();
   }
 
   override open(): void {
-    this.electron.openSSHTerminalSession(this);
+    this.sshService.openSSHTerminalSession(this);
     super.open();
   }
 }

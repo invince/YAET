@@ -1,6 +1,6 @@
 {
   "name": "yet-another-electron-term",
-  "version": "6.0.0",
+  "version": "7.0.0.BETA",
   "author": {
     "name": "invince",
     "email": "invincezero@gmail.com"
@@ -42,6 +42,7 @@
     "files": [
       "dist/",
       "src-electron/",
+      "plugins/",
       "package.json"
     ],
     "win": {

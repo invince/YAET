@@ -37,6 +37,7 @@ import {SessionService} from './services/session.service';
 import {SettingStorageService} from './services/setting-storage.service';
 import {SettingService} from './services/setting.service';
 import {TabService} from './services/tab.service';
+import {PluginLoaderService} from './services/plugin/plugin-loader.service';
 
 @Component({
   selector: 'app-root',
@@ -110,9 +111,11 @@ export class AppComponent implements OnInit, OnDestroy {
     private renderer: Renderer2,
     private ngZone: NgZone,
     private shortcut: ShortcutService,
+    private pluginLoader: PluginLoaderService,
   ) { }
 
   ngOnInit() {
+    this.pluginLoader.loadExternalPlugins();
     this.shortcut.init();
     this.subscriptions.push(
       this.profileService.connectionEvent$.subscribe(

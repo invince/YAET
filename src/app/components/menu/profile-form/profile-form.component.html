@@ -71,7 +71,7 @@
         </mat-autocomplete>
       </mat-form-field>
 
-      @if (['SSH_TERMINAL', 'SCP_FILE_EXPLORER', 'TELNET_TERMINAL'].includes(form.get('profileType')?.value)) {
+      @if (['SSH_TERMINAL', 'SCP_FILE_EXPLORER', 'TELNET_TERMINAL'].includes(form.get('profileType')?.value) || isExternalTerminalPlugin()) {
         <mat-form-field class="field">
           <mat-label>{{ 'PROFILES.PROXY' | translate }}</mat-label>
           <mat-select formControlName="proxyId">
@@ -163,6 +163,15 @@
           }
           @case ('VNC_REMOTE_DESKTOP') {
           <app-vnc-profile-form formControlName="vncProfileForm"></app-vnc-profile-form>
+          }
+
+          @default {
+            <!-- External plugins: reuse shared form based on category -->
+            @if (isExternalTerminalPlugin()) {
+              <div class="external-plugin-badge">External Plugin</div>
+              <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm" [type]="getExternalPluginType()">
+              </app-remote-terminal-profile-form>
+            }
           }
         }
       }

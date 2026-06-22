@@ -1,0 +1,24 @@
+{
+  "id": "telnet-terminal",
+  "name": "Telnet Terminal",
+  "version": "1.0.0",
+  "description": "Telnet terminal connection plugin",
+  "author": "YAET",
+  "category": "TERMINAL",
+  "profileType": "TELNET_TERMINAL",
+  "defaultPort": 23,
+  "icon": "terminal",
+  "enabled": true,
+  "dependencies": [],
+  "ipc": {
+    "send": ["session.open.terminal.telnet", "session.close.terminal.telnet"],
+    "invoke": [],
+    "on": []
+  },
+  "backend": "./backend/index.js",
+  "frontend": {
+    "plugin": "./frontend/telnet.plugin.ts"
+  },
+  "secretTypes": ["LOGIN_PASSWORD"],
+  "supportedAuthTypes": ["N/A", "login", "secret"]
+}

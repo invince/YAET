@@ -1,16 +1,17 @@
 const { contextBridge, ipcRenderer } = require('electron');
+const path = require('path');
+const fs = require('fs');
+const os = require('os');
 
-const ALLOWED_SEND_CHANNELS = [
+// ── Core IPC channels (always allowed) ──────────────────────────────────────
+
+const CORE_SEND_CHANNELS = [
   'log',
   'open-url',
   'session.open.terminal.local',
   'session.close.terminal.local',
-  'session.open.terminal.ssh',
-  'session.close.terminal.ssh',
   'session.open.terminal.winrm',
   'session.close.terminal.winrm',
-  'session.open.terminal.telnet',
-  'session.close.terminal.telnet',
   'terminal.input',
   'terminal.resize',
   'session.open.rd.rdp',
@@ -32,8 +33,12 @@ const ALLOWED_SEND_CHANNELS = [
   'ai.command-rejected',
 ];
 
-const ALLOWED_INVOKE_CHANNELS = [
+const CORE_INVOKE_CHANNELS = [
   'settings.get',
+  'plugins.list',
+  'plugins.getMergedManifest',
+  'plugins.getExternalDir',
+  'plugins.readFrontend',
   'acp.send',
   'acp.fetch-models',
   'ai.fetch-models',
@@ -56,9 +61,8 @@ const ALLOWED_INVOKE_CHANNELS = [
   'get-api-token',
 ];
 
-const ALLOWED_ON_CHANNELS = [
+const CORE_ON_CHANNELS = [
   'error',
-  'session.disconnect.terminal.ssh',
   'terminal.output',
   'clipboard-paste',
   'local-file.changed',
@@ -72,6 +76,32 @@ const ALLOWED_ON_CHANNELS = [
   'ai.tool-progress',
   'ai.command-pending',
 ];
+
+// ── Plugin IPC channels (loaded from merged manifest) ───────────────────────
+
+function loadPluginChannels() {
+  const bundledPath = path.join(__dirname, '../plugins/.plugin-manifest.json');
+  const externalPath = path.join(os.homedir(), '.yaet', 'plugins', '.plugin-manifest.json');
+
+  const manifestPath = fs.existsSync(externalPath) ? externalPath : bundledPath;
+  if (!fs.existsSync(manifestPath)) {
+    return { send: [], invoke: [], on: [] };
+  }
+  try {
+    const merged = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+    return merged.ipc || { send: [], invoke: [], on: [] };
+  } catch {
+    return { send: [], invoke: [], on: [] };
+  }
+}
+
+const pluginIpc = loadPluginChannels();
+
+const ALLOWED_SEND_CHANNELS = [...CORE_SEND_CHANNELS, ...pluginIpc.send];
+const ALLOWED_INVOKE_CHANNELS = [...CORE_INVOKE_CHANNELS, ...pluginIpc.invoke];
+const ALLOWED_ON_CHANNELS = [...CORE_ON_CHANNELS, ...pluginIpc.on];
+
+// ── Context Bridge ──────────────────────────────────────────────────────────
 
 contextBridge.exposeInMainWorld('electronAPI', {
   platform: process.platform,

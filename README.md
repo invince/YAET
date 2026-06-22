@@ -68,6 +68,16 @@ YAET is a comprehensive remote connection and management tool built with Angular
 - **Persistent Chat History**: Manage multiple chat sessions with persistent storage, renaming, and history tracking
 - **Draggable Chat Panel**: Resizable, repositionable floating chat window
 
+### 🧩 Plugin System
+- **Modular architecture**: each connection type (SSH, Telnet, WinRM, etc.) is an independent plugin
+- **Bundled plugins**: ship with the app under `plugins/` — ready to use out of the box
+- **External plugins**: install third-party plugins to `~/.yaet/plugins/<id>/` — they automatically override bundled ones if they share the same id
+- **Self-contained backends**: external plugins resolve npm dependencies (like `ssh2`) from the project's `node_modules` via `context.projectRequire`
+- **Dynamic frontend loading**: external plugin frontend bundles are loaded at runtime via IPC — no rebuild required
+- **Shared UI**: plugins can reuse core components like `TerminalComponent` and `RemoteTerminalProfileFormComponent`
+- **Example**: see [`ext-plugins-example/`](ext-plugins-example/) for a working external SSH plugin
+- See [docs/plugin-development.md](docs/plugin-development.md) for how to write your own plugin
+
 ## Prerequisites
 
 - **Node.js**: v20.19+ or v22.12+ or v24+
