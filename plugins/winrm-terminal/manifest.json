@@ -1,0 +1,24 @@
+{
+  "id": "winrm-terminal",
+  "name": "WinRM Terminal",
+  "version": "1.0.0",
+  "description": "Windows Remote Management terminal connection plugin",
+  "author": "YAET",
+  "category": "TERMINAL",
+  "profileType": "WIN_RM_TERMINAL",
+  "defaultPort": 5985,
+  "icon": "terminal",
+  "enabled": true,
+  "dependencies": [],
+  "ipc": {
+    "send": ["session.open.terminal.winrm", "session.close.terminal.winrm"],
+    "invoke": [],
+    "on": []
+  },
+  "backend": "./backend/index.js",
+  "frontend": {
+    "plugin": "./frontend/winrm.plugin.ts"
+  },
+  "secretTypes": ["LOGIN_PASSWORD"],
+  "supportedAuthTypes": ["N/A", "login", "secret"]
+}

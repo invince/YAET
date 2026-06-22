@@ -79,7 +79,11 @@
         "AI_USE_CONTEXT": "Include session context",
         "AI_AGENT_MODE": "Agent mode",
         "AI_CROSS_SESSION_ACCESS": "Access all terminal sessions",
-        "ADD_NEW_GROUP": "Add new Group"
+        "ADD_NEW_GROUP": "Add new Group",
+        "PLUGINS": "Plugins",
+        "LOADED_PLUGINS": "Loaded Plugins",
+        "NO_PLUGINS": "No plugins loaded",
+        "DISABLED": "Disabled"
     },
     "LANGUAGES": {
         "EN": "English",

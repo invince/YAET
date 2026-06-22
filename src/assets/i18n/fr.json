@@ -79,7 +79,11 @@
         "AI_USE_CONTEXT": "Inclure le contexte de session",
         "AI_AGENT_MODE": "Mode agent",
         "AI_CROSS_SESSION_ACCESS": "Accéder à tous les terminaux",
-        "ADD_NEW_GROUP": "Ajouter un nouveau groupe"
+        "ADD_NEW_GROUP": "Ajouter un nouveau groupe",
+        "PLUGINS": "Plugins",
+        "LOADED_PLUGINS": "Plugins chargés",
+        "NO_PLUGINS": "Aucun plugin chargé",
+        "DISABLED": "Désactivé"
     },
     "LANGUAGES": {
         "EN": "English",

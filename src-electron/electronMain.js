@@ -17,7 +17,7 @@ const { initAutoUpdater } = require("./adapter/ipc/autoUpdater");
 const { initBackend } = require("./adapter/ipc/backend");
 const { initFtpHandler } = require("./adapter/ipc/file-explorer/ftpHandler");
 const { initLocalFileHandler } = require("./adapter/ipc/localFile");
-const { PluginManager } = require("./plugin/pluginManager");
+const { initPluginHandler } = require("./adapter/ipc/pluginHandler");
 
 
 let tray;
@@ -42,7 +42,6 @@ const { initCommonIpc } = require("./adapter/ipc/commonIpc");
 const { initAcpClientIpcHandler } = require("./adapter/ipc/ai/acpClient");
 const { initAiIpcHandler, initAiChatIpcHandler, initAiToolsIpcHandler } = require("./adapter/ipc/ai/aiChat");
 const { initLocalTerminalIpcHandler } = require("./adapter/ipc/terminal/localHandler");
-const { initWinRmIpcHandler } = require("./adapter/ipc/terminal/winRMHandler");
 const { initSambaHandler } = require("./adapter/ipc/file-explorer/sambaHandler");
 const { RuntimeAPI } = require("./runtime/runtimeAPI");
 const { SessionRegistry } = require("./runtime/sessionRegistry");
@@ -62,9 +61,7 @@ app.on('ready', () => {
   const isDev = process.env.NODE_ENV === 'development';
 
   // ── Phase 1: Discover plugins and write merged manifest for preload.js ──
-  pluginManager = new PluginManager(__dirname, log);
-  pluginManager.discover();
-  pluginManager.writeMergedManifest();
+  pluginManager = initPluginHandler(log);
 
   tray = new Tray(__dirname + '/assets/icons/app-icon.png',);
   tray.setToolTip('Yet Another Electron Terminal');
@@ -99,6 +96,9 @@ app.on('ready', () => {
     fs.mkdirSync(APP_CONFIG_PATH);
   }
 
+  // ── Phase 1: Discover plugins and write merged manifest for preload.js ──
+  pluginManager = initPluginHandler(log);
+
   initHandlerBeforeSettingLoad();
 
   // ── Phase 2: Load plugin backends (after sessionRegistry is created) ────
@@ -111,38 +111,8 @@ app.on('ready', () => {
     proxyService: () => allProxies,
     secretService: () => allSecrets,
     expressApp: () => expressApp,
+    settings: () => lastSettings,
   });
-
-  // Allow renderer to check if plugins were loaded
-  ipcMain.handle('plugins.list', () => pluginManager.getPluginList());
-  ipcMain.handle('plugins.getMergedManifest', () => {
-    const path = require('path');
-    const os = require('os');
-    const fs = require('fs');
-    const bundledPath = path.join(__dirname, '..', 'plugins', '.plugin-manifest.json');
-    const externalPath = path.join(os.homedir(), '.yaet', 'plugins', '.plugin-manifest.json');
-    const manifestPath = fs.existsSync(externalPath) ? externalPath : bundledPath;
-    if (!fs.existsSync(manifestPath)) return null;
-    try {
-      return JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
-    } catch {
-      return null;
-    }
-  });
-  ipcMain.handle('plugins.getExternalDir', () => {
-    const path = require('path');
-    const os = require('os');
-    return path.join(os.homedir(), '.yaet', 'plugins');
-  });
-  ipcMain.handle('plugins.readFrontend', (event, pluginId) => {
-    const path = require('path');
-    const fs = require('fs');
-    const os = require('os');
-    const filePath = path.join(os.homedir(), '.yaet', 'plugins', pluginId, 'frontend', 'index.js');
-    if (!fs.existsSync(filePath)) return null;
-    return fs.readFileSync(filePath, 'utf-8');
-  });
-
 
   // Ensure `load` runs on every page reload
   mainWindow.webContents.on('did-finish-load', () => {
@@ -239,7 +209,6 @@ function initHandlerAfterSettingLoad(settings) {
       initAutoUpdater(log, settings, () => allProxies, () => allSecrets);
     }
     initLocalTerminalIpcHandler(settings, log, terminalMap, sessionRegistry);
-    initWinRmIpcHandler(settings, log, terminalMap, sessionRegistry);
     initialized = true;
   }
 

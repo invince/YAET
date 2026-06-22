@@ -79,7 +79,11 @@
         "AI_USE_CONTEXT": "Sitzungskontext einbeziehen",
         "AI_AGENT_MODE": "Agent-Modus",
         "AI_CROSS_SESSION_ACCESS": "Alle Terminals zugreifen",
-        "ADD_NEW_GROUP": "Neue Gruppe hinzufügen"
+        "ADD_NEW_GROUP": "Neue Gruppe hinzufügen",
+        "PLUGINS": "Plugins",
+        "LOADED_PLUGINS": "Geladene Plugins",
+        "NO_PLUGINS": "Keine Plugins geladen",
+        "DISABLED": "Deaktiviert"
     },
     "LANGUAGES": {
         "EN": "English",
