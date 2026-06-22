@@ -51,7 +51,13 @@ export class SessionService {
       return this.createPluginSession(profile, profileType, externalPlugin);
     }
 
-    // 2. Built-in types (will be migrated to plugins over time)
+    // 2. Bundled plugins with backend → use PluginSession with IPC channels from manifest
+    const pluginInfo = this.registry.getBundledPlugin(profileType);
+    if (pluginInfo) {
+      return this.createPluginSession(profile, profileType, pluginInfo);
+    }
+
+    // 3. Built-in types (will be migrated to plugins over time)
     switch (profileType) {
       case ProfileType.LOCAL_TERMINAL:
         return new LocalTerminalSession(profile, profileType, this.tabService, this.electronTerm);

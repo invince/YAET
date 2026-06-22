@@ -33,21 +33,33 @@ export class PluginLoaderService {
     if (!manifest) return;
 
     for (const [id, plugin] of Object.entries(manifest.plugins as Record<string, any>)) {
-      if (plugin.source !== 'external') continue;
       if (this.loadedPlugins.has(id)) continue;
 
-      try {
-        const code = await window.electronAPI.invoke('plugins.readFrontend', id);
-        if (!code) {
-          console.warn(`[PluginLoader] No frontend code for plugin ${id}`);
-          continue;
+      if (plugin.source === 'external') {
+        try {
+          const code = await window.electronAPI.invoke('plugins.readFrontend', id);
+          if (!code) {
+            console.warn(`[PluginLoader] No frontend code for plugin ${id}`);
+            continue;
+          }
+          this.executePluginCode(id, code);
+          this.registerPluginFromWindow(id, plugin);
+          this.loadedPlugins.add(id);
+          console.log(`[PluginLoader] Loaded external plugin: ${id}`);
+        } catch (err) {
+          console.error(`[PluginLoader] Failed to load plugin ${id}:`, err);
         }
-        this.executePluginCode(id, code);
-        this.registerPluginFromWindow(id, plugin);
+      } else if (plugin.source === 'bundled' && plugin.ipcChannels) {
+        this.registry.registerBundledPlugin({
+          id,
+          name: plugin.name,
+          category: plugin.category,
+          profileType: plugin.profileType,
+          profileFormElement: '',
+          ipcChannels: plugin.ipcChannels,
+        });
         this.loadedPlugins.add(id);
-        console.log(`[PluginLoader] Loaded external plugin: ${id}`);
-      } catch (err) {
-        console.error(`[PluginLoader] Failed to load plugin ${id}:`, err);
+        console.log(`[PluginLoader] Registered bundled plugin: ${id}`);
       }
     }
   }

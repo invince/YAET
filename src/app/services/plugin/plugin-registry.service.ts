@@ -40,6 +40,7 @@ export interface ExternalPluginInfo {
 export class PluginRegistryService {
   private plugins = new Map<string, PluginFrontend>();
   private externalPlugins = new Map<string, ExternalPluginInfo>();
+  private bundledPlugins = new Map<string, ExternalPluginInfo>();
 
   /**
    * Register a plugin. Overwrites if the same id is already registered.
@@ -53,6 +54,21 @@ export class PluginRegistryService {
    */
   registerExternalPlugin(info: ExternalPluginInfo): void {
     this.externalPlugins.set(info.id, info);
+  }
+
+  /**
+   * Register a bundled plugin (has backend, no frontend JS).
+   */
+  registerBundledPlugin(info: ExternalPluginInfo): void {
+    this.bundledPlugins.set(info.id, info);
+  }
+
+  /**
+   * Get a bundled plugin by ProfileType.
+   */
+  getBundledPlugin(profileType: ProfileType | string): ExternalPluginInfo | undefined {
+    return Array.from(this.bundledPlugins.values())
+      .find(p => p.profileType === profileType);
   }
 
   /**

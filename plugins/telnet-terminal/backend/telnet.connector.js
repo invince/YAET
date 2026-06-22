@@ -13,12 +13,16 @@ class TelnetSession extends TerminalRuntimeApi {
     this.log = log;
     this._initialConfig = config || null;
     this.client = null;
-    this._inputBuffer = '';
     this._connected = false;
   }
 
   async connect(options = {}) {
     const { proxy, secretRepo, ...connConfig } = options;
+
+    connConfig.negotiationMandatory = false;
+    connConfig.timeout = 15000;
+    connConfig.loginPrompt = /[Ll]ogin|[Uu]ser(|name)[:\s]*$/i;
+    connConfig.passwordPrompt = /[Pp]ass(word|wd)?[:\s]*$/i;
 
     this.client = new Telnet();
 
@@ -42,25 +46,23 @@ class TelnetSession extends TerminalRuntimeApi {
       this.emit('output', { data: data.toString() });
     });
 
+    this.client.on('close', () => {
+      this._connected = false;
+      this.emit('disconnect', { error: null });
+    });
+
     this._connected = true;
-    this.emit('output', { data: 'Connected to Telnet server.' });
   }
 
   async write(data) {
     if (!this.client) return false;
-
-    if (data === '\r') {
-      if (this._inputBuffer) {
-        this.client.send(this._inputBuffer).catch(() => {});
+    try {
+      if (this.client.socket) {
+        this.client.socket.write(data);
+      } else {
+        await this.client.send(data);
       }
-      this._inputBuffer = '';
-    } else if (data === '\x7F' || data === '\b') {
-      if (this._inputBuffer.length > 0) {
-        this._inputBuffer = this._inputBuffer.slice(0, -1);
-      }
-    } else {
-      this._inputBuffer += data;
-    }
+    } catch (_) {}
     return true;
   }
 
