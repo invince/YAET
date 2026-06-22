@@ -6,7 +6,16 @@
 const { WinRMSession } = require('./winRM.connector');
 
 function register(context) {
-  const { ipcMain, logger, sessionRegistry, terminalMap } = context;
+  const { ipcMain, logger, sessionRegistry, terminalMap, runtimeAPI } = context;
+
+  const projectRequire = context.projectRequire;
+
+  const api = typeof runtimeAPI === 'function' ? runtimeAPI() : runtimeAPI;
+  if (api) {
+    api.registerConnector('WIN_RM_TERMINAL', (log) => {
+      return new WinRMSession(log, projectRequire);
+    });
+  }
 
   ipcMain.on('session.open.terminal.winrm', async (event, data) => {
     if (process.platform !== 'win32') {

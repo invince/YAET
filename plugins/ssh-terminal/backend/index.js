@@ -7,7 +7,14 @@
 const { SshTerminalSession } = require('./ssh.connector');
 
 function register(context) {
-  const { ipcMain, logger, sessionRegistry } = context;
+  const { ipcMain, logger, sessionRegistry, runtimeAPI } = context;
+
+  const api = typeof runtimeAPI === 'function' ? runtimeAPI() : runtimeAPI;
+  if (api) {
+    api.registerConnector('SSH_TERMINAL', (log, config) => {
+      return new SshTerminalSession(log, config);
+    });
+  }
 
   // terminalMap is the shared map used by terminalHandler.js for resize/input routing
   const terminalMap = context.terminalMap;

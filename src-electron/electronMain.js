@@ -99,6 +99,10 @@ app.on('ready', () => {
   // ── Phase 1: Discover plugins and write merged manifest for preload.js ──
   pluginManager = initPluginHandler(log);
 
+  runtime = new RuntimeAPI(log);
+  runtime.setSecretRepo(() => allSecrets);
+  runtime.setProxyRepo(() => allProxies);
+
   initHandlerBeforeSettingLoad();
 
   // ── Phase 2: Load plugin backends (after sessionRegistry is created) ────
@@ -163,10 +167,6 @@ function initHandlerBeforeSettingLoad() {
   initAcpClientIpcHandler(log);
   initAiIpcHandler(log);
   initAiChatIpcHandler(log);
-
-  runtime = new RuntimeAPI(log);
-  runtime.setSecretRepo(() => allSecrets);
-  runtime.setProxyRepo(() => allProxies);
 
   sessionRegistry = new SessionRegistry({ maxBufferLines: 50 });
   runtime.sessionRegistry = sessionRegistry;

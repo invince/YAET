@@ -1,7 +1,4 @@
-const {SshTerminalSession} = require('./connectors/terminal/ssh');
 const {LocalTerminalSession} = require('./connectors/terminal/local');
-const {TelnetSession} = require('./connectors/terminal/telnet');
-const {WinRMSession} = require('./connectors/terminal/winRM');
 const {ScpFileExplorer} = require('./connectors/file/scp');
 const {FtpFileExplorer} = require('./connectors/file/ftp');
 const {SambaFileExplorer} = require('./connectors/file/samba');
@@ -16,6 +13,11 @@ class RuntimeAPI {
     this.configService = new ConfigService(log);
     this.secretRepo = null;
     this.proxyRepo = null;
+    this._connectors = {};
+  }
+
+  registerConnector(profileType, factory) {
+    this._connectors[profileType] = factory;
   }
 
   setSecretRepo(getter) {
@@ -78,13 +80,11 @@ class RuntimeAPI {
 
     const profileType = profile.profileType || '';
 
+    if (this._connectors[profileType]) {
+      return this._connectors[profileType](this.log, config);
+    }
+
     switch (profileType) {
-      case 'SSH_TERMINAL':
-        return new SshTerminalSession(this.log, config);
-      case 'TELNET_TERMINAL':
-        return new TelnetSession(this.log, config);
-      case 'WIN_RM_TERMINAL':
-        return new WinRMSession(this.log, config);
       case 'SCP_FILE_EXPLORER':
         return new ScpFileExplorer(this.log, config);
       case 'LOCAL_TERMINAL':

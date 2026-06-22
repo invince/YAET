@@ -10,7 +10,10 @@ function initLocalTerminalIpcHandler(settings, log, terminalMap, registry) {
       event.sender.send('terminal.output', { id: data.terminalId, data: output });
     });
 
-    session.connect(data.config || {}).then(() => {
+    session.connect({
+      terminalExec: data.terminalExec,
+      ...(data.config || {})
+    }).then(() => {
       terminalMap.set(data.terminalId, {
         type: 'local',
         process: session.process,

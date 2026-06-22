@@ -6,7 +6,14 @@
 const { TelnetSession } = require('./telnet.connector');
 
 function register(context) {
-  const { ipcMain, logger, sessionRegistry, terminalMap } = context;
+  const { ipcMain, logger, sessionRegistry, terminalMap, runtimeAPI } = context;
+
+  const api = typeof runtimeAPI === 'function' ? runtimeAPI() : runtimeAPI;
+  if (api) {
+    api.registerConnector('TELNET_TERMINAL', (log, config) => {
+      return new TelnetSession(log, config);
+    });
+  }
 
   ipcMain.on('session.open.terminal.telnet', async (event, data) => {
     const session = new TelnetSession(logger);

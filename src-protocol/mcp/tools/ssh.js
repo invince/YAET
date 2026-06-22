@@ -1,7 +1,7 @@
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
-const { SshTerminalSession } = require('../../../src-electron/runtime/connectors/terminal/ssh');
+const { SshTerminalSession } = require('../../../plugins/ssh-terminal/backend/ssh.connector');
 const { Logger } = require('../../common/logger');
 
 const log = new Logger('mcp-ssh');
