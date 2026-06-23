@@ -8,8 +8,8 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
-import {ChildFormAsFormControl} from '../../../EnhancedFormMixin';
-import {MenuComponent} from '../../menu.component';
+import {ChildFormAsFormControl} from '../../../../src/app/components/EnhancedFormMixin';
+import {MenuComponent} from '../../../../src/app/components/menu/menu.component';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {MatSelectChange, MatSelectModule} from '@angular/material/select';
@@ -18,19 +18,21 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatIcon} from '@angular/material/icon';
 import {MatIconButton} from '@angular/material/button';
-import {AuthType, SecretType} from '../../../../domain/Secret';
-import {SecretStorageService} from '../../../../services/secret-storage.service';
-import {SettingStorageService} from '../../../../services/setting-storage.service';
-import {SecretService} from '../../../../services/secret.service';
-import {VncProfile} from '../../../../domain/profile/VncProfile';
+import {AuthType, SecretType} from '../../../../src/app/domain/Secret';
+import {SecretStorageService} from '../../../../src/app/services/secret-storage.service';
+import {SettingStorageService} from '../../../../src/app/services/setting-storage.service';
+import {SecretService} from '../../../../src/app/services/secret.service';
+import {VncProfile} from '../../../../src/app/domain/profile/VncProfile';
 import {
   FormFieldWithPrecondition,
   ModelFieldWithPrecondition,
   ModelFormController
-} from '../../../../utils/ModelFormController';
-import {SecretQuickFormComponent} from '../../../dialog/secret-quick-form/secret-quick-form.component';
+} from '../../../../src/app/utils/ModelFormController';
+import {
+  SecretQuickFormComponent
+} from '../../../../src/app/components/dialog/secret-quick-form/secret-quick-form.component';
 import {MatDialog} from '@angular/material/dialog';
-import {clearAuthFields} from '../../../../utils/PasswordValidators';
+import {clearAuthFields} from '../../../../src/app/utils/PasswordValidators';
 
 @Component({
     selector: 'app-vnc-profile-form',
@@ -67,8 +69,8 @@ export class VncProfileFormComponent extends ChildFormAsFormControl(MenuComponen
   private modelFormController : ModelFormController<VncProfile>;
   constructor(
     private fb: FormBuilder,
-    public secretStorageService: SecretStorageService, // in html
-    public secretService: SecretService, // in html
+    public secretStorageService: SecretStorageService,
+    public secretService: SecretService,
     public settingStorage: SettingStorageService,
     public dialog: MatDialog,
   ) {
@@ -85,7 +87,6 @@ export class VncProfileFormComponent extends ChildFormAsFormControl(MenuComponen
   }
 
   onInitForm(): FormGroup {
-    // we shall avoid use ngModel and formControl at same time
     return this.modelFormController.onInitForm(this.fb, {validators: [this.secretOrPasswordMatchValidator]});
   }
 
@@ -141,6 +142,5 @@ export class VncProfileFormComponent extends ChildFormAsFormControl(MenuComponen
 
   filterSecret() {
     return this.secretStorageService.filter(one => one.secretType == SecretType.PASSWORD_ONLY);
-
   }
 }

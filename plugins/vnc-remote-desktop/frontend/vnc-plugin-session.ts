@@ -2,7 +2,7 @@ import {ElementRef} from '@angular/core';
 import {Profile, ProfileType} from '../../../src/app/domain/profile/Profile';
 import {Session} from '../../../src/app/domain/session/Session';
 import {TabService} from '../../../src/app/services/tab.service';
-import {VncService} from '../../../src/app/services/remote-desktop/vnc.service';
+import {VncService} from './services/vnc.service';
 import {NgxSpinnerService} from 'ngx-spinner';
 import {NotificationService} from '../../../src/app/services/notification.service';
 

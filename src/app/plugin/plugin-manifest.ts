@@ -1,5 +1,5 @@
 import {Type} from '@angular/core';
-import {ProfileCategory, ProfileType} from '../profile/Profile';
+import {ProfileCategory, ProfileType} from '../domain/profile/Profile';
 
 /**
  * IPC channel declarations for a plugin.

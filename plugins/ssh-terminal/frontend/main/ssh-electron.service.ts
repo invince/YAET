@@ -8,11 +8,11 @@
  * src/app/services/electron/electron-terminal.service.ts
  */
 import {Injectable} from '@angular/core';
-import {SecretStorageService} from '../../../src/app/services/secret-storage.service';
-import {TabService} from '../../../src/app/services/tab.service';
-import {NotificationService} from '../../../src/app/services/notification.service';
-import {Session} from '../../../src/app/domain/session/Session';
-import {resolveSecretToConfig} from '../../../src/app/utils/SecretResolver';
+import {SecretStorageService} from '../../../../src/app/services/secret-storage.service';
+import {TabService} from '../../../../src/app/services/tab.service';
+import {NotificationService} from '../../../../src/app/services/notification.service';
+import {Session} from '../../../../src/app/domain/session/Session';
+import {resolveSecretToConfig} from '../../../../src/app/utils/SecretResolver';
 
 declare const window: any;
 

@@ -159,10 +159,10 @@
 
 
           @case ('RDP_REMOTE_DESKTOP') {
-          <app-rdp-profile-form formControlName="rdpProfileForm"></app-rdp-profile-form>
+          <app-plugin-form-host [componentType]="getPluginFormComponent()" formControlName="rdpProfileForm"></app-plugin-form-host>
           }
           @case ('VNC_REMOTE_DESKTOP') {
-          <app-vnc-profile-form formControlName="vncProfileForm"></app-vnc-profile-form>
+          <app-plugin-form-host [componentType]="getPluginFormComponent()" formControlName="vncProfileForm"></app-plugin-form-host>
           }
 
           @default {

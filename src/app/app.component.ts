@@ -37,7 +37,7 @@ import {SessionService} from './services/session.service';
 import {SettingStorageService} from './services/setting-storage.service';
 import {SettingService} from './services/setting.service';
 import {TabService} from './services/tab.service';
-import {PluginLoaderService} from './services/plugin/plugin-loader.service';
+import {PluginLoaderService} from './plugin/services/plugin-loader.service';
 
 @Component({
   selector: 'app-root',

@@ -450,7 +450,7 @@ For **bundled plugins**, create `frontend/my.plugin.ts`:
 
 ```typescript
 import { inject } from '@angular/core';
-import { PluginRegistryService } from '../../../src/app/services/plugin/plugin-registry.service';
+import { PluginRegistryService } from '../../../src/app/plugin/services/plugin-registry.service';
 import { ProfileCategory, ProfileType } from '../../../src/app/domain/profile/Profile';
 
 const MY_MANIFEST = {

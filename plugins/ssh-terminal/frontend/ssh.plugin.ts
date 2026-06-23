@@ -5,7 +5,7 @@
  * This is the entry point for the frontend plugin system.
  */
 import {inject} from '@angular/core';
-import {PluginRegistryService} from '../../../src/app/services/plugin/plugin-registry.service';
+import {PluginRegistryService} from '../../../src/app/plugin/services/plugin-registry.service';
 import {ProfileCategory, ProfileType} from '../../../src/app/domain/profile/Profile';
 
 // SSH Plugin metadata — mirrors manifest.json
@@ -33,7 +33,7 @@ export function registerSshPlugin() {
   const registry = inject(PluginRegistryService);
 
   // Lazy import to avoid circular dependencies
-  import('./ssh-profile-form.component').then(({ SshProfileFormComponent }) => {
+  import('./form/ssh-profile-form.component').then(({ SshProfileFormComponent }) => {
     import('../../../src/app/components/terminal/terminal.component').then(({ TerminalComponent }) => {
       registry.register({
         manifest: SSH_MANIFEST,

@@ -13,7 +13,7 @@ import {MatInput} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
 import {Profile, ProfileCategory, ProfileCategoryTypeMap, ProfileType} from '../../../domain/profile/Profile';
 import {SecretType} from '../../../domain/Secret';
-import {PluginRegistryService} from '../../../services/plugin/plugin-registry.service';
+import {PluginRegistryService} from '../../../plugin/services/plugin-registry.service';
 import {Tag} from '../../../domain/Tag';
 import {LogService} from '../../../services/log.service';
 import {MasterKeyService} from '../../../services/master-key.service';
@@ -25,12 +25,11 @@ import {IsAChildForm} from '../../EnhancedFormMixin';
 import {MenuComponent} from '../menu.component';
 import {CustomProfileFormComponent} from './custom-profile-form/custom-profile-form.component';
 import {FtpProfileFormComponent} from './ftp-profile-form/ftp-profile-form.component';
-import {RdpProfileFormComponent} from './rdp-profile-form/rdp-profile-form.component';
 import {
   RemoteTerminalProfileFormComponent
 } from './remote-terminal-profile-form/remote-terminal-profile-form.component';
 import {SambaFormComponent} from './samba-form/samba-form.component';
-import {VncProfileFormComponent} from './vnc-profile-form/vnc-profile-form.component';
+import {PluginFormHostComponent} from '../../../plugin/components/plugin-form-host.component';
 
 @Component({
   selector: 'app-profile-form',
@@ -50,8 +49,7 @@ import {VncProfileFormComponent} from './vnc-profile-form/vnc-profile-form.compo
     MatInput,
     CdkTextareaAutosize,
     RemoteTerminalProfileFormComponent,
-    RdpProfileFormComponent,
-    VncProfileFormComponent,
+    PluginFormHostComponent,
     CustomProfileFormComponent,
     FtpProfileFormComponent,
     SambaFormComponent,
@@ -139,7 +137,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     const group = profile.group ? this.settingStorage.settings.groups.find(g => g.id === profile.group) : undefined;
     this.tagList = (profile.tags || []).map(id => this.settingStorage.settings.tags.find(t => t.id === id)).filter((t): t is Tag => !!t);
 
-    this.form.patchValue({
+    const formValue: any = {
       name: profile.name,
       comment: profile.comment,
       category: profile.category,
@@ -147,15 +145,19 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       group: group || profile.group,
       tags: this.tagList,
       proxyId: profile.proxyId,
-      remoteTerminalProfileForm: ['SSH_TERMINAL', 'TELNET_TERMINAL', 'WIN_RM_TERMINAL', 'SCP_FILE_EXPLORER'].includes(profile.profileType) ?
-                                 (profile.profileType === ProfileType.SSH_TERMINAL || profile.profileType === ProfileType.SCP_FILE_EXPLORER ? profile.sshProfile :
-                                  profile.profileType === ProfileType.TELNET_TERMINAL ? profile.telnetProfile : profile.winRmProfile) : null,
-      rdpProfileForm: profile.profileType === ProfileType.RDP_REMOTE_DESKTOP ? profile.rdpProfile : null,
-      vncProfileForm: profile.profileType === ProfileType.VNC_REMOTE_DESKTOP ? profile.vncProfile : null,
-      ftpProfileForm: profile.profileType === ProfileType.FTP_FILE_EXPLORER ? profile.ftpProfile : null,
-      sambaProfileForm: profile.profileType === ProfileType.SAMBA_FILE_EXPLORER ? profile.sambaProfile : null,
-      customProfileForm: profile.category === ProfileCategory.CUSTOM ? profile.customProfile : null,
-    });
+    };
+
+    // Dynamic form field loading via plugin registry
+    const meta = this.registry.getFormMetadata(profile.profileType);
+    if (meta) {
+      formValue[meta.formControlName] = (profile as any)[meta.profileField] || null;
+    } else if (profile.profileType === ProfileType.SCP_FILE_EXPLORER) {
+      formValue.remoteTerminalProfileForm = profile.sshProfile || null;
+    } else if (profile.category === ProfileCategory.CUSTOM) {
+      formValue.customProfileForm = profile.customProfile || null;
+    }
+
+    this.form.patchValue(formValue);
     this.form.markAsPristine();
     this.dirtyStateChange.emit(false);
     this.updateFilteredTag(null);
@@ -172,14 +174,17 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     this.profile.tags = this.tagList.map((t: Tag) => t.id);
     this.profile.proxyId = val.proxyId;
 
+    // Dynamic form field saving via plugin registry
+    const meta = this.registry.getFormMetadata(val.profileType);
+    if (meta) {
+      (this.profile as any)[meta.profileField] = val[meta.formControlName];
+    }
+
+    // Handle non-pluginized types (SCP, FTP, Samba, Custom)
     const profileType = val.profileType;
-    if (profileType === ProfileType.SSH_TERMINAL || profileType === ProfileType.SCP_FILE_EXPLORER) this.profile.sshProfile = val.remoteTerminalProfileForm;
-    else if (profileType === ProfileType.TELNET_TERMINAL) this.profile.telnetProfile = val.remoteTerminalProfileForm;
-    else if (profileType === ProfileType.WIN_RM_TERMINAL) this.profile.winRmProfile = val.remoteTerminalProfileForm;
+    if (profileType === ProfileType.SCP_FILE_EXPLORER) this.profile.sshProfile = val.remoteTerminalProfileForm;
     else if (profileType === ProfileType.FTP_FILE_EXPLORER) this.profile.ftpProfile = val.ftpProfileForm;
     else if (profileType === ProfileType.SAMBA_FILE_EXPLORER) this.profile.sambaProfile = val.sambaProfileForm;
-    else if (profileType === ProfileType.RDP_REMOTE_DESKTOP) this.profile.rdpProfile = val.rdpProfileForm;
-    else if (profileType === ProfileType.VNC_REMOTE_DESKTOP) this.profile.vncProfile = val.vncProfileForm;
     else if (val.category === ProfileCategory.CUSTOM) this.profile.customProfile = val.customProfileForm;
   }
 
@@ -326,5 +331,10 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     if (profileType?.includes('TELNET')) return 'telnet';
     if (profileType?.includes('WINRM')) return 'winrm';
     return '';
+  }
+
+  getPluginFormComponent(): any {
+    const profileType = this.form?.get('profileType')?.value;
+    return this.registry.getProfileFormComponent(profileType);
   }
 }

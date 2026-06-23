@@ -2,7 +2,7 @@
  * Telnet Terminal Plugin - Frontend Registration
  */
 import {inject} from '@angular/core';
-import {PluginRegistryService} from '../../../src/app/services/plugin/plugin-registry.service';
+import {PluginRegistryService} from '../../../src/app/plugin/services/plugin-registry.service';
 import {ProfileCategory, ProfileType} from '../../../src/app/domain/profile/Profile';
 
 const TELNET_MANIFEST = {

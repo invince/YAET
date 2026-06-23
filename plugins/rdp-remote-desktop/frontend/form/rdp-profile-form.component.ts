@@ -12,16 +12,16 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatIcon} from '@angular/material/icon';
 import {MatIconButton} from '@angular/material/button';
-import {ChildFormAsFormControl} from '../../../EnhancedFormMixin';
-import {MenuComponent} from '../../menu.component';
-import {RdpProfile} from '../../../../domain/profile/RdpProfile';
+import {ChildFormAsFormControl} from '../../../../src/app/components/EnhancedFormMixin';
+import {MenuComponent} from '../../../../src/app/components/menu/menu.component';
+import {RdpProfile} from '../../../../src/app/domain/profile/RdpProfile';
 import {MatSlideToggle} from '@angular/material/slide-toggle';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   FormFieldWithPrecondition,
   ModelFieldWithPrecondition,
   ModelFormController
-} from '../../../../utils/ModelFormController';
+} from '../../../../src/app/utils/ModelFormController';
 
 @Component({
     selector: 'app-rdp-profile-form',
@@ -29,7 +29,6 @@ import {
         FormsModule,
         ReactiveFormsModule,
         TranslateModule,
-        MatFormFieldModule,
         MatFormFieldModule,
         MatInput,
         MatIcon,

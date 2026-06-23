@@ -15,12 +15,13 @@ import {FtpService} from './file-explorer/ftp.service';
 import {SambaService} from './file-explorer/samba.service';
 import {ScpService} from './file-explorer/scp.service';
 import {NotificationService} from './notification.service';
-import {PluginRegistryService} from './plugin/plugin-registry.service';
+import {PluginRegistryService} from '../plugin/services/plugin-registry.service';
 import {SecretStorageService} from './secret-storage.service';
-import {VncService} from './remote-desktop/vnc.service';
+import {VncService} from '../../../plugins/vnc-remote-desktop/frontend/services/vnc.service';
 import {TabService} from './tab.service';
 
-import {VncPluginSession} from '../../../plugins/vnc-remote-desktop/frontend/vnc-plugin-session';
+import {registerVncPlugin} from '../../../plugins/vnc-remote-desktop/frontend/vnc.plugin';
+import {registerRdpPlugin} from '../../../plugins/rdp-remote-desktop/frontend/rdp.plugin';
 
 @Injectable({
   providedIn: 'root'
@@ -45,10 +46,24 @@ export class SessionService {
   ) { }
 
   initSessionFactories(): void {
-    const vncPlugin = this.registry.getBundledPlugin(ProfileType.VNC_REMOTE_DESKTOP);
-    if (vncPlugin) {
-      vncPlugin.sessionFactory = (profile, profileType) =>
-        new VncPluginSession(profile, profileType, this.tabService, this.vncService, this.spinner, this.notification);
+    // VNC plugin (registers session factory + components)
+    registerVncPlugin(this.registry, this.tabService, this.vncService, this.spinner, this.notification);
+
+    // RDP plugin (registers components)
+    registerRdpPlugin(this.registry);
+
+    // Terminal plugins (SSH, Telnet, WinRM) share RemoteTerminalProfileFormComponent
+    const terminalTypes = [
+      { type: ProfileType.SSH_TERMINAL, formControl: 'remoteTerminalProfileForm', field: 'sshProfile' },
+      { type: ProfileType.TELNET_TERMINAL, formControl: 'remoteTerminalProfileForm', field: 'telnetProfile' },
+      { type: ProfileType.WIN_RM_TERMINAL, formControl: 'remoteTerminalProfileForm', field: 'winRmProfile' },
+    ];
+    for (const t of terminalTypes) {
+      const plugin = this.registry.getBundledPlugin(t.type);
+      if (plugin) {
+        plugin.formControlName = t.formControl;
+        plugin.profileField = t.field;
+      }
     }
   }
 

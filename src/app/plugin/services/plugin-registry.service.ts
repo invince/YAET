@@ -1,6 +1,6 @@
 import {Injectable, Type} from '@angular/core';
 import {Profile, ProfileCategory, ProfileType} from '../../domain/profile/Profile';
-import {PluginFrontend} from '../../domain/plugin/plugin-manifest';
+import {PluginFrontend} from '../plugin-manifest';
 import {Session} from '../../domain/session/Session';
 
 /**
@@ -23,6 +23,8 @@ export interface ExternalPluginInfo {
  */
 export interface BundledPluginInfo extends ExternalPluginInfo {
   sessionFactory?: (profile: Profile, profileType: ProfileType) => Session;
+  formControlName?: string;   // form control name in ProfileFormComponent (e.g., 'vncProfileForm')
+  profileField?: string;      // field on Profile object (e.g., 'vncProfile')
 }
 
 /**
@@ -172,5 +174,17 @@ export class PluginRegistryService {
    */
   getProfileFormComponent(profileType: ProfileType | string): Type<any> | null {
     return this.getPlugin(profileType)?.profileFormComponent ?? null;
+  }
+
+  /**
+   * Get form metadata (formControlName + profileField) for a given ProfileType.
+   * Used by ProfileFormComponent to dynamically resolve form bindings.
+   */
+  getFormMetadata(profileType: ProfileType | string): { formControlName: string; profileField: string } | null {
+    const plugin = this.getBundledPlugin(profileType);
+    if (plugin?.formControlName && plugin?.profileField) {
+      return { formControlName: plugin.formControlName, profileField: plugin.profileField };
+    }
+    return null;
   }
 }

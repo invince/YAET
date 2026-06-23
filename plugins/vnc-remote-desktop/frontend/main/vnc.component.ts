@@ -9,9 +9,9 @@ import {
   SimpleChanges,
   ViewChild
 } from '@angular/core';
-import {Session} from '../../../src/app/domain/session/Session';
-import {VncService} from '../../../src/app/services/remote-desktop/vnc.service';
-import {TabService} from '../../../src/app/services/tab.service';
+import {Session} from '../../../../src/app/domain/session/Session';
+import {VncService} from '../services/vnc.service';
+import {TabService} from '../../../../src/app/services/tab.service';
 
 
 @Component({

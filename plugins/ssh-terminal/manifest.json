@@ -17,8 +17,8 @@
   },
   "backend": "./backend/index.js",
   "frontend": {
-    "profileForm": "./frontend/ssh-profile-form.component",
-    "sessionView": "./frontend/ssh-session.component",
+    "profileForm": "./frontend/form/ssh-profile-form.component",
+    "sessionView": "./frontend/main/ssh-session.component",
     "plugin": "./frontend/ssh.plugin"
   },
   "secretTypes": ["LOGIN_PASSWORD", "SSH_KEY"],
