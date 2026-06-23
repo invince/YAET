@@ -1,12 +1,20 @@
-const { ipcMain } = require('electron');
-const { VncDesktop } = require('../../../runtime/connectors/desktop/vnc');
+const { VncDesktop } = require('./vnc.connector');
 
 const sessionSenders = new Map();
 
-function initVncHandler(log, vncMap, proxyRepo, secretRepo, registry) {
+function register(context) {
+  const { ipcMain, logger, sessionRegistry, runtimeAPI } = context;
+
+  const api = typeof runtimeAPI === 'function' ? runtimeAPI() : runtimeAPI;
+  if (api) {
+    api.registerConnector('VNC_REMOTE_DESKTOP', (log, config) => {
+      return new VncDesktop(log, config);
+    });
+  }
+
   ipcMain.handle('session.open.rd.vnc', async (event, { id, host, port }) => {
     sessionSenders.set(id, event.sender);
-    const desktop = new VncDesktop(log, { host, port });
+    const desktop = new VncDesktop(logger, { host, port });
 
     desktop.on('connected', () => {
       const sender = sessionSenders.get(id);
@@ -24,20 +32,23 @@ function initVncHandler(log, vncMap, proxyRepo, secretRepo, registry) {
     });
 
     const { proxyPort } = await desktop.connect();
+    const registry = typeof sessionRegistry === 'function'
+      ? sessionRegistry() : sessionRegistry;
     if (registry) registry.register(id, 'vnc', 'user', desktop);
-    vncMap.set(id, desktop.getWss());
     return proxyPort;
   });
 
   ipcMain.on('session.disconnect.rd.vnc', (event, { id }) => {
+    const registry = typeof sessionRegistry === 'function'
+      ? sessionRegistry() : sessionRegistry;
     const entry = registry ? registry.get(id) : null;
     const desktop = entry ? entry.session : null;
-    if (desktop) {
-      desktop.disconnect();
-    }
+    if (desktop) desktop.disconnect();
     if (registry) registry.unregister(id);
     sessionSenders.delete(id);
   });
+
+  logger.info('[vnc-remote-desktop] Plugin registered');
 }
 
-module.exports = { initVncHandler };
+module.exports = { register };

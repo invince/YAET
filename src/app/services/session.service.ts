@@ -7,7 +7,6 @@ import {PluginSession} from '../domain/session/PluginSession';
 import {SambaSession} from '../domain/session/SambaSession';
 import {ScpSession} from '../domain/session/ScpSession';
 import {Session} from '../domain/session/Session';
-import {VncSession} from '../domain/session/VncSession';
 import {WinRMSession} from '../domain/session/WinRMSession';
 import {TabInstance} from '../domain/TabInstance';
 import {ElectronRemoteDesktopService} from './electron/electron-remote-desktop.service';
@@ -20,6 +19,8 @@ import {PluginRegistryService} from './plugin/plugin-registry.service';
 import {SecretStorageService} from './secret-storage.service';
 import {VncService} from './remote-desktop/vnc.service';
 import {TabService} from './tab.service';
+
+import {VncPluginSession} from '../../../plugins/vnc-remote-desktop/frontend/vnc-plugin-session';
 
 @Injectable({
   providedIn: 'root'
@@ -43,6 +44,14 @@ export class SessionService {
     private secretStorage: SecretStorageService,
   ) { }
 
+  initSessionFactories(): void {
+    const vncPlugin = this.registry.getBundledPlugin(ProfileType.VNC_REMOTE_DESKTOP);
+    if (vncPlugin) {
+      vncPlugin.sessionFactory = (profile, profileType) =>
+        new VncPluginSession(profile, profileType, this.tabService, this.vncService, this.spinner, this.notification);
+    }
+  }
+
 
   create(profile: Profile, profileType: ProfileType): Session {
     // 1. Check if it's an external plugin → use generic PluginSession
@@ -51,9 +60,12 @@ export class SessionService {
       return this.createPluginSession(profile, profileType, externalPlugin);
     }
 
-    // 2. Bundled plugins with backend → use PluginSession with IPC channels from manifest
+    // 2. Bundled plugins with backend → use sessionFactory if available, otherwise generic PluginSession
     const pluginInfo = this.registry.getBundledPlugin(profileType);
     if (pluginInfo) {
+      if (pluginInfo.sessionFactory) {
+        return pluginInfo.sessionFactory(profile, profileType);
+      }
       return this.createPluginSession(profile, profileType, pluginInfo);
     }
 
@@ -64,8 +76,6 @@ export class SessionService {
       case ProfileType.WIN_RM_TERMINAL:
         return new WinRMSession(profile, profileType, this.tabService, this.electronTerm);
 
-      case ProfileType.VNC_REMOTE_DESKTOP:
-        return new VncSession(profile, profileType, this.tabService, this.vncService, this.spinner, this.notification);
       case ProfileType.SAMBA_FILE_EXPLORER:
         return new SambaSession(profile, profileType, this.tabService, this.sambaService)
 

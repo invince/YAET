@@ -8,9 +8,7 @@ const { initConfigFilesIpcHandler } = require('./adapter/ipc/configFiles');
 const { initTerminalIpcHandler } = require('./adapter/ipc/terminal/terminalHandler');
 const { initCloudIpcHandler } = require('./adapter/ipc/cloud');
 const { initSecurityIpcHandler, decrypt } = require('./adapter/ipc/security');
-const { initRdpHandler } = require('./adapter/ipc/remote-desktop/rdpHandler');
 const { initClipboard } = require('./adapter/ipc/clipboard');
-const { initVncHandler } = require("./adapter/ipc/remote-desktop/vncHandler");
 const { initCustomSessionHandler } = require("./adapter/ipc/customSession");
 const { initScpSftpHandler } = require("./adapter/ipc/file-explorer/scpHandler");
 const { initAutoUpdater } = require("./adapter/ipc/autoUpdater");
@@ -24,7 +22,6 @@ let tray;
 let expressApp;
 let mainWindow;
 let terminalMap = new Map();
-let vncMap = new Map();
 let scpMap = new Map();
 let ftpMap = new Map();
 let sambaMap = new Map();
@@ -159,9 +156,6 @@ function initHandlerBeforeSettingLoad() {
   initFtpHandler(log, ftpMap, expressApp, () => allProxies, () => allSecrets);
   initSambaHandler(log, sambaMap, expressApp, () => allProxies, () => allSecrets);
 
-  initRdpHandler(log);
-  initVncHandler(log, vncMap, () => allProxies, () => allSecrets, sessionRegistry);
-
   initClipboard(log, mainWindow);
   initCustomSessionHandler(log);
   initAcpClientIpcHandler(log);
@@ -236,14 +230,6 @@ app.on('window-all-closed', () => {
 
       }
     });
-
-    vncMap.forEach((vncClient) => {
-      // value?.end();
-      if (vncClient) {
-        vncClient.close(); // WebSocket server for this vnc client closed
-      }
-    });
-
 
     ftpMap.forEach((ftpClient) => {
       // value?.end();

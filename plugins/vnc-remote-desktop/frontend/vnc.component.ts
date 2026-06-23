@@ -9,9 +9,9 @@ import {
   SimpleChanges,
   ViewChild
 } from '@angular/core';
-import {Session} from '../../../domain/session/Session';
-import {VncService} from '../../../services/remote-desktop/vnc.service';
-import {TabService} from '../../../services/tab.service';
+import {Session} from '../../../src/app/domain/session/Session';
+import {VncService} from '../../../src/app/services/remote-desktop/vnc.service';
+import {TabService} from '../../../src/app/services/tab.service';
 
 
 @Component({
@@ -48,7 +48,6 @@ export class VncComponent implements AfterViewInit, OnChanges, OnDestroy {
     }
 
     if (this.isViewInitialized) {
-      // Prevent default paste behavior to avoid double paste
       event.preventDefault();
       event.stopPropagation();
 
@@ -78,7 +77,6 @@ export class VncComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
   ngAfterViewInit(): void {
     this.connect();
-    // this.resizeToFit();
     this.isViewInitialized = true;
   }
 

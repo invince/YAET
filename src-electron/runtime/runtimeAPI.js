@@ -2,7 +2,6 @@ const {LocalTerminalSession} = require('./connectors/terminal/local');
 const {ScpFileExplorer} = require('./connectors/file/scp');
 const {FtpFileExplorer} = require('./connectors/file/ftp');
 const {SambaFileExplorer} = require('./connectors/file/samba');
-const {VncDesktop} = require('./connectors/desktop/vnc');
 const {ConfigService} = require('../services/configService');
 const {ProxyService} = require('../services/proxyService');
 const {decrypt} = require('../services/securityService');
@@ -93,10 +92,8 @@ class RuntimeAPI {
         return new FtpFileExplorer(this.log, config);
       case 'SAMBA_FILE_EXPLORER':
         return new SambaFileExplorer(this.log, config);
-      case 'VNC_REMOTE_DESKTOP':
-        return new VncDesktop(this.log, config);
       case 'RDP_REMOTE_DESKTOP':
-        throw new Error(`Connector ${profileType} not implemented yet`);
+        throw new Error(`Connector ${profileType} not supported for runtime operations`);
       case 'CUSTOM':
         throw new Error(`Connector ${profileType} not supported for runtime operations`);
       default:

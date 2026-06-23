@@ -1,4 +1,3 @@
-const { ipcMain } = require('electron');
 const { spawn } = require('child_process');
 
 function isValidHostname(hostname) {
@@ -8,7 +7,8 @@ function isValidHostname(hostname) {
     /^[a-zA-Z0-9.\-_:]+$/.test(hostname);
 }
 
-function initRdpHandler(log) {
+function register(context) {
+  const { ipcMain, logger } = context;
 
   ipcMain.on('session.open.rd.rdp', (event, { hostname, options }) => {
     launchMSTSC(hostname, options);
@@ -16,10 +16,10 @@ function initRdpHandler(log) {
 
   function launchMSTSC(hostname, options = {}) {
     if (!isValidHostname(hostname)) {
-      log.error(`Invalid hostname rejected: ${hostname}`);
+      logger.error(`Invalid hostname rejected: ${hostname}`);
       return;
     }
-    log.info('Starting mstsc...');
+    logger.info('Starting mstsc...');
     const args = [`/v:${hostname}`];
     if (options.fullscreen) args.push('/f');
     if (options.admin) args.push('/admin');
@@ -29,10 +29,11 @@ function initRdpHandler(log) {
       shell: false,
     });
     child.on('error', (error) => {
-      log.error(`Error launching MSTSC: ${error.message}`);
+      logger.error(`Error launching MSTSC: ${error.message}`);
     });
   }
 
+  logger.info('[rdp-remote-desktop] Plugin registered');
 }
 
-module.exports = {initRdpHandler};
+module.exports = { register };

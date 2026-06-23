@@ -115,7 +115,9 @@ export class AppComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    this.pluginLoader.loadExternalPlugins();
+    this.pluginLoader.loadExternalPlugins().then(() => {
+      this.sessionService.initSessionFactories();
+    });
     this.shortcut.init();
     this.subscriptions.push(
       this.profileService.connectionEvent$.subscribe(

@@ -1,6 +1,7 @@
 import {Injectable, Type} from '@angular/core';
-import {ProfileCategory, ProfileType} from '../../domain/profile/Profile';
+import {Profile, ProfileCategory, ProfileType} from '../../domain/profile/Profile';
 import {PluginFrontend} from '../../domain/plugin/plugin-manifest';
+import {Session} from '../../domain/session/Session';
 
 /**
  * External plugin registered via Web Component (Custom Element).
@@ -13,6 +14,15 @@ export interface ExternalPluginInfo {
   profileType: ProfileType | string;
   profileFormElement: string; // custom element tag name
   ipcChannels?: { send: string[]; invoke: string[]; on: string[] };
+}
+
+/**
+ * Bundled plugin info with optional session factory for specialized session types.
+ * Used for plugins like VNC that need custom frontend sessions (canvas, invoke, etc.)
+ * instead of the generic PluginSession.
+ */
+export interface BundledPluginInfo extends ExternalPluginInfo {
+  sessionFactory?: (profile: Profile, profileType: ProfileType) => Session;
 }
 
 /**
@@ -40,7 +50,7 @@ export interface ExternalPluginInfo {
 export class PluginRegistryService {
   private plugins = new Map<string, PluginFrontend>();
   private externalPlugins = new Map<string, ExternalPluginInfo>();
-  private bundledPlugins = new Map<string, ExternalPluginInfo>();
+  private bundledPlugins = new Map<string, BundledPluginInfo>();
 
   /**
    * Register a plugin. Overwrites if the same id is already registered.
@@ -57,16 +67,16 @@ export class PluginRegistryService {
   }
 
   /**
-   * Register a bundled plugin (has backend, no frontend JS).
+   * Register a bundled plugin (has backend, optionally custom frontend session).
    */
-  registerBundledPlugin(info: ExternalPluginInfo): void {
+  registerBundledPlugin(info: BundledPluginInfo): void {
     this.bundledPlugins.set(info.id, info);
   }
 
   /**
    * Get a bundled plugin by ProfileType.
    */
-  getBundledPlugin(profileType: ProfileType | string): ExternalPluginInfo | undefined {
+  getBundledPlugin(profileType: ProfileType | string): BundledPluginInfo | undefined {
     return Array.from(this.bundledPlugins.values())
       .find(p => p.profileType === profileType);
   }

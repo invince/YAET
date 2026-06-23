@@ -50,16 +50,18 @@ export class PluginLoaderService {
           console.error(`[PluginLoader] Failed to load plugin ${id}:`, err);
         }
       } else if (plugin.source === 'bundled' && plugin.ipcChannels) {
-        this.registry.registerBundledPlugin({
-          id,
-          name: plugin.name,
-          category: plugin.category,
-          profileType: plugin.profileType,
-          profileFormElement: '',
-          ipcChannels: plugin.ipcChannels,
-        });
-        this.loadedPlugins.add(id);
-        console.log(`[PluginLoader] Registered bundled plugin: ${id}`);
+        if (plugin.category === 'TERMINAL' || plugin.category === 'REMOTE_DESKTOP') {
+          this.registry.registerBundledPlugin({
+            id,
+            name: plugin.name,
+            category: plugin.category,
+            profileType: plugin.profileType,
+            profileFormElement: '',
+            ipcChannels: plugin.ipcChannels,
+          });
+          this.loadedPlugins.add(id);
+          console.log(`[PluginLoader] Registered bundled plugin: ${id}`);
+        }
       }
     }
   }

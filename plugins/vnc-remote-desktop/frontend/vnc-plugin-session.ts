@@ -1,12 +1,12 @@
-import {Session} from './Session';
-import {Profile, ProfileType} from '../profile/Profile';
-import {TabService} from '../../services/tab.service';
-import {VncService} from '../../services/remote-desktop/vnc.service';
 import {ElementRef} from '@angular/core';
+import {Profile, ProfileType} from '../../../src/app/domain/profile/Profile';
+import {Session} from '../../../src/app/domain/session/Session';
+import {TabService} from '../../../src/app/services/tab.service';
+import {VncService} from '../../../src/app/services/remote-desktop/vnc.service';
 import {NgxSpinnerService} from 'ngx-spinner';
-import {NotificationService} from '../../services/notification.service';
+import {NotificationService} from '../../../src/app/services/notification.service';
 
-export class VncSession extends Session {
+export class VncPluginSession extends Session {
 
   constructor(profile: Profile, profileType: ProfileType,
               tabService: TabService,
@@ -16,7 +16,6 @@ export class VncSession extends Session {
   ) {
     super(profile, profileType, tabService);
   }
-
 
   override close(): void {
     this.vncService.disconnect(this.id);
@@ -39,5 +38,4 @@ export class VncSession extends Session {
     );
     super.open();
   }
-
 }

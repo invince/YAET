@@ -1,5 +1,5 @@
 import {Component, Input} from '@angular/core';
-import {VncComponent} from "./vnc/vnc.component";
+import {VncComponent} from "../../../../plugins/vnc-remote-desktop/frontend/vnc.component";
 import {Session} from '../../domain/session/Session';
 
 @Component({
