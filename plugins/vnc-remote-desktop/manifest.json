@@ -11,6 +11,9 @@
   "secretTypes": ["PASSWORD_ONLY"],
   "supportedAuthTypes": ["login", "secret"],
   "backend": "./backend/index.js",
+  "frontend": {
+    "entry": "./frontend/vnc.plugin.ts"
+  },
   "ipc": {
     "send": [],
     "invoke": ["session.open.rd.vnc"],

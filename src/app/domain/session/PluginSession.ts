@@ -1,4 +1,4 @@
-import {Profile, ProfileType} from '../profile/Profile';
+import {Profile} from '../profile/Profile';
 import {TabService} from '../../services/tab.service';
 import {Session} from './Session';
 import {SecretStorageService} from '../../services/secret-storage.service';
@@ -7,18 +7,19 @@ import {resolveSecretToConfig} from '../../utils/SecretResolver';
 declare const window: any;
 
 /**
- * Generic session for external plugins.
+ * Generic session for bundled plugins.
  *
  * Uses IPC channel names from the plugin manifest to open/close sessions.
- * Resolves secrets before sending IPC (same as built-in electron services).
+ * Registers listeners for disconnect and error events from the backend.
  */
 export class PluginSession extends Session {
   private channels: { open: string; close: string; disconnect: string; errorCategory: string };
   private profileData: any;
+  private cleanupFns: (() => void)[] = [];
 
   constructor(
     profile: Profile,
-    profileType: ProfileType,
+    profileType: string,
     tabService: TabService,
     channels: { open: string; close: string; disconnect: string; errorCategory: string },
     profileData: any,
@@ -40,14 +41,10 @@ export class PluginSession extends Session {
         port: this.profileData.port,
       };
 
-      console.log('[PluginSession] Opening:', this.channels.open, 'host:', config.host, 'profileData:', JSON.stringify(this.profileData));
-
       if (!resolveSecretToConfig(config, this.profileData, this.secretStorage, (m) => console.log('[PluginSession]', m))) {
         console.error('[PluginSession] Secret resolution failed');
         return;
       }
-
-      console.log('[PluginSession] Resolved config:', JSON.stringify(config));
 
       const data: any = {
         terminalId: this.id,
@@ -64,7 +61,24 @@ export class PluginSession extends Session {
       }
 
       ipc.send(this.channels.open, data);
-      console.log('[PluginSession] IPC sent, sessionId:', this.id);
+
+      // Listen for disconnect events from the backend
+      const disconnectHandler = (_event: any, resp: any) => {
+        if (resp?.id === this.id) {
+          this.tabService.disconnected(this.id);
+        }
+      };
+      ipc.on(this.channels.disconnect, disconnectHandler);
+      this.cleanupFns.push(() => ipc.removeAllListeners(this.channels.disconnect));
+
+      // Listen for error events from the backend
+      const errorHandler = (_event: any, resp: any) => {
+        if (resp?.category === this.channels.errorCategory && resp?.id === this.id) {
+          this.tabService.removeById(this.id);
+        }
+      };
+      ipc.on('error', errorHandler);
+      this.cleanupFns.push(() => ipc.removeAllListeners('error'));
     }
     super.open();
   }
@@ -74,6 +88,9 @@ export class PluginSession extends Session {
     if (ipc) {
       ipc.send(this.channels.close, {terminalId: this.id});
     }
+    // Clean up IPC listeners
+    for (const fn of this.cleanupFns) fn();
+    this.cleanupFns = [];
     super.close();
   }
 }

@@ -22,7 +22,7 @@ import {AuthType, SecretType} from '../../../../src/app/domain/Secret';
 import {SecretStorageService} from '../../../../src/app/services/secret-storage.service';
 import {SettingStorageService} from '../../../../src/app/services/setting-storage.service';
 import {SecretService} from '../../../../src/app/services/secret.service';
-import {VncProfile} from '../../../../src/app/domain/profile/VncProfile';
+import {VncProfile} from '../domain/VncProfile';
 import {
   FormFieldWithPrecondition,
   ModelFieldWithPrecondition,

@@ -1,58 +1,89 @@
 import {Injectable, Type} from '@angular/core';
-import {Profile, ProfileCategory, ProfileType} from '../../domain/profile/Profile';
+import {CUSTOM_PROFILE, LOCAL_TERMINAL, Profile, ProfileCategory, ProfileType} from '../../domain/profile/Profile';
 import {PluginFrontend} from '../plugin-manifest';
 import {Session} from '../../domain/session/Session';
 
-/**
- * External plugin registered via Web Component (Custom Element).
- * The profileFormElement is the tag name (e.g., 'demo-ssh-profile-form').
- */
 export interface ExternalPluginInfo {
   id: string;
   name: string;
   category: ProfileCategory;
   profileType: ProfileType | string;
-  profileFormElement: string; // custom element tag name
+  profileFormElement: string;
   ipcChannels?: { send: string[]; invoke: string[]; on: string[] };
 }
 
-/**
- * Bundled plugin info with optional session factory for specialized session types.
- * Used for plugins like VNC that need custom frontend sessions (canvas, invoke, etc.)
- * instead of the generic PluginSession.
- */
 export interface BundledPluginInfo extends ExternalPluginInfo {
   sessionFactory?: (profile: Profile, profileType: ProfileType) => Session;
-  formControlName?: string;   // form control name in ProfileFormComponent (e.g., 'vncProfileForm')
-  profileField?: string;      // field on Profile object (e.g., 'vncProfile')
+  formControlName?: string;
+  profileField?: string;
+  frontendEntry?: string;
+}
+
+export interface ProfileTypeInfo {
+  profileType: string;
+  translationKey: string;
+  icon: string;
 }
 
 /**
  * Central registry for frontend plugins.
  *
- * Each plugin registers its manifest + Angular components here.
- * The app uses this registry to:
- *   - Resolve which component to render for a given ProfileType
- *   - Resolve which profile form to show for a given ProfileType
- *   - Enumerate all installed plugins (for plugin manager UI)
- *
- * Usage:
- *   // In a plugin's registration function:
- *   registry.register({
- *     manifest: SSH_MANIFEST,
- *     profileFormComponent: SshProfileFormComponent,
- *     sessionComponent: TerminalComponent,
- *   });
- *
- *   // In app.component.ts:
- *   const plugin = registry.getPlugin(ProfileType.SSH_TERMINAL);
- *   const Component = plugin?.sessionComponent;
+ * Also holds the dynamic ProfileCategoryTypeMap — plugins register their
+ * profile types here, and the UI reads them to populate dropdowns.
  */
 @Injectable({providedIn: 'root'})
 export class PluginRegistryService {
   private plugins = new Map<string, PluginFrontend>();
   private externalPlugins = new Map<string, ExternalPluginInfo>();
   private bundledPlugins = new Map<string, BundledPluginInfo>();
+
+  /** category → ordered list of profile type info */
+  private categoryTypeMap = new Map<ProfileCategory, ProfileTypeInfo[]>();
+
+  constructor() {
+    // Register core profile types
+    this.registerCategoryType(ProfileCategory.TERMINAL, LOCAL_TERMINAL, 'PROFILES.LOCAL_TERMINAL', 'terminal');
+    this.registerCategoryType(ProfileCategory.CUSTOM, CUSTOM_PROFILE, 'PROFILES.CUSTOM', 'star');
+  }
+
+  // ─── Category Type Map ────────────────────────────────────────────
+
+  /** Register a profile type for a category. Called by plugins during register(). */
+  registerCategoryType(category: ProfileCategory, profileType: string, translationKey: string, icon: string = 'terminal'): void {
+    const list = this.categoryTypeMap.get(category) || [];
+    if (!list.find(t => t.profileType === profileType)) {
+      list.push({profileType, translationKey, icon});
+    }
+    this.categoryTypeMap.set(category, list);
+  }
+
+  /** Get all profile types for a category. */
+  getCategoryTypes(category: ProfileCategory): ProfileTypeInfo[] {
+    return this.categoryTypeMap.get(category) || [];
+  }
+
+  /** Get all profile types across all categories. */
+  getAllCategoryTypes(): Map<ProfileCategory, ProfileTypeInfo[]> {
+    return this.categoryTypeMap;
+  }
+
+  /** Get translation key for a profile type. */
+  getProfileTypeTranslationKey(profileType: string): string {
+    for (const list of this.categoryTypeMap.values()) {
+      const found = list.find(t => t.profileType === profileType);
+      if (found) return found.translationKey;
+    }
+    return profileType;
+  }
+
+  /** Get default icon for a profile type. */
+  getProfileIcon(profileType: string): string {
+    for (const list of this.categoryTypeMap.values()) {
+      const found = list.find(t => t.profileType === profileType);
+      if (found) return found.icon;
+    }
+    return 'terminal';
+  }
 
   /**
    * Register a plugin. Overwrites if the same id is already registered.
@@ -73,6 +104,15 @@ export class PluginRegistryService {
    */
   registerBundledPlugin(info: BundledPluginInfo): void {
     this.bundledPlugins.set(info.id, info);
+  }
+
+  /**
+   * Get all bundled plugins with frontend entries.
+   * Used by SessionService to dynamically import plugin registration modules.
+   */
+  getBundledPluginsWithEntries(): BundledPluginInfo[] {
+    return Array.from(this.bundledPlugins.values())
+      .filter(p => p.frontendEntry);
   }
 
   /**

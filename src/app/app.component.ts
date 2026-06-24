@@ -22,7 +22,7 @@ import {RemoteDesktopComponent} from './components/remote-desktop/remote-desktop
 import {SidebarComponent} from './components/sidebar/sidebar.component';
 import {TerminalComponent} from './components/terminal/terminal.component';
 import {MenuConsts} from './domain/MenuConsts';
-import {Profile, ProfileCategory, ProfileType} from './domain/profile/Profile';
+import {LOCAL_TERMINAL, Profile, ProfileCategory} from './domain/profile/Profile';
 import {TabInstance} from './domain/TabInstance';
 import {CloudService} from './services/cloud.service';
 import {LogService} from './services/log.service';
@@ -116,7 +116,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.pluginLoader.loadExternalPlugins().then(() => {
-      this.sessionService.initSessionFactories();
+      return this.sessionService.initSessionFactories();
+    }).then(() => {
+      // Plugin factories ready
     });
     this.shortcut.init();
     this.subscriptions.push(
@@ -148,7 +150,7 @@ export class AppComponent implements OnInit, OnDestroy {
               this.settingStorage.settings.terminal?.localTerminal?.defaultOpen) {
               this.modalControl.closeModal();
               const tab = new TabInstance(ProfileCategory.TERMINAL,
-                this.sessionService.create(this.settingService.createLocalTerminalProfile(), ProfileType.LOCAL_TERMINAL));
+                this.sessionService.create(this.settingService.createLocalTerminalProfile(), LOCAL_TERMINAL));
               this.tabService.addTab(tab);
             }
 

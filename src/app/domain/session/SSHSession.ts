@@ -1,4 +1,4 @@
-import {Profile, ProfileType} from '../profile/Profile';
+import {Profile} from '../profile/Profile';
 import {TabService} from '../../services/tab.service';
 import {Session} from './Session';
 
@@ -12,7 +12,7 @@ export class SSHSession extends Session {
 
   private sshService: any;
 
-  constructor(profile: Profile, profileType: ProfileType,
+  constructor(profile: Profile, profileType: string,
               tabService: TabService,
               sshService: any
   ) {

@@ -1,12 +1,17 @@
+import {Injector} from '@angular/core';
 import {PluginRegistryService} from '../../../src/app/plugin/services/plugin-registry.service';
-import {ProfileCategory, ProfileType} from '../../../src/app/domain/profile/Profile';
+import {ProfileCategory} from '../../../src/app/domain/profile/Profile';
 import {RdpProfileFormComponent} from './form/rdp-profile-form.component';
 
-export function registerRdpPlugin(registry: PluginRegistryService) {
-  const bundledPlugin = registry.getBundledPlugin(ProfileType.RDP_REMOTE_DESKTOP);
+export const RDP_REMOTE_DESKTOP = 'RDP_REMOTE_DESKTOP';
+
+export function register(registry: PluginRegistryService, _injector: Injector) {
+  registry.registerCategoryType(ProfileCategory.REMOTE_DESKTOP, RDP_REMOTE_DESKTOP, 'PROFILES.RDP_REMOTE_DESKTOP', 'desktop_windows');
+
+  const bundledPlugin = registry.getBundledPlugin(RDP_REMOTE_DESKTOP);
   if (bundledPlugin) {
     bundledPlugin.formControlName = 'rdpProfileForm';
-    bundledPlugin.profileField = 'rdpProfile';
+    bundledPlugin.profileField = RDP_REMOTE_DESKTOP;
   }
 
   registry.register({
@@ -15,7 +20,7 @@ export function registerRdpPlugin(registry: PluginRegistryService) {
       name: 'RDP Remote Desktop',
       version: '1.0.0',
       category: ProfileCategory.REMOTE_DESKTOP,
-      profileType: ProfileType.RDP_REMOTE_DESKTOP,
+      profileType: RDP_REMOTE_DESKTOP,
       defaultPort: 3389,
       icon: 'desktop_windows',
       enabled: true,

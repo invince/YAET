@@ -1,13 +1,3 @@
 <div class="file-explorer-container">
-  @switch (session.profileType) {
-    @case ('SCP_FILE_EXPLORER') {
-      <app-scp [session]="session"></app-scp>
-    }
-    @case ('FTP_FILE_EXPLORER') {
-      <app-ftp [session]="session"></app-ftp>
-    }
-    @case ('SAMBA_FILE_EXPLORER') {
-      <app-samba [session]="session"></app-samba>
-    }
-  }
+  <ng-container *ngComponentOutlet="componentType; inputs: componentInputs"></ng-container>
 </div>

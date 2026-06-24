@@ -1,4 +1,4 @@
-import {Profile, ProfileType} from '../profile/Profile';
+import {Profile} from '../profile/Profile';
 import {TabService} from '../../services/tab.service';
 import {Session} from './Session';
 
@@ -6,7 +6,7 @@ export class TelnetSession extends Session {
 
   private telnetService: any;
 
-  constructor(profile: Profile, profileType: ProfileType,
+  constructor(profile: Profile, profileType: string,
               tabService: TabService,
               telnetService: any,
   ) {

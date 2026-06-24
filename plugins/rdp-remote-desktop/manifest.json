@@ -8,6 +8,9 @@
   "icon": "desktop_windows",
   "enabled": true,
   "backend": "./backend/index.js",
+  "frontend": {
+    "entry": "./frontend/rdp.plugin.ts"
+  },
   "ipc": {
     "send": ["session.open.rd.rdp"],
     "invoke": [],

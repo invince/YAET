@@ -11,7 +11,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIcon} from '@angular/material/icon';
 import {MatInput} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
-import {Profile, ProfileCategory, ProfileCategoryTypeMap, ProfileType} from '../../../domain/profile/Profile';
+import {LOCAL_TERMINAL, Profile, ProfileCategory} from '../../../domain/profile/Profile';
 import {SecretType} from '../../../domain/Secret';
 import {PluginRegistryService} from '../../../plugin/services/plugin-registry.service';
 import {Tag} from '../../../domain/Tag';
@@ -24,11 +24,9 @@ import {SettingService} from '../../../services/setting.service';
 import {IsAChildForm} from '../../EnhancedFormMixin';
 import {MenuComponent} from '../menu.component';
 import {CustomProfileFormComponent} from './custom-profile-form/custom-profile-form.component';
-import {FtpProfileFormComponent} from './ftp-profile-form/ftp-profile-form.component';
 import {
   RemoteTerminalProfileFormComponent
 } from './remote-terminal-profile-form/remote-terminal-profile-form.component';
-import {SambaFormComponent} from './samba-form/samba-form.component';
 import {PluginFormHostComponent} from '../../../plugin/components/plugin-form-host.component';
 
 @Component({
@@ -51,8 +49,6 @@ import {PluginFormHostComponent} from '../../../plugin/components/plugin-form-ho
     RemoteTerminalProfileFormComponent,
     PluginFormHostComponent,
     CustomProfileFormComponent,
-    FtpProfileFormComponent,
-    SambaFormComponent,
   ],
   templateUrl: './profile-form.component.html',
   styleUrl: './profile-form.component.scss'
@@ -69,7 +65,6 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   @Output() onProfileCancel = new EventEmitter<Profile>();
 
   CATEGORY_OPTIONS = ProfileCategory;
-  CATEGORY_TYPE_MAP = ProfileCategoryTypeMap;
   SecretType = SecretType;
   TELNET_SUPPORTED_SECRETS = [SecretType.PASSWORD_ONLY, SecretType.LOGIN_PASSWORD];
   WINRM_SUPPORTED_SECRETS = [SecretType.LOGIN_PASSWORD];
@@ -102,7 +97,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       proxyId: [''],
       comment: [''],
       category: [ProfileCategory.TERMINAL, Validators.required],
-      profileType: [ProfileType.LOCAL_TERMINAL, Validators.required],
+      profileType: [LOCAL_TERMINAL, Validators.required],
       remoteTerminalProfileForm: [null],
       rdpProfileForm: [null],
       vncProfileForm: [null],
@@ -150,11 +145,9 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     // Dynamic form field loading via plugin registry
     const meta = this.registry.getFormMetadata(profile.profileType);
     if (meta) {
-      formValue[meta.formControlName] = (profile as any)[meta.profileField] || null;
-    } else if (profile.profileType === ProfileType.SCP_FILE_EXPLORER) {
-      formValue.remoteTerminalProfileForm = profile.sshProfile || null;
+      formValue[meta.formControlName] = profile.getProfile(meta.profileField) || null;
     } else if (profile.category === ProfileCategory.CUSTOM) {
-      formValue.customProfileForm = profile.customProfile || null;
+      formValue.customProfileForm = profile.getProfile('CUSTOM') || null;
     }
 
     this.form.patchValue(formValue);
@@ -177,15 +170,10 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     // Dynamic form field saving via plugin registry
     const meta = this.registry.getFormMetadata(val.profileType);
     if (meta) {
-      (this.profile as any)[meta.profileField] = val[meta.formControlName];
+      this.profile.setProfile(meta.profileField, val[meta.formControlName]);
+    } else if (val.category === ProfileCategory.CUSTOM) {
+      this.profile.setProfile('CUSTOM', val.customProfileForm);
     }
-
-    // Handle non-pluginized types (SCP, FTP, Samba, Custom)
-    const profileType = val.profileType;
-    if (profileType === ProfileType.SCP_FILE_EXPLORER) this.profile.sshProfile = val.remoteTerminalProfileForm;
-    else if (profileType === ProfileType.FTP_FILE_EXPLORER) this.profile.ftpProfile = val.ftpProfileForm;
-    else if (profileType === ProfileType.SAMBA_FILE_EXPLORER) this.profile.sambaProfile = val.sambaProfileForm;
-    else if (val.category === ProfileCategory.CUSTOM) this.profile.customProfile = val.customProfileForm;
   }
 
   override onSave() {
@@ -222,9 +210,9 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
 
   onSelectCategory($event: any) {
     const cat = $event.value as ProfileCategory;
-    const types = ProfileCategoryTypeMap.get(cat);
+    const types = this.registry.getCategoryTypes(cat);
     if (types && types.length > 0) {
-      this.form.get('profileType')?.setValue(types[0]);
+      this.form.get('profileType')?.setValue(types[0].profileType);
     }
   }
 
@@ -279,8 +267,9 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   }
 
   getTypeOptions() {
-    const baseTypes = ProfileCategoryTypeMap.get(this.form.get('category')?.value) || [];
-    const externalTypes = this.registry.getExternalPluginsByCategory(this.form.get('category')?.value)
+    const category = this.form.get('category')?.value;
+    const baseTypes = this.registry.getCategoryTypes(category).map(t => t.profileType);
+    const externalTypes = this.registry.getExternalPluginsByCategory(category)
       .map(p => p.profileType);
     return [...baseTypes, ...externalTypes];
   }
@@ -296,19 +285,8 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   }
 
   translateProfileType(type: any): string {
-    const keyMap: Record<string, string> = {
-      [ProfileType.LOCAL_TERMINAL]: 'PROFILES.LOCAL_TERMINAL',
-      [ProfileType.SSH_TERMINAL]: 'PROFILES.SSH_TERMINAL',
-      [ProfileType.TELNET_TERMINAL]: 'PROFILES.TELNET_TERMINAL',
-      [ProfileType.WIN_RM_TERMINAL]: 'PROFILES.WIN_RM_TERMINAL',
-      [ProfileType.VNC_REMOTE_DESKTOP]: 'PROFILES.VNC_REMOTE_DESKTOP',
-      [ProfileType.RDP_REMOTE_DESKTOP]: 'PROFILES.RDP_REMOTE_DESKTOP',
-      [ProfileType.SCP_FILE_EXPLORER]: 'PROFILES.SCP_FILE_EXPLORER',
-      [ProfileType.FTP_FILE_EXPLORER]: 'PROFILES.FTP_FILE_EXPLORER',
-      [ProfileType.SAMBA_FILE_EXPLORER]: 'PROFILES.SAMBA_FILE_EXPLORER',
-      [ProfileType.CUSTOM]: 'PROFILES.CUSTOM',
-    };
-    if (keyMap[type]) return this.translate.instant(keyMap[type]);
+    const translationKey = this.registry.getProfileTypeTranslationKey(type);
+    if (translationKey !== type) return this.translate.instant(translationKey);
     // External plugin: use plugin name from registry
     const ext = this.registry.getExternalPlugin(type);
     return ext?.name || type;
@@ -336,5 +314,11 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   getPluginFormComponent(): any {
     const profileType = this.form?.get('profileType')?.value;
     return this.registry.getProfileFormComponent(profileType);
+  }
+
+  getPluginFormControlName(): string {
+    const profileType = this.form?.get('profileType')?.value;
+    const meta = this.registry.getFormMetadata(profileType);
+    return meta?.formControlName || '';
   }
 }

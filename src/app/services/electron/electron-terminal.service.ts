@@ -51,15 +51,15 @@ export class ElectronTerminalService extends AbstractElectronService {
     if (!session.profile) {
       session.profile = new Profile();
     }
-    if (!session.profile.localTerminal) {
-      session.profile.localTerminal = new LocalTerminalProfile();
+    if (!session.profile.hasProfile('LOCAL_TERMINAL')) {
+      session.profile.setProfile('LOCAL_TERMINAL', new LocalTerminalProfile());
     }
-    let localProfile: LocalTerminalProfile = session.profile.localTerminal;
+    let localProfile: LocalTerminalProfile = session.profile.getProfile('LOCAL_TERMINAL');
     this.ipc.send(SESSION_OPEN_LOCAL_TERMINAL, { terminalId: session.id, terminalExec: localProfile.execPath });
   }
 
   openWinRMTerminalSession(session: Session) {
-    if (!this.ipc || !session.profile || !session.profile.sshProfile) {
+    if (!this.ipc || !session.profile || !session.profile.hasProfile('WIN_RM_TERMINAL')) {
       this.log({ level: 'error', message: "Invalid configuration" });
       return;
     }
@@ -69,7 +69,7 @@ export class ElectronTerminalService extends AbstractElectronService {
       noProfile: true,
 
     };
-    let profile = session.profile.winRmProfile;
+    let profile = session.profile.getProfile('WIN_RM_TERMINAL');
     config.host = profile.host;
     config.port = profile.port;
     if (!resolveSecretToConfig(config, profile, this.secretStorage, m => this.log(m))) {

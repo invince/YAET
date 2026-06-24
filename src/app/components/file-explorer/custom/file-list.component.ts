@@ -14,7 +14,7 @@ import {MatSort, MatSortModule} from '@angular/material/sort';
 import {MatTableDataSource, MatTableModule} from '@angular/material/table';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {Subscription} from 'rxjs';
-import {Profile, ProfileCategory, ProfileType} from '../../../domain/profile/Profile';
+import {Profile, ProfileCategory} from '../../../domain/profile/Profile';
 import {Session} from '../../../domain/session/Session';
 import {SSHSession} from '../../../domain/session/SSHSession';
 import {TabInstance} from '../../../domain/TabInstance';
@@ -937,11 +937,13 @@ export class FileListComponent implements OnInit, OnDestroy {
         // Clone the profile
         const sshProfile = Profile.clone(this.session.profile);
         sshProfile.category = ProfileCategory.TERMINAL;
-        sshProfile.profileType = ProfileType.SSH_TERMINAL;
+        sshProfile.profileType = 'SSH_TERMINAL';
 
         // 1. Init path
-        if (sshProfile.sshProfile) {
-            sshProfile.sshProfile.initPath = this.path;
+        const sshProfileData = sshProfile.getProfile('SSH_TERMINAL');
+        if (sshProfileData) {
+            sshProfileData.initPath = this.path;
+            sshProfile.setProfile('SSH_TERMINAL', sshProfileData);
         }
 
         // 2. Split window
@@ -955,7 +957,7 @@ export class FileListComponent implements OnInit, OnDestroy {
         }
 
         // Create new session
-        const session = new SSHSession(sshProfile, ProfileType.SSH_TERMINAL, this.tabService, this.electronTerminalService);
+        const session = new SSHSession(sshProfile, 'SSH_TERMINAL', this.tabService, this.electronTerminalService);
 
         // Create new tab instance
         const tabInstance = new TabInstance(ProfileCategory.TERMINAL, session);

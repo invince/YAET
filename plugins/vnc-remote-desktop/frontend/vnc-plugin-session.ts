@@ -1,5 +1,5 @@
 import {ElementRef} from '@angular/core';
-import {Profile, ProfileType} from '../../../src/app/domain/profile/Profile';
+import {Profile} from '../../../src/app/domain/profile/Profile';
 import {Session} from '../../../src/app/domain/session/Session';
 import {TabService} from '../../../src/app/services/tab.service';
 import {VncService} from './services/vnc.service';
@@ -8,7 +8,7 @@ import {NotificationService} from '../../../src/app/services/notification.servic
 
 export class VncPluginSession extends Session {
 
-  constructor(profile: Profile, profileType: ProfileType,
+  constructor(profile: Profile, profileType: string,
               tabService: TabService,
               private vncService: VncService,
               private spinner: NgxSpinnerService,
@@ -24,7 +24,7 @@ export class VncPluginSession extends Session {
 
   override open(vncContainer: ElementRef): void {
     this.spinner.show();
-    this.vncService.connect(this.id, this.profile?.vncProfile, vncContainer)
+    this.vncService.connect(this.id, this.profile?.getProfile('VNC_REMOTE_DESKTOP'), vncContainer)
       .then(
         () => {
           this.spinner.hide();

@@ -1,27 +1,14 @@
-import {Injectable} from '@angular/core';
-import {NgxSpinnerService} from 'ngx-spinner';
-import {Profile, ProfileType} from '../domain/profile/Profile';
-import {FtpSession} from '../domain/session/FtpSession';
+import {Injectable, Injector} from '@angular/core';
+import {CUSTOM_PROFILE, LOCAL_TERMINAL, Profile} from '../domain/profile/Profile';
 import {LocalTerminalSession} from '../domain/session/LocalTerminalSession';
 import {PluginSession} from '../domain/session/PluginSession';
-import {SambaSession} from '../domain/session/SambaSession';
-import {ScpSession} from '../domain/session/ScpSession';
 import {Session} from '../domain/session/Session';
-import {WinRMSession} from '../domain/session/WinRMSession';
 import {TabInstance} from '../domain/TabInstance';
-import {ElectronRemoteDesktopService} from './electron/electron-remote-desktop.service';
 import {ElectronTerminalService} from './electron/electron-terminal.service';
-import {FtpService} from './file-explorer/ftp.service';
-import {SambaService} from './file-explorer/samba.service';
-import {ScpService} from './file-explorer/scp.service';
-import {NotificationService} from './notification.service';
 import {PluginRegistryService} from '../plugin/services/plugin-registry.service';
+import {getRegisteredPluginIds, loadBundledPluginModule} from '../plugin/services/plugin-import-registry';
 import {SecretStorageService} from './secret-storage.service';
-import {VncService} from '../../../plugins/vnc-remote-desktop/frontend/services/vnc.service';
 import {TabService} from './tab.service';
-
-import {registerVncPlugin} from '../../../plugins/vnc-remote-desktop/frontend/vnc.plugin';
-import {registerRdpPlugin} from '../../../plugins/rdp-remote-desktop/frontend/rdp.plugin';
 
 @Injectable({
   providedIn: 'root'
@@ -30,52 +17,42 @@ export class SessionService {
 
   constructor(
     private tabService: TabService,
-    private spinner: NgxSpinnerService,
-    private notification: NotificationService,
-
     private electronTerm: ElectronTerminalService,
-    private electronRD: ElectronRemoteDesktopService,
-    private vncService: VncService,
-
-    private scpService: ScpService,
-    private ftpService: FtpService,
-    private sambaService: SambaService,
 
     private registry: PluginRegistryService,
     private secretStorage: SecretStorageService,
+    private injector: Injector,
   ) { }
 
-  initSessionFactories(): void {
-    // VNC plugin (registers session factory + components)
-    registerVncPlugin(this.registry, this.tabService, this.vncService, this.spinner, this.notification);
+  async initSessionFactories(): Promise<void> {
+    await this.loadBundledPlugins();
+  }
 
-    // RDP plugin (registers components)
-    registerRdpPlugin(this.registry);
+  private async loadBundledPlugins(): Promise<void> {
+    const pluginIds = getRegisteredPluginIds();
 
-    // Terminal plugins (SSH, Telnet, WinRM) share RemoteTerminalProfileFormComponent
-    const terminalTypes = [
-      { type: ProfileType.SSH_TERMINAL, formControl: 'remoteTerminalProfileForm', field: 'sshProfile' },
-      { type: ProfileType.TELNET_TERMINAL, formControl: 'remoteTerminalProfileForm', field: 'telnetProfile' },
-      { type: ProfileType.WIN_RM_TERMINAL, formControl: 'remoteTerminalProfileForm', field: 'winRmProfile' },
-    ];
-    for (const t of terminalTypes) {
-      const plugin = this.registry.getBundledPlugin(t.type);
-      if (plugin) {
-        plugin.formControlName = t.formControl;
-        plugin.profileField = t.field;
+    for (const pluginId of pluginIds) {
+      try {
+        const module = await loadBundledPluginModule(pluginId);
+        if (module && typeof module.register === 'function') {
+          module.register(this.registry, this.injector);
+        }
+      } catch (err) {
+        console.error(`[SessionService] Failed to load plugin ${pluginId}:`, err);
       }
     }
   }
 
-
-  create(profile: Profile, profileType: ProfileType): Session {
-    // 1. Check if it's an external plugin → use generic PluginSession
-    const externalPlugin = this.registry.getExternalPlugin(profileType);
-    if (externalPlugin) {
-      return this.createPluginSession(profile, profileType, externalPlugin);
+  create(profile: Profile, profileType: string): Session {
+    // 1. Core built-in types
+    if (profileType === LOCAL_TERMINAL) {
+      return new LocalTerminalSession(profile, profileType, this.tabService, this.electronTerm);
+    }
+    if (profileType === CUSTOM_PROFILE) {
+      return new Session(profile, profileType, this.tabService);
     }
 
-    // 2. Bundled plugins with backend → use sessionFactory if available, otherwise generic PluginSession
+    // 2. Bundled plugins — use sessionFactory if available, otherwise generic PluginSession
     const pluginInfo = this.registry.getBundledPlugin(profileType);
     if (pluginInfo) {
       if (pluginInfo.sessionFactory) {
@@ -84,39 +61,19 @@ export class SessionService {
       return this.createPluginSession(profile, profileType, pluginInfo);
     }
 
-    // 3. Built-in types (will be migrated to plugins over time)
-    switch (profileType) {
-      case ProfileType.LOCAL_TERMINAL:
-        return new LocalTerminalSession(profile, profileType, this.tabService, this.electronTerm);
-      case ProfileType.WIN_RM_TERMINAL:
-        return new WinRMSession(profile, profileType, this.tabService, this.electronTerm);
-
-      case ProfileType.SAMBA_FILE_EXPLORER:
-        return new SambaSession(profile, profileType, this.tabService, this.sambaService)
-
-      case ProfileType.SCP_FILE_EXPLORER:
-        return new ScpSession(profile, profileType, this.tabService, this.scpService);
-      case ProfileType.FTP_FILE_EXPLORER:
-        return new FtpSession(profile, profileType, this.tabService, this.ftpService);
+    // 3. External plugins — use generic PluginSession
+    const externalPlugin = this.registry.getExternalPlugin(profileType);
+    if (externalPlugin) {
+      return this.createPluginSession(profile, profileType, externalPlugin);
     }
 
+    // 4. Unknown type — fallback
     return new Session(profile, profileType, this.tabService);
   }
 
-  /**
-   * Create a generic session for an external plugin.
-   * Reads IPC channels from the registry and profile data from the profile.
-   */
   private createPluginSession(profile: Profile, profileType: string, plugin: any): PluginSession {
-    // Map profileType to the profile data field
-    const profileFieldMap: Record<string, string> = {
-      'SSH_TERMINAL': 'sshProfile',
-      'TELNET_TERMINAL': 'telnetProfile',
-    };
-    const profileField = profileFieldMap[profileType] || 'sshProfile';
-    const profileData = (profile as any)[profileField] || {};
+    const profileData = profile.getProfile(profileType) || {};
 
-    // Use IPC channels from the plugin manifest (not generated from profileType)
     const ipcChannels = plugin.ipcChannels || {};
     const channels = {
       open: ipcChannels.send?.[0] || `session.open.terminal.${profileType.toLowerCase().replace(/_/g, '-')}`,
@@ -125,26 +82,23 @@ export class SessionService {
       errorCategory: profileType.toLowerCase().replace(/_/g, '-'),
     };
 
-    return new PluginSession(profile, profileType as ProfileType, this.tabService, channels, profileData, this.secretStorage);
+    return new PluginSession(profile, profileType, this.tabService, channels, profileData, this.secretStorage);
   }
 
   openSessionWithoutTab(profile: Profile) {
-    if (profile) {
-      switch (profile.profileType) {
-        case ProfileType.RDP_REMOTE_DESKTOP:
-          if (!profile.rdpProfile || !profile.rdpProfile.host) {
-            this.notification.error('Invalid Rdp Config');
-            return;
-          }
-          this.electronRD.openRdpSession(profile.rdpProfile);
-          break;
-        case ProfileType.CUSTOM:
-          if (!profile.customProfile || !profile.customProfile.execPath) {
-            this.notification.error('Invalid Custom Profile');
-            return;
-          }
-          this.electronTerm.openCustomSession(profile.customProfile);
-          break;
+    if (!profile) return;
+    // RDP and CUSTOM open external programs, not tabs
+    // Plugins register sessionFactory that handles this via open() override
+    const pluginInfo = this.registry.getBundledPlugin(profile.profileType);
+    if (pluginInfo?.sessionFactory) {
+      const session = pluginInfo.sessionFactory(profile, profile.profileType);
+      session.open();
+      return;
+    }
+    if (profile.profileType === CUSTOM_PROFILE) {
+      const customProfile = profile.getProfile('CUSTOM');
+      if (customProfile?.execPath) {
+        this.electronTerm.openCustomSession(customProfile);
       }
     }
   }

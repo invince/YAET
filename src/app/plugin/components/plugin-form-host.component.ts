@@ -55,6 +55,10 @@ export class PluginFormHostComponent implements AfterViewInit, OnDestroy, Contro
   ngAfterViewInit() {
     if (this.componentType && this.host) {
       const ref = this.host.createComponent(this.componentType);
+
+      // Force change detection so ngOnInit() runs and this.form is created
+      ref.changeDetectorRef.detectChanges();
+
       this.innerComponent = ref.instance;
 
       // Bridge ControlValueAccessor: inner component calls onChange → forward to parent

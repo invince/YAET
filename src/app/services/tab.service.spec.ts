@@ -1,21 +1,21 @@
 import {TabService} from './tab.service';
 import {TabInstance} from '../domain/TabInstance';
-import {Profile, ProfileCategory, ProfileType} from '../domain/profile/Profile';
+import {LOCAL_TERMINAL, Profile, ProfileCategory} from '../domain/profile/Profile';
 import {Session} from '../domain/session/Session';
 
 function createTab(name: string, category: ProfileCategory = ProfileCategory.TERMINAL): TabInstance {
   const profile = new Profile();
   profile.name = name;
-  profile.profileType = ProfileType.LOCAL_TERMINAL;
-  const session = new Session(profile, ProfileType.LOCAL_TERMINAL, null as any);
+  profile.profileType = LOCAL_TERMINAL;
+  const session = new Session(profile, LOCAL_TERMINAL, null as any);
   return new TabInstance(category, session);
 }
 
 function createNonsessionTab(): TabInstance {
   const profile = new Profile();
   profile.name = '';
-  profile.profileType = ProfileType.LOCAL_TERMINAL;
-  const session = new Session(profile, ProfileType.LOCAL_TERMINAL, null as any);
+  profile.profileType = LOCAL_TERMINAL;
+  const session = new Session(profile, LOCAL_TERMINAL, null as any);
   return new TabInstance(ProfileCategory.TERMINAL, session);
 }
 

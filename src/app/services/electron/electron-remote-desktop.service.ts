@@ -7,7 +7,6 @@ import {
   SESSION_OPEN_VNC,
   TRIGGER_NATIVE_CLIPBOARD_PASTE,
 } from './ElectronConstant';
-import {ProfileType} from '../../domain/profile/Profile';
 import {TabService} from '../tab.service';
 import {RdpProfile} from '../../domain/profile/RdpProfile';
 import {AbstractElectronService} from './electron.service';
@@ -18,7 +17,7 @@ import {AbstractElectronService} from './electron.service';
 })
 export class ElectronRemoteDesktopService extends AbstractElectronService {
 
-  private clipboardCallbackMap: Map<ProfileType, (id: string, text: string)=> boolean> = new Map();
+  private clipboardCallbackMap: Map<string, (id: string, text: string)=> boolean> = new Map();
 
   constructor(
 
@@ -34,7 +33,7 @@ export class ElectronRemoteDesktopService extends AbstractElectronService {
       this.ipc.on(CLIPBOARD_PASTE, (event, data) => {
         let used = false;
         let tabSelected = this.tabService.getSelectedTab();
-        if (tabSelected && [ProfileType.VNC_REMOTE_DESKTOP].includes(tabSelected.session.profileType)) {
+        if (tabSelected && ['VNC_REMOTE_DESKTOP'].includes(tabSelected.session.profileType)) {
           let callback = this.clipboardCallbackMap.get(tabSelected.session.profileType);
           if (callback && callback(tabSelected.id, data)) {
             used = true;
@@ -48,7 +47,7 @@ export class ElectronRemoteDesktopService extends AbstractElectronService {
     }
   }
 
-  public subscribeClipboard (profileType: ProfileType, callback : (id: string, text: string)=> boolean) {
+  public subscribeClipboard (profileType: string, callback : (id: string, text: string)=> boolean) {
     this.clipboardCallbackMap.set(profileType, callback);
   }
 

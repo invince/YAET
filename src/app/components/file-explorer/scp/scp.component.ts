@@ -1,10 +1,10 @@
-import { HttpClient } from '@angular/common/http';
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { Session } from '../../../domain/session/Session';
-import { ScpService } from '../../../services/file-explorer/scp.service';
-import { TabService } from '../../../services/tab.service';
-import { AbstractFileManager } from '../abstract-file-manager';
-import { FileListComponent } from '../custom/file-list.component';
+import {HttpClient} from '@angular/common/http';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {Session} from '../../../domain/session/Session';
+import {ScpService} from '../../../services/file-explorer/scp.service';
+import {TabService} from '../../../services/tab.service';
+import {AbstractFileManager} from '../abstract-file-manager';
+import {FileListComponent} from '../custom/file-list.component';
 
 @Component({
     selector: 'app-scp',
@@ -26,8 +26,9 @@ export class ScpComponent extends AbstractFileManager implements OnInit, OnDestr
   ngOnInit(): void {
     this.session.open();
 
-    if (this.session.profile?.sshProfile?.initPath) {
-      this.path = this.session.profile.sshProfile.initPath;
+    const sshProfile = this.session.profile?.getProfile('SSH_TERMINAL');
+    if (sshProfile?.initPath) {
+      this.path = sshProfile.initPath;
     }
     this.ajaxSettings = this.generateAjaxSettings();
   }

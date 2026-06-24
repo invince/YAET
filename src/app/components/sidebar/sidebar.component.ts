@@ -8,7 +8,7 @@ import {Subscription} from 'rxjs';
 import {MasterKeyComponent} from '../../components/dialog/master-key/master-key.component';
 import {CloudComponent} from '../../components/menu/cloud/cloud.component';
 import {MenuConsts} from '../../domain/MenuConsts';
-import {ProfileCategory, ProfileType} from '../../domain/profile/Profile';
+import {LOCAL_TERMINAL, ProfileCategory} from '../../domain/profile/Profile';
 import {TabInstance} from '../../domain/TabInstance';
 import {LogService} from '../../services/log.service';
 import {MasterKeyService} from '../../services/master-key.service';
@@ -60,7 +60,7 @@ export class SidebarComponent implements OnDestroy {
     addLocalTerminal() {
         this.modalControl.closeModal();
         const tab = new TabInstance(ProfileCategory.TERMINAL,
-            this.sessionService.create(this.settingService.createLocalTerminalProfile(), ProfileType.LOCAL_TERMINAL));
+            this.sessionService.create(this.settingService.createLocalTerminalProfile(), LOCAL_TERMINAL));
         this.tabService.addTab(tab);
     }
 

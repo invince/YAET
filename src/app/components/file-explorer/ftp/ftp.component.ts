@@ -1,10 +1,10 @@
-import { HttpClient } from '@angular/common/http';
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { Session } from '../../../domain/session/Session';
-import { FtpService } from '../../../services/file-explorer/ftp.service';
-import { TabService } from '../../../services/tab.service';
-import { AbstractFileManager } from '../abstract-file-manager';
-import { FileListComponent } from '../custom/file-list.component';
+import {HttpClient} from '@angular/common/http';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {Session} from '../../../domain/session/Session';
+import {FtpService} from '../../../services/file-explorer/ftp.service';
+import {TabService} from '../../../services/tab.service';
+import {AbstractFileManager} from '../abstract-file-manager';
+import {FileListComponent} from '../custom/file-list.component';
 
 @Component({
     selector: 'app-ftp',
@@ -25,8 +25,9 @@ export class FtpComponent extends AbstractFileManager implements OnInit, OnDestr
 
   ngOnInit(): void {
     this.session.open();
-    if (this.session.profile?.ftpProfile?.initPath) {
-      this.path = this.session.profile.ftpProfile.initPath;
+    const ftpProfile = this.session.profile?.getProfile('FTP_FILE_EXPLORER');
+    if (ftpProfile?.initPath) {
+      this.path = ftpProfile.initPath;
     }
     this.ajaxSettings = this.generateAjaxSettings();
   }

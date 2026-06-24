@@ -125,55 +125,12 @@
 
       @if (form.get('category')?.value == 'CUSTOM') {
       <app-custom-profile-form formControlName="customProfileForm"></app-custom-profile-form>
-      } @else {
-
-        @switch (form.get('profileType')?.value) {
-          @case ('SSH_TERMINAL') {
-          <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm">
-
-          </app-remote-terminal-profile-form>
-          }
-          @case ('TELNET_TERMINAL') {
-          <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm" [type]="'telnet'"
-            [supportedSecretType]="TELNET_SUPPORTED_SECRETS">
-
-          </app-remote-terminal-profile-form>
-          }
-          @case ('WIN_RM_TERMINAL') {
-          <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm" [type]="'winrm'"
-            [supportedSecretType]="WINRM_SUPPORTED_SECRETS">
-
-          </app-remote-terminal-profile-form>
-          }
-
-          @case ('SCP_FILE_EXPLORER') {
-          <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm" [type]="'scp'">
-          </app-remote-terminal-profile-form>
-          }
-          @case ('FTP_FILE_EXPLORER') {
-          <app-ftp-profile-form formControlName="ftpProfileForm"></app-ftp-profile-form>
-          }
-          @case ('SAMBA_FILE_EXPLORER') {
-          <app-samba-form formControlName="sambaProfileForm"></app-samba-form>
-          }
-
-
-          @case ('RDP_REMOTE_DESKTOP') {
-          <app-plugin-form-host [componentType]="getPluginFormComponent()" formControlName="rdpProfileForm"></app-plugin-form-host>
-          }
-          @case ('VNC_REMOTE_DESKTOP') {
-          <app-plugin-form-host [componentType]="getPluginFormComponent()" formControlName="vncProfileForm"></app-plugin-form-host>
-          }
-
-          @default {
-            <!-- External plugins: reuse shared form based on category -->
-            @if (isExternalTerminalPlugin()) {
-              <div class="external-plugin-badge">External Plugin</div>
-              <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm" [type]="getExternalPluginType()">
-              </app-remote-terminal-profile-form>
-            }
-          }
-        }
+      } @else if (getPluginFormComponent()) {
+        <app-plugin-form-host [componentType]="getPluginFormComponent()" [formControlName]="getPluginFormControlName()"></app-plugin-form-host>
+      } @else if (isExternalTerminalPlugin()) {
+        <div class="external-plugin-badge">External Plugin</div>
+        <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm" [type]="getExternalPluginType()">
+        </app-remote-terminal-profile-form>
       }
 
     </div>

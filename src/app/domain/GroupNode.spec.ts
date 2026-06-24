@@ -1,6 +1,6 @@
 import {GroupNode, NODE_DEFAULT_NAME} from './GroupNode';
 import {Group} from './Group';
-import {Profile, ProfileType} from './profile/Profile';
+import {LOCAL_TERMINAL, Profile} from './profile/Profile';
 
 describe('GroupNode', () => {
   describe('map2DataSource', () => {
@@ -10,9 +10,9 @@ describe('GroupNode', () => {
     ];
 
     const profiles = [
-      { id: 'p-1', name: 'Web Server', group: 'grp-1', profileType: ProfileType.SSH_TERMINAL } as Profile,
-      { id: 'p-2', name: 'DB Server', group: 'grp-1', profileType: ProfileType.SSH_TERMINAL } as Profile,
-      { id: 'p-3', name: 'Dev Machine', group: 'grp-2', profileType: ProfileType.LOCAL_TERMINAL } as Profile,
+      { id: 'p-1', name: 'Web Server', group: 'grp-1', profileType: 'SSH_TERMINAL' } as Profile,
+      { id: 'p-2', name: 'DB Server', group: 'grp-1', profileType: 'SSH_TERMINAL' } as Profile,
+      { id: 'p-3', name: 'Dev Machine', group: 'grp-2', profileType: LOCAL_TERMINAL } as Profile,
     ];
 
     it('should return empty array when groups is undefined', () => {
@@ -59,7 +59,7 @@ describe('GroupNode', () => {
 
     it('should create a default node for profiles without group', () => {
       const ungrouped = [
-        { id: 'p-4', name: 'Ungrouped Profile', group: '', profileType: ProfileType.LOCAL_TERMINAL } as Profile,
+        { id: 'p-4', name: 'Ungrouped Profile', group: '', profileType: LOCAL_TERMINAL } as Profile,
       ];
       const result = GroupNode.map2DataSource(groups, [...profiles, ...ungrouped], false, true);
       const defaultNode = result.find(n => n.name === NODE_DEFAULT_NAME);
@@ -70,7 +70,7 @@ describe('GroupNode', () => {
 
     it('should not create default node when showDefault is false', () => {
       const ungrouped = [
-        { id: 'p-4', name: 'Ungrouped', group: '', profileType: ProfileType.LOCAL_TERMINAL } as Profile,
+        { id: 'p-4', name: 'Ungrouped', group: '', profileType: LOCAL_TERMINAL } as Profile,
       ];
       const result = GroupNode.map2DataSource(groups, [...profiles, ...ungrouped], false, false);
       const defaultNode = result.find(n => n.name === NODE_DEFAULT_NAME);

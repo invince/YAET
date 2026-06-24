@@ -58,6 +58,7 @@ export class PluginLoaderService {
             profileType: plugin.profileType,
             profileFormElement: '',
             ipcChannels: plugin.ipcChannels,
+            frontendEntry: plugin.frontendEntry || '',
           });
           this.loadedPlugins.add(id);
           console.log(`[PluginLoader] Registered bundled plugin: ${id}`);

@@ -1,0 +1,13 @@
+{
+  "id": "ftp-file-explorer",
+  "name": "FTP File Explorer",
+  "version": "1.0.0",
+  "description": "FTP file explorer plugin",
+  "category": "FILE_EXPLORER",
+  "profileType": "FTP_FILE_EXPLORER",
+  "enabled": true,
+  "icon": "folder",
+  "defaultPort": 21,
+  "supportedAuthTypes": ["login", "secret"],
+  "secretTypes": ["LOGIN_PASSWORD", "PASSWORD_ONLY"]
+}

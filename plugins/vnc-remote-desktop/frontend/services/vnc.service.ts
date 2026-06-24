@@ -2,7 +2,7 @@ import {ElementRef, Injectable} from '@angular/core';
 // @ts-ignore
 import RFB from '@novnc/novnc/lib/rfb';
 import {Subject} from 'rxjs';
-import {VncProfile} from '../../../../src/app/domain/profile/VncProfile';
+import {VncProfile} from '../domain/VncProfile';
 import {AuthType, SecretType} from '../../../../src/app/domain/Secret';
 import {ElectronRemoteDesktopService} from '../../../../src/app/services/electron/electron-remote-desktop.service';
 import {LogService} from '../../../../src/app/services/log.service';

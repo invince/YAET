@@ -1,11 +1,11 @@
 import {Session} from './Session';
-import {Profile, ProfileType} from '../profile/Profile';
+import {Profile} from '../profile/Profile';
 import {TabService} from '../../services/tab.service';
 import {SambaService} from '../../services/file-explorer/samba.service';
 
 export class SambaSession extends Session {
 
-  constructor(profile: Profile, profileType: ProfileType,
+  constructor(profile: Profile, profileType: string,
               tabService: TabService,
               private sambaService: SambaService,
   ) {
@@ -18,7 +18,7 @@ export class SambaSession extends Session {
   }
 
   override open(): void {
-    this.sambaService.connect(this.id, this.profile.sambaProfile).then(
+    this.sambaService.connect(this.id, this.profile.getProfile('SAMBA_FILE_EXPLORER')).then(
       () => this.tabService.connected(this.id)
     );
     super.open();

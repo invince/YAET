@@ -3,7 +3,8 @@ import {Subject, Subscription} from 'rxjs';
 import packageJson from '../../../package.json';
 import {Compatibility} from '../../main';
 import {Group} from '../domain/Group';
-import {Profile, Profiles, ProfileType} from '../domain/profile/Profile';
+import {Profile, Profiles} from '../domain/profile/Profile';
+import {PluginRegistryService} from '../plugin/services/plugin-registry.service';
 import {Secret} from '../domain/Secret';
 import {Tag} from '../domain/Tag';
 import {compareVersions} from '../utils/VersionUtils';
@@ -33,9 +34,8 @@ export class ProfileService implements OnDestroy{
     private log: LogService,
     private electron: ElectronService,
     private masterKeyService: MasterKeyService,
-
     private notification: NotificationService,
-
+    private registry: PluginRegistryService,
   ) {
     electron.onLoadedEvent(PROFILES_LOADED, data => this.apply(data));
 
@@ -75,6 +75,10 @@ export class ProfileService implements OnDestroy{
               }
             }
             this._profiles = dataObj;
+            // Deserialize plain objects back to Profile instances
+            if (this._profiles?.profiles) {
+              this._profiles.profiles = this._profiles.profiles.map((p: any) => Profile.deserialize(p));
+            }
           } catch (e) {
             this.log.error('Failed to parse profiles data: ' + e);
             this.notification.error('Failed to load profiles: corrupted data');
@@ -115,27 +119,7 @@ export class ProfileService implements OnDestroy{
     this._profiles.compatibleVersion = Compatibility.profiles;
     for (let one of this._profiles.profiles) {
       one.isNew = false;
-
-      switch (one.profileType) {
-        case ProfileType.LOCAL_TERMINAL:
-        case ProfileType.SSH_TERMINAL:
-        case ProfileType.TELNET_TERMINAL:
-        case ProfileType.WIN_RM_TERMINAL:
-          one.icon = 'terminal'; break;
-
-        case ProfileType.VNC_REMOTE_DESKTOP:
-        case ProfileType.RDP_REMOTE_DESKTOP:
-          one.icon = 'computer'; break;
-
-        case ProfileType.SCP_FILE_EXPLORER:
-        case ProfileType.SAMBA_FILE_EXPLORER:
-        case ProfileType.FTP_FILE_EXPLORER:
-          one.icon = 'folder'; break;
-
-        case ProfileType.CUSTOM:
-          one.icon = 'star'; break;
-      }
-
+      one.icon = this.registry.getProfileIcon(one.profileType);
     }
     this._profiles.revision = Date.now();
     this.masterKeyService.encrypt(this._profiles).then(

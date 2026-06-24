@@ -5,19 +5,19 @@ import {
   RemoteTerminalProfileFormComponent
 } from '../../../src/app/components/menu/profile-form/remote-terminal-profile-form/remote-terminal-profile-form.component';
 
-export const TELNET_TERMINAL = 'TELNET_TERMINAL';
+export const WIN_RM_TERMINAL = 'WIN_RM_TERMINAL';
 
 export function register(registry: PluginRegistryService, _injector: Injector) {
-  registry.registerCategoryType(ProfileCategory.TERMINAL, TELNET_TERMINAL, 'PROFILES.TELNET_TERMINAL', 'terminal');
+  registry.registerCategoryType(ProfileCategory.TERMINAL, WIN_RM_TERMINAL, 'PROFILES.WIN_RM_TERMINAL', 'terminal');
 
   registry.register({
     manifest: {
-      id: 'telnet-terminal',
-      name: 'Telnet Terminal',
+      id: 'winrm-terminal',
+      name: 'WinRM Terminal',
       version: '1.0.0',
       category: ProfileCategory.TERMINAL,
-      profileType: TELNET_TERMINAL,
-      defaultPort: 23,
+      profileType: WIN_RM_TERMINAL,
+      defaultPort: 5985,
       icon: 'terminal',
       enabled: true,
       secretTypes: ['LOGIN_PASSWORD'],

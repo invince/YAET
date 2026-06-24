@@ -1,13 +1,13 @@
 import {TabInstance} from './TabInstance';
-import {Profile, ProfileCategory, ProfileType} from './profile/Profile';
+import {LOCAL_TERMINAL, Profile, ProfileCategory} from './profile/Profile';
 import {Session} from './session/Session';
 
 describe('TabInstance', () => {
   it('should create with given category and session', () => {
     const profile = new Profile();
     profile.name = 'Test Profile';
-    profile.profileType = ProfileType.SSH_TERMINAL;
-    const session = new Session(profile, ProfileType.SSH_TERMINAL, null as any);
+    profile.profileType = 'SSH_TERMINAL';
+    const session = new Session(profile, 'SSH_TERMINAL', null as any);
     const tab = new TabInstance(ProfileCategory.TERMINAL, session);
 
     expect(tab.id).toBe(session.id);
@@ -20,8 +20,8 @@ describe('TabInstance', () => {
   it('should fallback name to profileType when profile name is empty', () => {
     const profile = new Profile();
     profile.name = '';
-    profile.profileType = ProfileType.LOCAL_TERMINAL;
-    const session = new Session(profile, ProfileType.LOCAL_TERMINAL, null as any);
+    profile.profileType = LOCAL_TERMINAL;
+    const session = new Session(profile, LOCAL_TERMINAL, null as any);
     const tab = new TabInstance(ProfileCategory.TERMINAL, session);
 
     expect(tab.name).toBe('LOCAL_TERMINAL');
@@ -29,7 +29,7 @@ describe('TabInstance', () => {
 
   it('should allow setting connected and paneId', () => {
     const profile = new Profile();
-    const session = new Session(profile, ProfileType.SSH_TERMINAL, null as any);
+    const session = new Session(profile, 'SSH_TERMINAL', null as any);
     const tab = new TabInstance(ProfileCategory.TERMINAL, session);
 
     tab.connected = true;

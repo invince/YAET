@@ -186,12 +186,22 @@ class PluginManager {
     for (const [id, plugin] of this.plugins) {
       if (!plugin.manifest.enabled) continue;
       const ipc = plugin.manifest.ipc || {};
+      const frontend = plugin.manifest.frontend || {};
+      // Compute frontend entry path relative to app root (for dynamic import)
+      let frontendEntryPath = '';
+      if (frontend.entry) {
+        const pluginDir = path.join(plugin.baseDir, id);
+        const entryAbs = path.resolve(pluginDir, frontend.entry);
+        const appRoot = path.join(this.appRoot, '..');
+        frontendEntryPath = path.relative(appRoot, entryAbs).replace(/\\/g, '/');
+      }
       merged.plugins[id] = {
         name: plugin.manifest.name,
         version: plugin.manifest.version,
         category: plugin.manifest.category,
         profileType: plugin.manifest.profileType,
         source: plugin.source,
+        frontendEntry: frontendEntryPath,
         ipcChannels: {
           send: ipc.send || [],
           invoke: ipc.invoke || [],
