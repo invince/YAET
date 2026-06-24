@@ -9,6 +9,7 @@ export const SSH_TERMINAL = 'SSH_TERMINAL';
 
 export function register(registry: PluginRegistryService, _injector: Injector) {
   registry.registerCategoryType(ProfileCategory.TERMINAL, SSH_TERMINAL, 'PROFILES.SSH_TERMINAL', 'terminal');
+  registry.registerFormMetadata(SSH_TERMINAL, 'remoteTerminalProfileForm', SSH_TERMINAL);
 
   registry.register({
     manifest: {

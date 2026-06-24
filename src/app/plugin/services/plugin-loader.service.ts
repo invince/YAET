@@ -50,7 +50,7 @@ export class PluginLoaderService {
           console.error(`[PluginLoader] Failed to load plugin ${id}:`, err);
         }
       } else if (plugin.source === 'bundled' && plugin.ipcChannels) {
-        if (plugin.category === 'TERMINAL' || plugin.category === 'REMOTE_DESKTOP') {
+        if (plugin.category === 'TERMINAL' || plugin.category === 'REMOTE_DESKTOP' || plugin.category === 'FILE_EXPLORER') {
           this.registry.registerBundledPlugin({
             id,
             name: plugin.name,

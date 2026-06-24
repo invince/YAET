@@ -13,6 +13,7 @@ export const SCP_FILE_EXPLORER = 'SCP_FILE_EXPLORER';
 
 export function register(registry: PluginRegistryService, injector: Injector) {
   registry.registerCategoryType(ProfileCategory.FILE_EXPLORER, SCP_FILE_EXPLORER, 'PROFILES.SCP_FILE_EXPLORER', 'folder');
+  registry.registerFormMetadata(SCP_FILE_EXPLORER, 'remoteTerminalProfileForm', 'SSH_TERMINAL');
 
   const tabService = injector.get(TabService);
   const scpService = injector.get(ScpService);

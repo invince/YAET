@@ -9,6 +9,7 @@ export const WIN_RM_TERMINAL = 'WIN_RM_TERMINAL';
 
 export function register(registry: PluginRegistryService, _injector: Injector) {
   registry.registerCategoryType(ProfileCategory.TERMINAL, WIN_RM_TERMINAL, 'PROFILES.WIN_RM_TERMINAL', 'terminal');
+  registry.registerFormMetadata(WIN_RM_TERMINAL, 'remoteTerminalProfileForm', WIN_RM_TERMINAL);
 
   registry.register({
     manifest: {

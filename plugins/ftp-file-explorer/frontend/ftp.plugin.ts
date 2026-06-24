@@ -13,6 +13,7 @@ export const FTP_FILE_EXPLORER = 'FTP_FILE_EXPLORER';
 
 export function register(registry: PluginRegistryService, injector: Injector) {
   registry.registerCategoryType(ProfileCategory.FILE_EXPLORER, FTP_FILE_EXPLORER, 'PROFILES.FTP_FILE_EXPLORER', 'folder');
+  registry.registerFormMetadata(FTP_FILE_EXPLORER, 'ftpProfileForm', FTP_FILE_EXPLORER);
 
   const tabService = injector.get(TabService);
   const ftpService = injector.get(FtpService);

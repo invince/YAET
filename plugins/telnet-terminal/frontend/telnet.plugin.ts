@@ -9,6 +9,7 @@ export const TELNET_TERMINAL = 'TELNET_TERMINAL';
 
 export function register(registry: PluginRegistryService, _injector: Injector) {
   registry.registerCategoryType(ProfileCategory.TERMINAL, TELNET_TERMINAL, 'PROFILES.TELNET_TERMINAL', 'terminal');
+  registry.registerFormMetadata(TELNET_TERMINAL, 'remoteTerminalProfileForm', TELNET_TERMINAL);
 
   registry.register({
     manifest: {

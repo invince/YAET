@@ -13,6 +13,7 @@ export const VNC_REMOTE_DESKTOP = 'VNC_REMOTE_DESKTOP';
 
 export function register(registry: PluginRegistryService, injector: Injector) {
   registry.registerCategoryType(ProfileCategory.REMOTE_DESKTOP, VNC_REMOTE_DESKTOP, 'PROFILES.VNC_REMOTE_DESKTOP', 'desktop_windows');
+  registry.registerFormMetadata(VNC_REMOTE_DESKTOP, 'vncProfileForm', VNC_REMOTE_DESKTOP);
 
   const tabService = injector.get(TabService);
   const vncService = injector.get(VncService);

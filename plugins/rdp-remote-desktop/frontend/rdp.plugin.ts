@@ -7,6 +7,7 @@ export const RDP_REMOTE_DESKTOP = 'RDP_REMOTE_DESKTOP';
 
 export function register(registry: PluginRegistryService, _injector: Injector) {
   registry.registerCategoryType(ProfileCategory.REMOTE_DESKTOP, RDP_REMOTE_DESKTOP, 'PROFILES.RDP_REMOTE_DESKTOP', 'desktop_windows');
+  registry.registerFormMetadata(RDP_REMOTE_DESKTOP, 'rdpProfileForm', RDP_REMOTE_DESKTOP);
 
   const bundledPlugin = registry.getBundledPlugin(RDP_REMOTE_DESKTOP);
   if (bundledPlugin) {

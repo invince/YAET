@@ -40,6 +40,9 @@ export class PluginRegistryService {
   /** category → ordered list of profile type info */
   private categoryTypeMap = new Map<ProfileCategory, ProfileTypeInfo[]>();
 
+  /** profileType → { formControlName, profileField } — populated by plugins during register() */
+  private formMetadataMap = new Map<string, { formControlName: string; profileField: string }>();
+
   constructor() {
     // Register core profile types
     this.registerCategoryType(ProfileCategory.TERMINAL, LOCAL_TERMINAL, 'PROFILES.LOCAL_TERMINAL', 'terminal');
@@ -221,10 +224,23 @@ export class PluginRegistryService {
    * Used by ProfileFormComponent to dynamically resolve form bindings.
    */
   getFormMetadata(profileType: ProfileType | string): { formControlName: string; profileField: string } | null {
+    // 1. Check formMetadataMap (populated by plugins during register())
+    const direct = this.formMetadataMap.get(profileType);
+    if (direct) return direct;
+
+    // 2. Fallback to bundledPlugins (populated by pluginLoader + plugin register())
     const plugin = this.getBundledPlugin(profileType);
     if (plugin?.formControlName && plugin?.profileField) {
       return { formControlName: plugin.formControlName, profileField: plugin.profileField };
     }
     return null;
+  }
+
+  /**
+   * Register form metadata for a profile type.
+   * Called by plugins during register() so form bindings work immediately.
+   */
+  registerFormMetadata(profileType: string, formControlName: string, profileField: string): void {
+    this.formMetadataMap.set(profileType, { formControlName, profileField });
   }
 }

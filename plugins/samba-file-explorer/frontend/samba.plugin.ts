@@ -11,6 +11,7 @@ export const SAMBA_FILE_EXPLORER = 'SAMBA_FILE_EXPLORER';
 
 export function register(registry: PluginRegistryService, injector: Injector) {
   registry.registerCategoryType(ProfileCategory.FILE_EXPLORER, SAMBA_FILE_EXPLORER, 'PROFILES.SAMBA_FILE_EXPLORER', 'folder');
+  registry.registerFormMetadata(SAMBA_FILE_EXPLORER, 'sambaProfileForm', SAMBA_FILE_EXPLORER);
 
   const tabService = injector.get(TabService);
   const sambaService = injector.get(SambaService);
