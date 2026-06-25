@@ -22,10 +22,10 @@ Electron app starts
   │
   ├─ PluginManager.discover()             ← scans plugins/ AND ~/.yaet/plugins/
   │   └─ external plugins override bundled ones with the same id
-  ├─ PluginManager.writeMergedManifest()  ← writes .plugin-manifest.json to both locations
+  ├─ PluginManager.writeMergedManifest()  ← writes generated-plugin-manifest.json to both locations
   │
   ├─ new BrowserWindow(preload.js)
-  │   └─ preload.js reads .plugin-manifest.json (external preferred over bundled)
+  │   └─ preload.js reads generated-plugin-manifest.json (external preferred over bundled)
   │       └─ merges plugin IPC channels into whitelist
   │
   ├─ initHandlerBeforeSettingLoad()       ← core IPC handlers
@@ -66,7 +66,7 @@ electronMain.js
   │   │       └─ store in plugins Map
   │   │
   │   ├─ pluginManager.writeMergedManifest()
-  │   │   └─ combine all plugin ipc channels → plugins/.plugin-manifest.json
+  │   │   └─ combine all plugin ipc channels → plugins/generated-plugin-manifest.json
   │   │      (preload.js reads this file to build the IPC whitelist)
   │   │
   │   ├─ new BrowserWindow({ preload: 'preload.js' })
@@ -123,7 +123,7 @@ PluginManager.loadAll(context)
 App starts → app.component.ts → ngOnInit()
   │
   ├─ PluginLoaderService.loadExternalPlugins()
-  │   ├─ Read ~/.yaet/plugins/.plugin-manifest.json (via IPC)
+  │   ├─ Read ~/.yaet/plugins/generated-plugin-manifest.json (via IPC)
   │   ├─ For each plugin where source === 'external':
   │   │   ├─ Read frontend code via IPC: plugins.readFrontend(id)
   │   │   ├─ Inject as inline <script> (avoids CSP file:// restriction)

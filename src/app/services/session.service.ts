@@ -7,6 +7,7 @@ import {TabInstance} from '../domain/TabInstance';
 import {ElectronTerminalService} from './electron/electron-terminal.service';
 import {PluginRegistryService} from '../plugin/services/plugin-registry.service';
 import {getRegisteredPluginIds, loadBundledPluginModule} from '../plugin/services/plugin-import-registry';
+import '../../../plugins/generated-plugin-registry';
 import {SecretStorageService} from './secret-storage.service';
 import {TabService} from './tab.service';
 
@@ -24,16 +25,16 @@ export class SessionService {
     private injector: Injector,
   ) { }
 
-  async initSessionFactories(): Promise<void> {
-    await this.loadBundledPlugins();
+  initSessionFactories(): void {
+    this.loadBundledPlugins();
   }
 
-  private async loadBundledPlugins(): Promise<void> {
+  private loadBundledPlugins(): void {
     const pluginIds = getRegisteredPluginIds();
 
     for (const pluginId of pluginIds) {
       try {
-        const module = await loadBundledPluginModule(pluginId);
+        const module = loadBundledPluginModule(pluginId);
         if (module && typeof module.register === 'function') {
           module.register(this.registry, this.injector);
         }

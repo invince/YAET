@@ -80,8 +80,8 @@ const CORE_ON_CHANNELS = [
 // ── Plugin IPC channels (loaded from merged manifest) ───────────────────────
 
 function loadPluginChannels() {
-  const bundledPath = path.join(__dirname, '../plugins/.plugin-manifest.json');
-  const externalPath = path.join(os.homedir(), '.yaet', 'plugins', '.plugin-manifest.json');
+  const bundledPath = path.join(__dirname, '../plugins/generated-plugin-manifest.json');
+  const externalPath = path.join(os.homedir(), '.yaet', 'plugins', 'generated-plugin-manifest.json');
 
   const manifestPath = fs.existsSync(externalPath) ? externalPath : bundledPath;
   if (!fs.existsSync(manifestPath)) {

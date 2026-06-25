@@ -173,8 +173,8 @@ class PluginManager {
 
   /**
    * Write merged manifest to BOTH locations so preload.js can read it.
-   * - Bundled location: plugins/.plugin-manifest.json (for dev mode)
-   * - External location: ~/.yaet/plugins/.plugin-manifest.json (for production)
+   * - Bundled location: plugins/generated-plugin-manifest.json (for dev mode)
+   * - External location: ~/.yaet/plugins/generated-plugin-manifest.json (for production)
    */
   writeMergedManifest() {
     const merged = {
@@ -214,7 +214,7 @@ class PluginManager {
     const content = JSON.stringify(merged, null, 2);
 
     // Write to bundled location (for dev mode)
-    const bundledPath = path.join(this.bundledDir, '.plugin-manifest.json');
+    const bundledPath = path.join(this.bundledDir, 'generated-plugin-manifest.json');
     this._writeIfDirExists(bundledPath, content);
 
     // Write to external location (for production — preload.js reads from here)
@@ -222,7 +222,7 @@ class PluginManager {
     if (!fs.existsSync(externalDir)) {
       fs.mkdirSync(externalDir, {recursive: true});
     }
-    const externalPath = path.join(externalDir, 'plugins', '.plugin-manifest.json');
+    const externalPath = path.join(externalDir, 'plugins', 'generated-plugin-manifest.json');
     const extDir = path.dirname(externalPath);
     if (!fs.existsSync(extDir)) {
       fs.mkdirSync(extDir, {recursive: true});

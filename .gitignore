@@ -53,7 +53,8 @@ src-electron/logs
 build.log
 
 # Plugin generated files
-plugins/.plugin-manifest.json
+plugins/generated-plugin-manifest.json
+plugins/generated-plugin-registry.ts
 
 docs/ai/
 
