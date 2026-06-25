@@ -126,7 +126,7 @@
       @if (form.get('category')?.value == 'CUSTOM') {
       <app-custom-profile-form formControlName="customProfileForm"></app-custom-profile-form>
       } @else if (getPluginFormComponent()) {
-        <app-plugin-form-host [componentType]="getPluginFormComponent()" [formControlName]="getPluginFormControlName()"></app-plugin-form-host>
+        <app-plugin-form-host [componentType]="getPluginFormComponent()" [formControl]="getPluginFormControl()"></app-plugin-form-host>
       } @else if (isExternalTerminalPlugin()) {
         <div class="external-plugin-badge">External Plugin</div>
         <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm" [type]="getExternalPluginType()">

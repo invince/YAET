@@ -102,15 +102,13 @@ export class SambaFormComponent extends ChildFormAsFormControl(MenuComponent)  {
   secretOrPasswordMatchValidator(group: FormGroup) {
     let authType = group.get('authType')?.value;
     if (authType == AuthType.LOGIN) {
-      group.get('login')?.addValidators(Validators.required);
-      group.get('password')?.addValidators(Validators.required);
-      group.get('secretId')?.removeValidators(Validators.required);
       const password = group.get('password')?.value;
-      return password ? null : {passwordRequired: true};
+      const login = group.get('login')?.value;
+      if (!password || !login) {
+        return {passwordRequired: true};
+      }
+      return null;
     } else if (authType == AuthType.SECRET) {
-      group.get('login')?.removeValidators(Validators.required);
-      group.get('password')?.removeValidators(Validators.required);
-      group.get('secretId')?.addValidators(Validators.required);
       return group.get('secretId')?.value ? null : {secretRequired: true};
     } else {
       return null;

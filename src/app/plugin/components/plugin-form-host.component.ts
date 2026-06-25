@@ -2,9 +2,13 @@ import {
   AfterViewInit,
   Component,
   EventEmitter,
+  InjectionToken,
+  Injector,
   Input,
+  OnChanges,
   OnDestroy,
   Output,
+  SimpleChanges,
   Type,
   ViewChild,
   ViewContainerRef
@@ -14,9 +18,12 @@ import {
   ControlValueAccessor,
   NG_VALIDATORS,
   NG_VALUE_ACCESSOR,
+  NgControl,
   ValidationErrors,
   Validator
 } from '@angular/forms';
+
+export const PARENT_NG_CONTROL = new InjectionToken<NgControl>('ParentNgControl');
 
 /**
  * Host component that dynamically renders a plugin form component
@@ -41,7 +48,7 @@ import {
     },
   ],
 })
-export class PluginFormHostComponent implements AfterViewInit, OnDestroy, ControlValueAccessor, Validator {
+export class PluginFormHostComponent implements AfterViewInit, OnChanges, OnDestroy, ControlValueAccessor, Validator {
   @Input() componentType!: Type<any>;
   @ViewChild('host', { read: ViewContainerRef }) host!: ViewContainerRef;
 
@@ -49,44 +56,66 @@ export class PluginFormHostComponent implements AfterViewInit, OnDestroy, Contro
 
   private innerComponent: any;
   private pendingValue: any;
+  private pendingComponentType: Type<any> | null = null;
   private onChange: (value: any) => void = () => {};
   private onTouched: () => void = () => {};
+  private parentNgControl: NgControl | null = null;
+
+  constructor(private injector: Injector) {
+    this.parentNgControl = this.injector.get(NgControl, null);
+  }
 
   ngAfterViewInit() {
     if (this.componentType && this.host) {
-      const ref = this.host.createComponent(this.componentType);
+      this.createComponent();
+    } else if (this.pendingComponentType) {
+      this.createComponent();
+    }
+  }
 
-      // Force change detection so ngOnInit() runs and this.form is created
-      ref.changeDetectorRef.detectChanges();
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['componentType'] && !changes['componentType'].firstChange && this.host) {
+      this.host.clear();
+      this.innerComponent = null;
+      this.createComponent();
+    }
+  }
 
-      this.innerComponent = ref.instance;
+  private createComponent() {
+    const type = this.componentType || this.pendingComponentType;
+    if (!type || !this.host) return;
 
-      // Bridge ControlValueAccessor: inner component calls onChange → forward to parent
-      if (this.innerComponent.registerOnChange) {
-        this.innerComponent.registerOnChange((value: any) => {
-          this.onChange(value);
-        });
-      }
+    const parentInjector = this.host.injector;
+    const customInjector = Injector.create({
+      providers: [{ provide: PARENT_NG_CONTROL, useValue: this.parentNgControl }],
+      parent: parentInjector,
+    });
 
-      // Bridge touched
-      if (this.innerComponent.registerOnTouched) {
-        this.innerComponent.registerOnTouched(() => {
-          this.onTouched();
-        });
-      }
+    const ref = this.host.createComponent(type, { injector: customInjector });
+    ref.changeDetectorRef.detectChanges();
+    this.innerComponent = ref.instance;
 
-      // Bridge dirtyStateChange
-      if (this.innerComponent.dirtyStateChange) {
-        this.innerComponent.dirtyStateChange.subscribe((dirty: boolean) => {
-          this.dirtyStateChange.emit(dirty);
-        });
-      }
+    if (this.innerComponent.registerOnChange) {
+      this.innerComponent.registerOnChange((value: any) => {
+        this.onChange(value);
+      });
+    }
 
-      // Apply pending value if writeValue was called before component creation
-      if (this.pendingValue !== undefined) {
-        this.innerComponent.writeValue(this.pendingValue);
-        this.pendingValue = undefined;
-      }
+    if (this.innerComponent.registerOnTouched) {
+      this.innerComponent.registerOnTouched(() => {
+        this.onTouched();
+      });
+    }
+
+    if (this.innerComponent.dirtyStateChange) {
+      this.innerComponent.dirtyStateChange.subscribe((dirty: boolean) => {
+        this.dirtyStateChange.emit(dirty);
+      });
+    }
+
+    if (this.pendingValue !== undefined) {
+      this.innerComponent.writeValue(this.pendingValue);
+      this.pendingValue = undefined;
     }
   }
 
@@ -94,7 +123,6 @@ export class PluginFormHostComponent implements AfterViewInit, OnDestroy, Contro
     if (this.innerComponent) {
       this.innerComponent.writeValue(value);
     } else {
-      // Cache value until component is created
       this.pendingValue = value;
     }
   }

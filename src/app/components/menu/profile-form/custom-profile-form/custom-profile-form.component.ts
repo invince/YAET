@@ -31,7 +31,6 @@ import {
 } from '../../../../utils/ModelFormController';
 import {SecretQuickFormComponent} from '../../../dialog/secret-quick-form/secret-quick-form.component';
 import {MatDialog} from '@angular/material/dialog';
-import {clearAuthFields} from '../../../../utils/PasswordValidators';
 
 @Component({
     selector: 'app-custom-profile-form',
@@ -99,23 +98,15 @@ export class CustomProfileFormComponent extends ChildFormAsFormControl(MenuCompo
   secretOrPasswordMatchValidator(group: FormGroup) {
     let authType = group.get('authType')?.value;
     if (authType == AuthType.LOGIN) {
-      group.get('login')?.addValidators(Validators.required);
-      group.get('password')?.addValidators(Validators.required);
-      group.get('secretId')?.removeValidators(Validators.required);
       const password = group.get('password')?.value;
-      if (!password) {
+      const login = group.get('login')?.value;
+      if (!password || !login) {
         return {passwordRequired: true};
       }
       return null;
     } else if (authType == AuthType.SECRET) {
-      group.get('login')?.removeValidators(Validators.required);
-      group.get('password')?.removeValidators(Validators.required);
-      group.get('secretId')?.addValidators(Validators.required);
       return group.get('secretId')?.value ? null : {secretRequired: true};
     } else {
-      group.get('login')?.removeValidators(Validators.required);
-      group.get('password')?.removeValidators(Validators.required);
-      group.get('secretId')?.removeValidators(Validators.required);
       return null;
     }
   }
@@ -132,8 +123,7 @@ export class CustomProfileFormComponent extends ChildFormAsFormControl(MenuCompo
     return this.modelFormController.formToModel(new CustomProfile(), this.form);
   }
 
-  onSelectAuthType($event: MatRadioChange) {
-    clearAuthFields(this.form, $event.value);
+  onSelectAuthType(_$event: MatRadioChange) {
   }
 
   onSelectSecret(_$event: MatSelectChange) {

@@ -2,7 +2,7 @@ import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import {CdkTextareaAutosize} from '@angular/cdk/text-field';
 import {CommonModule, KeyValuePipe} from '@angular/common';
 import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
-import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
 import {MatButtonModule} from '@angular/material/button';
@@ -314,6 +314,11 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
   getPluginFormComponent(): any {
     const profileType = this.form?.get('profileType')?.value;
     return this.registry.getProfileFormComponent(profileType);
+  }
+
+  getPluginFormControl(): FormControl {
+    const name = this.getPluginFormControlName();
+    return this.form.get(name) as FormControl;
   }
 
   getPluginFormControlName(): string {

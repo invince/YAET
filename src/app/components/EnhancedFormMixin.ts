@@ -1,6 +1,7 @@
-import {Component, EventEmitter, OnDestroy, OnInit, Output} from '@angular/core';
-import {AbstractControl, ControlValueAccessor, FormGroup, ValidationErrors, Validator} from '@angular/forms';
+import {Component, EventEmitter, inject, OnDestroy, OnInit, Output} from '@angular/core';
+import {AbstractControl, ControlValueAccessor, FormGroup, NgControl, ValidationErrors, Validator} from '@angular/forms';
 import {Subscription} from 'rxjs';
+import {PARENT_NG_CONTROL} from '../plugin/components/plugin-form-host.component';
 
 type Constructor<T = {}> = new (...args: any[]) => T;
 
@@ -120,16 +121,29 @@ export function ChildFormAsFormControl<TBase extends Constructor>(Base: TBase) {
     abstract formToModel(): any;
 
     private _isWritingValue = false;
+    private _originalWrittenValue: any = undefined;
+    private _ngControl: NgControl | null = inject(PARENT_NG_CONTROL, { optional: true }) ?? inject(NgControl, { optional: true });
 
     ngOnInit(): void {
       this.form = this.onInitForm();
       // Propagate changes to parent form via model (not raw form values)
       this.subscriptions.push(this.form.valueChanges.subscribe(value => {
-        if (!this._isWritingValue) this.onChange(this.formToModel());
+        if (!this._isWritingValue) this.emitIfChanged();
       }));
       this.subscriptions.push(this.form.statusChanges.subscribe(() => {
-        if (!this._isWritingValue) this.onChange(this.formToModel());
+        if (!this._isWritingValue) this.emitIfChanged();
       }));
+    }
+
+    private emitIfChanged() {
+      const newValue = this.formToModel();
+      const isSame = JSON.stringify(newValue) === JSON.stringify(this._originalWrittenValue);
+      if (!isSame) {
+        this.onChange(newValue);
+      } else if (this._ngControl?.control) {
+        this._ngControl.control.markAsPristine();
+        this._ngControl.control.markAsUntouched();
+      }
     }
 
     ngOnDestroy(): void {
@@ -152,6 +166,7 @@ export function ChildFormAsFormControl<TBase extends Constructor>(Base: TBase) {
       if (value) {
         this._isWritingValue = true;
         this.refreshForm(value);
+        this._originalWrittenValue = JSON.parse(JSON.stringify(value));
         this._isWritingValue = false;
       }
     }

@@ -32,7 +32,6 @@ import {
   SecretQuickFormComponent
 } from '../../../../src/app/components/dialog/secret-quick-form/secret-quick-form.component';
 import {MatDialog} from '@angular/material/dialog';
-import {clearAuthFields} from '../../../../src/app/utils/PasswordValidators';
 
 @Component({
     selector: 'app-vnc-profile-form',
@@ -94,20 +93,14 @@ export class VncProfileFormComponent extends ChildFormAsFormControl(MenuComponen
   secretOrPasswordMatchValidator(group: FormGroup) {
     let authType = group.get('authType')?.value;
     if (authType == AuthType.LOGIN) {
-      group.get('password')?.addValidators(Validators.required);
-      group.get('secretId')?.removeValidators(Validators.required);
       const password = group.get('password')?.value;
       if (!password) {
         return {passwordRequired: true};
       }
       return null;
     } else if (authType == AuthType.SECRET) {
-      group.get('password')?.removeValidators(Validators.required);
-      group.get('secretId')?.addValidators(Validators.required);
       return group.get('secretId')?.value ? null : {secretRequired: true};
     } else {
-      group.get('password')?.removeValidators(Validators.required);
-      group.get('secretId')?.removeValidators(Validators.required);
       return null;
     }
   }
@@ -124,8 +117,7 @@ export class VncProfileFormComponent extends ChildFormAsFormControl(MenuComponen
     return this.modelFormController.formToModel(new VncProfile(), this.form);
   }
 
-  onSelectAuthType($event: MatRadioChange) {
-    clearAuthFields(this.form, $event.value);
+  onSelectAuthType(_$event: MatRadioChange) {
   }
 
   onSelectSecret(_$event: MatSelectChange) {
