@@ -168,11 +168,11 @@ npx playwright test -g "add Password Only"
 **工作原理：**
 - 先编译 Angular（`ng build`），然后 Electron 加载编译产物
 - 每个测试使用独立的临时目录启动全新 Electron 实例
-- 模拟密钥链（[`security.mock.js`](src-electron/ipc/security.mock.js)）替代操作系统密钥链 —— 不接触系统凭据
+- 模拟密钥链（[`security.mock.js`](src-electron/adapter/ipc/security.mock.js)）替代操作系统密钥链 —— 不接触系统凭据
 - 测试默认**无头**运行。设置 `YAET_SHOW_WINDOW=1` 可显示窗口
 - CI 在每次 PR/推送（[`.github/workflows/e2e.yml`](.github/workflows/e2e.yml)）和每次发布前运行 E2E
 
-**当前覆盖（92 个测试）：**
+**当前覆盖（97 个测试）：**
 
 | 模块 | 测试数 | 状态 |
 |---------|-------|--------|
@@ -238,6 +238,6 @@ npm run build
 - **前端**：Angular 20、Angular Material
 - **桌面**：Electron 39
 - **终端**：xterm.js
-- **文件传输**：ssh2、basic-ftpHandler、v9u-smb2
+- **文件传输**：ssh2、basic-ftp、v9u-smb2
 - **远程桌面**：@novnc/novnc
 - **AI 集成**：Agent Client Protocol (ACP) 或 OpenAI 提供商

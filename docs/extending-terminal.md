@@ -247,26 +247,13 @@ By calling `api.registerConnector('MY_TERMINAL', factory)`, your connector becom
 
 The factory function signature is `(logger, config) => ConnectorInstance` where `config` is the resolved profile configuration (host, port, credentials already resolved from secrets).
 
-## 5. Adding Xterm.js Addons
-
-If you want to add frontend features like search or WebGL acceleration:
-
-1. Install the addon: `npm i @xterm/addon-<name>`
-2. Import it in `terminal.component.ts`:
-```typescript
-import { SearchAddon } from '@xterm/addon-search';
-
-const searchAddon = new SearchAddon();
-this.terminal.loadAddon(searchAddon);
-```
-
-## 6. Plugin Locations
+## 5. Plugin Locations
 
 - **Bundled**: `plugins/<id>/` — shipped with the app
 - **External**: `~/.yaet/plugins/<id>/` — user-installed, overrides bundled plugins with the same id
 
 External plugins must be self-contained. They cannot `require()` from `src-electron/` via relative paths. Use `context.projectRequire()` for npm dependencies.
 
-## 7. Example
+## 6. Example
 
 See `plugins/ssh-terminal/` for a complete bundled example, or `~/.yaet/plugins/ssh-terminal/` for an external example.

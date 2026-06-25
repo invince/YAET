@@ -220,34 +220,12 @@ For protocols that need a custom frontend (like SPICE), create an Angular compon
 2. Renders the remote desktop stream in a canvas
 3. Handles keyboard/mouse input
 
-## 6. Preload Whitelist
-
-Add your IPC channels to `src-electron/preload.js`:
-
-```javascript
-const allowedSendChannels = [
-  'session.open.rd.spice',
-  // ...
-];
-
-const allowedInvokeChannels = [
-  'session.open.rd.spice',  // if using ipc.handle
-  // ...
-];
-
-const allowedOnChannels = [
-  'session.connect.rd.spice',
-  'session.disconnect.rd.spice',
-  // ...
-];
-```
-
-## 7. Plugin Locations
+## 6. Plugin Locations
 
 - **Bundled**: `plugins/<id>/` — shipped with the app
 - **External**: `~/.yaet/plugins/<id>/` — user-installed, overrides bundled plugins
 
-## 8. Examples
+## 7. Examples
 
 - `plugins/vnc-remote-desktop/` — WebSocket-to-TCP proxy pattern (invoke + return proxyPort)
 - `plugins/rdp-remote-desktop/` — External process spawn pattern (fire-and-forget)

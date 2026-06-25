@@ -238,7 +238,7 @@ The merged manifest includes per-plugin `ipcChannels`:
 
 | File | Role |
 |------|------|
-| `src-electron/plugin/pluginManager.js` | Discovers plugins, writes merged manifest, loads backends |
+| `src-electron/services/pluginManager.js` | Discovers plugins, writes merged manifest, loads backends |
 | `src-electron/preload.js` | IPC whitelist (reads merged manifest, external preferred) |
 | `src-electron/electronMain.js` | Plugin lifecycle, IPC handlers for manifest/frontend reading |
 | `src/app/services/plugin/plugin-loader.service.ts` | Loads external plugin frontend bundles via IPC |
