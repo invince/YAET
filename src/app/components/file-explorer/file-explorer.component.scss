@@ -1,3 +1,8 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
 .file-explorer-container {
   display: flex;
   flex-direction: column;
@@ -6,7 +11,7 @@
   overflow: hidden;
 }
 
-app-scp, app-ftp, app-samba {
+:host ::ng-deep app-scp, :host ::ng-deep app-ftp, :host ::ng-deep app-samba {
   display: flex;
   flex-direction: column;
   flex: 1;
