@@ -2,7 +2,7 @@ import {
   AfterViewInit,
   Component,
   EventEmitter,
-  InjectionToken,
+  inject,
   Injector,
   Input,
   OnChanges,
@@ -22,8 +22,6 @@ import {
   ValidationErrors,
   Validator
 } from '@angular/forms';
-
-export const PARENT_NG_CONTROL = new InjectionToken<NgControl>('ParentNgControl');
 
 /**
  * Host component that dynamically renders a plugin form component
@@ -56,19 +54,19 @@ export class PluginFormHostComponent implements AfterViewInit, OnChanges, OnDest
 
   private innerComponent: any;
   private pendingValue: any;
-  private pendingComponentType: Type<any> | null = null;
   private onChange: (value: any) => void = () => {};
   private onTouched: () => void = () => {};
-  private parentNgControl: NgControl | null = null;
+  private _originalWrittenValue: any = undefined;
+  private _injector = inject(Injector);
 
-  constructor(private injector: Injector) {
-    this.parentNgControl = this.injector.get(NgControl, null);
+  private get _parentNgControl(): NgControl | null {
+    return this._injector.get(NgControl, null);
   }
 
   ngAfterViewInit() {
     if (this.componentType && this.host) {
       this.createComponent();
-    } else if (this.pendingComponentType) {
+    } else if (this.pendingValue !== undefined) {
       this.createComponent();
     }
   }
@@ -82,22 +80,23 @@ export class PluginFormHostComponent implements AfterViewInit, OnChanges, OnDest
   }
 
   private createComponent() {
-    const type = this.componentType || this.pendingComponentType;
+    const type = this.componentType;
     if (!type || !this.host) return;
 
-    const parentInjector = this.host.injector;
-    const customInjector = Injector.create({
-      providers: [{ provide: PARENT_NG_CONTROL, useValue: this.parentNgControl }],
-      parent: parentInjector,
-    });
+    const ref = this.host.createComponent(type);
 
-    const ref = this.host.createComponent(type, { injector: customInjector });
     ref.changeDetectorRef.detectChanges();
     this.innerComponent = ref.instance;
 
     if (this.innerComponent.registerOnChange) {
       this.innerComponent.registerOnChange((value: any) => {
-        this.onChange(value);
+        const isSame = JSON.stringify(value) === JSON.stringify(this._originalWrittenValue);
+        if (!isSame) {
+          this.onChange(value);
+        } else if (this._parentNgControl?.control) {
+          this._parentNgControl.control.markAsPristine();
+          this._parentNgControl.control.markAsUntouched();
+        }
       });
     }
 
@@ -115,11 +114,13 @@ export class PluginFormHostComponent implements AfterViewInit, OnChanges, OnDest
 
     if (this.pendingValue !== undefined) {
       this.innerComponent.writeValue(this.pendingValue);
+      this._originalWrittenValue = JSON.parse(JSON.stringify(this.pendingValue));
       this.pendingValue = undefined;
     }
   }
 
   writeValue(value: any): void {
+    this._originalWrittenValue = JSON.parse(JSON.stringify(value));
     if (this.innerComponent) {
       this.innerComponent.writeValue(value);
     } else {

@@ -1,7 +1,6 @@
 import {Component, EventEmitter, inject, OnDestroy, OnInit, Output} from '@angular/core';
 import {AbstractControl, ControlValueAccessor, FormGroup, NgControl, ValidationErrors, Validator} from '@angular/forms';
 import {Subscription} from 'rxjs';
-import {PARENT_NG_CONTROL} from '../plugin/components/plugin-form-host.component';
 
 type Constructor<T = {}> = new (...args: any[]) => T;
 
@@ -122,7 +121,7 @@ export function ChildFormAsFormControl<TBase extends Constructor>(Base: TBase) {
 
     private _isWritingValue = false;
     private _originalWrittenValue: any = undefined;
-    private _ngControl: NgControl | null = inject(PARENT_NG_CONTROL, { optional: true }) ?? inject(NgControl, { optional: true });
+    private _ngControl: NgControl | null = inject(NgControl, { optional: true });
 
     ngOnInit(): void {
       this.form = this.onInitForm();
