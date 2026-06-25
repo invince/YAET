@@ -2,7 +2,7 @@ const ftp = require('basic-ftp');
 const path = require('path');
 const _ = require('lodash');
 const { Writable, Readable } = require('stream');
-const { FileExplorerRuntimeApi } = require('../../interfaces/fileExplorerRuntimeApi');
+const { FileExplorerRuntimeApi } = require('../../../src-electron/runtime/interfaces/fileExplorerRuntimeApi');
 
 class FtpFileExplorer extends FileExplorerRuntimeApi {
   constructor(log, config) {

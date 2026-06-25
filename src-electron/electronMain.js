@@ -10,10 +10,9 @@ const { initCloudIpcHandler } = require('./adapter/ipc/cloud');
 const { initSecurityIpcHandler, decrypt } = require('./adapter/ipc/security');
 const { initClipboard } = require('./adapter/ipc/clipboard');
 const { initCustomSessionHandler } = require("./adapter/ipc/customSession");
-const { initScpSftpHandler } = require("./adapter/ipc/file-explorer/scpHandler");
+
 const { initAutoUpdater } = require("./adapter/ipc/autoUpdater");
 const { initBackend } = require("./adapter/ipc/backend");
-const { initFtpHandler } = require("./adapter/ipc/file-explorer/ftpHandler");
 const { initLocalFileHandler } = require("./adapter/ipc/localFile");
 const { initPluginHandler } = require("./adapter/ipc/pluginHandler");
 
@@ -22,9 +21,7 @@ let tray;
 let expressApp;
 let mainWindow;
 let terminalMap = new Map();
-let scpMap = new Map();
-let ftpMap = new Map();
-let sambaMap = new Map();
+
 let initialized = false;
 let lastSettings = null;
 let allProxies = null;
@@ -39,7 +36,7 @@ const { initCommonIpc } = require("./adapter/ipc/commonIpc");
 const { initAcpClientIpcHandler } = require("./adapter/ipc/ai/acpClient");
 const { initAiIpcHandler, initAiChatIpcHandler, initAiToolsIpcHandler } = require("./adapter/ipc/ai/aiChat");
 const { initLocalTerminalIpcHandler } = require("./adapter/ipc/terminal/localHandler");
-const { initSambaHandler } = require("./adapter/ipc/file-explorer/sambaHandler");
+
 const { RuntimeAPI } = require("./runtime/runtimeAPI");
 const { SessionRegistry } = require("./runtime/sessionRegistry");
 const { ApprovalManager } = require("./runtime/approvalManager");
@@ -152,9 +149,7 @@ function initHandlerBeforeSettingLoad() {
   initSecurityIpcHandler(log);
   initTerminalIpcHandler(log, terminalMap);
 
-  initScpSftpHandler(log, scpMap, expressApp, () => allProxies, () => allSecrets);
-  initFtpHandler(log, ftpMap, expressApp, () => allProxies, () => allSecrets);
-  initSambaHandler(log, sambaMap, expressApp, () => allProxies, () => allSecrets);
+
 
   initClipboard(log, mainWindow);
   initCustomSessionHandler(log);
@@ -217,26 +212,12 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
 
     terminalMap.forEach((term) => {
-      switch (term.type) {
-        case 'local':
-        case 'winrm':
-          term.process?.removeAllListeners();
-          term.process?.kill();
-          break;
-        case 'ssh':
-        case 'telnet':
-          term.process?.end();
-          break;
-
+      if (typeof term.close === 'function') {
+        term.close();
       }
     });
 
-    ftpMap.forEach((ftpClient) => {
-      // value?.end();
-      if (ftpClient) {
-        ftpClient.close(); // WebSocket server for this vnc client closed
-      }
-    });
+
 
     app.quit();
   }

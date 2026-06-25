@@ -13,6 +13,38 @@ function register(context) {
     api.registerConnector('TELNET_TERMINAL', (log, config) => {
       return new TelnetSession(log, config);
     });
+    api.registerConfigResolver('TELNET_TERMINAL', (connProfile, { secretId, secretRepo }) => {
+      const config = {
+        host: connProfile.host,
+        port: connProfile.port || 23,
+        negotiationMandatory: false,
+        timeout: 15000,
+        loginPrompt: /[Ll]ogin|[Uu]ser(|name)[:\s]*$/i,
+        passwordPrompt: /[Pp]ass(word|wd)?[:\s]*$/i,
+      };
+      const sid = secretId || connProfile.secretId;
+      if (connProfile.authType === 'login' || connProfile.authType === 'LOGIN') {
+        config.username = connProfile.login;
+        config.password = connProfile.password;
+      } else if ((connProfile.authType === 'secret' || connProfile.authType === 'SECRET' || secretId) && sid) {
+        const secrets = typeof secretRepo === 'function' ? secretRepo() : secretRepo;
+        if (secrets && secrets.secrets) {
+          const secret = secrets.secrets.find(s => s.id === sid);
+          if (secret) {
+            if (secret.secretType === 'LOGIN_PASSWORD' || secret.secretType === 'login_password') {
+              config.username = secret.login;
+              config.password = secret.password;
+            } else if (secret.secretType === 'PASSWORD_ONLY' || secret.secretType === 'password_only') {
+              config.password = secret.password;
+              if (secret.login) config.username = secret.login;
+            }
+          }
+        }
+      } else if (connProfile.login) {
+        config.username = connProfile.login;
+      }
+      return config;
+    });
   }
 
   ipcMain.on('session.open.terminal.telnet', async (event, data) => {
@@ -50,6 +82,8 @@ function register(context) {
           type: 'telnet',
           process: session.client,
           callback: (input) => session.write(input),
+          resize: (cols, rows) => { /* telnet doesn't support pty resize */ },
+          close: () => { try { session.close(); } catch { /* ignore */ } },
         });
       }
 

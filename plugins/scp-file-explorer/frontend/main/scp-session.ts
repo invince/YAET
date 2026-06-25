@@ -1,7 +1,7 @@
-import {ScpService} from '../../services/file-explorer/scp.service';
-import {TabService} from '../../services/tab.service';
-import {Profile} from '../profile/Profile';
-import {Session} from './Session';
+import {ScpService} from '../services/scp.service';
+import {TabService} from '../../../../src/app/services/tab.service';
+import {Profile} from '../../../../src/app/domain/profile/Profile';
+import {Session} from '../../../../src/app/domain/session/Session';
 
 export class ScpSession extends Session {
 

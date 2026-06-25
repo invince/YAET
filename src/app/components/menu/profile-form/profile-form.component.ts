@@ -84,7 +84,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     public proxyStorage: ProxyStorageService,
     private settingService: SettingService,
     private translate: TranslateService,
-    private registry: PluginRegistryService,
+    public registry: PluginRegistryService,
   ) {
     super();
   }

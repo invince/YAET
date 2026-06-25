@@ -237,6 +237,17 @@ export class PluginRegistryService {
   }
 
   /**
+   * Whether a profile type supports proxy routing.
+   * All remote connection types (TERMINAL / FILE_EXPLORER) support proxies.
+   * Local and Custom do not.
+   */
+  getPluginSupportsProxy(profileType: string): boolean {
+    if (!profileType) return false;
+    if (profileType === 'LOCAL_TERMINAL' || profileType === 'CUSTOM') return false;
+    return true;
+  }
+
+  /**
    * Register form metadata for a profile type.
    * Called by plugins during register() so form bindings work immediately.
    */

@@ -1,10 +1,10 @@
 import {HttpClient} from '@angular/common/http';
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
-import {Session} from '../../../domain/session/Session';
-import {ScpService} from '../../../services/file-explorer/scp.service';
-import {TabService} from '../../../services/tab.service';
-import {AbstractFileManager} from '../abstract-file-manager';
-import {FileListComponent} from '../custom/file-list.component';
+import {Session} from '../../../../src/app/domain/session/Session';
+import {ScpService} from '../services/scp.service';
+import {TabService} from '../../../../src/app/services/tab.service';
+import {AbstractFileManager} from '../../../../src/app/components/file-explorer/abstract-file-manager';
+import {FileListComponent} from '../../../../src/app/components/file-explorer/custom/file-list.component';
 
 @Component({
     selector: 'app-scp',

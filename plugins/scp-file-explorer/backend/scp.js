@@ -1,7 +1,7 @@
 const SftpClient = require('ssh2-sftp-client');
 const path = require('path');
 const _ = require('lodash');
-const { FileExplorerRuntimeApi } = require('../../interfaces/fileExplorerRuntimeApi');
+const { FileExplorerRuntimeApi } = require('../../../src-electron/runtime/interfaces/fileExplorerRuntimeApi');
 
 class ScpFileExplorer extends FileExplorerRuntimeApi {
   constructor(log, sshConfig) {

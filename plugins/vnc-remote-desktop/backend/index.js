@@ -10,6 +10,12 @@ function register(context) {
     api.registerConnector('VNC_REMOTE_DESKTOP', (log, config) => {
       return new VncDesktop(log, config);
     });
+    api.registerConfigResolver('VNC_REMOTE_DESKTOP', (connProfile) => {
+      return {
+        host: connProfile.host,
+        port: connProfile.port || 5900,
+      };
+    });
   }
 
   ipcMain.handle('session.open.rd.vnc', async (event, { id, host, port }) => {

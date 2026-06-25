@@ -1,6 +1,12 @@
+/**
+ * Samba/CIFS File Explorer Plugin — Backend Entry
+ *
+ * Registers IPC handlers and Express routes for Samba file operations.
+ * Migrated from src-electron/adapter/ipc/file-explorer/sambaHandler.js
+ */
 const { ipcMain, shell } = require('electron');
-const { SambaFileExplorer } = require('../../../runtime/connectors/file/samba');
-const { createProxyConnection } = require('../../../utils/proxyUtils');
+const { SambaFileExplorer } = require('./samba');
+const { createProxyConnection } = require('../../../src-electron/utils/proxyUtils');
 const multer = require('multer');
 const upload = multer();
 const path = require('path');
@@ -9,34 +15,70 @@ const fs = require('fs');
 const fsPromise = require('fs/promises');
 const os = require('os');
 const uuid = require('uuid');
-const { generalLimiter, uploadLimiter, downloadLimiter, openLimiter } = require('../rateLimiter');
+const { generalLimiter, uploadLimiter, downloadLimiter, openLimiter } = require('../../../src-electron/adapter/ipc/rateLimiter');
 
-function initSambaHandler(log, sambaMap, expressApp, proxyRepo, secretRepo) {
+/** Module-level connection map (managed internally) */
+const sambaMap = new Map();
 
+function register(context) {
+  const logger = context.logger;
+  const expressAppGetter = typeof context.expressApp === 'function'
+    ? () => context.expressApp()
+    : () => context.expressApp;
+  const proxyRepo = typeof context.proxyService === 'function'
+    ? context.proxyService
+    : () => context.proxyService;
+  const secretRepo = typeof context.secretService === 'function'
+    ? context.secretService
+    : () => context.secretService;
+
+  // ── Register connector with RuntimeAPI ──────────────────────────────
+  const api = typeof context.runtimeAPI === 'function'
+    ? context.runtimeAPI()
+    : context.runtimeAPI;
+  if (api) {
+    api.registerConnector('SAMBA_FILE_EXPLORER', (log, config) => {
+      return new SambaFileExplorer(log, config);
+    });
+    api.registerConfigResolver('SAMBA_FILE_EXPLORER', (connProfile, { secretId, secretRepo }) => {
+      const config = {
+        share: connProfile.share,
+        domain: connProfile.domain || 'WORKGROUP',
+        username: connProfile.login || '',
+        password: connProfile.password || '',
+        port: connProfile.port || 445,
+      };
+      // Set host for proxy support
+      const shareParts = (connProfile.share || '').split('/');
+      config.host = shareParts[0] || '';
+      const sid = secretId || connProfile.secretId;
+      if ((connProfile.authType === 'secret' || connProfile.authType === 'SECRET' || secretId) && sid) {
+        const secrets = typeof secretRepo === 'function' ? secretRepo() : secretRepo;
+        if (secrets && secrets.secrets) {
+          const secret = secrets.secrets.find(s => s.id === sid);
+          if (secret) {
+            if (secret.secretType === 'LOGIN_PASSWORD' || secret.secretType === 'login_password') {
+              config.username = secret.login;
+              config.password = secret.password;
+            } else if (secret.secretType === 'PASSWORD_ONLY' || secret.secretType === 'password_only') {
+              config.password = secret.password;
+              if (secret.login) config.username = secret.login;
+            }
+          }
+        }
+      }
+      return config;
+    });
+  }
+
+  const app = expressAppGetter();
+
+  // ── Helpers ─────────────────────────────────────────────────────────
   function getExplorer(configId) {
     const exp = sambaMap.get(configId);
     if (!exp) throw new Error('Error: connection config not found');
     return exp;
   }
-
-  ipcMain.handle('session.fe.samba.register', async (event, { id, config, proxyId }) => {
-    let smbConfig = { ...config };
-
-    if (proxyId) {
-      log.info(`Samba connection ${id}: Using proxy ${proxyId}`);
-      const proxies = proxyRepo();
-      if (proxies && proxies.proxies) {
-        const proxy = proxies.proxies.find(p => p.id === proxyId);
-        if (proxy) {
-          const sock = await createProxyConnection(proxy, smbConfig.share, smbConfig.port || 445, secretRepo, log);
-          smbConfig.sock = sock;
-        }
-      }
-    }
-
-    const explorer = new SambaFileExplorer(log, smbConfig);
-    sambaMap.set(id, explorer);
-  });
 
   function fixPath(pathParam) {
     let p = pathParam || '';
@@ -45,8 +87,28 @@ function initSambaHandler(log, sambaMap, expressApp, proxyRepo, secretRepo) {
     return p;
   }
 
-  //==================== API ====================================================
-  expressApp.post('/api/v1/samba/:id', generalLimiter, async (req, res) => {
+  // ── IPC: Register Samba session ─────────────────────────────────────
+  ipcMain.handle('session.fe.samba.register', async (event, { id, config, proxyId }) => {
+    let smbConfig = { ...config };
+
+    if (proxyId) {
+      logger.info(`Samba connection ${id}: Using proxy ${proxyId}`);
+      const proxies = proxyRepo();
+      if (proxies && proxies.proxies) {
+        const proxy = proxies.proxies.find(p => p.id === proxyId);
+        if (proxy) {
+          const sock = await createProxyConnection(proxy, smbConfig.share, smbConfig.port || 445, secretRepo, logger);
+          smbConfig.sock = sock;
+        }
+      }
+    }
+
+    const explorer = new SambaFileExplorer(logger, smbConfig);
+    sambaMap.set(id, explorer);
+  });
+
+  // ── Express: File operations ────────────────────────────────────────
+  app.post('/api/v1/samba/:id', generalLimiter, async (req, res) => {
     const action = req.body.action || 'read';
     req.body.targetPath = fixPath(req.body.targetPath);
     req.body.path = fixPath(req.body.path);
@@ -102,25 +164,26 @@ function initSambaHandler(log, sambaMap, expressApp, proxyRepo, secretRepo) {
 
       res.json(result);
     } catch (error) {
-      log.error('Error handling Samba request:', error);
+      logger.error('Error handling Samba request:', error);
       res.status(500).send({ error: { code: 500, message: error.message } });
     }
   });
 
-  expressApp.post('/api/v1/samba/upload/:id', uploadLimiter, upload.single('uploadFiles'), async (req, res) => {
+  // ── Express: Upload file ────────────────────────────────────────────
+  app.post('/api/v1/samba/upload/:id', uploadLimiter, upload.single('uploadFiles'), async (req, res) => {
     const { data, filename } = req.body;
     let targetDir;
     try {
       targetDir = fixPath(JSON.parse(data).name);
     } catch (error) {
-      log.error('Error parsing upload data JSON:', error);
+      logger.error('Error parsing upload data JSON:', error);
       res.status(400).send({ error: { code: 400, message: 'Invalid JSON: ' + error.message } });
       return;
     }
     const configId = req.params['id'];
 
     if (!req.file) {
-      log.error('Error: No file uploaded');
+      logger.error('Error: No file uploaded');
       res.status(400).send({ error: { code: 400, message: 'No file uploaded' } });
       return;
     }
@@ -135,17 +198,18 @@ function initSambaHandler(log, sambaMap, expressApp, proxyRepo, secretRepo) {
       });
       res.json({ success: true, message: `File uploaded to ${remotePath}` });
     } catch (error) {
-      log.error('Error uploading file:', error);
+      logger.error('Error uploading file:', error);
       res.status(400).send({ error: { code: 400, message: 'Error uploading file: ' + error.message } });
     }
   });
 
-  expressApp.post('/api/v1/samba/download/:id', downloadLimiter, upload.none(), async (req, res) => {
+  // ── Express: Download files ─────────────────────────────────────────
+  app.post('/api/v1/samba/download/:id', downloadLimiter, upload.none(), async (req, res) => {
     let downloadInput;
     try {
       downloadInput = JSON.parse(req.body.downloadInput);
     } catch (error) {
-      log.error('Error parsing downloadInput JSON:', error);
+      logger.error('Error parsing downloadInput JSON:', error);
       res.status(400).send({ error: { code: 400, message: 'Invalid JSON: ' + error.message } });
       return;
     }
@@ -172,26 +236,27 @@ function initSambaHandler(log, sambaMap, expressApp, proxyRepo, secretRepo) {
             const buffer = await explorer.downloadFile(fullPath);
             zipfile.addBuffer(buffer, name);
           } catch (fileError) {
-            log.error(`Error fetching file ${fullPath}:`, fileError.message);
+            logger.error(`Error fetching file ${fullPath}:`, fileError.message);
           }
         }
         zipfile.outputStream.pipe(res).on('close', () => {
-          log.info('ZIP file successfully sent.');
+          logger.info('ZIP file successfully sent.');
         });
         zipfile.end();
       }
     } catch (error) {
-      log.error('Error downloading file:', error);
+      logger.error('Error downloading file:', error);
       res.status(400).send({ error: { code: 400, message: 'Error downloading file: ' + error.message } });
     }
   });
 
-  expressApp.post('/api/v1/samba/open/:id', openLimiter, upload.none(), async (req, res) => {
+  // ── Express: Open file (download → edit → auto-upload on change) ────
+  app.post('/api/v1/samba/open/:id', openLimiter, upload.none(), async (req, res) => {
     let downloadInput;
     try {
       downloadInput = JSON.parse(req.body.downloadInput);
     } catch (error) {
-      log.error('Error parsing downloadInput JSON:', error);
+      logger.error('Error parsing downloadInput JSON:', error);
       res.status(400).send({ error: { code: 400, message: 'Invalid JSON: ' + error.message } });
       return;
     }
@@ -210,21 +275,21 @@ function initSambaHandler(log, sambaMap, expressApp, proxyRepo, secretRepo) {
 
       const result = await shell.openPath(tempFilePath);
       if (result) {
-        log.error(`Error opening file: ${result}`);
+        logger.error(`Error opening file: ${result}`);
         res.status(500).send({ error: { code: 500, message: 'Error opening file' } });
         return;
       }
 
       let watcher = fs.watch(tempFilePath, async (eventType) => {
         if (eventType === 'change') {
-          log.info(`File modified: ${tempFilePath}`);
+          logger.info(`File modified: ${tempFilePath}`);
           try {
             const updatedBuffer = await fsPromise.readFile(tempFilePath);
             const updateExplorer = getExplorer(configId);
             await updateExplorer.uploadFile(fullRemotePath, updatedBuffer);
-            log.info(`File updated successfully: ${fullRemotePath}`);
+            logger.info(`File updated successfully: ${fullRemotePath}`);
           } catch (error) {
-            log.error('Error uploading updated file:', error);
+            logger.error('Error uploading updated file:', error);
           }
         }
       });
@@ -233,18 +298,20 @@ function initSambaHandler(log, sambaMap, expressApp, proxyRepo, secretRepo) {
         watcher.close();
         try {
           await fsPromise.unlink(tempFilePath);
-          log.info('Temporary file deleted:', tempFilePath);
+          logger.info('Temporary file deleted:', tempFilePath);
         } catch (err) {
-          log.error('Error deleting temporary file:', err);
+          logger.error('Error deleting temporary file:', err);
         }
       }, 10 * 60 * 1000);
 
       res.json({ success: true, message: `File opened: ${fullRemotePath}` });
     } catch (error) {
-      log.error('Error open file:', error);
+      logger.error('Error open file:', error);
       res.status(400).send({ error: { code: 400, message: 'Error open file: ' + error.message } });
     }
   });
+
+  logger.info('[samba-file-explorer] Plugin registered');
 }
 
-module.exports = { initSambaHandler };
+module.exports = { register };

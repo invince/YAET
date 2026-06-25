@@ -75,6 +75,28 @@ export class Profile {
     return this.profileData.has(type);
   }
 
+  /**
+   * Custom JSON serialization — JSON.stringify() calls this automatically.
+   * Converts the private Map profileData to a plain object so it survives
+   * encryption + disk storage.
+   */
+  toJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      comment: this.comment,
+      icon: this.icon,
+      category: this.category,
+      profileType: this.profileType,
+      group: this.group,
+      tags: this.tags,
+      proxyId: this.proxyId,
+      favoritePaths: this.favoritePaths,
+      isNew: this.isNew,
+      profileData: Object.fromEntries(this.profileData),
+    };
+  }
+
   static clone(base: Profile): Profile {
     const cloned = new Profile();
     cloned.name = base.name + ' Clone';

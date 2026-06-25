@@ -71,7 +71,7 @@
         </mat-autocomplete>
       </mat-form-field>
 
-      @if (['SSH_TERMINAL', 'SCP_FILE_EXPLORER', 'TELNET_TERMINAL'].includes(form.get('profileType')?.value) || isExternalTerminalPlugin()) {
+      @if (registry.getPluginSupportsProxy(form.get('profileType')?.value)) {
         <mat-form-field class="field">
           <mat-label>{{ 'PROFILES.PROXY' | translate }}</mat-label>
           <mat-select formControlName="proxyId">

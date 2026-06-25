@@ -409,6 +409,7 @@ test.describe('2. Master Key & Secrets', () => {
 
       // Add LOGIN_PASSWORD → icon should be 'face'
       await app.secretsAddButton.click();
+      await app.selectSecretType('LOGIN_PASSWORD');
       await app.secretInput('name').fill('LSecret');
       await app.secretInput('login').fill('u');
       await app.secretInput('password').fill('pass');

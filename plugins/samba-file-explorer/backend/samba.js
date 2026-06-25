@@ -1,6 +1,6 @@
 const path = require('path');
 const SMB2 = require('v9u-smb2');
-const { FileExplorerRuntimeApi } = require('../../interfaces/fileExplorerRuntimeApi');
+const { FileExplorerRuntimeApi } = require('../../../src-electron/runtime/interfaces/fileExplorerRuntimeApi');
 
 class SambaFileExplorer extends FileExplorerRuntimeApi {
   constructor(log, config) {

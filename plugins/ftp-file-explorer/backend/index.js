@@ -1,6 +1,12 @@
+/**
+ * FTP File Explorer Plugin — Backend Entry
+ *
+ * Registers IPC handlers and Express routes for FTP file operations.
+ * Migrated from src-electron/adapter/ipc/file-explorer/ftpHandler.js
+ */
 const { ipcMain, shell } = require('electron');
-const { FtpFileExplorer } = require('../../../runtime/connectors/file/ftp');
-const { createProxyConnection } = require('../../../utils/proxyUtils');
+const { FtpFileExplorer } = require('./ftp');
+const { createProxyConnection } = require('../../../src-electron/utils/proxyUtils');
 const multer = require('multer');
 const upload = multer();
 const path = require('path');
@@ -10,37 +16,90 @@ const fsPromise = require('fs/promises');
 const os = require('os');
 const uuid = require('uuid');
 const { Readable } = require('stream');
-const { generalLimiter, uploadLimiter, downloadLimiter, openLimiter } = require('../rateLimiter');
+const { generalLimiter, uploadLimiter, downloadLimiter, openLimiter } = require('../../../src-electron/adapter/ipc/rateLimiter');
 
-function initFtpHandler(log, ftpMap, expressApp, proxyRepo, secretRepo) {
+/** Module-level connection map (managed internally) */
+const ftpMap = new Map();
 
+function register(context) {
+  const logger = context.logger;
+  const expressAppGetter = typeof context.expressApp === 'function'
+    ? () => context.expressApp()
+    : () => context.expressApp;
+  const proxyRepo = typeof context.proxyService === 'function'
+    ? context.proxyService
+    : () => context.proxyService;
+  const secretRepo = typeof context.secretService === 'function'
+    ? context.secretService
+    : () => context.secretService;
+
+  // ── Register connector with RuntimeAPI ──────────────────────────────
+  const api = typeof context.runtimeAPI === 'function'
+    ? context.runtimeAPI()
+    : context.runtimeAPI;
+  if (api) {
+    api.registerConnector('FTP_FILE_EXPLORER', (log, config) => {
+      return new FtpFileExplorer(log, config);
+    });
+    api.registerConfigResolver('FTP_FILE_EXPLORER', (connProfile, { secretId, secretRepo }) => {
+      const config = {
+        host: connProfile.host,
+        port: connProfile.port || 21,
+        user: connProfile.login || 'anonymous',
+        password: connProfile.password || 'guest',
+        secure: connProfile.secured || false,
+      };
+      const sid = secretId || connProfile.secretId;
+      if ((connProfile.authType === 'secret' || connProfile.authType === 'SECRET' || secretId) && sid) {
+        const secrets = typeof secretRepo === 'function' ? secretRepo() : secretRepo;
+        if (secrets && secrets.secrets) {
+          const secret = secrets.secrets.find(s => s.id === sid);
+          if (secret) {
+            if (secret.secretType === 'LOGIN_PASSWORD' || secret.secretType === 'login_password') {
+              config.user = secret.login;
+              config.password = secret.password;
+            } else if (secret.secretType === 'PASSWORD_ONLY' || secret.secretType === 'password_only') {
+              config.password = secret.password;
+              if (secret.login) config.user = secret.login;
+            }
+          }
+        }
+      }
+      return config;
+    });
+  }
+
+  const app = expressAppGetter();
+
+  // ── Helper ──────────────────────────────────────────────────────────
   function getExplorer(configId) {
     const exp = ftpMap.get(configId);
     if (!exp) throw new Error('Error connection config not found');
     return exp;
   }
 
+  // ── IPC: Register FTP session ───────────────────────────────────────
   ipcMain.handle('session.fe.ftp.register', async (event, { id, config, proxyId }) => {
     let ftpConfig = { ...config };
 
     if (proxyId) {
-      log.info(`FTP connection ${id}: Using proxy ${proxyId}`);
+      logger.info(`FTP connection ${id}: Using proxy ${proxyId}`);
       const proxies = proxyRepo();
       if (proxies && proxies.proxies) {
         const proxy = proxies.proxies.find(p => p.id === proxyId);
         if (proxy) {
-          const sock = await createProxyConnection(proxy, ftpConfig.host, ftpConfig.port || 21, secretRepo, log);
+          const sock = await createProxyConnection(proxy, ftpConfig.host, ftpConfig.port || 21, secretRepo, logger);
           ftpConfig.sock = sock;
         }
       }
     }
 
-    const explorer = new FtpFileExplorer(log, ftpConfig);
+    const explorer = new FtpFileExplorer(logger, ftpConfig);
     ftpMap.set(id, explorer);
   });
 
-  //==================== API ==========================================================
-  expressApp.post('/api/v1/ftp/:id', generalLimiter, async (req, res) => {
+  // ── Express: File operations ────────────────────────────────────────
+  app.post('/api/v1/ftp/:id', generalLimiter, async (req, res) => {
     const action = req.body.action || 'read';
     const pathParam = req.body.path || '/';
     const configId = req.params['id'];
@@ -98,25 +157,26 @@ function initFtpHandler(log, ftpMap, expressApp, proxyRepo, secretRepo) {
 
       res.json(result);
     } catch (error) {
-      log.error('Error handling FTP request:', error);
+      logger.error('Error handling FTP request:', error);
       res.status(500).send({ error: { code: 500, message: error.message } });
     }
   });
 
-  expressApp.post('/api/v1/ftp/upload/:id', uploadLimiter, upload.single('uploadFiles'), async (req, res) => {
+  // ── Express: Upload file ────────────────────────────────────────────
+  app.post('/api/v1/ftp/upload/:id', uploadLimiter, upload.single('uploadFiles'), async (req, res) => {
     const { data, filename } = req.body;
     let directoryPath;
     try {
       directoryPath = JSON.parse(data).name;
     } catch (error) {
-      log.error('Error parsing upload data JSON:', error);
+      logger.error('Error parsing upload data JSON:', error);
       res.status(400).send({ error: { code: 400, message: 'Invalid JSON: ' + error.message } });
       return;
     }
     const configId = req.params['id'];
 
     if (!req.file) {
-      log.error('Error: No file uploaded');
+      logger.error('Error: No file uploaded');
       res.status(400).send({ error: { code: 400, message: 'No file uploaded' } });
       return;
     }
@@ -134,17 +194,18 @@ function initFtpHandler(log, ftpMap, expressApp, proxyRepo, secretRepo) {
       });
       res.json({ success: true, message: `File uploaded to ${remotePath}` });
     } catch (error) {
-      log.error('Error uploading file:', error);
+      logger.error('Error uploading file:', error);
       res.status(400).send({ error: { code: 400, message: 'Error uploading file: ' + error.message } });
     }
   });
 
-  expressApp.post('/api/v1/ftp/download/:id', downloadLimiter, upload.none(), async (req, res) => {
+  // ── Express: Download files ─────────────────────────────────────────
+  app.post('/api/v1/ftp/download/:id', downloadLimiter, upload.none(), async (req, res) => {
     let downloadInput;
     try {
       downloadInput = JSON.parse(req.body.downloadInput);
     } catch (error) {
-      log.error('Error parsing downloadInput JSON:', error);
+      logger.error('Error parsing downloadInput JSON:', error);
       res.status(400).send({ error: { code: 400, message: 'Invalid JSON: ' + error.message } });
       return;
     }
@@ -170,26 +231,27 @@ function initFtpHandler(log, ftpMap, expressApp, proxyRepo, secretRepo) {
             const buffer = await explorer.downloadFile(fullRemotePath);
             zipfile.addBuffer(buffer, name);
           } catch (fileError) {
-            log.error(`Error fetching file ${fullRemotePath}:`, fileError.message);
+            logger.error(`Error fetching file ${fullRemotePath}:`, fileError.message);
           }
         }
         zipfile.outputStream.pipe(res).on('close', () => {
-          log.info('ZIP file successfully sent.');
+          logger.info('ZIP file successfully sent.');
         });
         zipfile.end();
       }
     } catch (error) {
-      log.error('Error downloading file:', error);
+      logger.error('Error downloading file:', error);
       res.status(400).send({ error: { code: 400, message: 'Error downloading file: ' + error.message } });
     }
   });
 
-  expressApp.post('/api/v1/ftp/open/:id', openLimiter, upload.none(), async (req, res) => {
+  // ── Express: Open file (download → edit → auto-upload on change) ────
+  app.post('/api/v1/ftp/open/:id', openLimiter, upload.none(), async (req, res) => {
     let downloadInput;
     try {
       downloadInput = JSON.parse(req.body.downloadInput);
     } catch (error) {
-      log.error('Error parsing downloadInput JSON:', error);
+      logger.error('Error parsing downloadInput JSON:', error);
       res.status(400).send({ error: { code: 400, message: 'Invalid JSON: ' + error.message } });
       return;
     }
@@ -208,21 +270,21 @@ function initFtpHandler(log, ftpMap, expressApp, proxyRepo, secretRepo) {
 
       const result = await shell.openPath(tempFilePath);
       if (result) {
-        log.error(`Error opening file: ${result}`);
+        logger.error(`Error opening file: ${result}`);
         res.status(500).send({ error: { code: 500, message: 'Error opening file' } });
         return;
       }
 
       let watcher = fs.watch(tempFilePath, async (eventType) => {
         if (eventType === 'change') {
-          log.info(`File modified: ${tempFilePath}`);
+          logger.info(`File modified: ${tempFilePath}`);
           try {
             const updatedBuffer = await fsPromise.readFile(tempFilePath);
             const updateExplorer = getExplorer(configId);
             await updateExplorer.uploadFile(fullRemotePath, updatedBuffer);
-            log.info(`File updated successfully: ${fullRemotePath}`);
+            logger.info(`File updated successfully: ${fullRemotePath}`);
           } catch (error) {
-            log.error('Error uploading updated file:', error);
+            logger.error('Error uploading updated file:', error);
           }
         }
       });
@@ -230,16 +292,18 @@ function initFtpHandler(log, ftpMap, expressApp, proxyRepo, secretRepo) {
       setTimeout(() => {
         watcher.close();
         fsPromise.unlink(tempFilePath)
-          .then(() => log.info('Temporary file deleted:', tempFilePath))
-          .catch((err) => log.info('Error deleting temp file:', err));
+          .then(() => logger.info('Temporary file deleted:', tempFilePath))
+          .catch((err) => logger.info('Error deleting temp file:', err));
       }, 10 * 60 * 1000);
 
       res.json({ success: true, message: `File opened: ${fullRemotePath}` });
     } catch (error) {
-      log.error('Error open file:', error);
+      logger.error('Error open file:', error);
       res.status(400).send({ error: { code: 400, message: 'Error open file: ' + error.message } });
     }
   });
+
+  logger.info('[ftp-file-explorer] Plugin registered');
 }
 
-module.exports = { initFtpHandler };
+module.exports = { register };

@@ -8,22 +8,24 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
-import {ChildFormAsFormControl} from '../../../EnhancedFormMixin';
-import {MenuComponent} from '../../menu.component';
-import {AuthType, SecretType} from '../../../../domain/Secret';
+import {ChildFormAsFormControl} from '../../../../src/app/components/EnhancedFormMixin';
+import {MenuComponent} from '../../../../src/app/components/menu/menu.component';
+import {AuthType, SecretType} from '../../../../src/app/domain/Secret';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   FormFieldWithPrecondition,
   ModelFieldWithPrecondition,
   ModelFormController
-} from '../../../../utils/ModelFormController';
-import {SecretStorageService} from '../../../../services/secret-storage.service';
-import {SecretService} from '../../../../services/secret.service';
-import {SettingStorageService} from '../../../../services/setting-storage.service';
+} from '../../../../src/app/utils/ModelFormController';
+import {SecretStorageService} from '../../../../src/app/services/secret-storage.service';
+import {SecretService} from '../../../../src/app/services/secret.service';
+import {SettingStorageService} from '../../../../src/app/services/setting-storage.service';
 import {MatDialog} from '@angular/material/dialog';
 import {MatFormField, MatLabel, MatOption, MatSelect, MatSelectChange, MatSuffix} from '@angular/material/select';
-import {SecretQuickFormComponent} from '../../../dialog/secret-quick-form/secret-quick-form.component';
-import {SambaProfile} from '../../../../domain/profile/SambaProfile';
+import {
+  SecretQuickFormComponent
+} from '../../../../src/app/components/dialog/secret-quick-form/secret-quick-form.component';
+import {SambaProfile} from '../../../../src/app/domain/profile/SambaProfile';
 import {KeyValuePipe} from '@angular/common';
 import {MatIcon} from '@angular/material/icon';
 import {MatIconButton} from '@angular/material/button';

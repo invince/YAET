@@ -29,10 +29,15 @@ export function HasChildForm<TBase extends Constructor>(Base: TBase) {
 }
 
 
+let isAChildFormIdCounter = 0;
+
 export function IsAChildForm<TBase extends Constructor>(Base: TBase) {
+
+  const hostId = `is-a-child-form-${++isAChildFormIdCounter}`;
 
   @Component({
     selector: 'app-is-a-child-form',
+    host: { 'data-mixin-id': hostId },
     imports: [],
     template: `<p>Abstract Menu</p>`
 })
@@ -91,10 +96,15 @@ export function IsAChildForm<TBase extends Constructor>(Base: TBase) {
 }
 
 
+let childFormIdCounter = 0;
+
 export function ChildFormAsFormControl<TBase extends Constructor>(Base: TBase) {
+
+  const hostId = `child-form-as-formcontrol-${++childFormIdCounter}`;
 
   @Component({
     selector: 'app-child-form-as-formcontrol',
+    host: { 'data-mixin-id': hostId },
     imports: [],
     template: `<p>Abstract Menu</p>`
 })

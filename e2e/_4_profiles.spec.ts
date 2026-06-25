@@ -17,7 +17,6 @@ async function fillSSHForm(mainWindow: any, name: string, host: string) {
   await mainWindow.waitForTimeout(200);
   await mainWindow.locator('app-remote-terminal-profile-form input[formControlName="login"]').fill('user');
   await mainWindow.locator('app-remote-terminal-profile-form input[formControlName="password"]').fill('pass');
-  await mainWindow.locator('app-remote-terminal-profile-form input[formControlName="confirmPassword"]').fill('pass');
 }
 
 test.describe('4. Profiles', () => {
@@ -170,7 +169,6 @@ test.describe('4. Profiles', () => {
       await mainWindow.waitForTimeout(200);
       await mainWindow.locator('app-remote-terminal-profile-form input[formControlName="login"]').fill('user');
       await mainWindow.locator('app-remote-terminal-profile-form input[formControlName="password"]').fill('secret');
-      await mainWindow.locator('app-remote-terminal-profile-form input[formControlName="confirmPassword"]').fill('secret');
 
       await mainWindow.locator('app-profile-form .modal-footer button').filter({ hasText: 'Save' }).click();
       await mainWindow.waitForTimeout(500);

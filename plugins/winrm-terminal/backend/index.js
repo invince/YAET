@@ -15,6 +15,36 @@ function register(context) {
     api.registerConnector('WIN_RM_TERMINAL', (log) => {
       return new WinRMSession(log, projectRequire);
     });
+    api.registerConfigResolver('WIN_RM_TERMINAL', (connProfile, { secretId, secretRepo }) => {
+      const config = {
+        host: connProfile.host,
+        port: connProfile.port || 5985,
+        executionPolicy: 'Bypass',
+        noProfile: true,
+      };
+      const sid = secretId || connProfile.secretId;
+      if (connProfile.authType === 'login' || connProfile.authType === 'LOGIN') {
+        config.username = connProfile.login;
+        config.password = connProfile.password;
+      } else if ((connProfile.authType === 'secret' || connProfile.authType === 'SECRET' || secretId) && sid) {
+        const secrets = typeof secretRepo === 'function' ? secretRepo() : secretRepo;
+        if (secrets && secrets.secrets) {
+          const secret = secrets.secrets.find(s => s.id === sid);
+          if (secret) {
+            if (secret.secretType === 'LOGIN_PASSWORD' || secret.secretType === 'login_password') {
+              config.username = secret.login;
+              config.password = secret.password;
+            } else if (secret.secretType === 'PASSWORD_ONLY' || secret.secretType === 'password_only') {
+              config.password = secret.password;
+              if (secret.login) config.username = secret.login;
+            }
+          }
+        }
+      } else if (connProfile.login) {
+        config.username = connProfile.login;
+      }
+      return config;
+    });
   }
 
   ipcMain.on('session.open.terminal.winrm', async (event, data) => {
@@ -59,6 +89,8 @@ function register(context) {
           type: 'winrm',
           process: session.process,
           callback: (input) => session.write(input),
+          resize: (cols, rows) => session.process?.resize(cols, rows),
+          close: () => { try { session.close(); } catch { /* ignore */ } },
         });
       }
 

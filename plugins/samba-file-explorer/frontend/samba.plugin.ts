@@ -2,15 +2,15 @@ import {Injector} from '@angular/core';
 import {PluginRegistryService} from '../../../src/app/plugin/services/plugin-registry.service';
 import {Profile, ProfileCategory} from '../../../src/app/domain/profile/Profile';
 import {TabService} from '../../../src/app/services/tab.service';
-import {SambaService} from '../../../src/app/services/file-explorer/samba.service';
-import {SambaSession} from '../../../src/app/domain/session/SambaSession';
-import {SambaComponent} from '../../../src/app/components/file-explorer/samba/samba.component';
-import {SambaFormComponent} from '../../../src/app/components/menu/profile-form/samba-form/samba-form.component';
+import {SambaService} from './services/samba.service';
+import {SambaSession} from './main/samba-session';
+import {SambaComponent} from './main/samba.component';
+import {SambaFormComponent} from './form/samba-form.component';
 
 export const SAMBA_FILE_EXPLORER = 'SAMBA_FILE_EXPLORER';
 
 export function register(registry: PluginRegistryService, injector: Injector) {
-  registry.registerCategoryType(ProfileCategory.FILE_EXPLORER, SAMBA_FILE_EXPLORER, 'PROFILES.SAMBA_FILE_EXPLORER', 'folder');
+  registry.registerCategoryType(ProfileCategory.FILE_EXPLORER, SAMBA_FILE_EXPLORER, 'PROFILES.SAMBA_FILE_EXPLORER', 'folder_shared');
   registry.registerFormMetadata(SAMBA_FILE_EXPLORER, 'sambaProfileForm', SAMBA_FILE_EXPLORER);
 
   const tabService = injector.get(TabService);
@@ -32,10 +32,10 @@ export function register(registry: PluginRegistryService, injector: Injector) {
       category: ProfileCategory.FILE_EXPLORER,
       profileType: SAMBA_FILE_EXPLORER,
       defaultPort: 445,
-      icon: 'folder',
+      icon: 'folder_shared',
       enabled: true,
-      secretTypes: ['LOGIN_PASSWORD'],
-      supportedAuthTypes: ['login'],
+      secretTypes: ['LOGIN_PASSWORD', 'PASSWORD_ONLY'],
+      supportedAuthTypes: ['login', 'secret'],
     },
     profileFormComponent: SambaFormComponent,
     sessionComponent: SambaComponent,

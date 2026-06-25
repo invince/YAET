@@ -1,7 +1,7 @@
-import {Session} from './Session';
-import {Profile} from '../profile/Profile';
-import {TabService} from '../../services/tab.service';
-import {SambaService} from '../../services/file-explorer/samba.service';
+import {Session} from '../../../../src/app/domain/session/Session';
+import {Profile} from '../../../../src/app/domain/profile/Profile';
+import {TabService} from '../../../../src/app/services/tab.service';
+import {SambaService} from '../services/samba.service';
 
 export class SambaSession extends Session {
 

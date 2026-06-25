@@ -3,12 +3,10 @@ import {
   CLIPBOARD_PASTE,
   ERROR,
   SESSION_DISCONNECT_VNC,
-  SESSION_OPEN_RDP,
   SESSION_OPEN_VNC,
   TRIGGER_NATIVE_CLIPBOARD_PASTE,
 } from './ElectronConstant';
 import {TabService} from '../tab.service';
-import {RdpProfile} from '../../domain/profile/RdpProfile';
 import {AbstractElectronService} from './electron.service';
 
 
@@ -17,10 +15,7 @@ import {AbstractElectronService} from './electron.service';
 })
 export class ElectronRemoteDesktopService extends AbstractElectronService {
 
-  private clipboardCallbackMap: Map<string, (id: string, text: string)=> boolean> = new Map();
-
   constructor(
-
     private tabService: TabService,
   ) {
     super();
@@ -31,32 +26,8 @@ export class ElectronRemoteDesktopService extends AbstractElectronService {
   private initClipboardListener() {
     if(this.ipc) {
       this.ipc.on(CLIPBOARD_PASTE, (event, data) => {
-        let used = false;
-        let tabSelected = this.tabService.getSelectedTab();
-        if (tabSelected && ['VNC_REMOTE_DESKTOP'].includes(tabSelected.session.profileType)) {
-          let callback = this.clipboardCallbackMap.get(tabSelected.session.profileType);
-          if (callback && callback(tabSelected.id, data)) {
-            used = true;
-          }
-        }
-
-        if (!used) {
-          this.ipc.send(TRIGGER_NATIVE_CLIPBOARD_PASTE, {data} );
-        }
+        this.ipc.send(TRIGGER_NATIVE_CLIPBOARD_PASTE, {data} );
       });
-    }
-  }
-
-  public subscribeClipboard (profileType: string, callback : (id: string, text: string)=> boolean) {
-    this.clipboardCallbackMap.set(profileType, callback);
-  }
-
-  openRdpSession(rdpProfile: RdpProfile) {
-    // hostname: string, options: { fullscreen?: boolean; admin?: boolean } = {}
-    const hostname = rdpProfile.host;
-    let options = {fullscreen: rdpProfile.fullScreen, admin: rdpProfile.asAdmin};
-    if (this.ipc) {
-      this.ipc.send(SESSION_OPEN_RDP, { hostname, options });
     }
   }
 

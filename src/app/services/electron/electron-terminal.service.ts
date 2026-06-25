@@ -6,13 +6,10 @@ import {AuthType, SecretType} from '../../domain/Secret';
 import {Session} from '../../domain/session/Session';
 import {SecretStorageService} from '../secret-storage.service';
 import {AbstractElectronService} from './electron.service';
-import {resolveSecretToConfig} from '../../utils/SecretResolver';
 import {
   SESSION_CLOSE_LOCAL_TERMINAL,
-  SESSION_CLOSE_WINRM_TERMINAL,
   SESSION_OPEN_CUSTOM,
   SESSION_OPEN_LOCAL_TERMINAL,
-  SESSION_OPEN_WINRM_TERMINAL,
   TERMINAL_INPUT,
   TERMINAL_OUTPUT,
   TERMINAL_RESIZE
@@ -36,13 +33,6 @@ export class ElectronTerminalService extends AbstractElectronService {
     }
   }
 
-  closeWinRMTerminalSession(session: Session) {
-    if (this.ipc) {
-      this.ipc.send(SESSION_CLOSE_WINRM_TERMINAL, { terminalId: session.id });
-    }
-  }
-
-
   openLocalTerminalSession(session: Session) {
     if (!this.ipc) {
       this.log({ level: 'error', message: "Invalid configuration" });
@@ -57,34 +47,6 @@ export class ElectronTerminalService extends AbstractElectronService {
     let localProfile: LocalTerminalProfile = session.profile.getProfile('LOCAL_TERMINAL');
     this.ipc.send(SESSION_OPEN_LOCAL_TERMINAL, { terminalId: session.id, terminalExec: localProfile.execPath });
   }
-
-  openWinRMTerminalSession(session: Session) {
-    if (!this.ipc || !session.profile || !session.profile.hasProfile('WIN_RM_TERMINAL')) {
-      this.log({ level: 'error', message: "Invalid configuration" });
-      return;
-    }
-
-    let config: any = {
-      executionPolicy: 'Bypass',
-      noProfile: true,
-
-    };
-    let profile = session.profile.getProfile('WIN_RM_TERMINAL');
-    config.host = profile.host;
-    config.port = profile.port;
-    if (!resolveSecretToConfig(config, profile, this.secretStorage, m => this.log(m))) {
-      return;
-    }
-    let data: { [key: string]: any; } = { terminalId: session.id, config: config };
-    if (profile.initPath) {
-      data['initPath'] = profile.initPath;
-    }
-    if (profile.initCmd) {
-      data['initCmd'] = profile.initCmd;
-    }
-    this.ipc.send(SESSION_OPEN_WINRM_TERMINAL, data);
-  }
-
 
   sendTerminalInput(terminalId: string, input: string) {
     if (this.ipc) {

@@ -1,7 +1,7 @@
-import {Session} from './Session';
-import {Profile} from '../profile/Profile';
-import {TabService} from '../../services/tab.service';
-import {FtpService} from '../../services/file-explorer/ftp.service';
+import {Session} from '../../../../src/app/domain/session/Session';
+import {Profile} from '../../../../src/app/domain/profile/Profile';
+import {TabService} from '../../../../src/app/services/tab.service';
+import {FtpService} from '../services/ftp.service';
 
 export class FtpSession extends Session {
 

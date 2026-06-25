@@ -66,6 +66,8 @@ function register(context) {
           process: session.conn,
           stream: session.stream,
           callback: (input) => session.write(input),
+          resize: (cols, rows) => session.stream?.setWindow(rows, cols, null, null),
+          close: () => { try { session.close(); } catch { /* ignore */ } },
         });
       }
     } catch (error) {

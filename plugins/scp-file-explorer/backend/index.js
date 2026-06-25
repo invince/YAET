@@ -1,7 +1,13 @@
+/**
+ * SCP/SFTP File Explorer Plugin — Backend Entry
+ *
+ * Registers IPC handlers and Express routes for SCP/SFTP file operations.
+ * Migrated from src-electron/adapter/ipc/file-explorer/scpHandler.js
+ */
 const { ipcMain, shell } = require('electron');
-const { ScpFileExplorer } = require('../../../runtime/connectors/file/scp');
-const { RuntimeAPI } = require('../../../runtime/runtimeAPI');
-const { createProxyConnection } = require('../../../utils/proxyUtils');
+const { ScpFileExplorer } = require('./scp');
+const { RuntimeAPI } = require('../../../src-electron/runtime/runtimeAPI');
+const { createProxyConnection } = require('../../../src-electron/utils/proxyUtils');
 const multer = require('multer');
 const upload = multer();
 const path = require('path');
@@ -11,58 +17,87 @@ const fsPromise = require('fs/promises');
 const os = require('os');
 const uuid = require('uuid');
 const { Readable } = require('stream');
-const { generalLimiter, uploadLimiter, downloadLimiter, openLimiter } = require('../rateLimiter');
+const { generalLimiter, uploadLimiter, downloadLimiter, openLimiter } = require('../../../src-electron/adapter/ipc/rateLimiter');
 
-function initScpSftpHandler(log, scpMap, expressApp, proxyRepo, secretRepo) {
-  const runtime = new RuntimeAPI(log);
-  runtime.setProxyRepo(proxyRepo);
-  runtime.setSecretRepo(secretRepo);
+/** Module-level connection map (managed internally, not exposed to electronMain) */
+const scpMap = new Map();
 
-  expressApp.post('/api/v1/scp/download', downloadLimiter, async (req, res) => {
-    const { profileId, path, proxyId, secretId } = req.body;
-    if (!profileId || !path) {
-      return res.status(400).json({ error: 'profileId and path are required' });
-    }
-    try {
-      const config = await runtime._resolveRemoteConfig(profileId, { proxyId, secretId });
-      const explorer = new ScpFileExplorer(log, config);
-      const buffer = await explorer.downloadFile(path);
-      const filename = path.split('/').pop() || 'download';
-      const encoded = encodeURIComponent(filename).replace(/['()]/g, escape).replace(/\*/g, '%2A');
-      res.set('Content-Disposition', `attachment; filename*=UTF-8''${encoded}`);
-      res.send(buffer);
-    } catch (error) {
-      log.error('SCP download error:', error);
-      res.status(500).json({ error: error.message });
-    }
-  });
+function register(context) {
+  const logger = context.logger;
+  const expressAppGetter = typeof context.expressApp === 'function'
+    ? () => context.expressApp()
+    : () => context.expressApp;
+  const proxyRepo = typeof context.proxyService === 'function'
+    ? context.proxyService
+    : () => context.proxyService;
+  const secretRepo = typeof context.secretService === 'function'
+    ? context.secretService
+    : () => context.secretService;
 
+  // ── Register connector with RuntimeAPI ──────────────────────────────
+  const api = typeof context.runtimeAPI === 'function'
+    ? context.runtimeAPI()
+    : context.runtimeAPI;
+  if (api) {
+    api.registerConnector('SCP_FILE_EXPLORER', (log, config) => {
+      return new ScpFileExplorer(log, config);
+    });
+  }
+
+  const app = expressAppGetter();
+
+  // ── Helper ──────────────────────────────────────────────────────────
   function getExplorer(configId) {
     const exp = scpMap.get(configId);
     if (!exp) throw new Error('Error connection config not found');
     return exp;
   }
 
+  // ── IPC: Register SCP session ───────────────────────────────────────
   ipcMain.handle('session.fe.scp.register', async (event, { id, config, proxyId }) => {
     let sshConfig = { ...config };
 
     if (proxyId) {
-      log.info(`SCP connection ${id}: Using proxy ${proxyId}`);
+      logger.info(`SCP connection ${id}: Using proxy ${proxyId}`);
       const proxies = proxyRepo();
       if (proxies && proxies.proxies) {
         const proxy = proxies.proxies.find(p => p.id === proxyId);
         if (proxy) {
-          const sock = await createProxyConnection(proxy, sshConfig.host, sshConfig.port || 22, secretRepo, log);
+          const sock = await createProxyConnection(proxy, sshConfig.host, sshConfig.port || 22, secretRepo, logger);
           sshConfig.sock = sock;
         }
       }
     }
 
-    const explorer = new ScpFileExplorer(log, sshConfig);
+    const explorer = new ScpFileExplorer(logger, sshConfig);
     scpMap.set(id, explorer);
   });
 
-  expressApp.post('/api/v1/scp/:id', generalLimiter, async (req, res) => {
+  // ── Express: Bulk download by profileId ─────────────────────────────
+  app.post('/api/v1/scp/download', downloadLimiter, async (req, res) => {
+    const { profileId, path: filePath, proxyId, secretId } = req.body;
+    if (!profileId || !filePath) {
+      return res.status(400).json({ error: 'profileId and path are required' });
+    }
+    try {
+      const runtime = new RuntimeAPI(logger);
+      runtime.setProxyRepo(proxyRepo);
+      runtime.setSecretRepo(secretRepo);
+      const config = await runtime._resolveRemoteConfig(profileId, { proxyId, secretId });
+      const explorer = new ScpFileExplorer(logger, config);
+      const buffer = await explorer.downloadFile(filePath);
+      const filename = filePath.split('/').pop() || 'download';
+      const encoded = encodeURIComponent(filename).replace(/['()]/g, escape).replace(/\*/g, '%2A');
+      res.set('Content-Disposition', `attachment; filename*=UTF-8''${encoded}`);
+      res.send(buffer);
+    } catch (error) {
+      logger.error('SCP download error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ── Express: File operations (list/read/search/delete/rename/copy/move/create) ──
+  app.post('/api/v1/scp/:id', generalLimiter, async (req, res) => {
     const action = req.body.action || 'read';
     const pathParam = req.body.path || '/';
     const configId = req.params['id'];
@@ -120,17 +155,18 @@ function initScpSftpHandler(log, scpMap, expressApp, proxyRepo, secretRepo) {
 
       res.json(result);
     } catch (error) {
-      log.error('Error handling SCP/SFTP request:', error);
+      logger.error('Error handling SCP/SFTP request:', error);
       res.status(500).send({ error: { code: 500, message: error.message } });
     }
   });
 
-  expressApp.post('/api/v1/scp/upload/:id', uploadLimiter, upload.single('uploadFiles'), async (req, res) => {
+  // ── Express: Upload file ────────────────────────────────────────────
+  app.post('/api/v1/scp/upload/:id', uploadLimiter, upload.single('uploadFiles'), async (req, res) => {
     let targetDir;
     try {
       targetDir = JSON.parse(req.body.data).name;
     } catch (error) {
-      log.error('Error parsing upload data JSON:', error);
+      logger.error('Error parsing upload data JSON:', error);
       res.status(400).send({ error: { code: 400, message: 'Invalid JSON: ' + error.message } });
       return;
     }
@@ -151,12 +187,13 @@ function initScpSftpHandler(log, scpMap, expressApp, proxyRepo, secretRepo) {
       });
       res.json({ success: true, message: `File uploaded to ${remotePath}` });
     } catch (error) {
-      log.error('Error uploading file:', error);
+      logger.error('Error uploading file:', error);
       res.status(400).send({ error: { code: 400, message: 'Error uploading file: ' + error.message } });
     }
   });
 
-  expressApp.post('/api/v1/scp/download/:id', downloadLimiter, upload.none(), async (req, res) => {
+  // ── Express: Download files ─────────────────────────────────────────
+  app.post('/api/v1/scp/download/:id', downloadLimiter, upload.none(), async (req, res) => {
     let downloadInput;
     try {
       downloadInput = JSON.parse(req.body.downloadInput);
@@ -185,21 +222,22 @@ function initScpSftpHandler(log, scpMap, expressApp, proxyRepo, secretRepo) {
             const buffer = await explorer.downloadFile(`${p}${name}`);
             zipfile.addBuffer(buffer, name);
           } catch (fileError) {
-            log.error(`Error fetching file ${p}${name}:`, fileError.message);
+            logger.error(`Error fetching file ${p}${name}:`, fileError.message);
           }
         }
         zipfile.outputStream.pipe(res).on('close', () => {
-          log.info('ZIP file successfully sent.');
+          logger.info('ZIP file successfully sent.');
         });
         zipfile.end();
       }
     } catch (error) {
-      log.error('Error downloading file:', error);
+      logger.error('Error downloading file:', error);
       res.status(400).send({ error: { code: 400, message: 'Error downloading file: ' + error.message } });
     }
   });
 
-  expressApp.post('/api/v1/scp/open/:id', openLimiter, upload.none(), async (req, res) => {
+  // ── Express: Open file (download → edit → auto-upload on change) ────
+  app.post('/api/v1/scp/open/:id', openLimiter, upload.none(), async (req, res) => {
     let downloadInput;
     try {
       downloadInput = JSON.parse(req.body.downloadInput);
@@ -225,14 +263,14 @@ function initScpSftpHandler(log, scpMap, expressApp, proxyRepo, secretRepo) {
 
       const result = await shell.openPath(tempFilePath);
       if (result) {
-        log.error(`Error opening file: ${result}`);
+        logger.error(`Error opening file: ${result}`);
         res.status(500).send({ error: { code: 500, message: 'Error opening file' } });
         return;
       }
 
       let watcher = fs.watch(tempFilePath, async (eventType) => {
         if (eventType === 'change') {
-          log.info(`File modified: ${tempFilePath}`);
+          logger.info(`File modified: ${tempFilePath}`);
           try {
             const updatedBuffer = await fsPromise.readFile(tempFilePath);
             const bufferStream = new Readable();
@@ -241,9 +279,9 @@ function initScpSftpHandler(log, scpMap, expressApp, proxyRepo, secretRepo) {
 
             const updateExplorer = getExplorer(configId);
             await updateExplorer.uploadFile(fullRemotePath, bufferStream);
-            log.info(`File updated successfully: ${fullRemotePath}`);
+            logger.info(`File updated successfully: ${fullRemotePath}`);
           } catch (error) {
-            log.error('Error uploading updated file:', error);
+            logger.error('Error uploading updated file:', error);
           }
         }
       });
@@ -253,16 +291,18 @@ function initScpSftpHandler(log, scpMap, expressApp, proxyRepo, secretRepo) {
         try {
           await fsPromise.unlink(tempFilePath);
         } catch (err) {
-          log.error('Error deleting temporary file:', err);
+          logger.error('Error deleting temporary file:', err);
         }
       }, 10 * 60 * 1000);
 
       res.json({ success: true, message: `File opened: ${fullRemotePath}` });
     } catch (error) {
-      log.error('Error open file:', error);
+      logger.error('Error open file:', error);
       res.status(400).send({ error: { code: 400, message: 'Error open file: ' + error.message } });
     }
   });
+
+  logger.info('[scp-file-explorer] Plugin registered');
 }
 
-module.exports = { initScpSftpHandler };
+module.exports = { register };

@@ -2,12 +2,10 @@ import {Injector} from '@angular/core';
 import {PluginRegistryService} from '../../../src/app/plugin/services/plugin-registry.service';
 import {Profile, ProfileCategory} from '../../../src/app/domain/profile/Profile';
 import {TabService} from '../../../src/app/services/tab.service';
-import {FtpService} from '../../../src/app/services/file-explorer/ftp.service';
-import {FtpSession} from '../../../src/app/domain/session/FtpSession';
-import {FtpComponent} from '../../../src/app/components/file-explorer/ftp/ftp.component';
-import {
-  FtpProfileFormComponent
-} from '../../../src/app/components/menu/profile-form/ftp-profile-form/ftp-profile-form.component';
+import {FtpService} from './services/ftp.service';
+import {FtpSession} from './main/ftp-session';
+import {FtpComponent} from './main/ftp.component';
+import {FtpProfileFormComponent} from './form/ftp-profile-form.component';
 
 export const FTP_FILE_EXPLORER = 'FTP_FILE_EXPLORER';
 
