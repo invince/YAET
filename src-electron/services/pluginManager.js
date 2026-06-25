@@ -201,6 +201,7 @@ class PluginManager {
         category: plugin.manifest.category,
         profileType: plugin.manifest.profileType,
         source: plugin.source,
+        openNewTab: plugin.manifest.openNewTab !== false,
         frontendEntry: frontendEntryPath,
         ipcChannels: {
           send: ipc.send || [],

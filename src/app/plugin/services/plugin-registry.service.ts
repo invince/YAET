@@ -10,6 +10,7 @@ export interface ExternalPluginInfo {
   profileType: ProfileType | string;
   profileFormElement: string;
   ipcChannels?: { send: string[]; invoke: string[]; on: string[] };
+  openNewTab?: boolean;
 }
 
 export interface BundledPluginInfo extends ExternalPluginInfo {
@@ -17,6 +18,7 @@ export interface BundledPluginInfo extends ExternalPluginInfo {
   formControlName?: string;
   profileField?: string;
   frontendEntry?: string;
+  openNewTab?: boolean;
 }
 
 export interface ProfileTypeInfo {
@@ -253,5 +255,17 @@ export class PluginRegistryService {
    */
   registerFormMetadata(profileType: string, formControlName: string, profileField: string): void {
     this.formMetadataMap.set(profileType, { formControlName, profileField });
+  }
+
+  /**
+   * Whether a profile type should open in a new tab when activated.
+   * Plugins can declare openNewTab: false in their manifest to prevent tab creation.
+   * Falls back to true for unknown types.
+   */
+  getProfileOpenNewTab(profileType: string): boolean {
+    if (profileType === 'CUSTOM') return false;
+    const bundled = this.getBundledPlugin(profileType);
+    if (bundled && bundled.openNewTab === false) return false;
+    return true;
   }
 }

@@ -88,10 +88,10 @@ describe('Profile', () => {
     expect(Profile.requireOpenNewTab(p)).toBeTrue();
   });
 
-  it('requireOpenNewTab should return false for RDP', () => {
+  it('requireOpenNewTab should return false for RDP with map', () => {
     const p = new Profile();
     p.profileType = 'RDP_REMOTE_DESKTOP';
-    expect(Profile.requireOpenNewTab(p)).toBeFalse();
+    expect(Profile.requireOpenNewTab(p, { 'RDP_REMOTE_DESKTOP': false })).toBeFalse();
   });
 
   it('requireOpenNewTab should return false for CUSTOM', () => {

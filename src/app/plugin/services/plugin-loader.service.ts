@@ -57,6 +57,7 @@ export class PluginLoaderService {
             category: plugin.category,
             profileType: plugin.profileType,
             profileFormElement: '',
+            openNewTab: plugin.openNewTab,
             ipcChannels: plugin.ipcChannels,
             frontendEntry: plugin.frontendEntry || '',
           });

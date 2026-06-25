@@ -7,6 +7,7 @@
   "profileType": "RDP_REMOTE_DESKTOP",
   "icon": "desktop_windows",
   "enabled": true,
+  "openNewTab": false,
   "backend": "./backend/index.js",
   "frontend": {
     "entry": "./frontend/rdp.plugin.ts"

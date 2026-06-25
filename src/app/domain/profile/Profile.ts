@@ -171,9 +171,12 @@ export class Profile {
     return profile;
   }
 
-  static requireOpenNewTab(profile: Profile) {
-    return !['RDP_REMOTE_DESKTOP', 'CUSTOM']
-      .includes(profile.profileType);
+  static requireOpenNewTab(profile: Profile, openNewTabMap?: Record<string, boolean>) {
+    if (profile.profileType === 'CUSTOM') return false;
+    if (openNewTabMap && profile.profileType in openNewTabMap) {
+      return openNewTabMap[profile.profileType];
+    }
+    return true;
   }
 
   static useSecret(one: Profile, secret: any) {
