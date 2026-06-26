@@ -14,6 +14,7 @@
     "prebuild": "node scripts/generate-plugin-barrel.js",
     "clean": "rimraf dist",
     "build": "npm run clean && patch-package && ng build --base-href ./ && electron-builder",
+    "build:angular": "npm run clean && patch-package && ng build --base-href ./",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "start": "concurrently \"npm run ng:serve\" \"npm run electron:dev\"",

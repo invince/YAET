@@ -26,9 +26,7 @@ jobs:
         run: sudo apt-get install -y xvfb
 
       - name: Build Angular
-        run: |
-          npx patch-package
-          npx ng build --base-href ./
+        run: npm run build
 
       - name: Cache Playwright Browsers
         id: playwright-cache
@@ -75,10 +73,7 @@ jobs:
         run: npm ci
 
       - name: Build Angular
-        run: |
-          npm run clean
-          npx patch-package
-          npx ng build --base-href ./
+        run: npm run build:angular
 
       - name: Run Unit Tests
         run: npx ng test --no-watch --browsers ChromeHeadless
