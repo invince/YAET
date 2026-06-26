@@ -1,6 +1,6 @@
 {
   "name": "yet-another-electron-term",
-  "version": "6.0.0",
+  "version": "7.0.0",
   "author": {
     "name": "invince",
     "email": "invincezero@gmail.com"
@@ -9,13 +9,17 @@
   "main": "src-electron/electronMain.js",
   "scripts": {
     "ng": "ng",
+    "generate-plugin-barrel": "node scripts/generate-plugin-barrel.js",
+    "preserve": "node scripts/generate-plugin-barrel.js",
+    "prebuild": "node scripts/generate-plugin-barrel.js",
     "clean": "rimraf dist",
     "build": "npm run clean && patch-package && ng build --base-href ./ && electron-builder",
+    "build:angular": "npm run clean && patch-package && ng build --base-href ./",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "start": "concurrently \"npm run ng:serve\" \"npm run electron:dev\"",
-    "test:e2e": "ng build --base-href ./ && playwright test",
-    "test:e2e:headed": "ng build --base-href ./ && cross-env YAET_SHOW_WINDOW=1 playwright test",
+    "test:e2e": "node scripts/generate-plugin-barrel.js && ng build --base-href ./ && playwright test",
+    "test:e2e:headed": "node scripts/generate-plugin-barrel.js && ng build --base-href ./ && cross-env YAET_SHOW_WINDOW=1 playwright test",
     "ng:serve": "ng serve",
     "electron:dev": "wait-on http://localhost:4200 && cross-env NODE_ENV=development electron .",
     "postinstall": "patch-package",
@@ -42,6 +46,7 @@
     "files": [
       "dist/",
       "src-electron/",
+      "plugins/",
       "package.json"
     ],
     "win": {
@@ -70,16 +75,16 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "~20.3.21",
+    "@angular/animations": "~20.3.25",
     "@angular/cdk": "~20.2.14",
-    "@angular/common": "~20.3.21",
-    "@angular/compiler": "~20.3.21",
+    "@angular/common": "~20.3.25",
+    "@angular/compiler": "~20.3.25",
     "@angular/core": "~20.3.25",
-    "@angular/forms": "~20.3.21",
+    "@angular/forms": "~20.3.25",
     "@angular/material": "~20.2.14",
-    "@angular/platform-browser": "~20.3.21",
-    "@angular/platform-browser-dynamic": "~20.3.21",
-    "@angular/router": "~20.3.21",
+    "@angular/platform-browser": "~20.3.25",
+    "@angular/platform-browser-dynamic": "~20.3.25",
+    "@angular/router": "~20.3.25",
     "@ngx-translate/core": "^17.0.0",
     "@ngx-translate/http-loader": "^17.0.0",
     "@novnc/novnc": "^1.5.0",
@@ -123,9 +128,9 @@
     "zone.js": "~0.15.1"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "~20.3.25",
-    "@angular/cli": "~20.3.25",
-    "@angular/compiler-cli": "~20.3.21",
+    "@angular-devkit/build-angular": "~20.3.30",
+    "@angular/cli": "~20.3.30",
+    "@angular/compiler-cli": "~20.3.25",
     "@playwright/test": "^1.60.0",
     "@types/crypto-js": "^4.2.2",
     "@types/jasmine": "~5.1.0",

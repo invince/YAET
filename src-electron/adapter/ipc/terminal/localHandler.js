@@ -10,11 +10,16 @@ function initLocalTerminalIpcHandler(settings, log, terminalMap, registry) {
       event.sender.send('terminal.output', { id: data.terminalId, data: output });
     });
 
-    session.connect(data.config || {}).then(() => {
+    session.connect({
+      terminalExec: data.terminalExec,
+      ...(data.config || {})
+    }).then(() => {
       terminalMap.set(data.terminalId, {
         type: 'local',
         process: session.process,
         callback: (input) => session.write(input),
+        resize: (cols, rows) => session.process?.resize(cols, rows),
+        close: () => { try { session.process?.kill(); } catch { /* ignore */ } },
       });
       if (registry) registry.register(data.terminalId, 'local', 'user', session);
     }).catch((err) => {

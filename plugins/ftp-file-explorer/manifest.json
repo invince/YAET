@@ -1,0 +1,22 @@
+{
+  "id": "ftp-file-explorer",
+  "name": "FTP File Explorer",
+  "version": "1.0.0",
+  "description": "FTP file explorer plugin",
+  "category": "FILE_EXPLORER",
+  "profileType": "FTP_FILE_EXPLORER",
+  "defaultPort": 21,
+  "icon": "folder",
+  "enabled": true,
+  "secretTypes": ["LOGIN_PASSWORD", "PASSWORD_ONLY"],
+  "supportedAuthTypes": ["login", "secret"],
+  "backend": "./backend/index.js",
+  "frontend": {
+    "entry": "./frontend/ftp.plugin.ts"
+  },
+  "ipc": {
+    "send": [],
+    "invoke": ["session.fe.ftp.register"],
+    "on": []
+  }
+}

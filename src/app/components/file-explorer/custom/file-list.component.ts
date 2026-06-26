@@ -14,12 +14,11 @@ import {MatSort, MatSortModule} from '@angular/material/sort';
 import {MatTableDataSource, MatTableModule} from '@angular/material/table';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {Subscription} from 'rxjs';
-import {Profile, ProfileCategory, ProfileType} from '../../../domain/profile/Profile';
+import {Profile, ProfileCategory} from '../../../domain/profile/Profile';
 import {Session} from '../../../domain/session/Session';
-import {SSHSession} from '../../../domain/session/SSHSession';
 import {TabInstance} from '../../../domain/TabInstance';
 import {DragDropTransferService} from '../../../services/drag-drop-transfer.service';
-import {ElectronTerminalService} from '../../../services/electron/electron-terminal.service';
+import {SessionService} from '../../../services/session.service';
 import {LocalFileWatcherService} from '../../../services/electron/local-file.watcher.service';
 import {FileItem, FileSystemApiService} from '../../../services/file-system/file-system-api.service';
 import {FileEditorDialogComponent} from './file-editor-dialog.component';
@@ -101,7 +100,7 @@ export class FileListComponent implements OnInit, OnDestroy {
         private dragDropService: DragDropTransferService,
         private localFileService: LocalFileWatcherService,
         private tabService: TabService,
-        private electronTerminalService: ElectronTerminalService,
+        private sessionService: SessionService,
         private profileService: ProfileService,
         private dialog: MatDialog
     ) { }
@@ -937,11 +936,13 @@ export class FileListComponent implements OnInit, OnDestroy {
         // Clone the profile
         const sshProfile = Profile.clone(this.session.profile);
         sshProfile.category = ProfileCategory.TERMINAL;
-        sshProfile.profileType = ProfileType.SSH_TERMINAL;
+        sshProfile.profileType = 'SSH_TERMINAL';
 
         // 1. Init path
-        if (sshProfile.sshProfile) {
-            sshProfile.sshProfile.initPath = this.path;
+        const sshProfileData = sshProfile.getProfile('SSH_TERMINAL');
+        if (sshProfileData) {
+            sshProfileData.initPath = this.path;
+            sshProfile.setProfile('SSH_TERMINAL', sshProfileData);
         }
 
         // 2. Split window
@@ -954,8 +955,8 @@ export class FileListComponent implements OnInit, OnDestroy {
             }
         }
 
-        // Create new session
-        const session = new SSHSession(sshProfile, ProfileType.SSH_TERMINAL, this.tabService, this.electronTerminalService);
+        // Create new session via plugin
+        const session = this.sessionService.create(sshProfile, 'SSH_TERMINAL');
 
         // Create new tab instance
         const tabInstance = new TabInstance(ProfileCategory.TERMINAL, session);

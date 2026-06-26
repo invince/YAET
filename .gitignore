@@ -45,12 +45,16 @@ settings.json
 profiles.json
 secrets.json
 cloud.json
-manifest.json
+
 
 config
 
 src-electron/logs
 build.log
+
+# Plugin generated files
+plugins/generated-plugin-manifest.json
+plugins/generated-plugin-registry.ts
 
 docs/ai/
 
@@ -62,3 +66,5 @@ docs/ai/
 
 /.deepseek
 /.qwen
+/.reasonix
+

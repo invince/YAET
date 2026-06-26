@@ -1,16 +1,16 @@
-import { Injectable, NgZone } from '@angular/core';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { AiChatService } from './ai-chat.service';
-import { MasterKeyService } from './master-key.service';
-import { ModalControllerService } from './modal-controller.service';
-import { NotificationService } from './notification.service';
-import { SessionService } from './session.service';
-import { SettingService } from './setting.service';
-import { TabService } from './tab.service';
-import { ShortcutHelpComponent } from '../components/dialog/shortcut-help/shortcut-help.component';
-import { MenuConsts } from '../domain/MenuConsts';
-import { TabInstance } from '../domain/TabInstance';
-import { ProfileCategory, ProfileType } from '../domain/profile/Profile';
+import {Injectable, NgZone} from '@angular/core';
+import {MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {AiChatService} from './ai-chat.service';
+import {MasterKeyService} from './master-key.service';
+import {ModalControllerService} from './modal-controller.service';
+import {NotificationService} from './notification.service';
+import {SessionService} from './session.service';
+import {SettingService} from './setting.service';
+import {TabService} from './tab.service';
+import {ShortcutHelpComponent} from '../components/dialog/shortcut-help/shortcut-help.component';
+import {MenuConsts} from '../domain/MenuConsts';
+import {TabInstance} from '../domain/TabInstance';
+import {LOCAL_TERMINAL, ProfileCategory} from '../domain/profile/Profile';
 
 @Injectable({
   providedIn: 'root'
@@ -136,7 +136,7 @@ export class ShortcutService {
     }
     this.modalControl.closeModal();
     const tab = new TabInstance(ProfileCategory.TERMINAL,
-      this.sessionService.create(this.settingService.createLocalTerminalProfile(), ProfileType.LOCAL_TERMINAL));
+      this.sessionService.create(this.settingService.createLocalTerminalProfile(), LOCAL_TERMINAL));
     this.tabService.addTab(tab);
   }
 

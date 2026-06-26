@@ -15,12 +15,11 @@ import {MatIconModule} from '@angular/material/icon';
 import {FitAddon} from '@xterm/addon-fit';
 import {WebLinksAddon} from '@xterm/addon-web-links';
 import {Terminal} from '@xterm/xterm';
-import {Profile, ProfileCategory, ProfileType} from '../../domain/profile/Profile';
-import {ScpSession} from '../../domain/session/ScpSession';
+import {Profile, ProfileCategory} from '../../domain/profile/Profile';
 import {Session} from '../../domain/session/Session';
+import {SessionService} from '../../services/session.service';
 import {TabInstance} from '../../domain/TabInstance';
 import {ElectronTerminalService} from '../../services/electron/electron-terminal.service';
-import {ScpService} from '../../services/file-explorer/scp.service';
 import {TabService} from '../../services/tab.service';
 import {TerminalInstanceService} from '../../services/terminal-instance.service';
 
@@ -62,7 +61,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   constructor(
     private electron: ElectronTerminalService,
     private tabService: TabService,
-    private scpService: ScpService,
+    private sessionService: SessionService,
     private terminalInstanceService: TerminalInstanceService,
   ) {
     const isWin = (window as any).electronAPI?.platform === 'win32';
@@ -241,7 +240,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   get isSsh(): boolean {
-    return this.session?.profileType === ProfileType.SSH_TERMINAL;
+    return this.session?.profileType === 'SSH_TERMINAL';
   }
 
   openScpExplorer(event?: MouseEvent) {
@@ -253,7 +252,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     // Clone the profile
     const scpProfile = Profile.clone(this.session.profile);
     scpProfile.category = ProfileCategory.FILE_EXPLORER;
-    scpProfile.profileType = ProfileType.SCP_FILE_EXPLORER;
+    scpProfile.profileType = 'SCP_FILE_EXPLORER';
 
     if (this.tabService.splitMode) {
       const currentTab = this.tabService.tabs.find(t => t.id === this.session?.id);
@@ -264,8 +263,8 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
       }
     }
 
-    // Create new session
-    const session = new ScpSession(scpProfile, ProfileType.SCP_FILE_EXPLORER, this.tabService, this.scpService);
+    // Create new session via plugin
+    const session = this.sessionService.create(scpProfile, 'SCP_FILE_EXPLORER');
 
     // Create and add new tab instance
     const tabInstance = new TabInstance(ProfileCategory.FILE_EXPLORER, session);

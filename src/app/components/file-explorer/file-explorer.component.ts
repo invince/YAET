@@ -1,19 +1,25 @@
-import {Component, Input} from '@angular/core';
-import {ScpComponent} from "./scp/scp.component";
+import {Component, Input, OnInit} from '@angular/core';
+import {NgComponentOutlet} from '@angular/common';
 import {Session} from '../../domain/session/Session';
-import {FtpComponent} from './ftp/ftp.component';
-import {SambaComponent} from './samba/samba.component';
+import {PluginRegistryService} from '../../plugin/services/plugin-registry.service';
 
 @Component({
     selector: 'app-file-explorer',
     imports: [
-        ScpComponent,
-        FtpComponent,
-        SambaComponent,
+        NgComponentOutlet,
     ],
     templateUrl: './file-explorer.component.html',
     styleUrl: './file-explorer.component.scss'
 })
-export class FileExplorerComponent {
+export class FileExplorerComponent implements OnInit {
   @Input() session!: Session;
+  componentType: any;
+  componentInputs: any;
+
+  constructor(private registry: PluginRegistryService) {}
+
+  ngOnInit() {
+    this.componentType = this.registry.getSessionComponent(this.session.profileType);
+    this.componentInputs = { session: this.session };
+  }
 }

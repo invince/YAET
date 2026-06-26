@@ -23,7 +23,7 @@
 
   <mat-radio-group aria-label="Auth Type" formControlName="authType" required (change)="onSelectAuthType($event)">
     @for (oneType of AUTH_OPTIONS | keyvalue : unordered; track oneType.value) {
-    <mat-radio-button [value]="oneType.value">{{ oneType.value === 'login' ? ('COMMON.LOGIN' | translate) : ('COMMON.SECRET' | translate) }}</mat-radio-button>
+    <mat-radio-button [value]="oneType.value">{{ oneType.value === 'N/A' ? ('COMMON.NONE' | translate) : oneType.value === 'login' ? ('COMMON.LOGIN' | translate) : ('COMMON.SECRET' | translate) }}</mat-radio-button>
     }
   </mat-radio-group>
 
@@ -38,11 +38,6 @@
   <mat-form-field class="field" required>
     <mat-label>{{ 'COMMON.PASSWORD' | translate }}</mat-label>
     <input matInput type="password" formControlName="password" />
-  </mat-form-field>
-
-  <mat-form-field class="field" required>
-    <mat-label>{{ 'COMMON.CONFIRM_PASSWORD' | translate }}</mat-label>
-    <input matInput type="password" formControlName="confirmPassword" />
   </mat-form-field>
   }
 

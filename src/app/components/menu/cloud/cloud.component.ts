@@ -125,15 +125,10 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
   secretOrPasswordMatchValidator(group: FormGroup) {
     let authType = group.get('authType')?.value;
     if (authType == 'login') {
-      group.get('password')?.addValidators(Validators.required);
-      group.get('secretId')?.removeValidators(Validators.required);
       return group.get('password')?.value ? null : { passwordRequired: true };
     } else if (authType == 'secret') {
-      group.get('password')?.removeValidators(Validators.required);
-      group.get('secretId')?.addValidators(Validators.required);
       return group.get('secretId')?.value ? null : { secretRequired: true };
     } else {
-
       return { authTypeRequired: true };
     }
   }

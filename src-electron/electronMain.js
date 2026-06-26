@@ -8,42 +8,35 @@ const { initConfigFilesIpcHandler } = require('./adapter/ipc/configFiles');
 const { initTerminalIpcHandler } = require('./adapter/ipc/terminal/terminalHandler');
 const { initCloudIpcHandler } = require('./adapter/ipc/cloud');
 const { initSecurityIpcHandler, decrypt } = require('./adapter/ipc/security');
-const { initRdpHandler } = require('./adapter/ipc/remote-desktop/rdpHandler');
 const { initClipboard } = require('./adapter/ipc/clipboard');
-const { initVncHandler } = require("./adapter/ipc/remote-desktop/vncHandler");
 const { initCustomSessionHandler } = require("./adapter/ipc/customSession");
-const { initScpSftpHandler } = require("./adapter/ipc/file-explorer/scpHandler");
+
 const { initAutoUpdater } = require("./adapter/ipc/autoUpdater");
 const { initBackend } = require("./adapter/ipc/backend");
-const { initFtpHandler } = require("./adapter/ipc/file-explorer/ftpHandler");
 const { initLocalFileHandler } = require("./adapter/ipc/localFile");
+const { initPluginHandler } = require("./adapter/ipc/pluginHandler");
 
 
 let tray;
 let expressApp;
 let mainWindow;
 let terminalMap = new Map();
-let vncMap = new Map();
-let scpMap = new Map();
-let ftpMap = new Map();
-let sambaMap = new Map();
+
 let initialized = false;
 let lastSettings = null;
 let allProxies = null;
 let allSecrets = null;
 let runtime = null;
 let sessionRegistry = null;
+let pluginManager = null;
 
 const log = require("electron-log")
 const configService = new ConfigService(log);
 const { initCommonIpc } = require("./adapter/ipc/commonIpc");
 const { initAcpClientIpcHandler } = require("./adapter/ipc/ai/acpClient");
 const { initAiIpcHandler, initAiChatIpcHandler, initAiToolsIpcHandler } = require("./adapter/ipc/ai/aiChat");
-const { initSSHTerminalIpcHandler } = require("./adapter/ipc/terminal/sshHandler");
-const { initTelnetIpcHandler } = require("./adapter/ipc/terminal/telnetHandler");
 const { initLocalTerminalIpcHandler } = require("./adapter/ipc/terminal/localHandler");
-const { initWinRmIpcHandler } = require("./adapter/ipc/terminal/winRMHandler");
-const { initSambaHandler } = require("./adapter/ipc/file-explorer/sambaHandler");
+
 const { RuntimeAPI } = require("./runtime/runtimeAPI");
 const { SessionRegistry } = require("./runtime/sessionRegistry");
 const { ApprovalManager } = require("./runtime/approvalManager");
@@ -61,6 +54,9 @@ app.on('ready', () => {
 
   const isDev = process.env.NODE_ENV === 'development';
 
+  // ── Phase 1: Discover plugins and write merged manifest for preload.js ──
+  pluginManager = initPluginHandler(log);
+
   tray = new Tray(__dirname + '/assets/icons/app-icon.png',);
   tray.setToolTip('Yet Another Electron Terminal');
 
@@ -72,6 +68,7 @@ app.on('ready', () => {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      sandbox: false, // for plugin, we need load add require other path
       enableRemoteModule: false,
       enableBlinkFeatures: 'Accelerated2dCanvas',
       preload: path.join(__dirname, 'preload.js'),
@@ -93,8 +90,27 @@ app.on('ready', () => {
     fs.mkdirSync(APP_CONFIG_PATH);
   }
 
+  // ── Phase 1: Discover plugins and write merged manifest for preload.js ──
+  pluginManager = initPluginHandler(log);
+
+  runtime = new RuntimeAPI(log);
+  runtime.setSecretRepo(() => allSecrets);
+  runtime.setProxyRepo(() => allProxies);
+
   initHandlerBeforeSettingLoad();
 
+  // ── Phase 2: Load plugin backends (after sessionRegistry is created) ────
+  pluginManager.loadAll({
+    ipcMain,
+    logger: log,
+    terminalMap,
+    sessionRegistry: () => sessionRegistry,
+    runtimeAPI: () => runtime,
+    proxyService: () => allProxies,
+    secretService: () => allSecrets,
+    expressApp: () => expressApp,
+    settings: () => lastSettings,
+  });
 
   // Ensure `load` runs on every page reload
   mainWindow.webContents.on('did-finish-load', () => {
@@ -132,25 +148,14 @@ function initHandlerBeforeSettingLoad() {
   initCloudIpcHandler(log, () => allProxies, () => allSecrets);
   initSecurityIpcHandler(log);
   initTerminalIpcHandler(log, terminalMap);
-  initSSHTerminalIpcHandler(log, terminalMap, () => allProxies, () => allSecrets, sessionRegistry);
-  initTelnetIpcHandler(log, terminalMap, () => allProxies, () => allSecrets, sessionRegistry);
 
-  initScpSftpHandler(log, scpMap, expressApp, () => allProxies, () => allSecrets);
-  initFtpHandler(log, ftpMap, expressApp, () => allProxies, () => allSecrets);
-  initSambaHandler(log, sambaMap, expressApp, () => allProxies, () => allSecrets);
 
-  initRdpHandler(log);
-  initVncHandler(log, vncMap, () => allProxies, () => allSecrets, sessionRegistry);
 
   initClipboard(log, mainWindow);
   initCustomSessionHandler(log);
   initAcpClientIpcHandler(log);
   initAiIpcHandler(log);
   initAiChatIpcHandler(log);
-
-  runtime = new RuntimeAPI(log);
-  runtime.setSecretRepo(() => allSecrets);
-  runtime.setProxyRepo(() => allProxies);
 
   sessionRegistry = new SessionRegistry({ maxBufferLines: 50 });
   runtime.sessionRegistry = sessionRegistry;
@@ -193,7 +198,6 @@ function initHandlerAfterSettingLoad(settings) {
       initAutoUpdater(log, settings, () => allProxies, () => allSecrets);
     }
     initLocalTerminalIpcHandler(settings, log, terminalMap, sessionRegistry);
-    initWinRmIpcHandler(settings, log, terminalMap, sessionRegistry);
     initialized = true;
   }
 
@@ -208,34 +212,12 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
 
     terminalMap.forEach((term) => {
-      switch (term.type) {
-        case 'local':
-        case 'winrm':
-          term.process?.removeAllListeners();
-          term.process?.kill();
-          break;
-        case 'ssh':
-        case 'telnet':
-          term.process?.end();
-          break;
-
-      }
-    });
-
-    vncMap.forEach((vncClient) => {
-      // value?.end();
-      if (vncClient) {
-        vncClient.close(); // WebSocket server for this vnc client closed
+      if (typeof term.close === 'function') {
+        term.close();
       }
     });
 
 
-    ftpMap.forEach((ftpClient) => {
-      // value?.end();
-      if (ftpClient) {
-        ftpClient.close(); // WebSocket server for this vnc client closed
-      }
-    });
 
     app.quit();
   }

@@ -1,0 +1,22 @@
+{
+  "id": "vnc-remote-desktop",
+  "name": "VNC Remote Desktop",
+  "version": "1.0.0",
+  "description": "VNC remote desktop connection plugin (WebSocket-to-TCP proxy for noVNC)",
+  "category": "REMOTE_DESKTOP",
+  "profileType": "VNC_REMOTE_DESKTOP",
+  "defaultPort": 5900,
+  "icon": "desktop_windows",
+  "enabled": true,
+  "secretTypes": ["PASSWORD_ONLY"],
+  "supportedAuthTypes": ["login", "secret"],
+  "backend": "./backend/index.js",
+  "frontend": {
+    "entry": "./frontend/vnc.plugin.ts"
+  },
+  "ipc": {
+    "send": [],
+    "invoke": ["session.open.rd.vnc"],
+    "on": ["session.connect.rd.vnc", "session.disconnect.rd.vnc"]
+  }
+}

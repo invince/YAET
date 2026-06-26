@@ -4,23 +4,12 @@ import {LocalTerminalProfile} from '../../domain/profile/LocalTerminalProfile';
 import {Profile,} from '../../domain/profile/Profile';
 import {AuthType, SecretType} from '../../domain/Secret';
 import {Session} from '../../domain/session/Session';
-import {NotificationService} from '../notification.service';
 import {SecretStorageService} from '../secret-storage.service';
-import {TabService} from '../tab.service';
 import {AbstractElectronService} from './electron.service';
-import {resolveSecretToConfig} from '../../utils/SecretResolver';
 import {
-  ERROR,
   SESSION_CLOSE_LOCAL_TERMINAL,
-  SESSION_CLOSE_SSH_TERMINAL,
-  SESSION_CLOSE_TELNET_TERMINAL,
-  SESSION_CLOSE_WINRM_TERMINAL,
-  SESSION_DISCONNECT_SSH,
   SESSION_OPEN_CUSTOM,
   SESSION_OPEN_LOCAL_TERMINAL,
-  SESSION_OPEN_SSH_TERMINAL,
-  SESSION_OPEN_TELNET_TERMINAL,
-  SESSION_OPEN_WINRM_TERMINAL,
   TERMINAL_INPUT,
   TERMINAL_OUTPUT,
   TERMINAL_RESIZE
@@ -34,43 +23,8 @@ export class ElectronTerminalService extends AbstractElectronService {
 
   constructor(
     private secretStorage: SecretStorageService,
-    private notification: NotificationService,
-
-    private tabService: TabService,
   ) {
     super();
-    this.initTerminalListener();
-  }
-
-
-  private initTerminalListener() {
-    this.ipc.on(ERROR, (event, data) => {
-      if (data.category == 'ssh') {
-        this.tabService.removeById(data.id);
-      }
-      return;
-    });
-
-    this.ipc.on(SESSION_DISCONNECT_SSH, (event, data) => {
-      this.log({ level: 'info', message: 'SSH Disconnected:' + data.id });
-      if (data.error) {
-        this.notification.error('SSH Disconnected, you can try reconnect later');
-      }
-      this.tabService.disconnected(data.id);
-      // Handle disconnection logic
-    });
-  }
-
-  closeTelnetTerminalSession(session: Session) {
-    if (this.ipc) {
-      this.ipc.send(SESSION_CLOSE_TELNET_TERMINAL, { terminalId: session.id });
-    }
-  }
-
-  closeSSHTerminalSession(session: Session) {
-    if (this.ipc) {
-      this.ipc.send(SESSION_CLOSE_SSH_TERMINAL, { terminalId: session.id });
-    }
   }
 
   closeLocalTerminalSession(session: Session) {
@@ -78,13 +32,6 @@ export class ElectronTerminalService extends AbstractElectronService {
       this.ipc.send(SESSION_CLOSE_LOCAL_TERMINAL, { terminalId: session.id });
     }
   }
-
-  closeWinRMTerminalSession(session: Session) {
-    if (this.ipc) {
-      this.ipc.send(SESSION_CLOSE_WINRM_TERMINAL, { terminalId: session.id });
-    }
-  }
-
 
   openLocalTerminalSession(session: Session) {
     if (!this.ipc) {
@@ -94,102 +41,12 @@ export class ElectronTerminalService extends AbstractElectronService {
     if (!session.profile) {
       session.profile = new Profile();
     }
-    if (!session.profile.localTerminal) {
-      session.profile.localTerminal = new LocalTerminalProfile();
+    if (!session.profile.hasProfile('LOCAL_TERMINAL')) {
+      session.profile.setProfile('LOCAL_TERMINAL', new LocalTerminalProfile());
     }
-    let localProfile: LocalTerminalProfile = session.profile.localTerminal;
+    let localProfile: LocalTerminalProfile = session.profile.getProfile('LOCAL_TERMINAL');
     this.ipc.send(SESSION_OPEN_LOCAL_TERMINAL, { terminalId: session.id, terminalExec: localProfile.execPath });
   }
-
-  openTelnetTerminalSession(session: Session) {
-    if (!this.ipc || !session.profile || !session.profile.telnetProfile) {
-      this.log({ level: 'error', message: "Invalid configuration" });
-      return;
-    }
-    let telnetConfig: any = {
-      timeout: 1500,           // Wait up to 30 seconds for the connection.
-      negotiationMandatory: false,      // Send keepalive packets every 15 seconds.
-
-    };
-
-    let telnetProfile = session.profile.telnetProfile;
-    telnetConfig.host = telnetProfile.host;
-    telnetConfig.port = telnetProfile.port;
-    if (!resolveSecretToConfig(telnetConfig, telnetProfile, this.secretStorage, m => this.log(m))) {
-      return;
-    }
-    let data: { [key: string]: any; } = { terminalId: session.id, config: telnetConfig };
-    if (session.profile.proxyId) {
-      data['proxyId'] = session.profile.proxyId;
-    }
-    if (telnetProfile.initPath) {
-      data['initPath'] = telnetProfile.initPath;
-    }
-    if (telnetProfile.initCmd) {
-      data['initCmd'] = telnetProfile.initCmd;
-    }
-    this.ipc.send(SESSION_OPEN_TELNET_TERMINAL, data);
-  }
-
-  openSSHTerminalSession(session: Session) {
-    if (!this.ipc || !session.profile || !session.profile.sshProfile) {
-      this.log({ level: 'error', message: "Invalid configuration" });
-      return;
-    }
-
-    let sshConfig: any = {
-      readyTimeout: 30000,           // Wait up to 30 seconds for the connection.
-      keepaliveInterval: 15000,      // Send keepalive packets every 15 seconds.
-      keepaliveCountMax: 5,          // Disconnect after 5 failed keepalive packets.
-
-    };
-    let sshProfile = session.profile.sshProfile;
-    sshConfig.host = sshProfile.host;
-    sshConfig.port = sshProfile.port;
-    if (!resolveSecretToConfig(sshConfig, sshProfile, this.secretStorage, m => this.log(m))) {
-      return;
-    }
-    let data: { [key: string]: any; } = { terminalId: session.id, config: sshConfig };
-    if (session.profile.proxyId) {
-      data['proxyId'] = session.profile.proxyId;
-    }
-    if (sshProfile.initPath) {
-      data['initPath'] = sshProfile.initPath;
-    }
-    if (sshProfile.initCmd) {
-      data['initCmd'] = sshProfile.initCmd;
-    }
-    this.ipc.send(SESSION_OPEN_SSH_TERMINAL, data);
-  }
-
-
-  openWinRMTerminalSession(session: Session) {
-    if (!this.ipc || !session.profile || !session.profile.sshProfile) {
-      this.log({ level: 'error', message: "Invalid configuration" });
-      return;
-    }
-
-    let config: any = {
-      executionPolicy: 'Bypass',
-      noProfile: true,
-
-    };
-    let profile = session.profile.winRmProfile;
-    config.host = profile.host;
-    config.port = profile.port;
-    if (!resolveSecretToConfig(config, profile, this.secretStorage, m => this.log(m))) {
-      return;
-    }
-    let data: { [key: string]: any; } = { terminalId: session.id, config: config };
-    if (profile.initPath) {
-      data['initPath'] = profile.initPath;
-    }
-    if (profile.initCmd) {
-      data['initCmd'] = profile.initCmd;
-    }
-    this.ipc.send(SESSION_OPEN_WINRM_TERMINAL, data);
-  }
-
 
   sendTerminalInput(terminalId: string, input: string) {
     if (this.ipc) {

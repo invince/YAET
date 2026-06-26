@@ -9,7 +9,8 @@
   <!-- Fonts bundled locally for offline use -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self' 'unsafe-inline' 'unsafe-eval' file: data: blob:;
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' file:;
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' file: blob:;
+    worker-src 'self' blob:;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com file: data:;
     font-src 'self' https://fonts.gstatic.com file: data:;
     connect-src 'self' http://localhost:* ws://localhost:* file:;

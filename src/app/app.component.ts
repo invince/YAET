@@ -22,7 +22,7 @@ import {RemoteDesktopComponent} from './components/remote-desktop/remote-desktop
 import {SidebarComponent} from './components/sidebar/sidebar.component';
 import {TerminalComponent} from './components/terminal/terminal.component';
 import {MenuConsts} from './domain/MenuConsts';
-import {Profile, ProfileCategory, ProfileType} from './domain/profile/Profile';
+import {LOCAL_TERMINAL, ProfileCategory} from './domain/profile/Profile';
 import {TabInstance} from './domain/TabInstance';
 import {CloudService} from './services/cloud.service';
 import {LogService} from './services/log.service';
@@ -37,6 +37,8 @@ import {SessionService} from './services/session.service';
 import {SettingStorageService} from './services/setting-storage.service';
 import {SettingService} from './services/setting.service';
 import {TabService} from './services/tab.service';
+import {PluginLoaderService} from './plugin/services/plugin-loader.service';
+import {PluginRegistryService} from './plugin/services/plugin-registry.service';
 
 @Component({
   selector: 'app-root',
@@ -110,9 +112,16 @@ export class AppComponent implements OnInit, OnDestroy {
     private renderer: Renderer2,
     private ngZone: NgZone,
     private shortcut: ShortcutService,
+    private pluginLoader: PluginLoaderService,
+    private pluginRegistry: PluginRegistryService,
   ) { }
 
   ngOnInit() {
+    this.pluginLoader.loadExternalPlugins().then(() => {
+      return this.sessionService.initSessionFactories();
+    }).then(() => {
+      // Plugin factories ready
+    });
     this.shortcut.init();
     this.subscriptions.push(
       this.profileService.connectionEvent$.subscribe(
@@ -122,7 +131,7 @@ export class AppComponent implements OnInit, OnDestroy {
             return;
           }
           this.modalControl.closeModal([this.MENU_PROFILE, this.MENU_ADD]);
-          if (Profile.requireOpenNewTab(profile)) {
+          if (this.pluginRegistry.getProfileOpenNewTab(profile.profileType)) {
             const tab = new TabInstance(profile.category, this.sessionService.create(profile, profile.profileType));
             this.tabService.addTab(tab); // Adds a new terminal identifier
           } else {
@@ -143,7 +152,7 @@ export class AppComponent implements OnInit, OnDestroy {
               this.settingStorage.settings.terminal?.localTerminal?.defaultOpen) {
               this.modalControl.closeModal();
               const tab = new TabInstance(ProfileCategory.TERMINAL,
-                this.sessionService.create(this.settingService.createLocalTerminalProfile(), ProfileType.LOCAL_TERMINAL));
+                this.sessionService.create(this.settingService.createLocalTerminalProfile(), LOCAL_TERMINAL));
               this.tabService.addTab(tab);
             }
 

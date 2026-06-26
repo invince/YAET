@@ -1,0 +1,20 @@
+{
+  "id": "rdp-remote-desktop",
+  "name": "RDP Remote Desktop",
+  "version": "1.0.0",
+  "description": "Windows Remote Desktop (mstsc) connection plugin",
+  "category": "REMOTE_DESKTOP",
+  "profileType": "RDP_REMOTE_DESKTOP",
+  "icon": "desktop_windows",
+  "enabled": true,
+  "openNewTab": false,
+  "backend": "./backend/index.js",
+  "frontend": {
+    "entry": "./frontend/rdp.plugin.ts"
+  },
+  "ipc": {
+    "send": ["session.open.rd.rdp"],
+    "invoke": [],
+    "on": []
+  }
+}

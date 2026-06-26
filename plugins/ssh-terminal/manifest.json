@@ -1,0 +1,26 @@
+{
+  "id": "ssh-terminal",
+  "name": "SSH Terminal",
+  "version": "1.0.0",
+  "description": "SSH terminal connection plugin",
+  "author": "YAET",
+  "category": "TERMINAL",
+  "profileType": "SSH_TERMINAL",
+  "defaultPort": 22,
+  "icon": "terminal",
+  "enabled": true,
+  "dependencies": [],
+  "ipc": {
+    "send": ["session.open.terminal.ssh", "session.close.terminal.ssh"],
+    "invoke": [],
+    "on": ["session.disconnect.terminal.ssh"]
+  },
+  "backend": "./backend/index.js",
+  "frontend": {
+    "profileForm": "./frontend/form/ssh-profile-form.component",
+    "sessionView": "./frontend/main/ssh-session.component",
+    "plugin": "./frontend/ssh.plugin"
+  },
+  "secretTypes": ["LOGIN_PASSWORD", "SSH_KEY"],
+  "supportedAuthTypes": ["N/A", "login", "secret"]
+}

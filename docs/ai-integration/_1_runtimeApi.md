@@ -52,11 +52,13 @@ runtimeAPI
 
 ### Connectors
 
-| Connector | File | Capabilities |
+Terminal connectors (SSH, Telnet, WinRM) are registered at runtime by plugins via `runtimeAPI.registerConnector()`. File/desktop connectors remain hardcoded:
+
+| Connector | Source | Capabilities |
 |---|---|---|
-| **SSH** | `runtime/connectors/terminal/ssh.js` | `connect`, `exec`, `write`, `resize`, `close` |
-| **Telnet** | `runtime/connectors/terminal/telnet.js` | `connect`, `exec`, `write`, `close` |
-| **WinRM** | `runtime/connectors/terminal/winRM.js` | `connect`, `exec`, `write`, `resize`, `close` |
+| **SSH** | `plugins/ssh-terminal/` (registered) | `connect`, `exec`, `write`, `resize`, `close` |
+| **Telnet** | `plugins/telnet-terminal/` (registered) | `connect`, `exec`, `write`, `close` |
+| **WinRM** | `plugins/winrm-terminal/` (registered) | `connect`, `exec`, `write`, `resize`, `close` |
 | **Local** | `runtime/connectors/terminal/local.js` | `connect`, `exec`, `write`, `resize`, `close` |
 | **SCP** | `runtime/connectors/file/scp.js` | `listFiles`, `readFile`, `writeFile`, `deleteFiles`, `renameFile`, `copyFiles`, `moveFiles`, `createFolder`, `search`, `downloadFile` |
 | **FTP** | `runtime/connectors/file/ftp.js` | Same as SCP |

@@ -1,11 +1,11 @@
-import {Profile, ProfileType} from '../profile/Profile';
+import {Profile} from '../profile/Profile';
 import {TabService} from '../../services/tab.service';
 import {Session} from './Session';
 import {ElectronTerminalService} from '../../services/electron/electron-terminal.service';
 
 export class LocalTerminalSession extends Session {
 
-  constructor(profile: Profile, profileType: ProfileType,
+  constructor(profile: Profile, profileType: string,
               tabService: TabService,
               private electron: ElectronTerminalService
   ) {

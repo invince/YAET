@@ -26,6 +26,9 @@
       <div class="sidebar-item" [class.active]="currentTabIndex === 7" (click)="currentTabIndex = 7">
         <mat-icon>chat</mat-icon> {{ 'SETTINGS.AI_ASSISTANT' | translate }}
       </div>
+      <div class="sidebar-item" [class.active]="currentTabIndex === 8" (click)="currentTabIndex = 8">
+        <mat-icon>extension</mat-icon> {{ 'SETTINGS.PLUGINS' | translate }}
+      </div>
     </div>
 
     <!-- Main Content Area -->
@@ -335,6 +338,51 @@
 
 
 
+            </div>
+          </div>
+        </div>
+        }
+
+        <!-- Plugins Settings -->
+@if (currentTabIndex === 8) {
+<div>
+  <div class="settings-header" style="display:flex;align-items:center">
+    {{ 'SETTINGS.PLUGINS' | translate }}
+    <button mat-stroked-button color="accent" (click)="reloadExternalPlugins()" style="margin-left:auto;font-size:12px;padding:2px 12px;line-height:28px;flex-shrink:0">
+      <mat-icon style="font-size:14px;width:14px;height:14px;line-height:14px;margin-right:4px">refresh</mat-icon>
+      Reload External
+    </button>
+  </div>
+  <div class="setting-form">
+    <div class="form-section">
+      <div class="section-title">{{ 'SETTINGS.LOADED_PLUGINS' | translate }}</div>
+              @if (plugins.length === 0) {
+              <div style="color: #9ca3af; padding: 16px 0;">{{ 'SETTINGS.NO_PLUGINS' | translate }}</div>
+              } @else {
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                @for (plugin of plugins; track plugin.id) {
+                <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid #444; border-radius: 6px;">
+                  <mat-icon style="color: {{ plugin.loaded ? '#4caf50' : '#f44336' }}">
+                    {{ plugin.loaded ? 'check_circle' : 'error' }}
+                  </mat-icon>
+                  <div style="flex: 1;">
+                    <div style="font-weight: 500;">{{ plugin.name }}</div>
+                    <div style="font-size: 12px; color: #9ca3af;">
+                      v{{ plugin.version }} · {{ plugin.category }} · {{ plugin.profileType }}
+                    </div>
+                  </div>
+                  <div style="font-size: 12px; padding: 2px 8px; border-radius: 4px;
+                    background: {{ plugin.source === 'external' ? '#ff9800' : '#2196f3' }}22;
+                    color: {{ plugin.source === 'external' ? '#ff9800' : '#2196f3' }};">
+                    {{ plugin.source }}
+                  </div>
+                  @if (!plugin.enabled) {
+                  <div style="font-size: 12px; color: #9ca3af;">{{ 'SETTINGS.DISABLED' | translate }}</div>
+                  }
+                </div>
+                }
+              </div>
+              }
             </div>
           </div>
         </div>

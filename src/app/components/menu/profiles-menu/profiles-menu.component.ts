@@ -15,7 +15,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {Subscription} from 'rxjs';
 import {GroupNode, NODE_DEFAULT_NAME} from '../../../domain/GroupNode';
 import {MenuConsts} from '../../../domain/MenuConsts';
-import {Profile, Profiles} from '../../../domain/profile/Profile';
+import {CUSTOM_PROFILE, LOCAL_TERMINAL, Profile, Profiles} from '../../../domain/profile/Profile';
 import {SideNavType} from '../../../domain/setting/UISettings';
 import {FilterKeywordPipe} from '../../../pipes/filter-keyword.pipe';
 import {ModalControllerService} from '../../../services/modal-controller.service';
@@ -27,6 +27,7 @@ import {ConfirmationComponent} from '../../confirmation/confirmation.component';
 import {HasChildForm} from '../../EnhancedFormMixin';
 import {MenuComponent} from '../menu.component';
 import {ProfileFormComponent} from '../profile-form/profile-form.component';
+import {PluginRegistryService} from '../../../plugin/services/plugin-registry.service';
 
 @Component({
   selector: 'app-profiles-menu',
@@ -77,6 +78,7 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     private notification: NotificationService,
     private modalControl: ModalControllerService,
     private keywordPipe: FilterKeywordPipe,
+    private registry: PluginRegistryService,
 
     private cdr: ChangeDetectorRef,
 
@@ -108,7 +110,12 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     }
 
     this.profilesCopy = this.profileService.profilesCopy;
-    this.profilesCopy.profiles = this.profilesCopy.profiles.sort((a: Profile, b: Profile) => a.name.localeCompare(b.name));
+    this.profilesCopy.profiles = this.profilesCopy.profiles
+      .filter(p => {
+        if (p.profileType === LOCAL_TERMINAL || p.profileType === CUSTOM_PROFILE) return true;
+        return !!(this.registry.getPlugin(p.profileType) || this.registry.getExternalPlugin(p.profileType));
+      })
+      .sort((a: Profile, b: Profile) => a.name.localeCompare(b.name));
     this.sideNavType = this.settingStorage.settings.ui.profileSideNavType;
     this.refreshForm();
   }

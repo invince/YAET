@@ -228,22 +228,24 @@
 }
 
 /* Custom Scrollbar for Webkit */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
+.table-container {
+    &::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
 
-::-webkit-scrollbar-track {
-    background: var(--app-bg-color);
-}
+    &::-webkit-scrollbar-track {
+        background: var(--app-bg-color);
+    }
 
-::-webkit-scrollbar-thumb {
-    background: var(--app-border-color);
-    border-radius: t.$radius-sm;
-}
+    &::-webkit-scrollbar-thumb {
+        background: var(--app-border-color);
+        border-radius: t.$radius-sm;
+    }
 
-::-webkit-scrollbar-thumb:hover {
-    background: var(--app-hover-bg-color);
+    &::-webkit-scrollbar-thumb:hover {
+        background: var(--app-hover-bg-color);
+    }
 }
 
 .spinner-overlay {

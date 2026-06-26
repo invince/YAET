@@ -84,7 +84,7 @@ export class SettingService {
 
   createLocalTerminalProfile() : Profile {
     let profile = new Profile();
-    profile.localTerminal = this.settingStorage.settings.terminal.localTerminal;
+    profile.setProfile('LOCAL_TERMINAL', this.settingStorage.settings.terminal.localTerminal);
     return profile;
   }
 

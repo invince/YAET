@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const { ACPServer } = require('./server');
 const { Logger } = require('../common/logger');
-const { SshTerminalSession } = require('../../src-electron/runtime/connectors/terminal/ssh');
+const { SshTerminalSession } = require('../../plugins/ssh-terminal/backend/ssh.connector');
 const { LocalTerminalSession } = require('../../src-electron/runtime/connectors/terminal/local');
 
 const log = new Logger('acp-server');

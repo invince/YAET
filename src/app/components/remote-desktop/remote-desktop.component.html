@@ -1,4 +1,3 @@
 <div class="remote-desktop-container">
-  <app-vnc [session]="session"></app-vnc>
-
+  <ng-container *ngComponentOutlet="componentType; inputs: componentInputs"></ng-container>
 </div>

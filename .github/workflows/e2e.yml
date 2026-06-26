@@ -30,9 +30,7 @@ jobs:
         run: sudo apt-get install -y xvfb
 
       - name: Build Angular
-        run: |
-          npx patch-package
-          npx ng build --base-href ./
+        run: npm run build
 
       - name: Cache Playwright Browsers
         id: playwright-cache

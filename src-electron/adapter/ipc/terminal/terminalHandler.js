@@ -19,13 +19,11 @@ function initTerminalIpcHandler(log, terminalMap) {
   ipcMain.on('terminal.resize', (event, { id, cols, rows }) => {
     const terminal = terminalMap.get(id);
     if (!terminal) {
-      terminalMap.set(id, {cols: cols, rows: rows}); // resize may arrive before we create the terminal
+      terminalMap.set(id, {cols, rows}); // resize may arrive before we create the terminal
+      return;
     }
-    if (terminal?.type === 'local' || terminal?.type === 'winrm') {
-      terminal.process.resize(cols, rows)
-    }
-    if (terminal?.type === 'ssh') {
-      terminal.stream?.setWindow(rows, cols, null, null);
+    if (typeof terminal.resize === 'function') {
+      terminal.resize(cols, rows);
     }
   });
 

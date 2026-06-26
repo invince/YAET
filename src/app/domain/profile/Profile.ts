@@ -1,11 +1,3 @@
-import {CustomProfile} from './CustomProfile';
-import {FTPProfile} from './FTPProfile';
-import {LocalTerminalProfile} from './LocalTerminalProfile';
-import {RdpProfile} from './RdpProfile';
-import {RemoteTerminalProfile} from './RemoteTerminalProfile';
-import {SambaProfile} from './SambaProfile';
-import {VncProfile} from './VncProfile';
-
 export enum ProfileCategory {
   TERMINAL = 'TERMINAL',
   REMOTE_DESKTOP = 'REMOTE_DESKTOP',
@@ -13,42 +5,12 @@ export enum ProfileCategory {
   CUSTOM = 'CUSTOM',
 }
 
-export enum ProfileType {
-  LOCAL_TERMINAL = 'LOCAL_TERMINAL',
-  SSH_TERMINAL = 'SSH_TERMINAL',
-  TELNET_TERMINAL = 'TELNET_TERMINAL',
-  WIN_RM_TERMINAL = 'WIN_RM_TERMINAL',
+/** ProfileType is now a plain string — plugins define their own type constants. */
+export type ProfileType = string;
 
-  VNC_REMOTE_DESKTOP = 'VNC_REMOTE_DESKTOP',
-  RDP_REMOTE_DESKTOP = 'RDP_REMOTE_DESKTOP',
-  SCP_FILE_EXPLORER = 'SCP_FILE_EXPLORER',
-  FTP_FILE_EXPLORER = 'FTP_FILE_EXPLORER',
-  SAMBA_FILE_EXPLORER = 'SAMBA_FILE_EXPLORER',
-
-  CUSTOM = 'CUSTOM',
-}
-
-export const ProfileCategoryTypeMap = new Map<ProfileCategory, any>([
-  [ProfileCategory.TERMINAL, [
-    ProfileType.LOCAL_TERMINAL,
-    ProfileType.SSH_TERMINAL,
-    ProfileType.TELNET_TERMINAL,
-    ProfileType.WIN_RM_TERMINAL,
-  ]],
-  [ProfileCategory.REMOTE_DESKTOP, [
-    ProfileType.VNC_REMOTE_DESKTOP,
-    ProfileType.RDP_REMOTE_DESKTOP,
-  ]],
-  [ProfileCategory.FILE_EXPLORER, [
-    ProfileType.SCP_FILE_EXPLORER,
-    ProfileType.FTP_FILE_EXPLORER,
-    ProfileType.SAMBA_FILE_EXPLORER,
-  ]],
-
-  [ProfileCategory.CUSTOM, [
-    ProfileType.CUSTOM,
-  ]],
-]);
+/** Core profile types (the only ones the core knows about). */
+export const LOCAL_TERMINAL = 'LOCAL_TERMINAL';
+export const CUSTOM_PROFILE = 'CUSTOM';
 
 export class Profiles {
 
@@ -86,93 +48,149 @@ export class Profile {
   public comment: string = '';
   public icon: string = 'terminal';
   public category: ProfileCategory = ProfileCategory.TERMINAL;
-  public profileType: ProfileType = ProfileType.LOCAL_TERMINAL;
+  public profileType: ProfileType = LOCAL_TERMINAL;
   public group: string = '';
   public tags: string[] = [];
   public proxyId: string = '';
   public favoritePaths: string[] = [];
 
-  public localTerminal: LocalTerminalProfile;
-  public sshProfile: RemoteTerminalProfile;
-  public telnetProfile: RemoteTerminalProfile;
-  public winRmProfile: RemoteTerminalProfile;
-
-  public ftpProfile: FTPProfile;
-  public sambaProfile: SambaProfile;
-
-  public rdpProfile: RdpProfile;
-  public vncProfile: VncProfile;
-
-  public customProfile: CustomProfile;
+  // Generic profile data storage
+  private profileData: Map<string, any> = new Map();
 
   public isNew: boolean = true;
 
-
   constructor() {
     this.id = Math.random().toString(36).substring(2);
-    this.localTerminal = new LocalTerminalProfile();
-    this.sshProfile = new RemoteTerminalProfile();
-    this.telnetProfile = new RemoteTerminalProfile(23);
-    this.winRmProfile = new RemoteTerminalProfile(5985);
+  }
 
-    this.ftpProfile = new FTPProfile();
-    this.sambaProfile = new SambaProfile();
+  getProfile(type: string): any {
+    return this.profileData.get(type);
+  }
 
-    this.rdpProfile = new RdpProfile();
-    this.vncProfile = new VncProfile();
+  setProfile(type: string, data: any): void {
+    this.profileData.set(type, data);
+  }
 
-    this.customProfile = new CustomProfile();
+  hasProfile(type: string): boolean {
+    return this.profileData.has(type);
+  }
+
+  /**
+   * Custom JSON serialization — JSON.stringify() calls this automatically.
+   * Converts the private Map profileData to a plain object so it survives
+   * encryption + disk storage.
+   */
+  toJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      comment: this.comment,
+      icon: this.icon,
+      category: this.category,
+      profileType: this.profileType,
+      group: this.group,
+      tags: this.tags,
+      proxyId: this.proxyId,
+      favoritePaths: this.favoritePaths,
+      isNew: this.isNew,
+      profileData: Object.fromEntries(this.profileData),
+    };
   }
 
   static clone(base: Profile): Profile {
     const cloned = new Profile();
-    // Do not copy the ID, let the new Profile keep its generated ID
     cloned.name = base.name + ' Clone';
     cloned.comment = base.comment;
     cloned.category = base.category;
     cloned.profileType = base.profileType;
-
-    Object.assign(cloned.localTerminal, base.localTerminal);
-    Object.assign(cloned.sshProfile, base.sshProfile);
-    Object.assign(cloned.telnetProfile, base.telnetProfile);
-    Object.assign(cloned.winRmProfile, base.winRmProfile);
-
-    Object.assign(cloned.ftpProfile, base.ftpProfile);
-    Object.assign(cloned.sambaProfile, base.sambaProfile);
-
-    Object.assign(cloned.rdpProfile, base.rdpProfile);
-    Object.assign(cloned.vncProfile, base.vncProfile);
-
-    Object.assign(cloned.customProfile, base.customProfile);
-
     cloned.group = base.group;
     cloned.proxyId = base.proxyId;
     cloned.favoritePaths = base.favoritePaths ? [...base.favoritePaths] : [];
 
+    // Clone all profile data
+    base.profileData.forEach((value, key) => {
+      cloned.profileData.set(key, JSON.parse(JSON.stringify(value)));
+    });
+
     return cloned;
   }
 
-  static requireOpenNewTab(profile: Profile) {
-    return ![ProfileType.RDP_REMOTE_DESKTOP, ProfileType.CUSTOM]
-      .includes(profile.profileType);
+  /**
+   * Deserialize a plain object (from JSON.parse) back to a Profile instance.
+   * Handles both old format (direct properties) and new format (profileData Map).
+   */
+  static deserialize(data: any): Profile {
+    const profile = new Profile();
+    if (!data) return profile;
+
+    profile.id = data.id || '';
+    profile.name = data.name || '';
+    profile.comment = data.comment || '';
+    profile.icon = data.icon || 'terminal';
+    profile.category = data.category || ProfileCategory.TERMINAL;
+    profile.profileType = data.profileType || LOCAL_TERMINAL;
+    profile.group = data.group || '';
+    profile.tags = data.tags || [];
+    profile.proxyId = data.proxyId || '';
+    profile.favoritePaths = data.favoritePaths || [];
+    profile.isNew = data.isNew !== undefined ? data.isNew : true;
+
+    // Migrate old direct properties to profileData Map
+    const oldFieldMap: Record<string, string> = {
+      'localTerminal': 'LOCAL_TERMINAL',
+      'sshProfile': 'SSH_TERMINAL',
+      'telnetProfile': 'TELNET_TERMINAL',
+      'winRmProfile': 'WIN_RM_TERMINAL',
+      'rdpProfile': 'RDP_REMOTE_DESKTOP',
+      'vncProfile': 'VNC_REMOTE_DESKTOP',
+      'ftpProfile': 'FTP_FILE_EXPLORER',
+      'sambaProfile': 'SAMBA_FILE_EXPLORER',
+      'customProfile': 'CUSTOM',
+    };
+
+    // Check for old format (direct properties) and migrate
+    for (const [oldKey, newKey] of Object.entries(oldFieldMap)) {
+      if (data[oldKey] !== undefined && data[oldKey] !== null) {
+        profile.profileData.set(newKey, data[oldKey]);
+      }
+    }
+
+    // Handle new format (profileData already present)
+    if (data.profileData && typeof data.profileData === 'object') {
+      if (data.profileData instanceof Map) {
+        data.profileData.forEach((value: any, key: string) => {
+          profile.profileData.set(key, value);
+        });
+      } else {
+        Object.entries(data.profileData).forEach(([key, value]) => {
+          profile.profileData.set(key, value);
+        });
+      }
+    }
+
+    return profile;
+  }
+
+  static requireOpenNewTab(profile: Profile, openNewTabMap?: Record<string, boolean>) {
+    if (profile.profileType === 'CUSTOM') return false;
+    if (openNewTabMap && profile.profileType in openNewTabMap) {
+      return openNewTabMap[profile.profileType];
+    }
+    return true;
   }
 
   static useSecret(one: Profile, secret: any) {
-    if (one.sshProfile?.secretId == secret?.id) return true;
-    if (one.telnetProfile?.secretId == secret?.id) return true;
-    if (one.winRmProfile?.secretId == secret?.id) return true;
-    if (one.ftpProfile?.secretId == secret?.id) return true;
-    if (one.sambaProfile?.secretId == secret?.id) return true;
-    if (one.vncProfile?.secretId == secret?.id) return true;
+    for (const [, profileData] of one.profileData) {
+      if (profileData?.secretId == secret?.id) return true;
+    }
     return false;
   }
 
   static clearSecret(one: Profile, secret: any) {
-    if (one.sshProfile?.secretId == secret.id) one.sshProfile.secretId = '';
-    if (one.telnetProfile?.secretId == secret.id) one.telnetProfile.secretId = '';
-    if (one.winRmProfile?.secretId == secret.id) one.winRmProfile.secretId = '';
-    if (one.ftpProfile?.secretId == secret.id) one.ftpProfile.secretId = '';
-    if (one.sambaProfile?.secretId == secret.id) one.sambaProfile.secretId = '';
-    if (one.vncProfile?.secretId == secret.id) one.vncProfile.secretId = '';
+    for (const [, profileData] of one.profileData) {
+      if (profileData?.secretId == secret.id) {
+        profileData.secretId = '';
+      }
+    }
   }
 }

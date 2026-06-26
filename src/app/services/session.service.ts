@@ -1,24 +1,15 @@
-import { Injectable } from '@angular/core';
-import { NgxSpinnerService } from 'ngx-spinner';
-import { Profile, ProfileType } from '../domain/profile/Profile';
-import { FtpSession } from '../domain/session/FtpSession';
-import { LocalTerminalSession } from '../domain/session/LocalTerminalSession';
-import { SambaSession } from '../domain/session/SambaSession';
-import { ScpSession } from '../domain/session/ScpSession';
-import { Session } from '../domain/session/Session';
-import { SSHSession } from '../domain/session/SSHSession';
-import { TelnetSession } from '../domain/session/TelnetSession';
-import { VncSession } from '../domain/session/VncSession';
-import { WinRMSession } from '../domain/session/WinRMSession';
-import { TabInstance } from '../domain/TabInstance';
-import { ElectronRemoteDesktopService } from './electron/electron-remote-desktop.service';
-import { ElectronTerminalService } from './electron/electron-terminal.service';
-import { FtpService } from './file-explorer/ftp.service';
-import { SambaService } from './file-explorer/samba.service';
-import { ScpService } from './file-explorer/scp.service';
-import { NotificationService } from './notification.service';
-import { VncService } from './remote-desktop/vnc.service';
-import { TabService } from './tab.service';
+import {Injectable, Injector} from '@angular/core';
+import {CUSTOM_PROFILE, LOCAL_TERMINAL, Profile} from '../domain/profile/Profile';
+import {LocalTerminalSession} from '../domain/session/LocalTerminalSession';
+import {PluginSession} from '../domain/session/PluginSession';
+import {Session} from '../domain/session/Session';
+import {TabInstance} from '../domain/TabInstance';
+import {ElectronTerminalService} from './electron/electron-terminal.service';
+import {PluginRegistryService} from '../plugin/services/plugin-registry.service';
+import {getRegisteredPluginIds, loadBundledPluginModule} from '../plugin/services/plugin-import-registry';
+import '../../../plugins/generated-plugin-registry';
+import {SecretStorageService} from './secret-storage.service';
+import {TabService} from './tab.service';
 
 @Injectable({
   providedIn: 'root'
@@ -27,61 +18,90 @@ export class SessionService {
 
   constructor(
     private tabService: TabService,
-    private spinner: NgxSpinnerService,
-    private notification: NotificationService,
-
     private electronTerm: ElectronTerminalService,
-    private electronRD: ElectronRemoteDesktopService,
-    private vncService: VncService,
 
-    private scpService: ScpService,
-    private ftpService: FtpService,
-    private sambaService: SambaService,
+    private registry: PluginRegistryService,
+    private secretStorage: SecretStorageService,
+    private injector: Injector,
   ) { }
 
+  initSessionFactories(): void {
+    this.loadBundledPlugins();
+  }
 
-  create(profile: Profile, profileType: ProfileType): Session {
-    switch (profileType) {
-      case ProfileType.LOCAL_TERMINAL:
-        return new LocalTerminalSession(profile, profileType, this.tabService, this.electronTerm);
-      case ProfileType.SSH_TERMINAL:
-        return new SSHSession(profile, profileType, this.tabService, this.electronTerm);
-      case ProfileType.TELNET_TERMINAL:
-        return new TelnetSession(profile, profileType, this.tabService, this.electronTerm);
-      case ProfileType.WIN_RM_TERMINAL:
-        return new WinRMSession(profile, profileType, this.tabService, this.electronTerm);
+  private loadBundledPlugins(): void {
+    const pluginIds = getRegisteredPluginIds();
 
-      case ProfileType.VNC_REMOTE_DESKTOP:
-        return new VncSession(profile, profileType, this.tabService, this.vncService, this.spinner, this.notification);
-      case ProfileType.SAMBA_FILE_EXPLORER:
-        return new SambaSession(profile, profileType, this.tabService, this.sambaService)
+    for (const pluginId of pluginIds) {
+      try {
+        const module = loadBundledPluginModule(pluginId);
+        if (module && typeof module.register === 'function') {
+          module.register(this.registry, this.injector);
+        }
+      } catch (err) {
+        console.error(`[SessionService] Failed to load plugin ${pluginId}:`, err);
+      }
+    }
+  }
 
-      case ProfileType.SCP_FILE_EXPLORER:
-        return new ScpSession(profile, profileType, this.tabService, this.scpService);
-      case ProfileType.FTP_FILE_EXPLORER:
-        return new FtpSession(profile, profileType, this.tabService, this.ftpService);
+  create(profile: Profile, profileType: string): Session {
+    // 1. Core built-in types
+    if (profileType === LOCAL_TERMINAL) {
+      return new LocalTerminalSession(profile, profileType, this.tabService, this.electronTerm);
+    }
+    if (profileType === CUSTOM_PROFILE) {
+      return new Session(profile, profileType, this.tabService);
     }
 
+    // 2. Bundled plugins — use sessionFactory if available, otherwise generic PluginSession
+    const pluginInfo = this.registry.getBundledPlugin(profileType);
+    if (pluginInfo) {
+      if (pluginInfo.sessionFactory) {
+        return pluginInfo.sessionFactory(profile, profileType);
+      }
+      return this.createPluginSession(profile, profileType, pluginInfo);
+    }
+
+    // 3. External plugins — use generic PluginSession
+    const externalPlugin = this.registry.getExternalPlugin(profileType);
+    if (externalPlugin) {
+      return this.createPluginSession(profile, profileType, externalPlugin);
+    }
+
+    // 4. Unknown type — fallback
     return new Session(profile, profileType, this.tabService);
   }
 
+  private createPluginSession(profile: Profile, profileType: string, plugin: any): PluginSession {
+    const profileData = profile.getProfile(profileType) || {};
+
+    const ipcChannels = plugin.ipcChannels || {};
+    const openChannel = ipcChannels.invoke?.[0] || ipcChannels.send?.[0] || `session.open.terminal.${profileType.toLowerCase().replace(/_/g, '-')}`;
+    const channels = {
+      open: openChannel,
+      close: ipcChannels.send?.[1] || `session.close.terminal.${profileType.toLowerCase().replace(/_/g, '-')}`,
+      disconnect: ipcChannels.on?.[0] || `session.disconnect.terminal.${profileType.toLowerCase().replace(/_/g, '-')}`,
+      errorCategory: profileType.toLowerCase().replace(/_/g, '-'),
+      openIsInvoke: !!ipcChannels.invoke?.[0],
+    };
+
+    return new PluginSession(profile, profileType, this.tabService, channels, profileData, this.secretStorage);
+  }
+
   openSessionWithoutTab(profile: Profile) {
-    if (profile) {
-      switch (profile.profileType) {
-        case ProfileType.RDP_REMOTE_DESKTOP:
-          if (!profile.rdpProfile || !profile.rdpProfile.host) {
-            this.notification.error('Invalid Rdp Config');
-            return;
-          }
-          this.electronRD.openRdpSession(profile.rdpProfile);
-          break;
-        case ProfileType.CUSTOM:
-          if (!profile.customProfile || !profile.customProfile.execPath) {
-            this.notification.error('Invalid Custom Profile');
-            return;
-          }
-          this.electronTerm.openCustomSession(profile.customProfile);
-          break;
+    if (!profile) return;
+    // RDP and CUSTOM open external programs, not tabs
+    // Plugins register sessionFactory that handles this via open() override
+    const pluginInfo = this.registry.getBundledPlugin(profile.profileType);
+    if (pluginInfo?.sessionFactory) {
+      const session = pluginInfo.sessionFactory(profile, profile.profileType);
+      session.open();
+      return;
+    }
+    if (profile.profileType === CUSTOM_PROFILE) {
+      const customProfile = profile.getProfile('CUSTOM');
+      if (customProfile?.execPath) {
+        this.electronTerm.openCustomSession(customProfile);
       }
     }
   }
@@ -93,8 +113,8 @@ export class SessionService {
       let newSession = this.create(oldSession.profile, oldSession.profileType);
       let newTab = new TabInstance(oldTab.category, newSession);
       newTab.name = oldTab.name;
-      newTab.paneId = oldTab.paneId; // Preserve the pane assignment
-      newTab.connected = true; // Mark as connected
+      newTab.paneId = oldTab.paneId;
+      newTab.connected = true;
       this.tabService.tabs[i] = newTab;
     }
   }

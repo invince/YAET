@@ -79,7 +79,11 @@
         "AI_USE_CONTEXT": "包含会话上下文",
         "AI_AGENT_MODE": "Agent 模式",
         "AI_CROSS_SESSION_ACCESS": "访问所有终端会话",
-        "ADD_NEW_GROUP": "添加新组"
+        "ADD_NEW_GROUP": "添加新组",
+        "PLUGINS": "插件",
+        "LOADED_PLUGINS": "已加载的插件",
+        "NO_PLUGINS": "没有加载的插件",
+        "DISABLED": "已禁用"
     },
     "LANGUAGES": {
         "EN": "English",

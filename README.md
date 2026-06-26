@@ -8,11 +8,11 @@ YAET is a comprehensive remote connection and management tool built with Angular
 
 ## Key Features
 
-### 🖥️ TerminalHandler Connections
+### 🖥️ Terminal Connections
 - **SSH**: Secure shell connections with key-based and password authentication
 - **Telnet**: Legacy telnet protocol support
 - **WinRM**: Windows Remote Management for PowerShell sessions
-- **Local TerminalHandler**: Integrated local shell access (CMD, PowerShell, PowerShell 7, Bash)
+- **Local Terminal**: Integrated local shell access (CMD, PowerShell, PowerShell 7, Bash)
 - <img width="3552" height="2094" alt="image" src="https://github.com/user-attachments/assets/6a55a46b-0dfe-46cd-bcf8-16967a791a5e" />
 - <img width="3530" height="2190" alt="image" src="https://github.com/user-attachments/assets/da9e3f0b-5b67-412d-b179-556899d9e120" />
 
@@ -67,6 +67,16 @@ YAET is a comprehensive remote connection and management tool built with Angular
 - **Context Awareness**: Ask questions about your active terminal output or specific session context
 - **Persistent Chat History**: Manage multiple chat sessions with persistent storage, renaming, and history tracking
 - **Draggable Chat Panel**: Resizable, repositionable floating chat window
+
+### 🧩 Plugin System
+- **Modular architecture**: each connection type (SSH, Telnet, WinRM, etc.) is an independent plugin
+- **Bundled plugins**: ship with the app under `plugins/` — ready to use out of the box
+- **External plugins**: install third-party plugins to `~/.yaet/plugins/<id>/` — they automatically override bundled ones if they share the same id
+- **Self-contained backends**: external plugins resolve npm dependencies (like `ssh2`) from the project's `node_modules` via `context.projectRequire`
+- **Dynamic frontend loading**: external plugin frontend bundles are loaded at runtime via IPC — no rebuild required
+- **Shared UI**: plugins can reuse core components like `TerminalComponent` and `RemoteTerminalProfileFormComponent`
+- **Example**: see [`ext-plugins-example/`](ext-plugins-example/) for a working external SSH plugin
+- See [docs/plugin-development.md](docs/plugin-development.md) for how to write your own plugin
 
 ## Prerequisites
 
@@ -162,11 +172,11 @@ npx playwright test -g "add Password Only"
 **How it works:**
 - Angular is built first (`ng build`), then Electron loads the built files
 - Each test gets a fresh Electron instance with an isolated temp directory
-- Mock keychain ([`security.mock.js`](src-electron/ipc/security.mock.js)) replaces the OS keychain — no system creds touched
+- Mock keychain ([`security.mock.js`](src-electron/adapter/ipc/security.mock.js)) replaces the OS keychain — no system creds touched
 - Tests run **headless** by default. Set `YAET_SHOW_WINDOW=1` for a visible window
 - CI runs e2e on every PR/push ([`.github/workflows/e2e.yml`](.github/workflows/e2e.yml)) and before each release
 
-**Current coverage (92 tests):**
+**Current coverage (97 tests):**
 | Section | Tests | Status |
 |---------|-------|--------|
 | 0. App Bootstrap | 4 | ✅ |
@@ -175,7 +185,7 @@ npx playwright test -g "add Password Only"
 | 3. Settings Menu | 29 | ✅ |
 | 4. Incompatible Settings | 4 | ✅ |
 | 5. Profiles | 11 | ✅ |
-| 6. Local TerminalHandler | 3 | ✅ |
+| 6. Local Terminal | 3 | ✅ |
 | 7. UI/UX | 7 | ✅ |
 | 8. Proxy Management | 4 | ✅ |
 | 9. Cloud Settings | 4 | ✅ |
@@ -230,7 +240,7 @@ Application logs can be found at:
 
 - **Frontend**: Angular 20, Angular Material
 - **Desktop**: Electron 39
-- **TerminalHandler**: xterm.js
-- **File Transfer**: ssh2, basic-ftpHandler, v9u-smb2
+- **Terminal**: xterm.js
+- **File Transfer**: ssh2, basic-ftp, v9u-smb2
 - **Remote Desktop**: @novnc/novnc
 - **AI Integration**: Agent Client Protocol (ACP) or OpenAI provider

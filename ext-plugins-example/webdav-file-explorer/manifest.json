@@ -1,0 +1,23 @@
+{
+  "id": "webdav-file-explorer",
+  "name": "WebDAV File Explorer",
+  "version": "1.0.0",
+  "description": "External WebDAV file explorer plugin — zero npm dependencies, uses built-in http/https",
+  "category": "FILE_EXPLORER",
+  "profileType": "WEBDAV_FILE_EXPLORER",
+  "defaultPort": 443,
+  "icon": "cloud",
+  "enabled": true,
+  "secretTypes": ["LOGIN_PASSWORD"],
+  "supportedAuthTypes": ["N/A", "login", "secret"],
+  "backend": "./backend/index.js",
+  "frontend": {
+    "entry": "./frontend/index.js",
+    "profileFormElement": "webdav-profile-form"
+  },
+  "ipc": {
+    "send": ["session.close.fe.webdav"],
+    "invoke": ["session.fe.webdav.register", "fe.list.webdav", "fe.read.webdav", "fe.write.webdav", "fe.delete.webdav", "fe.rename.webdav"],
+    "on": []
+  }
+}

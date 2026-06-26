@@ -1,0 +1,22 @@
+{
+  "id": "samba-file-explorer",
+  "name": "Samba File Explorer",
+  "version": "1.0.0",
+  "description": "Samba/CIFS file explorer plugin",
+  "category": "FILE_EXPLORER",
+  "profileType": "SAMBA_FILE_EXPLORER",
+  "defaultPort": 445,
+  "icon": "folder",
+  "enabled": true,
+  "secretTypes": ["LOGIN_PASSWORD"],
+  "supportedAuthTypes": ["login"],
+  "backend": "./backend/index.js",
+  "frontend": {
+    "entry": "./frontend/samba.plugin.ts"
+  },
+  "ipc": {
+    "send": [],
+    "invoke": ["session.fe.samba.register"],
+    "on": []
+  }
+}

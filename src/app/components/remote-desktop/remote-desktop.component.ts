@@ -1,21 +1,25 @@
-import {Component, Input} from '@angular/core';
-import {VncComponent} from "./vnc/vnc.component";
+import {Component, Input, OnInit} from '@angular/core';
+import {NgComponentOutlet} from '@angular/common';
 import {Session} from '../../domain/session/Session';
+import {PluginRegistryService} from '../../plugin/services/plugin-registry.service';
 
 @Component({
     selector: 'app-remote-desktop',
     imports: [
-        VncComponent
+        NgComponentOutlet
     ],
     templateUrl: './remote-desktop.component.html',
     styleUrl: './remote-desktop.component.scss'
 })
-export class RemoteDesktopComponent {
+export class RemoteDesktopComponent implements OnInit {
   @Input() session!: Session;
+  componentType: any;
+  componentInputs: any;
 
+  constructor(private registry: PluginRegistryService) {}
 
-  constructor() {
-
+  ngOnInit() {
+    this.componentType = this.registry.getSessionComponent(this.session.profileType);
+    this.componentInputs = { session: this.session };
   }
-
 }
