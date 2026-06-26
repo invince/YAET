@@ -68,6 +68,18 @@ export class PluginLoaderService {
     }
   }
 
+  /**
+   * Reload external plugins:
+   *   1. Tells the backend to rescan and reload external plugins
+   *   2. Clears the loaded set so frontend code is re-evaluated
+   *   3. Re-reads the merged manifest and reloads frontends
+   */
+  async reloadExternalPlugins(): Promise<void> {
+    await window.electronAPI.invoke('plugins.reloadExternal');
+    this.loadedPlugins.clear();
+    await this.loadExternalPlugins();
+  }
+
   private async readMergedManifest(): Promise<any> {
     try {
       return await window.electronAPI.invoke('plugins.getMergedManifest');
@@ -108,6 +120,8 @@ export class PluginLoaderService {
       profileType: pluginMeta.manifest.profileType,
       profileFormElement: pluginMeta.profileFormElement,
       ipcChannels: manifestEntry.ipcChannels,
+      supportedAuthTypes: pluginMeta.manifest.supportedAuthTypes,
+      secretTypes: pluginMeta.manifest.secretTypes,
     });
   }
 }

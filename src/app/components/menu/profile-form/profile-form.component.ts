@@ -28,6 +28,8 @@ import {
   RemoteTerminalProfileFormComponent
 } from './remote-terminal-profile-form/remote-terminal-profile-form.component';
 import {PluginFormHostComponent} from '../../../plugin/components/plugin-form-host.component';
+import {ExternalPluginFormComponent} from './external-plugin-form.component';
+import {AuthFormComponent} from './auth-form.component';
 
 @Component({
   selector: 'app-profile-form',
@@ -49,6 +51,8 @@ import {PluginFormHostComponent} from '../../../plugin/components/plugin-form-ho
     RemoteTerminalProfileFormComponent,
     PluginFormHostComponent,
     CustomProfileFormComponent,
+    ExternalPluginFormComponent,
+    AuthFormComponent,
   ],
   templateUrl: './profile-form.component.html',
   styleUrl: './profile-form.component.scss'
@@ -104,6 +108,8 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       ftpProfileForm: [null],
       sambaProfileForm: [null],
       customProfileForm: [null],
+      externalPluginForm: [null],
+      externalPluginAuth: [null],
     });
   }
 
@@ -148,6 +154,18 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       formValue[meta.formControlName] = profile.getProfile(meta.profileField) || null;
     } else if (profile.category === ProfileCategory.CUSTOM) {
       formValue.customProfileForm = profile.getProfile('CUSTOM') || null;
+    } else if (this.registry.hasExternalPlugin(profile.profileType)) {
+      const raw = profile.getProfile(profile.profileType) || {};
+      const { authType, login, password, secretId, username, ...rest } = raw;
+      // Migrate old format: no authType but has username → treat as login
+      const migratedAuth = authType || (username ? 'login' : undefined);
+      formValue.externalPluginForm = rest;
+      formValue.externalPluginAuth = migratedAuth ? {
+        authType: migratedAuth,
+        login: login || username || '',
+        password: password || '',
+        secretId: secretId || '',
+      } : null;
     }
 
     this.form.patchValue(formValue);
@@ -173,6 +191,12 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       this.profile.setProfile(meta.profileField, val[meta.formControlName]);
     } else if (val.category === ProfileCategory.CUSTOM) {
       this.profile.setProfile('CUSTOM', val.customProfileForm);
+    } else if (this.registry.hasExternalPlugin(val.profileType)) {
+      const pluginData = { ...(val.externalPluginForm || {}) };
+      const authData = val.externalPluginAuth || {};
+      // Auth fields override plugin fields
+      Object.assign(pluginData, authData);
+      this.profile.setProfile(val.profileType, pluginData);
     }
   }
 
@@ -301,7 +325,33 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
 
   isExternalTerminalPlugin(): boolean {
     const profileType = this.form?.get('profileType')?.value;
-    return this.registry.hasExternalPlugin(profileType);
+    if (!this.registry.hasExternalPlugin(profileType)) return false;
+    // Only terminal-type external plugins use the shared remote terminal form
+    return profileType?.includes('TERMINAL') ?? false;
+  }
+
+  getExternalPluginFormElement(): string {
+    const profileType = this.form?.get('profileType')?.value;
+    const ext = this.registry.getExternalPlugin(profileType);
+    return ext?.profileFormElement || '';
+  }
+
+  getExternalPluginAuthTypes(): string[] {
+    const profileType = this.form?.get('profileType')?.value;
+    const ext = this.registry.getExternalPlugin(profileType);
+    return ext?.supportedAuthTypes || ['N/A', 'login', 'secret'];
+  }
+
+  getExternalPluginSecretTypes(): SecretType[] {
+    const profileType = this.form?.get('profileType')?.value;
+    const ext = this.registry.getExternalPlugin(profileType);
+    return ext?.secretTypes as SecretType[] || [SecretType.LOGIN_PASSWORD, SecretType.PASSWORD_ONLY];
+  }
+
+  hasExternalPluginAuth(): boolean {
+    const profileType = this.form?.get('profileType')?.value;
+    const ext = this.registry.getExternalPlugin(profileType);
+    return ext?.supportedAuthTypes?.length ? ext.supportedAuthTypes.length > 0 : false;
   }
 
   getExternalPluginType(): string {

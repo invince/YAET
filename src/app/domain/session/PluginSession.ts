@@ -13,7 +13,7 @@ declare const window: any;
  * Registers listeners for disconnect and error events from the backend.
  */
 export class PluginSession extends Session {
-  private channels: { open: string; close: string; disconnect: string; errorCategory: string };
+  private channels: { open: string; close: string; disconnect: string; errorCategory: string; openIsInvoke?: boolean };
   private profileData: any;
   private cleanupFns: (() => void)[] = [];
 
@@ -21,7 +21,7 @@ export class PluginSession extends Session {
     profile: Profile,
     profileType: string,
     tabService: TabService,
-    channels: { open: string; close: string; disconnect: string; errorCategory: string },
+    channels: { open: string; close: string; disconnect: string; errorCategory: string; openIsInvoke?: boolean },
     profileData: any,
     private secretStorage: SecretStorageService,
   ) {
@@ -30,16 +30,16 @@ export class PluginSession extends Session {
     this.profileData = profileData;
   }
 
-  override open(): void {
+  override async open(): Promise<void> {
     const ipc = (window as any).electronAPI;
     if (ipc) {
       const config: any = {
         readyTimeout: 30000,
         keepaliveInterval: 15000,
         keepaliveCountMax: 5,
-        host: this.profileData.host,
-        port: this.profileData.port,
       };
+
+      Object.assign(config, this.profileData);
 
       if (!resolveSecretToConfig(config, this.profileData, this.secretStorage, (m) => console.log('[PluginSession]', m))) {
         console.error('[PluginSession] Secret resolution failed');
@@ -47,7 +47,7 @@ export class PluginSession extends Session {
       }
 
       const data: any = {
-        terminalId: this.id,
+        id: this.id,
         config,
       };
       if (this.profile?.proxyId) {
@@ -60,7 +60,17 @@ export class PluginSession extends Session {
         data.initCmd = this.profileData.initCmd;
       }
 
-      ipc.send(this.channels.open, data);
+      if (this.channels.openIsInvoke) {
+        try {
+          await ipc.invoke(this.channels.open, data);
+        } catch (e) {
+          console.error('[PluginSession] Failed to open session:', e);
+          this.tabService.removeById(this.id);
+          return;
+        }
+      } else {
+        ipc.send(this.channels.open, data);
+      }
 
       // Listen for disconnect events from the backend
       const disconnectHandler = (_event: any, resp: any) => {
@@ -86,7 +96,7 @@ export class PluginSession extends Session {
   override close(): void {
     const ipc = (window as any).electronAPI;
     if (ipc) {
-      ipc.send(this.channels.close, {terminalId: this.id});
+      ipc.send(this.channels.close, {id: this.id});
     }
     // Clean up IPC listeners
     for (const fn of this.cleanupFns) fn();

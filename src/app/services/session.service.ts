@@ -76,11 +76,13 @@ export class SessionService {
     const profileData = profile.getProfile(profileType) || {};
 
     const ipcChannels = plugin.ipcChannels || {};
+    const openChannel = ipcChannels.invoke?.[0] || ipcChannels.send?.[0] || `session.open.terminal.${profileType.toLowerCase().replace(/_/g, '-')}`;
     const channels = {
-      open: ipcChannels.send?.[0] || `session.open.terminal.${profileType.toLowerCase().replace(/_/g, '-')}`,
+      open: openChannel,
       close: ipcChannels.send?.[1] || `session.close.terminal.${profileType.toLowerCase().replace(/_/g, '-')}`,
       disconnect: ipcChannels.on?.[0] || `session.disconnect.terminal.${profileType.toLowerCase().replace(/_/g, '-')}`,
       errorCategory: profileType.toLowerCase().replace(/_/g, '-'),
+      openIsInvoke: !!ipcChannels.invoke?.[0],
     };
 
     return new PluginSession(profile, profileType, this.tabService, channels, profileData, this.secretStorage);

@@ -11,7 +11,8 @@
   overflow: hidden;
 }
 
-:host ::ng-deep app-scp, :host ::ng-deep app-ftp, :host ::ng-deep app-samba {
+:host ::ng-deep app-scp, :host ::ng-deep app-ftp, :host ::ng-deep app-samba,
+:host ::ng-deep app-external-file-explorer {
   display: flex;
   flex-direction: column;
   flex: 1;

@@ -344,12 +344,18 @@
         }
 
         <!-- Plugins Settings -->
-        @if (currentTabIndex === 8) {
-        <div>
-          <div class="settings-header">{{ 'SETTINGS.PLUGINS' | translate }}</div>
-          <div class="setting-form">
-            <div class="form-section">
-              <div class="section-title">{{ 'SETTINGS.LOADED_PLUGINS' | translate }}</div>
+@if (currentTabIndex === 8) {
+<div>
+  <div class="settings-header" style="display:flex;align-items:center">
+    {{ 'SETTINGS.PLUGINS' | translate }}
+    <button mat-stroked-button color="accent" (click)="reloadExternalPlugins()" style="margin-left:auto;font-size:12px;padding:2px 12px;line-height:28px;flex-shrink:0">
+      <mat-icon style="font-size:14px;width:14px;height:14px;line-height:14px;margin-right:4px">refresh</mat-icon>
+      Reload External
+    </button>
+  </div>
+  <div class="setting-form">
+    <div class="form-section">
+      <div class="section-title">{{ 'SETTINGS.LOADED_PLUGINS' | translate }}</div>
               @if (plugins.length === 0) {
               <div style="color: #9ca3af; padding: 16px 0;">{{ 'SETTINGS.NO_PLUGINS' | translate }}</div>
               } @else {

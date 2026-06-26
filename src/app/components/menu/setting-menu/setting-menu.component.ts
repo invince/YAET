@@ -43,6 +43,7 @@ import {MasterKeyComponent} from '../../dialog/master-key/master-key.component';
 import {MenuComponent} from '../menu.component';
 import {GroupsFormComponent} from './groups-form/groups-form.component';
 import {TagsFormComponent} from './tags-form/tags-form.component';
+import {PluginLoaderService} from '../../../plugin/services/plugin-loader.service';
 
 
 @Component({
@@ -147,7 +148,8 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     public dialog: MatDialog,
     private notification: NotificationService,
     private spinner: NgxSpinnerService,
-    @Inject(TranslateService) private translate: TranslateService
+    @Inject(TranslateService) private translate: TranslateService,
+    private pluginLoader: PluginLoaderService
   ) {
     super();
     this.version = packageJson.version;
@@ -434,6 +436,15 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       }
     } catch (err) {
       console.error('[Settings] Failed to load plugins:', err);
+    }
+  }
+
+  async reloadExternalPlugins() {
+    try {
+      await this.pluginLoader.reloadExternalPlugins();
+      await this.loadPlugins();
+    } catch (err) {
+      console.error('[Settings] Failed to reload external plugins:', err);
     }
   }
 

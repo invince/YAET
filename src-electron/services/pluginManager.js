@@ -32,6 +32,9 @@ class PluginManager {
 
     // External plugins (user-installed at ~/.yaet/plugins/)
     this.externalDir = path.join(os.homedir(), '.yaet', 'plugins');
+
+    /** Stored from last loadAll() call, reused by reloadExternal() */
+    this._lastContext = null;
   }
 
   /**
@@ -78,7 +81,11 @@ class PluginManager {
 
         const existing = this.plugins.get(manifest.id);
         if (existing) {
-          this.logger.info(`[PluginManager] External plugin overrides bundled: ${manifest.id}`);
+          if (source === 'external') {
+            this.logger.warn(`[PluginManager] External plugin "${manifest.id}" blocked — id conflicts with bundled plugin`);
+            continue;
+          }
+          this.logger.info(`[PluginManager] Bundled plugin overrides previous: ${manifest.id}`);
         }
 
         this.plugins.set(manifest.id, {
@@ -101,6 +108,7 @@ class PluginManager {
    * @param {Object} context - Shared context passed to all plugins
    */
   loadAll(context) {
+    this._lastContext = context;
     for (const [id, plugin] of this.plugins) {
       if (!plugin.manifest.enabled) {
         this.logger.info(`[PluginManager] Plugin ${id} is disabled, skipping`);
@@ -111,11 +119,58 @@ class PluginManager {
   }
 
   /**
+   * Rescan the external plugin directory and load any newly discovered plugins.
+   * Already-loaded plugins are kept (Node.js module cache prevents true unload).
+   */
+  reloadExternal() {
+    const context = this._lastContext;
+    if (!context) {
+      this.logger.warn('[PluginManager] No context available for reload');
+      return;
+    }
+
+    // Remove IPC handlers for previously loaded external plugins before re-registering
+    for (const [, plugin] of this.plugins) {
+      if (plugin.source === 'external' && plugin.loaded) {
+        this._removePluginHandlers(plugin);
+      }
+    }
+
+    // Forget previously discovered external plugins so _scanDirectory re-adds them
+    for (const [id, plugin] of this.plugins) {
+      if (plugin.source === 'external') {
+        this.plugins.delete(id);
+      }
+    }
+
+    this._scanDirectory(this.externalDir, 'external');
+
+    for (const [id, plugin] of this.plugins) {
+      if (plugin.source === 'external' && !plugin.loaded) {
+        this._loadPlugin(id, plugin, context);
+      }
+    }
+
+    this.writeMergedManifest();
+    this.logger.info('[PluginManager] External plugins reloaded');
+  }
+
+  /**
+   * Remove previously registered IPC handlers for a plugin (so re-registration works on reload).
+   */
+  _removePluginHandlers(plugin) {
+    const ipc = plugin.manifest.ipc || {};
+    const {ipcMain} = require('electron');
+    const invokeChannels = ipc.invoke || [];
+    for (const ch of invokeChannels) {
+      try { ipcMain.removeHandler(ch); } catch {}
+    }
+  }
+
+  /**
    * Load a single plugin's backend module.
    */
   _loadPlugin(id, plugin, context) {
-    if (plugin.loaded) return;
-
     const backendRelative = plugin.manifest.backend || './backend/index.js';
     const backendPath = path.join(plugin.baseDir, id, backendRelative);
 

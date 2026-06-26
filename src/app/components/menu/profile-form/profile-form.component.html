@@ -131,6 +131,18 @@
         <div class="external-plugin-badge">External Plugin</div>
         <app-remote-terminal-profile-form formControlName="remoteTerminalProfileForm" [type]="getExternalPluginType()">
         </app-remote-terminal-profile-form>
+      } @else if (getExternalPluginFormElement()) {
+        <div class="external-plugin-badge">External Plugin</div>
+        <app-external-plugin-form formControlName="externalPluginForm" [pluginFormElement]="getExternalPluginFormElement()" [profileType]="form.get('profileType')?.value">
+        </app-external-plugin-form>
+        @if (hasExternalPluginAuth()) {
+          <div style="margin-top:12px">
+            <app-auth-form formControlName="externalPluginAuth"
+              [supportedAuthTypes]="getExternalPluginAuthTypes()"
+              [secretTypes]="getExternalPluginSecretTypes()">
+            </app-auth-form>
+          </div>
+        }
       }
 
     </div>

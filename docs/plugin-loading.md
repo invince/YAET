@@ -147,6 +147,8 @@ window.__SSH_TERMINAL_PLUGIN__ = {
 
 ---
 
+See [`ext-plugins-example/webdav-file-explorer/`](../ext-plugins-example/webdav-file-explorer/) for a working external WebDAV plugin (zero npm dependencies), or [`ext-plugins-example/ssh-terminal/`](../ext-plugins-example/ssh-terminal/) for an SSH terminal example.
+
 ## Plugin Structure
 
 ### Bundled (shipped with app)

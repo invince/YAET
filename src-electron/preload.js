@@ -31,6 +31,7 @@ const CORE_SEND_CHANNELS = [
   'check-for-updates',
   'ai.command-approved',
   'ai.command-rejected',
+  'session.close.fe.webdav',
 ];
 
 const CORE_INVOKE_CHANNELS = [
@@ -39,6 +40,7 @@ const CORE_INVOKE_CHANNELS = [
   'plugins.getMergedManifest',
   'plugins.getExternalDir',
   'plugins.readFrontend',
+  'plugins.reloadExternal',
   'acp.send',
   'acp.fetch-models',
   'ai.fetch-models',
@@ -48,6 +50,12 @@ const CORE_INVOKE_CHANNELS = [
   'session.fe.scp.register',
   'session.fe.ftp.register',
   'session.fe.samba.register',
+  'session.fe.webdav.register',
+  'fe.list.webdav',
+  'fe.read.webdav',
+  'fe.write.webdav',
+  'fe.delete.webdav',
+  'fe.rename.webdav',
   'masterkey.save',
   'masterkey.get',
   'masterkey.delete',

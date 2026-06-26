@@ -30,6 +30,10 @@ function initPluginHandler(log) {
     }
   });
 
+  ipcMain.handle('plugins.reloadExternal', () => {
+    pluginManager.reloadExternal();
+  });
+
   ipcMain.handle('plugins.getExternalDir', () => {
     return path.join(os.homedir(), '.yaet', 'plugins');
   });

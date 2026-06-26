@@ -2,6 +2,7 @@ import {Injectable, Type} from '@angular/core';
 import {CUSTOM_PROFILE, LOCAL_TERMINAL, Profile, ProfileCategory, ProfileType} from '../../domain/profile/Profile';
 import {PluginFrontend} from '../plugin-manifest';
 import {Session} from '../../domain/session/Session';
+import {ExternalFileExplorerComponent} from '../../components/file-explorer/external-file-explorer.component';
 
 export interface ExternalPluginInfo {
   id: string;
@@ -11,6 +12,8 @@ export interface ExternalPluginInfo {
   profileFormElement: string;
   ipcChannels?: { send: string[]; invoke: string[]; on: string[] };
   openNewTab?: boolean;
+  supportedAuthTypes?: string[];
+  secretTypes?: string[];
 }
 
 export interface BundledPluginInfo extends ExternalPluginInfo {
@@ -210,7 +213,14 @@ export class PluginRegistryService {
    * Returns null if no plugin is registered for that type.
    */
   getSessionComponent(profileType: ProfileType | string): Type<any> | null {
-    return this.getPlugin(profileType)?.sessionComponent ?? null;
+    const plugin = this.getPlugin(profileType);
+    if (plugin?.sessionComponent) return plugin.sessionComponent;
+
+    const extPlugin = this.getExternalPlugin(profileType);
+    if (extPlugin?.category === ProfileCategory.FILE_EXPLORER) {
+      return ExternalFileExplorerComponent;
+    }
+    return null;
   }
 
   /**
