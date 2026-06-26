@@ -54,9 +54,6 @@ app.on('ready', () => {
 
   const isDev = process.env.NODE_ENV === 'development';
 
-  // ── Phase 1: Discover plugins and write merged manifest for preload.js ──
-  pluginManager = initPluginHandler(log);
-
   tray = new Tray(__dirname + '/assets/icons/app-icon.png',);
   tray.setToolTip('Yet Another Electron Terminal');
 
@@ -230,10 +227,12 @@ app.on('will-quit', () => {
 process.on('uncaughtException', (error) => {
   log.error('Uncaught Exception:', error);
 
-  mainWindow.webContents.send('error', {
-    category: 'exception',
-    error: `Uncaught Exception: ${error.message}`
-  });
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('error', {
+      category: 'exception',
+      error: `Uncaught Exception: ${error.message}`
+    });
+  }
 });
 
 

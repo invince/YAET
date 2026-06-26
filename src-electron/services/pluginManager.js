@@ -290,7 +290,11 @@ class PluginManager {
   _writeIfDirExists(filePath, content) {
     const dir = path.dirname(filePath);
     if (fs.existsSync(dir)) {
-      fs.writeFileSync(filePath, content, 'utf-8');
+      try {
+        fs.writeFileSync(filePath, content, 'utf-8');
+      } catch (err) {
+        this.logger.warn(`[PluginManager] Could not write manifest to ${filePath}: ${err.message}`);
+      }
     }
   }
 
