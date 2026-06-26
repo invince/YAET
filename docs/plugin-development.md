@@ -9,9 +9,10 @@ YAET uses a plugin system to manage connection types (SSH, Telnet, FTP, etc.). E
 
 Plugins live in two locations:
 - **Bundled**: `plugins/<id>/` at the project root (shipped with the app)
-- **External**: `~/.yaet/plugins/<id>/` (user-installed, overrides bundled)
+- **External**: `~/.yaet/plugins/<id>/` (user-installed)
+  - **Security**: external plugins CANNOT override bundled plugins with the same id
 
-See [`ext-plugins-example/`](../ext-plugins-example/) for a working external SSH plugin example.
+See [`ext-plugins-example/webdav-file-explorer/`](../ext-plugins-example/webdav-file-explorer/) for a working external WebDAV FILE_EXPLORER plugin example.
 
 ## How It Works
 
@@ -21,7 +22,7 @@ See [`ext-plugins-example/`](../ext-plugins-example/) for a working external SSH
 Electron app starts
   │
   ├─ PluginManager.discover()             ← scans plugins/ AND ~/.yaet/plugins/
-  │   └─ external plugins override bundled ones with the same id
+  │   └─ external plugins that conflict with bundled ids are SKIPPED (security)
   ├─ PluginManager.writeMergedManifest()  ← writes generated-plugin-manifest.json to both locations
   │
   ├─ new BrowserWindow(preload.js)
@@ -173,10 +174,12 @@ plugins/
 ├── manifest.json              # Plugin metadata
 ├── backend/
 │   ├── index.js               # register(context) — entry point
-│   └── my.connector.js        # Runtime connector (self-contained)
+│   └── my.connector.js        # Runtime connector (self-contained, uses context.projectRequire for npm deps)
 └── frontend/
-    └── index.js               # Pre-built JS bundle (Web Component or inline script)
+    └── index.js               # Pre-built JS bundle (Web Component)
 ```
+
+See [`ext-plugins-example/webdav-file-explorer/`](../ext-plugins-example/webdav-file-explorer/) for a complete working example.
 
 **Important**: the directory name MUST match `manifest.json → id`. PluginManager constructs backend path as `path.join(baseDir, id, backend)`.
 
@@ -435,6 +438,8 @@ window.__MY_CONNECTION_PLUGIN__ = {
   profileFormElement: 'my-connection-profile-form',
 };
 ```
+
+**Auth integration**: The core provides a reusable `<app-auth-form>` component for auth type selection (None / Login / Secret). External plugins declare `supportedAuthTypes` and `secretTypes` in their manifest — the app automatically renders the auth component below the Web Component form. The Web Component only needs to handle plugin-specific fields (like URL for WebDAV).
 
 **Alternatively**, for terminal-type plugins, you can skip the custom element and reuse the shared `RemoteTerminalProfileFormComponent` — no frontend code needed at all. The `@default` case in `profile-form.component.html` handles this automatically for external terminal plugins.
 

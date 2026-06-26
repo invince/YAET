@@ -86,7 +86,7 @@ electronMain.js → app.on('ready')
   ├─ new PluginManager(__dirname, log)
   ├─ pluginManager.discover()
   │   └─ Scan plugins/ AND ~/.yaet/plugins/ for manifest.json
-  │       └─ External plugins override bundled ones with the same id
+  │       └─ External plugins that conflict with bundled ids are SKIPPED (security)
   │
   ├─ pluginManager.writeMergedManifest()
   │   └─ combined ipc channels → plugins/generated-plugin-manifest.json
@@ -147,7 +147,7 @@ window.__SSH_TERMINAL_PLUGIN__ = {
 
 ---
 
-See [`ext-plugins-example/webdav-file-explorer/`](../ext-plugins-example/webdav-file-explorer/) for a working external WebDAV plugin (zero npm dependencies), or [`ext-plugins-example/ssh-terminal/`](../ext-plugins-example/ssh-terminal/) for an SSH terminal example.
+See [`ext-plugins-example/webdav-file-explorer/`](../ext-plugins-example/webdav-file-explorer/) for a working external WebDAV FILE_EXPLORER plugin — a complete example with backend REST API, Web Component profile form, and core auth integration.
 
 ## Plugin Structure
 
@@ -228,6 +228,8 @@ For bundled plugins:
 For external plugins:
 - `frontend.entry` — path to pre-built JS bundle (e.g. `./frontend/index.js`)
 - `frontend.profileFormElement` — Web Component tag name for the profile form
+- `supportedAuthTypes` — optional; `["N/A", "login", "secret"]` — declares which auth modes the plugin supports. When set, the core renders `<app-auth-form>` for auth type selection
+- `secretTypes` — optional; `["LOGIN_PASSWORD", "PASSWORD_ONLY"]` — filters the secret dropdown in the auth form
 
 ---
 
