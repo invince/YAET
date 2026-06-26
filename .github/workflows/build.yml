@@ -27,6 +27,8 @@ jobs:
 
       - name: Build Angular
         run: npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Cache Playwright Browsers
         id: playwright-cache
