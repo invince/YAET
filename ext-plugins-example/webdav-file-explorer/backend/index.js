@@ -100,7 +100,7 @@ function register(context) {
         }
         case 'rename': {
           const oldP = (pathParam.replace(/\/$/, '') + '/' + req.body.name).replace(/\/\//g, '/');
-          const newP = pathParam.replace(/\/$/, '/') + req.body.newName;
+          const newP = (pathParam.replace(/\/$/, '') + '/' + req.body.newName).replace(/\/\//g, '/');
           await explorer.renameFile(oldP, newP);
           const files = await explorer.listFiles(pathParam);
           result = { cwd: { name: pathParam, type: 'folder' }, files };
