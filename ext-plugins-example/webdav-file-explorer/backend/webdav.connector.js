@@ -55,7 +55,7 @@ class WebDavFileExplorer extends EventEmitter {
       port: url.port,
       path: url.pathname + url.search,
       headers: allHeaders,
-      rejectUnauthorized: false,
+      rejectUnauthorized: true,
     };
 
     const mod = url.protocol === 'https:' ? https : http;
