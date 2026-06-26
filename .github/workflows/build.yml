@@ -74,6 +74,8 @@ jobs:
 
       - name: Build Angular
         run: npm run build:angular
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Run Unit Tests
         run: npx ng test --no-watch --browsers ChromeHeadless
