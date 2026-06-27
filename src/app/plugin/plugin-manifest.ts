@@ -49,7 +49,7 @@ export interface PluginFrontend {
   profileFormComponent: Type<any>;
 
   /** Angular component for the session view (terminal, file explorer, etc.) */
-  sessionComponent: Type<any>;
+  sessionComponent?: Type<any>;
 
   /** Optional: additional Angular providers (services) this plugin needs */
   providers?: any[];

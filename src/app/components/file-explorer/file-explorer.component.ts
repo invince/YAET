@@ -1,25 +1,56 @@
-import {Component, Input, OnInit} from '@angular/core';
-import {NgComponentOutlet} from '@angular/common';
+import {HttpClient} from '@angular/common/http';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {Session} from '../../domain/session/Session';
-import {PluginRegistryService} from '../../plugin/services/plugin-registry.service';
+import {TabService} from '../../services/tab.service';
+import {AbstractFileManager} from './abstract-file-manager';
+import {FileListComponent} from './custom/file-list.component';
+import {NODE_EXPRESS_API_ROOT} from '../../services/electron/ElectronConstant';
+import {NgIf} from '@angular/common';
 
 @Component({
     selector: 'app-file-explorer',
     imports: [
-        NgComponentOutlet,
+        NgIf,
+        FileListComponent,
     ],
-    templateUrl: './file-explorer.component.html',
+    template: `
+    <app-file-list *ngIf="sessionReady" [ajaxSettings]="ajaxSettings" [path]="path" (pathChange)="path = $event" [session]="session"></app-file-list>
+  `,
     styleUrl: './file-explorer.component.scss'
 })
-export class FileExplorerComponent implements OnInit {
+export class FileExplorerComponent extends AbstractFileManager implements OnInit, OnDestroy {
   @Input() session!: Session;
-  componentType: any;
-  componentInputs: any;
+  sessionReady = false;
 
-  constructor(private registry: PluginRegistryService) {}
+  constructor(http: HttpClient, private tabService: TabService) {
+    super(http);
+  }
 
-  ngOnInit() {
-    this.componentType = this.registry.getSessionComponent(this.session.profileType);
-    this.componentInputs = { session: this.session };
+  async ngOnInit(): Promise<void> {
+    await this.session.open();
+    this.ajaxSettings = this.generateAjaxSettings();
+    this.sessionReady = true;
+  }
+
+  ngOnDestroy(): void {
+    const isTabStillActive = this.tabService.tabs.some(t => t.id === this.session.id);
+    if (!isTabStillActive) {
+      this.session.close();
+    }
+  }
+
+  generateAjaxSettings(): any {
+    const apiPath = this.session.profileType.replace(/_FILE_EXPLORER$/i, '').toLowerCase().replace(/_/g, '-');
+    const base = `${NODE_EXPRESS_API_ROOT}/v1/${apiPath}`;
+    return {
+      url: `${base}/${this.session.id}`,
+      uploadUrl: `${base}/upload/${this.session.id}`,
+      downloadUrl: `${base}/download/${this.session.id}`,
+      openUrl: `${base}/open/${this.session.id}`,
+    };
+  }
+
+  getCurrentPath(): string | undefined {
+    return this.path;
   }
 }

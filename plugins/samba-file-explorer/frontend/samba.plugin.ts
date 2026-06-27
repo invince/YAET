@@ -4,7 +4,6 @@ import {Profile, ProfileCategory} from '../../../src/app/domain/profile/Profile'
 import {TabService} from '../../../src/app/services/tab.service';
 import {SambaService} from './services/samba.service';
 import {SambaSession} from './main/samba-session';
-import {SambaComponent} from './main/samba.component';
 import {SambaFormComponent} from './form/samba-form.component';
 
 export const SAMBA_FILE_EXPLORER = 'SAMBA_FILE_EXPLORER';
@@ -38,6 +37,5 @@ export function register(registry: PluginRegistryService, injector: Injector) {
       supportedAuthTypes: ['login', 'secret'],
     },
     profileFormComponent: SambaFormComponent,
-    sessionComponent: SambaComponent,
   });
 }

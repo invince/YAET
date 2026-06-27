@@ -4,7 +4,6 @@ import {Profile, ProfileCategory} from '../../../src/app/domain/profile/Profile'
 import {TabService} from '../../../src/app/services/tab.service';
 import {ScpService} from './services/scp.service';
 import {ScpSession} from './main/scp-session';
-import {ScpComponent} from './main/scp.component';
 import {
   RemoteTerminalProfileFormComponent
 } from '../../../src/app/components/menu/profile-form/remote-terminal-profile-form/remote-terminal-profile-form.component';
@@ -40,6 +39,5 @@ export function register(registry: PluginRegistryService, injector: Injector) {
       supportedAuthTypes: ['login', 'secret'],
     },
     profileFormComponent: RemoteTerminalProfileFormComponent,
-    sessionComponent: ScpComponent,
   });
 }

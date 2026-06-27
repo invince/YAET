@@ -4,7 +4,6 @@ import {Profile, ProfileCategory} from '../../../src/app/domain/profile/Profile'
 import {TabService} from '../../../src/app/services/tab.service';
 import {FtpService} from './services/ftp.service';
 import {FtpSession} from './main/ftp-session';
-import {FtpComponent} from './main/ftp.component';
 import {FtpProfileFormComponent} from './form/ftp-profile-form.component';
 
 export const FTP_FILE_EXPLORER = 'FTP_FILE_EXPLORER';
@@ -38,6 +37,5 @@ export function register(registry: PluginRegistryService, injector: Injector) {
       supportedAuthTypes: ['login', 'secret'],
     },
     profileFormComponent: FtpProfileFormComponent,
-    sessionComponent: FtpComponent,
   });
 }
