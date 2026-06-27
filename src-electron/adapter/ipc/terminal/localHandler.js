@@ -7,31 +7,31 @@ function initLocalTerminalIpcHandler(settings, log, terminalMap, registry) {
     const session = new LocalTerminalSession(log);
 
     session.on('output', ({ data: output }) => {
-      event.sender.send('terminal.output', { id: data.terminalId, data: output });
+      event.sender.send('terminal.output', { id: data.id, data: output });
     });
 
     session.connect({
       terminalExec: data.terminalExec,
       ...(data.config || {})
     }).then(() => {
-      terminalMap.set(data.terminalId, {
+      terminalMap.set(data.id, {
         type: 'local',
         process: session.process,
         callback: (input) => session.write(input),
         resize: (cols, rows) => session.process?.resize(cols, rows),
         close: () => { try { session.process?.kill(); } catch { /* ignore */ } },
       });
-      if (registry) registry.register(data.terminalId, 'local', 'user', session);
+      if (registry) registry.register(data.id, 'local', 'user', session);
     }).catch((err) => {
-      event.sender.send('error', { category: 'local', id: data.terminalId, error: err.message });
+      event.sender.send('error', { category: 'local', id: data.id, error: err.message });
     });
   });
 
   ipcMain.on('session.close.terminal.local', (event, data) => {
-    const entry = registry ? registry.get(data.terminalId) : null;
+    const entry = registry ? registry.get(data.id) : null;
     const session = entry ? entry.session : null;
     if (session) session.close();
-    if (registry) registry.unregister(data.terminalId);
+    if (registry) registry.unregister(data.id);
   });
 }
 

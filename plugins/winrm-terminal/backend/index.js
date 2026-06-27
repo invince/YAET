@@ -60,15 +60,15 @@ function register(context) {
     const session = new WinRMSession(logger, context.projectRequire);
 
     session.on('output', ({ data: output }) => {
-      event.sender.send('terminal.output', { id: data.terminalId, data: output });
+      event.sender.send('terminal.output', { id: data.id, data: output });
     });
 
     session.on('error', ({ error }) => {
-      event.sender.send('error', { category: 'winrm', id: data.terminalId, error });
+      event.sender.send('error', { category: 'winrm', id: data.id, error });
     });
 
     session.on('opened', () => {
-      event.sender.send('terminal.opened', { id: data.terminalId });
+      event.sender.send('terminal.opened', { id: data.id });
     });
 
     try {
@@ -85,7 +85,7 @@ function register(context) {
       });
 
       if (terminalMap) {
-        terminalMap.set(data.terminalId, {
+        terminalMap.set(data.id, {
           type: 'winrm',
           process: session.process,
           callback: (input) => session.write(input),
@@ -95,17 +95,17 @@ function register(context) {
       }
 
       const registry = typeof sessionRegistry === 'function' ? sessionRegistry() : sessionRegistry;
-      if (registry) registry.register(data.terminalId, 'winrm', 'user', session);
+      if (registry) registry.register(data.id, 'winrm', 'user', session);
     } catch (err) {
-      event.sender.send('error', { category: 'winrm', id: data.terminalId, error: err.message });
+      event.sender.send('error', { category: 'winrm', id: data.id, error: err.message });
     }
   });
 
   ipcMain.on('session.close.terminal.winrm', (event, data) => {
     const registry = typeof sessionRegistry === 'function' ? sessionRegistry() : sessionRegistry;
-    const entry = registry ? registry.get(data.terminalId) : null;
+    const entry = registry ? registry.get(data.id) : null;
     if (entry?.session) entry.session.close();
-    if (registry) registry.unregister(data.terminalId);
+    if (registry) registry.unregister(data.id);
   });
 
   logger.info('[winrm-terminal] Plugin registered');

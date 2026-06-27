@@ -23,15 +23,15 @@ function register(context) {
     const session = new SshTerminalSession(logger);
 
     session.on('output', ({ data: output }) => {
-      event.sender.send('terminal.output', { id: data.terminalId, data: output });
+      event.sender.send('terminal.output', { id: data.id, data: output });
     });
 
     session.on('error', ({ error }) => {
-      event.sender.send('error', { category: 'ssh', id: data.terminalId, error });
+      event.sender.send('error', { category: 'ssh', id: data.id, error });
     });
 
     session.on('disconnect', ({ error }) => {
-      event.sender.send('session.disconnect.terminal.ssh', { id: data.terminalId, error: !!error });
+      event.sender.send('session.disconnect.terminal.ssh', { id: data.id, error: !!error });
     });
 
     try {
@@ -49,7 +49,7 @@ function register(context) {
         ...data.config,
         proxy,
         secretRepo,
-        id: data.terminalId,
+        id: data.id,
         initPath: data.initPath,
         initCmd: data.initCmd,
         rows: data.rows,
@@ -57,11 +57,11 @@ function register(context) {
       });
 
       const registry = typeof sessionRegistry === 'function' ? sessionRegistry() : sessionRegistry;
-      if (registry) registry.register(data.terminalId, 'ssh', 'user', session);
+      if (registry) registry.register(data.id, 'ssh', 'user', session);
 
       // Also register in terminalMap for shared terminalHandler.js (resize/input)
       if (terminalMap) {
-        terminalMap.set(data.terminalId, {
+        terminalMap.set(data.id, {
           type: 'ssh',
           process: session.conn,
           stream: session.stream,
@@ -73,7 +73,7 @@ function register(context) {
     } catch (error) {
       event.sender.send('error', {
         category: 'ssh',
-        id: data.terminalId,
+        id: data.id,
         error: error.message,
       });
     }
@@ -81,10 +81,10 @@ function register(context) {
 
   ipcMain.on('session.close.terminal.ssh', (event, data) => {
     const registry = typeof sessionRegistry === 'function' ? sessionRegistry() : sessionRegistry;
-    const entry = registry ? registry.get(data.terminalId) : null;
+    const entry = registry ? registry.get(data.id) : null;
     const session = entry ? entry.session : null;
     if (session) session.close();
-    if (registry) registry.unregister(data.terminalId);
+    if (registry) registry.unregister(data.id);
   });
 
   logger.info('[ssh-terminal] Plugin registered');

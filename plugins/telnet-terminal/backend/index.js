@@ -51,11 +51,11 @@ function register(context) {
     const session = new TelnetSession(logger);
 
     session.on('output', ({ data: output }) => {
-      event.sender.send('terminal.output', { id: data.terminalId, data: output });
+      event.sender.send('terminal.output', { id: data.id, data: output });
     });
 
     session.on('error', ({ error }) => {
-      event.sender.send('error', { category: 'telnet', id: data.terminalId, error });
+      event.sender.send('error', { category: 'telnet', id: data.id, error });
     });
 
     try {
@@ -78,7 +78,7 @@ function register(context) {
       });
 
       if (terminalMap) {
-        terminalMap.set(data.terminalId, {
+        terminalMap.set(data.id, {
           type: 'telnet',
           process: session.client,
           callback: (input) => session.write(input),
@@ -89,11 +89,11 @@ function register(context) {
 
       const registry = typeof sessionRegistry === 'function'
         ? sessionRegistry() : sessionRegistry;
-      if (registry) registry.register(data.terminalId, 'telnet', 'user', session);
+      if (registry) registry.register(data.id, 'telnet', 'user', session);
     } catch (error) {
       event.sender.send('error', {
         category: 'telnet',
-        id: data.terminalId,
+        id: data.id,
         error: error.message,
       });
     }
@@ -102,9 +102,9 @@ function register(context) {
   ipcMain.on('session.close.terminal.telnet', (event, data) => {
     const registry = typeof sessionRegistry === 'function'
       ? sessionRegistry() : sessionRegistry;
-    const entry = registry?.get(data.terminalId);
+    const entry = registry?.get(data.id);
     if (entry?.session) entry.session.close();
-    registry?.unregister(data.terminalId);
+    registry?.unregister(data.id);
   });
 
   logger.info('[telnet-terminal] Plugin registered');

@@ -4,7 +4,7 @@ const {Terminal: TerminalHandler} = require("@xterm/xterm");
 function initTerminalIpcHandler(log, terminalMap) {
 
   ipcMain.on('terminal.input', (event, data) => {
-    const id = data.terminalId; // cf terminal.component.ts
+    const id = data.id; // cf terminal.component.ts
     const input = data.input;
     const terminalCallback = terminalMap.get(id)?.callback;
     log.info('TerminalHandler id to find ' + id);
