@@ -148,6 +148,7 @@
         "SCP_FILE_EXPLORER": "SCP Datei-Explorer",
         "FTP_FILE_EXPLORER": "FTP Datei-Explorer",
         "SAMBA_FILE_EXPLORER": "Samba Datei-Explorer",
+        "SFTP_FILE_EXPLORER": "SFTP Datei-Explorer",
         "CUSTOM": "Benutzerdefiniert"
     },
     "QUICKCONNECT": {

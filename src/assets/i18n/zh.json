@@ -148,6 +148,7 @@
         "SCP_FILE_EXPLORER": "SCP 文件浏览器",
         "FTP_FILE_EXPLORER": "FTP 文件浏览器",
         "SAMBA_FILE_EXPLORER": "Samba 文件浏览器",
+        "SFTP_FILE_EXPLORER": "SFTP 文件浏览器",
         "CUSTOM": "自定义"
     },
     "QUICKCONNECT": {

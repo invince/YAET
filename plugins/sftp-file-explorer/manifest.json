@@ -1,0 +1,22 @@
+{
+  "id": "sftp-file-explorer",
+  "name": "SFTP File Explorer",
+  "version": "1.0.0",
+  "description": "SFTP file explorer plugin",
+  "category": "FILE_EXPLORER",
+  "profileType": "SFTP_FILE_EXPLORER",
+  "defaultPort": 22,
+  "icon": "folder",
+  "enabled": true,
+  "secretTypes": ["LOGIN_PASSWORD", "PASSWORD_ONLY", "SSH_KEY"],
+  "supportedAuthTypes": ["login", "secret"],
+  "backend": "./backend/index.js",
+  "frontend": {
+    "entry": "./frontend/sftp.plugin.ts"
+  },
+  "ipc": {
+    "send": [],
+    "invoke": ["session.fe.sftp.register"],
+    "on": []
+  }
+}

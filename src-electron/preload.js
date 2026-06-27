@@ -50,6 +50,7 @@ const CORE_INVOKE_CHANNELS = [
   'session.fe.scp.register',
   'session.fe.ftp.register',
   'session.fe.samba.register',
+  'session.fe.sftp.register',
   'session.fe.webdav.register',
   'fe.list.webdav',
   'fe.read.webdav',
