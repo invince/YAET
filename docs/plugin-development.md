@@ -22,6 +22,8 @@ See [`ext-plugins-example/webdav-file-explorer/`](../ext-plugins-example/webdav-
 Electron app starts
   │
   ├─ PluginManager.discover()             ← scans plugins/ AND ~/.yaet/plugins/
+  │   ├─ for each plugin dir with package.json:
+  │   │   └─ auto-run npm install if node_modules missing or outdated
   │   └─ external plugins that conflict with bundled ids are SKIPPED (security)
   ├─ PluginManager.writeMergedManifest()  ← writes generated-plugin-manifest.json to both locations
   │
@@ -171,6 +173,7 @@ plugins/
 
 ```
 ~/.yaet/plugins/my-connection-type/
+├── package.json              # Optional: npm dependencies (auto-installed on startup)
 ├── manifest.json              # Plugin metadata
 ├── backend/
 │   ├── index.js               # register(context) — entry point
@@ -182,6 +185,34 @@ plugins/
 See [`ext-plugins-example/webdav-file-explorer/`](../ext-plugins-example/webdav-file-explorer/) for a complete working example.
 
 **Important**: the directory name MUST match `manifest.json → id`. PluginManager constructs backend path as `path.join(baseDir, id, backend)`.
+
+### Self-Managed Dependencies
+
+External plugins can declare npm dependencies in their own `package.json`. On startup, `PluginManager` detects the `package.json` and runs `npm install` in the plugin directory if `node_modules` is missing or out of date.
+
+**When to use:**
+- Your plugin needs a build-time dependency (e.g. `spice-client` for frontend bundling)
+- You prefer self-contained dependency management over `context.projectRequire()`
+- Your plugin has npm packages not available in the core application
+
+**Example** (`~/.yaet/plugins/my-plugin/package.json`):
+```json
+{
+  "name": "my-plugin",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "some-runtime-pkg": "^1.0.0"
+  },
+  "devDependencies": {
+    "some-build-tool": "^2.0.0"
+  }
+}
+```
+
+Both runtime (`dependencies`) and build-time (`devDependencies`) packages are installed. The frontend bundle should be pre-built before distribution — only runtime dependencies are needed for the backend at load time.
+
+**Mix and match**: You can combine self-managed deps with `context.projectRequire()`. The plugin's own `node_modules` is checked first by Node.js `require()`, falling back to `projectRequire` for core packages.
 
 ## Writing a Plugin
 
@@ -552,7 +583,7 @@ case ProfileType.MY_CONNECTION:
 - [ ] `manifest.json` with correct `id`, `category`, `profileType`
 - [ ] Directory name matches `manifest.id`
 - [ ] `backend/index.js` with `register(context)` function
-- [ ] Backend connector uses `context.projectRequire()` for npm deps
+- [ ] Backend connector uses `context.projectRequire()` for npm deps (or `package.json` for self-managed deps)
 - [ ] Frontend `index.js` exposes `window.__<ID>_PLUGIN__` metadata
 - [ ] IPC channels added to manifest `ipc` section
 - [ ] Plugin works without any core code changes
@@ -566,7 +597,8 @@ case ProfileType.MY_CONNECTION:
 
 ## Notes
 
-- **External plugin npm deps**: Use `context.projectRequire(moduleName)` in your connector to resolve npm packages from the project's `node_modules`. Direct `require()` will fail for external plugins since they live in `~/.yaet/plugins/`.
+- **External plugin npm deps (option 1 — projectRequire)**: Use `context.projectRequire(moduleName)` in your connector to resolve npm packages from the project's `node_modules`. Direct `require()` will fail for external plugins since they live in `~/.yaet/plugins/`.
+- **External plugin npm deps (option 2 — self-managed)**: Add `package.json` to your plugin directory. `PluginManager` runs `npm install` automatically on startup. This is useful for build-time dependencies (e.g. `spice-client`) or when you need packages not available in the core project. Both approaches can be mixed — Node.js resolves from plugin's `node_modules` first, then falls through to `projectRequire`.
 - **Session view sharing**: Terminal plugins (SSH, Telnet, Local, WinRM) all share `TerminalComponent` for the UI. External plugins reuse it automatically via `PluginSession`.
 - **Profile form sharing**: `RemoteTerminalProfileFormComponent` is shared between SSH, Telnet, WinRM. External terminal plugins use it automatically via the `@default` case in `profile-form.component.html`.
 - **Preload whitelist**: IPC channels are automatically added to the preload whitelist from the plugin manifest. No manual whitelist editing needed.

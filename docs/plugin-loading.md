@@ -344,6 +344,62 @@ class SshTerminalSession extends EventEmitter {
 module.exports = { SshTerminalSession };
 ```
 
+## Plugin Self-Managed Dependencies
+
+External plugins can declare their own npm dependencies via a `package.json` in the plugin directory. When `PluginManager.discover()` scans a plugin directory, it checks for `package.json`. If found, and `node_modules` is missing or out of date, it automatically runs `npm install` in that directory.
+
+**Where this happens:** `PluginManager._installPluginDeps()` in `src-electron/services/pluginManager.js` (called from `_scanDirectory()`):
+
+```javascript
+_installPluginDeps(pluginDir) {
+    const pkgPath = path.join(pluginDir, 'package.json');
+    if (!fs.existsSync(pkgPath)) return;
+
+    const nmPath = path.join(pluginDir, 'node_modules');
+    if (fs.existsSync(nmPath)) {
+        // Skip if node_modules already exists and is newer than package.json
+        try {
+            const pkgMtime = fs.statSync(pkgPath).mtimeMs;
+            const nmMtime = fs.statSync(nmPath).mtimeMs;
+            if (nmMtime >= pkgMtime) return;
+        } catch {}
+    }
+
+    try {
+        execSync('npm install', { cwd: pluginDir, stdio: 'pipe', timeout: 60000 });
+    } catch (err) {
+        // Non-fatal — plugin can still use context.projectRequire() as fallback
+    }
+}
+```
+
+**When it runs:**
+- On every `discover()` call (app startup, external reload)
+- For both bundled and external plugins that have `package.json`
+- Installs all dependencies (`npm install`, not `--production`) so both runtime and build deps are available
+
+**Use cases:**
+- A plugin that ships a pre-built frontend bundle but needs a build dependency like `spice-client` at build time
+- A plugin backend that needs its own npm packages instead of using `context.projectRequire()`
+- Any plugin that wants to manage its dependencies independently of the core application
+
+**Example** (`~/.yaet/plugins/spice-remote-desktop/package.json`):
+```json
+{
+  "name": "spice-remote-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node build.js"
+  },
+  "devDependencies": {
+    "spice-client": "^1.2.0"
+  }
+}
+```
+
+Note that `context.projectRequire()` remains available for backward compatibility — plugins can use either approach or mix both.
+
 ## Merged Manifest
 
 PluginManager writes a merged manifest (`generated-plugin-manifest.json`) to both locations:
