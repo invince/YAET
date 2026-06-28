@@ -25,7 +25,9 @@
         "NONE": "无",
         "CLONE": "克隆",
         "CONNECT": "连接",
-        "ADD_NEW": "添加新项..."
+        "ADD_NEW": "添加新项...",
+        "PROXY_HOST": "代理主机",
+        "PROXY_PORT": "代理端口"
     },
     "SETTINGS": {
         "TITLE": "设置",
@@ -145,6 +147,7 @@
         "WIN_RM_TERMINAL": "WinRM 终端",
         "VNC_REMOTE_DESKTOP": "VNC 远程桌面",
         "RDP_REMOTE_DESKTOP": "RDP 远程桌面",
+        "SPICE_REMOTE_DESKTOP": "SPICE 远程桌面",
         "SCP_FILE_EXPLORER": "SCP 文件浏览器",
         "FTP_FILE_EXPLORER": "FTP 文件浏览器",
         "SAMBA_FILE_EXPLORER": "Samba 文件浏览器",
@@ -167,6 +170,9 @@
     "RDP": {
         "FULL_SCREEN": "全屏显示",
         "LOG_AS_ADMIN": "以管理员身份登录"
+    },
+    "SPICE": {
+        "TLS": "TLS 加密连接"
     },
     "CUSTOM": {
         "COMMAND": "命令",

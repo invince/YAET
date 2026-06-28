@@ -1,0 +1,11 @@
+.spice-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.spice {
+  flex-grow: 1;
+  width: 100%;
+  background-color: #000;
+}

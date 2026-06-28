@@ -25,7 +25,9 @@
         "NONE": "None",
         "CLONE": "Clone",
         "CONNECT": "Connect",
-        "ADD_NEW": "Add New..."
+        "ADD_NEW": "Add New...",
+        "PROXY_HOST": "Proxy Host",
+        "PROXY_PORT": "Proxy Port"
     },
     "SETTINGS": {
         "TITLE": "Settings",
@@ -145,6 +147,7 @@
         "WIN_RM_TERMINAL": "WinRM Terminal",
         "VNC_REMOTE_DESKTOP": "VNC Remote Desktop",
         "RDP_REMOTE_DESKTOP": "RDP Remote Desktop",
+        "SPICE_REMOTE_DESKTOP": "SPICE Remote Desktop",
         "SCP_FILE_EXPLORER": "SCP File Explorer",
         "FTP_FILE_EXPLORER": "FTP File Explorer",
         "SAMBA_FILE_EXPLORER": "Samba File Explorer",
@@ -167,6 +170,9 @@
     "RDP": {
         "FULL_SCREEN": "Show in full screen",
         "LOG_AS_ADMIN": "Log As Admin"
+    },
+    "SPICE": {
+        "TLS": "TLS Connection"
     },
     "CUSTOM": {
         "COMMAND": "Command",

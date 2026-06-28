@@ -22,6 +22,8 @@ export const TERMINAL_RESIZE = 'terminal.resize';
 
 export const SESSION_OPEN_VNC = 'session.open.rd.vnc';
 export const SESSION_DISCONNECT_VNC = 'session.disconnect.rd.vnc';
+export const SESSION_OPEN_SPICE = 'session.open.rd.spice';
+export const SESSION_DISCONNECT_SPICE = 'session.disconnect.rd.spice';
 
 export const SESSION_SCP_REGISTER = 'session.fe.scp.register';
 export const SESSION_FTP_REGISTER = 'session.fe.ftp.register';

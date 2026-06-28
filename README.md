@@ -25,10 +25,10 @@ YAET is a comprehensive remote connection and management tool built with Angular
 
 ### 🖼️ Remote Desktop
 - **VNC**: Virtual Network Computing for remote desktop access
-- **SPICE**: (the Simple Protocol for Independent Computing Environments) is a remote-display system built for virtual environments 
+- **SPICE**: The Simple Protocol for Independent Computing Environments — a remote-display system built for virtual environments
 - **RDP**: Remote Desktop Protocol (Windows)
 - vnc example <img width="3540" height="2177" alt="image" src="https://github.com/user-attachments/assets/6d73f239-5061-42d9-bc66-d4ed000843a7" />
-- spice exampel <img width="3300" height="1677" alt="image" src="https://github.com/user-attachments/assets/749d8391-921c-4f6f-8369-0607774477c7" />
+- spice example <img width="3300" height="1677" alt="image" src="https://github.com/user-attachments/assets/749d8391-921c-4f6f-8369-0607774477c7" />
 
 
 ### ⚡ Custom Commands
@@ -246,5 +246,5 @@ Application logs can be found at:
 - **Desktop**: Electron 39
 - **Terminal**: xterm.js
 - **File Transfer**: ssh2, basic-ftp, v9u-smb2
-- **Remote Desktop**: @novnc/novnc
+- **Remote Desktop**: @novnc/novnc, spice-client
 - **AI Integration**: Agent Client Protocol (ACP) or OpenAI provider

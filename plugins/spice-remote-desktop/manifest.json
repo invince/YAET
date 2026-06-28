@@ -1,0 +1,22 @@
+{
+  "id": "spice-remote-desktop",
+  "name": "SPICE Remote Desktop",
+  "version": "1.0.0",
+  "description": "SPICE remote desktop connection plugin (WebSocket-to-TCP proxy + HTML5 client)",
+  "category": "REMOTE_DESKTOP",
+  "profileType": "SPICE_REMOTE_DESKTOP",
+  "defaultPort": 5900,
+  "icon": "desktop_windows",
+  "enabled": true,
+  "secretTypes": ["PASSWORD_ONLY"],
+  "supportedAuthTypes": ["login", "secret"],
+  "backend": "./backend/index.js",
+  "frontend": {
+    "entry": "./frontend/spice.plugin.ts"
+  },
+  "ipc": {
+    "send": [],
+    "invoke": ["session.open.rd.spice"],
+    "on": ["session.connect.rd.spice", "session.disconnect.rd.spice"]
+  }
+}
