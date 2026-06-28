@@ -119,6 +119,7 @@ export class PluginLoaderService {
       category: pluginMeta.manifest.category,
       profileType: pluginMeta.manifest.profileType,
       profileFormElement: pluginMeta.profileFormElement,
+      sessionElement: pluginMeta.sessionElement,
       ipcChannels: manifestEntry.ipcChannels,
       supportedAuthTypes: pluginMeta.manifest.supportedAuthTypes,
       secretTypes: pluginMeta.manifest.secretTypes,

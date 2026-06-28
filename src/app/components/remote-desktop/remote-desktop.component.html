@@ -1,3 +1,7 @@
 <div class="remote-desktop-container">
-  <ng-container *ngComponentOutlet="componentType; inputs: componentInputs"></ng-container>
+  @if (useExternalPlugin) {
+    <app-external-plugin-session [session]="session" [sessionElement]="externalSessionElement"></app-external-plugin-session>
+  } @else {
+    <ng-container *ngComponentOutlet="componentType; inputs: componentInputs"></ng-container>
+  }
 </div>

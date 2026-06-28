@@ -62,9 +62,12 @@ export class SessionService {
       return this.createPluginSession(profile, profileType, pluginInfo);
     }
 
-    // 3. External plugins — use generic PluginSession
+    // 3. External plugins — use generic PluginSession (or simple Session if it provides its own session component)
     const externalPlugin = this.registry.getExternalPlugin(profileType);
     if (externalPlugin) {
+      if (externalPlugin.sessionElement) {
+        return new Session(profile, profileType, this.tabService);
+      }
       return this.createPluginSession(profile, profileType, externalPlugin);
     }
 

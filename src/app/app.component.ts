@@ -134,6 +134,7 @@ export class AppComponent implements OnInit, OnDestroy {
           if (this.pluginRegistry.getProfileOpenNewTab(profile.profileType)) {
             const tab = new TabInstance(profile.category, this.sessionService.create(profile, profile.profileType));
             this.tabService.addTab(tab); // Adds a new terminal identifier
+            tab.session.open(); // Set connected state so the reconnect button is hidden
           } else {
             this.sessionService.openSessionWithoutTab(profile);
           }

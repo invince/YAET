@@ -21,12 +21,13 @@ YAET is a comprehensive remote connection and management tool built with Angular
 - **SCP/SFTP**: Secure file transfer over SSH
 - **FTP**: Standard FTP protocol support
 - **SMB/SAMBA**: Windows file sharing protocol
-- **WebDav**: we provide an external plugin example of webdav.
+- **WebDav**:  External Plugin Example.  Web-based Distributed Authoring and Versioning.
 
 ### 🖼️ Remote Desktop
 - **VNC**: Virtual Network Computing for remote desktop access
-- **SPICE**: The Simple Protocol for Independent Computing Environments — a remote-display system built for virtual environments
 - **RDP**: Remote Desktop Protocol (Windows)
+- **SPICE**: External Plugin Example. The Simple Protocol for Independent Computing Environments — a remote-display system built for virtual environments
+
 - vnc example <img width="3540" height="2177" alt="image" src="https://github.com/user-attachments/assets/6d73f239-5061-42d9-bc66-d4ed000843a7" />
 - spice example <img width="3300" height="1677" alt="image" src="https://github.com/user-attachments/assets/749d8391-921c-4f6f-8369-0607774477c7" />
 

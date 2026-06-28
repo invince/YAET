@@ -349,6 +349,12 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     return ext?.secretTypes as SecretType[] || [SecretType.LOGIN_PASSWORD, SecretType.PASSWORD_ONLY];
   }
 
+  getExternalPluginHideLogin(): boolean {
+    const profileType = this.form?.get('profileType')?.value;
+    // SPICE uses ticket auth — only password, no login/username
+    return profileType === 'SPICE_REMOTE_DESKTOP';
+  }
+
   hasExternalPluginAuth(): boolean {
     const profileType = this.form?.get('profileType')?.value;
     const ext = this.registry.getExternalPlugin(profileType);

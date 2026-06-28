@@ -139,7 +139,8 @@
           <div style="margin-top:12px">
             <app-auth-form formControlName="externalPluginAuth"
               [supportedAuthTypes]="getExternalPluginAuthTypes()"
-              [secretTypes]="getExternalPluginSecretTypes()">
+              [secretTypes]="getExternalPluginSecretTypes()"
+              [hideLogin]="getExternalPluginHideLogin()">
             </app-auth-form>
           </div>
         }

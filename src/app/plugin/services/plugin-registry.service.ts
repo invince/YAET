@@ -9,6 +9,7 @@ export interface ExternalPluginInfo {
   category: ProfileCategory;
   profileType: ProfileType | string;
   profileFormElement: string;
+  sessionElement?: string;
   ipcChannels?: { send: string[]; invoke: string[]; on: string[] };
   openNewTab?: boolean;
   supportedAuthTypes?: string[];

@@ -52,6 +52,7 @@ import {SecretQuickFormComponent} from '../../dialog/secret-quick-form/secret-qu
 
       @switch (form.get('authType')?.value) {
         @case ('login') {
+          @if (!hideLogin) {
           <mat-form-field class="field">
             <mat-label>{{ 'COMMON.LOGIN' | translate }}</mat-label>
             <input matInput type="text" formControlName="login" />
@@ -59,6 +60,7 @@ import {SecretQuickFormComponent} from '../../dialog/secret-quick-form/secret-qu
               <button matSuffix mat-icon-button (click)="clear('login')"><mat-icon>close</mat-icon></button>
             }
           </mat-form-field>
+          }
 
           <mat-form-field class="field">
             <mat-label>{{ 'COMMON.PASSWORD' | translate }}</mat-label>
@@ -101,6 +103,7 @@ import {SecretQuickFormComponent} from '../../dialog/secret-quick-form/secret-qu
 export class AuthFormComponent implements ControlValueAccessor {
   @Input() supportedAuthTypes: string[] = ['N/A', 'login', 'secret'];
   @Input() secretTypes: SecretType[] = [SecretType.LOGIN_PASSWORD, SecretType.PASSWORD_ONLY];
+  @Input() hideLogin = false;
 
   authOptions = this.supportedAuthTypes;
   form: FormGroup;

@@ -2,7 +2,7 @@
   "id": "spice-remote-desktop",
   "name": "SPICE Remote Desktop",
   "version": "1.0.0",
-  "description": "SPICE remote desktop connection plugin (WebSocket-to-TCP proxy + HTML5 client)",
+  "description": "SPICE remote desktop client for KVM/QEMU virtual machines",
   "category": "REMOTE_DESKTOP",
   "profileType": "SPICE_REMOTE_DESKTOP",
   "defaultPort": 5900,
@@ -12,11 +12,13 @@
   "supportedAuthTypes": ["login", "secret"],
   "backend": "./backend/index.js",
   "frontend": {
-    "entry": "./frontend/spice.plugin.ts"
+    "entry": "./frontend/index.js",
+    "profileFormElement": "spice-profile-form",
+    "sessionElement": "spice-session"
   },
   "ipc": {
-    "send": [],
+    "send": ["session.disconnect.rd.spice"],
     "invoke": ["session.open.rd.spice"],
-    "on": ["session.connect.rd.spice", "session.disconnect.rd.spice"]
+    "on": ["session.connect.rd.spice", "session.disconnect.rd.spice", "error"]
   }
 }

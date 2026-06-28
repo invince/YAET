@@ -1,4 +1,4 @@
-import {Component, EventEmitter, inject, OnDestroy, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, inject, Injector, OnDestroy, OnInit, Output} from '@angular/core';
 import {AbstractControl, ControlValueAccessor, FormGroup, NgControl, ValidationErrors, Validator} from '@angular/forms';
 import {Subscription} from 'rxjs';
 
@@ -119,9 +119,10 @@ export function ChildFormAsFormControl<TBase extends Constructor>(Base: TBase) {
     abstract refreshForm(obj:any): void;
     abstract formToModel(): any;
 
+    private _injector = inject(Injector);
     private _isWritingValue = false;
     private _originalWrittenValue: any = undefined;
-    private _ngControl: NgControl | null = inject(NgControl, { optional: true });
+    private _ngControl: NgControl | null | undefined = undefined;
 
     ngOnInit(): void {
       this.form = this.onInitForm();
@@ -134,14 +135,21 @@ export function ChildFormAsFormControl<TBase extends Constructor>(Base: TBase) {
       }));
     }
 
+    private get _resolvedNgControl(): NgControl | null {
+      if (this._ngControl === undefined) {
+        this._ngControl = this._injector.get(NgControl, null);
+      }
+      return this._ngControl;
+    }
+
     private emitIfChanged() {
       const newValue = this.formToModel();
       const isSame = JSON.stringify(newValue) === JSON.stringify(this._originalWrittenValue);
       if (!isSame) {
         this.onChange(newValue);
-      } else if (this._ngControl?.control) {
-        this._ngControl.control.markAsPristine();
-        this._ngControl.control.markAsUntouched();
+      } else if (this._resolvedNgControl?.control) {
+        this._resolvedNgControl.control.markAsPristine();
+        this._resolvedNgControl.control.markAsUntouched();
       }
     }
 
