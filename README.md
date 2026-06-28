@@ -247,5 +247,5 @@ Application logs can be found at:
 - **Desktop**: Electron 39
 - **Terminal**: xterm.js
 - **File Transfer**: ssh2, basic-ftp, v9u-smb2
-- **Remote Desktop**: @novnc/novnc, spice-client
+- **Remote Desktop**: @novnc/novnc
 - **AI Integration**: Agent Client Protocol (ACP) or OpenAI provider

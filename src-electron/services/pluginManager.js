@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const {execSync} = require('child_process');
 
 /**
  * PluginManager — discovers and loads backend plugins.
@@ -97,6 +98,9 @@ class PluginManager {
         });
 
         this.logger.info(`[PluginManager] Discovered ${source} plugin: ${manifest.id} v${manifest.version}`);
+
+        // Auto-install plugin dependencies if package.json exists
+        this._installPluginDeps(path.join(dir, entry.name));
       } catch (err) {
         this.logger.error(`[PluginManager] Failed to parse manifest in ${entry.name}:`, err.message);
       }
@@ -164,6 +168,37 @@ class PluginManager {
     const invokeChannels = ipc.invoke || [];
     for (const ch of invokeChannels) {
       try { ipcMain.removeHandler(ch); } catch {}
+    }
+  }
+
+  /**
+   * Run npm install in the plugin directory if package.json exists
+   * and node_modules is missing (or package.json is newer).
+   */
+  _installPluginDeps(pluginDir) {
+    const pkgPath = path.join(pluginDir, 'package.json');
+    if (!fs.existsSync(pkgPath)) return;
+
+    const nmPath = path.join(pluginDir, 'node_modules');
+    if (fs.existsSync(nmPath)) {
+      // Skip if node_modules already exists and is newer than package.json
+      try {
+        const pkgMtime = fs.statSync(pkgPath).mtimeMs;
+        const nmMtime = fs.statSync(nmPath).mtimeMs;
+        if (nmMtime >= pkgMtime) return;
+      } catch {}
+    }
+
+    this.logger.info(`[PluginManager] Installing deps for plugin: ${path.basename(pluginDir)}`);
+    try {
+      execSync('npm install', {
+        cwd: pluginDir,
+        stdio: 'pipe',
+        timeout: 60000,
+      });
+      this.logger.info(`[PluginManager] Deps installed for: ${path.basename(pluginDir)}`);
+    } catch (err) {
+      this.logger.warn(`[PluginManager] npm install failed for ${path.basename(pluginDir)}: ${err.message}`);
     }
   }
 

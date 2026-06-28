@@ -118,7 +118,6 @@
     "rxjs": "~7.8.0",
     "simple-git": "^3.36.0",
     "socks-proxy-agent": "^8.0.5",
-    "spice-client": "^1.2.0",
     "ssh2": "^1.16.0",
     "ssh2-sftp-client": "^11.0.0",
     "telnet-client": "^2.2.2",

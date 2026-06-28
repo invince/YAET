@@ -241,5 +241,5 @@ npm run build
 - **桌面**：Electron 39
 - **终端**：xterm.js
 - **文件传输**：ssh2、basic-ftp、v9u-smb2
-- **远程桌面**：@novnc/novnc、spice-client
+- **远程桌面**：@novnc/novnc
 - **AI 集成**：Agent Client Protocol (ACP) 或 OpenAI 提供商

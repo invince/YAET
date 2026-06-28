@@ -54,6 +54,9 @@ build.log
 
 # Plugin generated files
 plugins/generated-plugin-manifest.json
+
+# External plugin dependencies (each plugin manages its own node_modules)
+ext-plugins-example/*/node_modules/
 plugins/generated-plugin-registry.ts
 
 docs/ai/

@@ -7,7 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const SPICE_CLIENT_GLOBAL = path.resolve(__dirname, '../../node_modules/spice-client/dist/global/spice-client.min.js');
+const SPICE_CLIENT_GLOBAL = path.resolve(__dirname, 'node_modules/spice-client/dist/global/spice-client.min.js');
 const SRC_DIR = path.resolve(__dirname, 'src');
 const OUT_DIR = path.resolve(__dirname, 'frontend');
 
