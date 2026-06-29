@@ -146,6 +146,7 @@ export class Profile {
       'ftpProfile': 'FTP_FILE_EXPLORER',
       'sambaProfile': 'SAMBA_FILE_EXPLORER',
       'customProfile': 'CUSTOM',
+      'serialProfile': 'SERIAL_TERMINAL',
     };
 
     // Check for old format (direct properties) and migrate

@@ -111,6 +111,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       customProfileForm: [null],
       externalPluginForm: [null],
       externalPluginAuth: [null],
+      serialProfileForm: [null],
     });
   }
 

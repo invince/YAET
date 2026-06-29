@@ -1,0 +1,28 @@
+{
+  "id": "serial-terminal",
+  "name": "Serial Port Terminal",
+  "version": "1.0.0",
+  "description": "Serial port connection terminal plugin",
+  "author": "YAET",
+  "category": "TERMINAL",
+  "profileType": "SERIAL_TERMINAL",
+  "icon": "settings_input_hdmi",
+  "enabled": true,
+  "dependencies": ["serialport"],
+  "ipc": {
+    "send": [
+      "session.open.terminal.serial",
+      "session.close.terminal.serial"
+    ],
+    "invoke": [
+      "serial.list-ports"
+    ],
+    "on": ["session.disconnect.terminal.serial"]
+  },
+  "backend": "./backend/index.js",
+  "frontend": {
+    "plugin": "./frontend/serial.plugin.ts"
+  },
+  "secretTypes": [],
+  "supportedAuthTypes": ["N/A"]
+}

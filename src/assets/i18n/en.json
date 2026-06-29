@@ -152,7 +152,9 @@
         "FTP_FILE_EXPLORER": "FTP File Explorer",
         "SAMBA_FILE_EXPLORER": "Samba File Explorer",
         "SFTP_FILE_EXPLORER": "SFTP File Explorer",
-        "CUSTOM": "Custom"
+        "CUSTOM": "Custom",
+        "SERIAL_TERMINAL": "Serial Port Terminal",
+        "SERIAL_PORT": "Serial Port (e.g. COM1, /dev/ttyUSB0)"
     },
     "QUICKCONNECT": {
         "TITLE": "Connection"

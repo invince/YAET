@@ -1,0 +1,76 @@
+<div [formGroup]="form">
+  <mat-form-field class="field">
+    <mat-label>{{ 'PROFILES.SERIAL_PORT' | translate }}</mat-label>
+    <input matInput type="text" formControlName="path" placeholder="e.g. COM1 or /dev/ttyUSB0" required />
+    @if (form.get('path')?.value) {
+      <button matSuffix mat-icon-button aria-label="Clear" (click)="form.get('path')?.setValue('')">
+        <mat-icon>close</mat-icon>
+      </button>
+    }
+    <button matSuffix mat-icon-button (click)="refreshPorts(); $event.stopPropagation();" title="Scan Serial Ports">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </mat-form-field>
+
+  @if (availablePorts.length > 0) {
+    <div class="discovered-ports">
+      <div class="ports-title">Discovered Ports (Click to select):</div>
+      <div class="ports-container">
+        @for (port of availablePorts; track port.path) {
+          <button mat-stroked-button type="button" (click)="form.get('path')?.setValue(port.path)">
+            {{ port.path }} @if (port.manufacturer) { ({{ port.manufacturer }}) }
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <div class="field-row">
+    <mat-form-field class="field">
+      <mat-label>Baud Rate</mat-label>
+      <mat-select formControlName="baudRate" required>
+        @for (baud of baudRates; track baud) {
+          <mat-option [value]="baud">{{ baud }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field class="field">
+      <mat-label>Data Bits</mat-label>
+      <mat-select formControlName="dataBits" required>
+        @for (bits of dataBitsList; track bits) {
+          <mat-option [value]="bits">{{ bits }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="field-row">
+    <mat-form-field class="field">
+      <mat-label>Stop Bits</mat-label>
+      <mat-select formControlName="stopBits" required>
+        @for (stop of stopBitsList; track stop) {
+          <mat-option [value]="stop">{{ stop }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field class="field">
+      <mat-label>Parity</mat-label>
+      <mat-select formControlName="parity" required>
+        @for (parity of parities; track parity.value) {
+          <mat-option [value]="parity.value">{{ parity.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="flow-control-group">
+    <div class="flow-control-title">Flow Control</div>
+    <div class="checkbox-row">
+      <mat-checkbox formControlName="rtscts">RTS/CTS (Hardware)</mat-checkbox>
+      <mat-checkbox formControlName="xon">XON</mat-checkbox>
+      <mat-checkbox formControlName="xoff">XOFF</mat-checkbox>
+    </div>
+  </div>
+</div>

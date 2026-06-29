@@ -152,7 +152,9 @@
         "FTP_FILE_EXPLORER": "FTP 文件浏览器",
         "SAMBA_FILE_EXPLORER": "Samba 文件浏览器",
         "SFTP_FILE_EXPLORER": "SFTP 文件浏览器",
-        "CUSTOM": "自定义"
+        "CUSTOM": "自定义",
+        "SERIAL_TERMINAL": "串口终端",
+        "SERIAL_PORT": "串口设备 (如 COM1, /dev/ttyUSB0)"
     },
     "QUICKCONNECT": {
         "TITLE": "快速连接"

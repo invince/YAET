@@ -1,0 +1,64 @@
+@use 'tokens' as t;
+
+.field {
+  width: 100%;
+  padding: t.$spacing-sm 0;
+  margin-top: t.$spacing-md;
+}
+
+.field-row {
+  display: flex;
+  gap: t.$spacing-sm;
+  width: 100%;
+}
+
+.field-row > .field {
+  flex: 1;
+  min-width: 0;
+  margin-top: 0;
+}
+
+.discovered-ports {
+  margin: t.$spacing-sm 0 t.$spacing-md 0;
+  padding: t.$spacing-sm;
+  border: 1px dashed var(--app-border-color, rgba(255, 255, 255, 0.15));
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.02);
+
+  .ports-title {
+    font-size: 11px;
+    opacity: 0.6;
+    margin-bottom: t.$spacing-xs;
+  }
+
+  .ports-container {
+    display: flex;
+    gap: t.$spacing-xs;
+    flex-wrap: wrap;
+
+    button {
+      font-size: 11px;
+      line-height: 24px;
+      height: 26px;
+      padding: 0 t.$spacing-sm;
+    }
+  }
+}
+
+.flow-control-group {
+  margin-top: t.$spacing-md;
+  padding: t.$spacing-sm 0;
+
+  .flow-control-title {
+    font-weight: 500;
+    font-size: 12px;
+    opacity: 0.8;
+    margin-bottom: t.$spacing-xs;
+  }
+
+  .checkbox-row {
+    display: flex;
+    gap: t.$spacing-md;
+    flex-wrap: wrap;
+  }
+}
