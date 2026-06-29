@@ -23,6 +23,9 @@ YAET is a comprehensive remote connection and management tool built with Angular
 - **FTP**: Standard FTP protocol support
 - **SMB/SAMBA**: Windows file sharing protocol
 - **WebDav**:  External Plugin Example.  Web-based Distributed Authoring and Versioning.
+- **S3**: Amazon Simple Storage Service (S3) is a service offered by Amazon Web Services (AWS) that provides object storage through a web service interface
+- s3 example: <img width="3330" height="969" alt="image" src="https://github.com/user-attachments/assets/aa4d5122-9230-47e3-850e-4c15ed3a62e7" />
+
 
 ### 🖼️ Remote Desktop
 - **VNC**: Virtual Network Computing for remote desktop access
