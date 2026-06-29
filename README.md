@@ -12,10 +12,11 @@ YAET is a comprehensive remote connection and management tool built with Angular
 - **SSH**: Secure shell connections with key-based and password authentication
 - **Telnet**: Legacy telnet protocol support
 - **WinRM**: Windows Remote Management for PowerShell sessions
+- **Serial**: serial port
 - **Local Terminal**: Integrated local shell access (CMD, PowerShell, PowerShell 7, Bash)
 - <img width="3552" height="2094" alt="image" src="https://github.com/user-attachments/assets/6a55a46b-0dfe-46cd-bcf8-16967a791a5e" />
 - <img width="3530" height="2190" alt="image" src="https://github.com/user-attachments/assets/da9e3f0b-5b67-412d-b179-556899d9e120" />
-
+- serial example: <img width="2871" height="1920" alt="image" src="https://github.com/user-attachments/assets/6ad9f9b7-854e-4cef-a780-73e5981bca03" />
 
 ### 📁 Remote File Explorer
 - **SCP/SFTP**: Secure file transfer over SSH
