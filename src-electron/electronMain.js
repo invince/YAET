@@ -1,6 +1,6 @@
 const path = require("path");
 const fs = require("fs");
-const { app, globalShortcut, BrowserWindow, Tray, ipcMain } = require('electron');
+const { app, globalShortcut, BrowserWindow, Tray, ipcMain, dialog } = require('electron');
 
 const { createMenu } = require('./ui/menu');
 const { ConfigService, APP_CONFIG_PATH, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, PROXIES_JSON } = require("./services/configService");
@@ -85,6 +85,31 @@ app.on('ready', () => {
 
   if (!fs.existsSync(APP_CONFIG_PATH)) {
     fs.mkdirSync(APP_CONFIG_PATH);
+  }
+
+  // ── First-launch: offer to install example external plugins ──────────────
+  const pluginsDir = path.join(APP_CONFIG_PATH, 'plugins');
+  const examplesInstalledFlag = path.join(APP_CONFIG_PATH, '.examples-installed');
+
+  if (!fs.existsSync(examplesInstalledFlag) && !fs.existsSync(pluginsDir)) {
+    const srcDir = path.join(app.getAppPath(), 'ext-plugins-example');
+    if (fs.existsSync(srcDir)) {
+      dialog.showMessageBox({
+        type: 'question',
+        title: 'Example Plugins',
+        message: 'Would you like to install example external plugins?\n\n' +
+                 '  • SPICE Remote Desktop\n' +
+                 '  • WebDAV File Explorer\n\n' +
+                 'They will be installed to ~/.yaet/plugins/',
+        buttons: ['Install', 'Skip'],
+        defaultId: 0,
+      }).then((result) => {
+        if (result.response === 0) {
+          copyExamplePlugins(srcDir, pluginsDir, log);
+        }
+        fs.writeFileSync(examplesInstalledFlag, new Date().toISOString());
+      });
+    }
   }
 
   // ── Phase 1: Discover plugins and write merged manifest for preload.js ──
@@ -271,4 +296,18 @@ function reloadProxies() {
       log.info("Proxies updated in backend memory");
     })
     .catch(log.error);
+}
+
+function copyExamplePlugins(srcDir, targetDir, logger) {
+  fs.mkdirSync(targetDir, { recursive: true });
+
+  const entries = fs.readdirSync(srcDir);
+  for (const name of entries) {
+    const src = path.join(srcDir, name);
+    const dest = path.join(targetDir, name);
+    if (fs.statSync(src).isDirectory()) {
+      fs.cpSync(src, dest, { recursive: true });
+      logger.info(`[first-launch] Installed example plugin: ${name}`);
+    }
+  }
 }

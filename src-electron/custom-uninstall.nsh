@@ -1,27 +1,30 @@
-# Define a custom uninstall process
-Function un.customUnInstall
-  # Retrieve the USERPROFILE environment variable
+!macro customUnInstall
   ExpandEnvStrings $0 "%USERPROFILE%"
   StrCpy $0 "$0\.yaet"
+  StrCpy $2 "$0\plugins"
 
-  # Check if the directory exists
+  ; No .yaet directory? Nothing to ask.
   IfFileExists "$0\*" 0 un.EndUninstall
 
-  # Ask the user whether to delete the configuration files
-  MessageBox MB_YESNO|MB_ICONQUESTION "Do you want to keep your configuration files located at '$0'?" IDNo un.DeleteConfig
+  ; Prompt 1: Keep config files?
+  MessageBox MB_YESNO|MB_ICONQUESTION \
+    "Do you want to keep your configuration files at '$0'?" \
+    IDNo un.DeleteConfig
+  Goto un.CheckPlugins
 
-  # User chose "Yes"
-  Goto un.EndUninstall
-
-  # User chose "No"
   un.DeleteConfig:
     RmDir /r "$0"
 
-  un.EndUninstall:
-FunctionEnd
+  un.CheckPlugins:
+  ; Prompt 2: Keep external plugins?
+  IfFileExists "$2\*" 0 un.EndUninstall
+  MessageBox MB_YESNO|MB_ICONQUESTION \
+    "Do you want to keep your external plugins at '$2'?" \
+    IDNo un.DeletePlugins
+  Goto un.EndUninstall
 
-# Link the customUnInstall function to the uninstaller
-Section "Uninstall"
-  Call un.customUnInstall
-  RmDir /r "$INSTDIR"
-SectionEnd
+  un.DeletePlugins:
+    RmDir /r "$2"
+
+  un.EndUninstall:
+!macroend
