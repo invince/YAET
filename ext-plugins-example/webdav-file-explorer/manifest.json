@@ -16,7 +16,7 @@
     "profileFormElement": "webdav-profile-form"
   },
   "ipc": {
-    "send": ["session.close.fe.webdav"],
+    "send": [],
     "invoke": ["session.fe.webdav.register", "fe.list.webdav", "fe.read.webdav", "fe.write.webdav", "fe.delete.webdav", "fe.rename.webdav"],
     "on": []
   }

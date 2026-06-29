@@ -84,7 +84,7 @@ YAET is a comprehensive remote connection and management tool built with Angular
 - **Self-contained backends**: external plugins resolve npm dependencies (like `ssh2`) from the project's `node_modules` via `context.projectRequire`
 - **Dynamic frontend loading**: external plugin frontend bundles are loaded at runtime via IPC — no rebuild required
 - **Shared UI**: plugins can reuse core components like `TerminalComponent` and `RemoteTerminalProfileFormComponent`
-- **Example**: see [`ext-plugins-example/`](ext-plugins-example/) for a working external SSH plugin
+- **Example**: see [`ext-plugins-example/`](ext-plugins-example/) for working external plugin examples (WebDAV File Explorer, SPICE Remote Desktop, S3 File Explorer)
 - See [docs/plugin-development.md](docs/plugin-development.md) for how to write your own plugin
 
 ## Prerequisites
