@@ -79,8 +79,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
+      - name: Install Chromium (Linux ARM64)
+        if: matrix.os == 'ubuntu-24.04-arm'
+        run: sudo apt-get install -y chromium-browser
+
       - name: Run Unit Tests
         run: npx ng test --no-watch --browsers ChromeHeadless
+        env:
+          CHROME_BIN: ${{ matrix.os == 'ubuntu-24.04-arm' && '/usr/bin/chromium-browser' || '' }}
 
       - name: Build and Publish (Windows)
         if: matrix.os == 'windows-latest'
