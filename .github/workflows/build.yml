@@ -59,7 +59,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [windows-latest, ubuntu-latest, ubuntu-24.04-arm, macos-latest]
 
     steps:
       - name: Checkout Code
@@ -91,6 +91,12 @@ jobs:
       - name: Build and Publish (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: npx electron-builder --linux --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Build and Publish (Linux ARM64)
+        if: matrix.os == 'ubuntu-24.04-arm'
+        run: npx electron-builder --linux --arm64 --publish always
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
