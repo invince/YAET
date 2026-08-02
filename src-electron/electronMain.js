@@ -1,6 +1,6 @@
 const path = require("path");
 const fs = require("fs");
-const { app, globalShortcut, BrowserWindow, Tray, ipcMain, dialog } = require('electron');
+const { app, globalShortcut, BrowserWindow, Tray, ipcMain, dialog, nativeImage } = require('electron');
 
 const { createMenu } = require('./ui/menu');
 const { ConfigService, APP_CONFIG_PATH, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, PROXIES_JSON } = require("./services/configService");
@@ -54,7 +54,13 @@ app.on('ready', () => {
 
   const isDev = process.env.NODE_ENV === 'development';
 
-  tray = new Tray(__dirname + '/assets/icons/app-icon.png',);
+  const trayIconPath = __dirname + '/assets/icons/app-icon.png';
+  if (process.platform === 'darwin') {
+    const icon = nativeImage.createFromPath(trayIconPath);
+    tray = new Tray(icon.resize({ width: 22, height: 22 }));
+  } else {
+    tray = new Tray(trayIconPath);
+  }
   tray.setToolTip('Yet Another Electron Terminal');
 
   mainWindow = new BrowserWindow({
@@ -231,18 +237,13 @@ function initHandlerAfterSettingLoad(settings) {
 }
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+  terminalMap.forEach((term) => {
+    if (typeof term.close === 'function') {
+      term.close();
+    }
+  });
 
-    terminalMap.forEach((term) => {
-      if (typeof term.close === 'function') {
-        term.close();
-      }
-    });
-
-
-
-    app.quit();
-  }
+  app.quit();
 });
 
 app.on('will-quit', () => {
