@@ -1,5 +1,5 @@
 const { autoUpdater } = require('electron-updater');
-const { dialog, ipcMain } = require("electron");
+const { dialog, ipcMain, BrowserWindow } = require("electron");
 const { getProxyUrl } = require("../../utils/proxyUtils");
 
 function initAutoUpdater(log, settings, proxyRepo, secretRepo) {
@@ -93,6 +93,26 @@ function initAutoUpdater(log, settings, proxyRepo, secretRepo) {
       buttons: ['Restart', 'Later'],
     }).then((result) => {
       if (result.response === 0) {
+        // macOS requires special handling for quitAndInstall to work properly
+        // See: https://github.com/electron-userland/electron-builder/issues/8997
+        if (process.platform === 'darwin') {
+          const { app } = require('electron');
+          const { autoUpdater: nativeUpdater } = require('electron');
+
+          // Remove listeners that might prevent the app from quitting
+          app.removeAllListeners('before-quit');
+          app.removeAllListeners('window-all-closed');
+          BrowserWindow.getAllWindows().forEach((win) => {
+            if (win.isDestroyed()) return;
+            win.removeAllListeners('close');
+            win.close();
+          });
+
+          nativeUpdater.once('before-quit-for-update', () => {
+            app.exit();
+          });
+        }
+
         autoUpdater.quitAndInstall();
       }
     });
