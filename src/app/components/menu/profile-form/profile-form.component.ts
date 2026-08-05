@@ -329,6 +329,8 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     const profileType = this.form?.get('profileType')?.value;
     if (!this.registry.hasExternalPlugin(profileType)) return false;
     // Only terminal-type external plugins use the shared remote terminal form
+    // Exclude plugins with custom forms (e.g., DOCKER_TERMINAL has its own form)
+    if (profileType?.startsWith('DOCKER_')) return false;
     return profileType?.includes('TERMINAL') ?? false;
   }
 

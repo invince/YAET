@@ -134,7 +134,8 @@ export class AppComponent implements OnInit, OnDestroy {
           if (this.pluginRegistry.getProfileOpenNewTab(profile.profileType)) {
             const tab = new TabInstance(profile.category, this.sessionService.create(profile, profile.profileType));
             this.tabService.addTab(tab); // Adds a new terminal identifier
-            tab.session.open(); // Set connected state so the reconnect button is hidden
+            // Note: session.open() is called by TerminalComponent.initTab() after view init
+            // Do NOT call it here — it would open SSH connections twice
           } else {
             this.sessionService.openSessionWithoutTab(profile);
           }

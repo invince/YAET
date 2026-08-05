@@ -128,15 +128,21 @@ curl -sSL https://raw.githubusercontent.com/invince/YAET/master/install.sh | bas
 ```bash
 npm run start
 ```
+启动前会自动生成插件 barrel 文件。
 
 **方式二：分离进程**（推荐用于调试）
 ```bash
+# 先生成插件 barrel 文件
+npm run generate-plugin-barrel
+
 # 终端 1：Angular 开发服务器
 npm run ng:serve
 
 # 终端 2：Electron 应用
 npm run electron:dev
 ```
+
+> **注意：** 修改插件代码后，需重新运行 `npm run generate-plugin-barrel` 或重启 `npm run start`。
 
 ### 安装 Electron 依赖后
 

@@ -133,15 +133,21 @@ curl -sSL https://raw.githubusercontent.com/invince/YAET/master/install.sh | bas
 ```bash
 npm run start
 ```
+This automatically generates the plugin barrel file before starting.
 
 **Option 2: Separate processes** (recommended for debugging)
 ```bash
-# TerminalHandler 1: Angular dev server
+# First, generate plugin barrel file
+npm run generate-plugin-barrel
+
+# Terminal 1: Angular dev server
 npm run ng:serve
 
-# TerminalHandler 2: Electron app
+# Terminal 2: Electron app
 npm run electron:dev
 ```
+
+> **Note:** If you modify plugin code, re-run `npm run generate-plugin-barrel` or restart `npm run start`.
 
 ### After Installing Electron Dependencies
 

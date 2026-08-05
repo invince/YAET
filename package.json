@@ -1,6 +1,6 @@
 {
   "name": "yet-another-electron-term",
-  "version": "7.1.3",
+  "version": "7.1.4",
   "author": {
     "name": "invince",
     "email": "invincezero@gmail.com"
@@ -18,7 +18,7 @@
     "build:angular": "npm run prebuild:angular & npm run clean && patch-package && ng build --base-href ./",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "start": "concurrently \"npm run ng:serve\" \"npm run electron:dev\"",
+    "start": "npm run generate-plugin-barrel && concurrently \"npm run ng:serve\" \"npm run electron:dev\"",
     "test:e2e": "node scripts/generate-plugin-barrel.js && ng build --base-href ./ && playwright test",
     "test:e2e:headed": "node scripts/generate-plugin-barrel.js && ng build --base-href ./ && cross-env YAET_SHOW_WINDOW=1 playwright test",
     "ng:serve": "ng serve",
