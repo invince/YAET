@@ -1,0 +1,22 @@
+{
+  "id": "docker-terminal",
+  "name": "Docker Exec Terminal",
+  "version": "1.0.0",
+  "description": "Docker exec terminal — execute commands inside running containers via docker exec",
+  "category": "TERMINAL",
+  "profileType": "DOCKER_TERMINAL",
+  "icon": "terminal",
+  "enabled": true,
+  "secretTypes": [],
+  "supportedAuthTypes": ["N/A"],
+  "backend": "./backend/index.js",
+  "frontend": {
+    "entry": "./frontend/index.js",
+    "profileFormElement": "docker-profile-form"
+  },
+  "ipc": {
+    "send": ["session.open.terminal.docker", "session.close.terminal.docker"],
+    "invoke": ["docker.list-containers"],
+    "on": ["session.disconnect.terminal.docker"]
+  }
+}

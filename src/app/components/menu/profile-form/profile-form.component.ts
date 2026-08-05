@@ -193,7 +193,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       this.profile.setProfile(meta.profileField, val[meta.formControlName]);
     } else if (val.category === ProfileCategory.CUSTOM) {
       this.profile.setProfile('CUSTOM', val.customProfileForm);
-    } else if (this.registry.hasExternalPlugin(val.profileType)) {
+    } else if (val.externalPluginForm || this.registry.hasExternalPlugin(val.profileType)) {
       const pluginData = { ...(val.externalPluginForm || {}) };
       const authData = val.externalPluginAuth || {};
       // Auth fields override plugin fields
