@@ -43,4 +43,21 @@ require.cache[winRmPath] = {
   loaded: true,
 };
 
+// ── Mock 5: services/profileService.js — avoid keytar (native module) ──
+const profileSvcPath = path.join(__dirname, 'services', 'profileService.js');
+require.cache[profileSvcPath] = {
+  exports: {
+    ProfileService: class {
+      constructor() {}
+      async findProfileByName(name) { throw new Error(`Profile not found: '${name}'`); }
+      async findProfileById(id) { throw new Error(`Profile not found: '${id}'`); }
+      async listSSHProfiles() { return []; }
+      async resolveSSHConfigByName(name) { throw new Error(`Profile not found: '${name}'`); }
+      async resolveSSHConfigById(id) { throw new Error(`Profile not found: '${id}'`); }
+      async resolveSCPConfig(name) { throw new Error(`Profile not found: '${name}'`); }
+    },
+  },
+  loaded: true,
+};
+
 require('./electronMain');
