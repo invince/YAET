@@ -1,4 +1,4 @@
-# Yet Another Electron TerminalHandler (YAET)
+# Yet Another Electron Terminal (YAET)
 
 English | [简体中文](./README.cn.md)
 
@@ -72,16 +72,25 @@ YAET is a comprehensive remote connection and management tool built with Angular
 - **Two Provider Modes**:
   - **Web Mode**: Connect to any OpenAI-compatible API (OpenAI, local LLM, etc.) with a URL and API key
 - **Agent Mode**: Enable the AI to execute commands directly in your terminal for autonomous problem solving
+- **33+ AI Tools**: profile management, terminal execution, SCP/FTP/Samba file operations, session management
 - **Context Awareness**: Ask questions about your active terminal output or specific session context
+- **Command Approval**: Dangerous commands require user approval before execution
 - **Persistent Chat History**: Manage multiple chat sessions with persistent storage, renaming, and history tracking
 - **Draggable Chat Panel**: Resizable, repositionable floating chat window
 
-### 🔌 MCP Server (Model Context Protocol)
-- **Standalone mode**: run `yaet mcp` to start an MCP server via stdio transport
-- **Tools**: `ssh_execute`, `scp_list_files`, `scp_read_file`, `scp_write_file`, `scp_delete_file`, `local_execute`, `yaet_profiles`
+### 🔌 MCP / ACP Protocol Servers
+
+**MCP Server (Model Context Protocol)**:
+- **Standalone mode**: run `npm run mcp` or `yaet mcp` to start an MCP server via stdio transport
+- **Tools**: `ssh_execute`, `ssh_connect_interactive`, `ssh_send_input`, `ssh_disconnect`, `scp_list_files`, `scp_read_file`, `scp_write_file`, `scp_delete_file`, `local_execute`, `yaet_profiles`
 - **Credential resolution**: supports YAET profile names (resolved from encrypted store) or manual host/username/password
-- **Electron entry point**: launch via Electron binary with `--mcp` flag — all source code stays inside asar, zero unpacking
+- **Electron entry point**: launch via Electron binary with `--mcp` flag — source stays inside asar, zero unpacking
 - **Tested with**: Hermes agent ✅
+
+**ACP Server (Agent Communication Protocol)**:
+- **Standalone mode**: run `npm run acp` to start an ACP server via stdin/stdout
+- **Sessions**: create, prompt, close sessions with tools
+- **Same toolset** as MCP server
 
 Example config for Hermes (`~/.hermes/config.yaml`):
 ```yaml
@@ -98,14 +107,51 @@ mcp_servers:
 ```
 
 ### 🧩 Plugin System
-- **Modular architecture**: each connection type (SSH, Telnet, WinRM, etc.) is an independent plugin
-- **Bundled plugins**: ship with the app under `plugins/` — ready to use out of the box
+- **Modular architecture**: each connection type is an independent plugin with manifest, backend, and frontend
+- **10 bundled plugins**: SSH, Telnet, WinRM, Serial, SCP, SFTP, FTP, Samba, VNC, RDP — ship with the app under `plugins/`
 - **External plugins**: install third-party plugins to `~/.yaet/plugins/<id>/` — they automatically override bundled ones if they share the same id
-- **Self-contained backends**: external plugins resolve npm dependencies (like `ssh2`) from the project's `node_modules` via `context.projectRequire`
+- **Self-contained backends**: external plugins resolve npm dependencies via `context.projectRequire()` or self-managed `package.json`
 - **Dynamic frontend loading**: external plugin frontend bundles are loaded at runtime via IPC — no rebuild required
-- **Shared UI**: plugins can reuse core components like `TerminalComponent` and `RemoteTerminalProfileFormComponent`
-- **Example**: see [`ext-plugins-example/`](ext-plugins-example/) for working external plugin examples (WebDAV File Explorer, SPICE Remote Desktop, S3 File Explorer)
+- **Shared UI**: plugins can reuse core components like `TerminalComponent`, `FileExplorerComponent`, and `RemoteTerminalProfileFormComponent`
+- **4 example plugins**: see [`ext-plugins-example/`](ext-plugins-example/) — WebDAV, SPICE, S3, Docker
 - See [docs/plugin-development.md](docs/plugin-development.md) for how to write your own plugin
+
+### 🏗️ Architecture
+
+YAET uses a **4-layer architecture** that separates concerns and enables multi-protocol access:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Interface Layer (Adapters)                    │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐   │
+│  │ Electron  │  │AI Chat   │  │MCP Server│  │ACP Server    │   │
+│  │ IPC Adapter│ │(33 tools)│  │(stdio)   │  │(stdin/stdout)│   │
+│  └─────┬─────┘  └─────┬────┘  └─────┬────┘  └──────┬───────┘   │
+│        └───────────────┴─────────────┴──────────────┘           │
+├─────────────────────────────────────────────────────────────────┤
+│                    Runtime Layer (Logic)                         │
+│  ┌────────────┐ ┌───────────────┐ ┌──────────────────────┐     │
+│  │ RuntimeAPI │ │SessionRegistry│ │ApprovalManager       │     │
+│  │(facade)    │ │(AI context)   │ │(command approval)    │     │
+│  └─────┬──────┘ └───────────────┘ └──────────────────────┘     │
+├─────────────────────────────────────────────────────────────────┤
+│                    Plugin Layer (Connectors)                     │
+│  ┌──────┐┌──────┐┌──────┐┌──────┐┌─────┐┌─────┐┌─────┐       │
+│  │ SSH  ││Telnet││WinRM ││Serial││SCP  ││FTP  ││VNC  │ ...   │
+│  └──────┘└──────┘└──────┘└──────┘└─────┘└─────┘└─────┘       │
+├─────────────────────────────────────────────────────────────────┤
+│                    Services Layer (Infrastructure)               │
+│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────┐  │
+│  │ConfigService│ │SecuritySvc │ │ProxyService│ │CloudService│  │
+│  │JSON I/O     │ │Encryption  │ │SOCKS/HTTP  │ │Git sync    │  │
+│  └────────────┘ └────────────┘ └────────────┘ └────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+- **Runtime Layer** has zero Electron dependency — shared by all adapters
+- **Plugin Layer** makes all connection types interchangeable and extensible
+- **Adapter Layer** is a thin protocol bridge — adding a new interface means adding a new adapter
+- **Credentials never exposed to AI** — only profile IDs cross the process boundary
 
 ## Prerequisites
 
@@ -276,7 +322,9 @@ Application logs can be found at:
 - **Frontend**: Angular 20, Angular Material
 - **Desktop**: Electron 39
 - **Terminal**: xterm.js
-- **File Transfer**: ssh2, basic-ftp, v9u-smb2
-- **Remote Desktop**: @novnc/novnc
-- **AI Integration**: OpenAI provider
-- **MCP**: Model Context Protocol server (stdio transport)
+- **File Transfer**: ssh2 (SFTP), basic-ftp (FTP), v9u-smb2 (SMB)
+- **Remote Desktop**: @novnc/novnc (VNC)
+- **AI Integration**: OpenAI-compatible API, function calling (33+ tools)
+- **Protocols**: MCP (Model Context Protocol), ACP (Agent Communication Protocol)
+- **Security**: AES encryption (CryptoJS), system keychain (keytar)
+- **Plugins**: Bundled + external plugin architecture with dynamic loading

@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [7.2.1] - 2026-08-30
+### Changed
+- **Architecture Documentation**: Comprehensive update of all documentation to reflect the 4-layer architecture (Runtime, Plugin, Service, Adapter layers)
+- Updated README.md and README.cn.md with architecture diagrams, plugin inventory, and MCP/ACP details
+- Rewrote AI-Integration.md to reflect current plugin-based architecture
+- Updated AI integration docs with accurate file paths and tool counts (33+ tools)
+
+## [7.2.0] - 2026-08-15
+### Added
+- **MCP in Production Package**: MCP server source code (`src-protocol/`) now included in the production asar package
+- **Docker Terminal Plugin**: External plugin example for Docker container management
+- **S3 File Explorer Plugin**: External plugin example for Amazon S3 object storage
+- **Serial Terminal Plugin**: Serial port terminal connection for hardware devices (routers, switches, embedded boards)
+- **macOS Support**: Fixed macOS-specific issues for cross-platform compatibility
+- **ARM64 Ubuntu Support**: Added ARM64 architecture support for Ubuntu builds
+
+### Fixed
+- Fixed double session opening issue
+- Fixed WebDAV external plugin issues
+- Fixed E2E test mock for securityService and runtime connectors
+
+## [7.1.5] - 2026-07-20
+### Changed
+- MCP server packaging improvements
+- E2E test fixes
+
+## [7.1.0] - 2026-07-10
+### Added
+- **External Plugin Self-Managed Dependencies**: External plugins can now declare their own `package.json` with npm dependencies, automatically installed on startup
+- **SPICE Remote Desktop Plugin**: External plugin example with self-managed `spice-client` dependency
+- **WebDAV File Explorer Plugin**: External plugin example with backend REST API and Web Component frontend
+- **First-Launch Plugin Installation**: Dialog offers to install example external plugins on first launch
+
+### Changed
+- External plugins can now override bundled plugins with the same ID (security: external plugins that conflict with bundled IDs are skipped)
+- Plugin manifest schema extended with `frontend.profileFormElement`, `supportedAuthTypes`, `secretTypes`
+
 ## [7.0.0] - 2026-06-29
 ### Added
 - **Plugin System Architecture (Phase 2)**: Fully modularized the connection backends. Terminal connections (SSH, Telnet, WinRM, Local) and Remote Desktops (VNC, RDP) are now individual plugins.

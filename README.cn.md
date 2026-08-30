@@ -1,4 +1,4 @@
-# Yet Another Electron TerminalHandler (YAET)
+# Yet Another Electron Terminal (YAET)
 
 [English](./README.md) | 简体中文
 
@@ -50,6 +50,43 @@ YAET 是一款基于 Angular 和 Electron 构建的全能远程连接管理工�
 - 无缝多设备工作流
 - <img width="2366" height="2058" alt="screenshot" src="https://github.com/user-attachments/assets/48432c20-cabc-44e5-86ac-83c30c7bca71" />
 
+### 🏗️ 架构
+
+YAET 采用**四层架构**，分离关注点并支持多协议访问：
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    接口层 (适配器)                                │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐   │
+│  │ Electron  │  │AI Chat   │  │MCP Server│  │ACP Server    │   │
+│  │ IPC 适配器│  │(33 工具) │  │(stdio)   │  │(stdin/stdout)│   │
+│  └─────┬─────┘  └─────┬────┘  └─────┬────┘  └──────┬───────┘   │
+│        └───────────────┴─────────────┴──────────────┘           │
+├─────────────────────────────────────────────────────────────────┤
+│                    运行时层 (逻辑)                               │
+│  ┌────────────┐ ┌───────────────┐ ┌──────────────────────┐     │
+│  │ RuntimeAPI │ │SessionRegistry│ │ApprovalManager       │     │
+│  │(门面)      │ │(AI 上下文)    │ │(命令审批)            │     │
+│  └─────┬──────┘ └───────────────┘ └──────────────────────┘     │
+├─────────────────────────────────────────────────────────────────┤
+│                    插件层 (连接器)                               │
+│  ┌──────┐┌──────┐┌──────┐┌──────┐┌─────┐┌─────┐┌─────┐       │
+│  │ SSH  ││Telnet││WinRM ││Serial││SCP  ││FTP  ││VNC  │ ...   │
+│  └──────┘└──────┘└──────┘└──────┘└─────┘└─────┘└─────┘       │
+├─────────────────────────────────────────────────────────────────┤
+│                    服务层 (基础设施)                              │
+│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────┐  │
+│  │ConfigService│ │SecuritySvc │ │ProxyService│ │CloudService│  │
+│  │JSON 读写    │ │加密        │ │SOCKS/HTTP  │ │Git 同步    │  │
+│  └────────────┘ └────────────┘ └────────────┘ └────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+- **运行时层**零 Electron 依赖 — 所有适配器共享
+- **插件层**使所有连接类型可互换和可扩展
+- **适配器层**是薄协议桥接 — 添加新接口只需添加新适配器
+- **凭据永不暴露给 AI** — 只有配置 ID 跨进程边界
+
 ### 🎨 其他特性
 - 多标签页界面，支持多个并发连接
 - 分屏视图（垂直和水平），用于并排会话
@@ -67,16 +104,25 @@ YAET 是一款基于 Angular 和 Electron 构建的全能远程连接管理工�
 - **两种提供商模式**：
   - **Web 模式**：通过 URL 和 API Key 连接任意 OpenAI 兼容 API（OpenAI、本地 LLM 等）
 - **代理模式**：允许 AI 直接在终端中执行命令，实现自主问题解决
+- **33+ AI 工具**：配置管理、终端执行、SCP/FTP/Samba 文件操作、会话管理
 - **上下文感知**：可就当前终端输出或特定会话上下文提问
+- **命令审批**：危险命令需要用户批准后才能执行
 - **持久聊天记录**：管理多个聊天会话，支持持久存储、重命名和历史追踪
 - **可拖拽聊天面板**：可调整大小和位置的浮动聊天窗口
 
-### 🔌 MCP 服务器 (Model Context Protocol)
-- **独立模式**：运行 `yaet mcp` 启动 MCP 服务器（stdio 传输）
-- **工具**：`ssh_execute`、`scp_list_files`、`scp_read_file`、`scp_write_file`、`scp_delete_file`、`local_execute`、`yaet_profiles`
+### 🔌 MCP / ACP 协议服务器
+
+**MCP 服务器 (Model Context Protocol)**：
+- **独立模式**：运行 `npm run mcp` 或 `yaet mcp` 启动 MCP 服务器（stdio 传输）
+- **工具**：`ssh_execute`、`ssh_connect_interactive`、`ssh_send_input`、`ssh_disconnect`、`scp_list_files`、`scp_read_file`、`scp_write_file`、`scp_delete_file`、`local_execute`、`yaet_profiles`
 - **凭据解析**：支持 YAET 配置文件名（从加密存储解析）或手动传入 host/username/password
 - **Electron 入口**：通过 Electron 二进制 + `--mcp` 标志启动 — 源码全部留在 asar 内，零解包
 - **已验证**：Hermes agent ✅
+
+**ACP 服务器 (Agent Communication Protocol)**：
+- **独立模式**：运行 `npm run acp` 启动 ACP 服务器（stdin/stdout）
+- **会话管理**：创建、提示、关闭会话
+- **相同工具集**：与 MCP 服务器共享工具
 
 Hermes 配置示例（`~/.hermes/config.yaml`）：
 ```yaml
@@ -93,13 +139,13 @@ mcp_servers:
 ```
 
 ### 🧩 插件系统
-- **模块化架构**：每种连接类型（SSH、Telnet、WinRM 等）都是独立的插件
-- **内置插件**：随应用一起发布，位于 `plugins/` 目录 — 开箱即用
+- **模块化架构**：每种连接类型都是独立的插件，包含清单、后端和前端
+- **10 个内置插件**：SSH、Telnet、WinRM、串口、SCP、SFTP、FTP、Samba、VNC、RDP — 位于 `plugins/` 目录
 - **外部插件**：安装第三方插件到 `~/.yaet/plugins/<id>/` — 如果 id 相同，会自动覆盖内置插件
-- **自包含后端**：外部插件通过 `context.projectRequire` 从项目的 `node_modules` 解析 npm 依赖（如 `ssh2`）
+- **自包含后端**：外部插件通过 `context.projectRequire()` 或自管理的 `package.json` 解析 npm 依赖
 - **动态前端加载**：外部插件的前端 bundle 在运行时通过 IPC 加载 — 无需重新构建
-- **共享 UI**：插件可以复用核心组件，如 `TerminalComponent` 和 `RemoteTerminalProfileFormComponent`
-- **示例**：参见 [`ext-plugins-example/`](ext-plugins-example/) 获取可工作的外部插件示例（WebDAV 文件浏览器、SPICE 远程桌面、S3 文件浏览器）
+- **共享 UI**：插件可以复用核心组件，如 `TerminalComponent`、`FileExplorerComponent` 和 `RemoteTerminalProfileFormComponent`
+- **4 个示例插件**：参见 [`ext-plugins-example/`](ext-plugins-example/) — WebDAV、SPICE、S3、Docker
 - 详见 [docs/plugin-development.md](docs/plugin-development.md) 了解如何编写自己的插件
 
 ## 环境要求
@@ -272,7 +318,9 @@ npm run build
 - **前端**：Angular 20、Angular Material
 - **桌面**：Electron 39
 - **终端**：xterm.js
-- **文件传输**：ssh2、basic-ftp、v9u-smb2
-- **远程桌面**：@novnc/novnc
-- **AI 集成**：OpenAI 提供商
-- **MCP**：Model Context Protocol 服务器（stdio 传输）
+- **文件传输**：ssh2 (SFTP)、basic-ftp (FTP)、v9u-smb2 (SMB)
+- **远程桌面**：@novnc/novnc (VNC)
+- **AI 集成**：OpenAI 兼容 API、函数调用（33+ 工具）
+- **协议**：MCP (Model Context Protocol)、ACP (Agent Communication Protocol)
+- **安全**：AES 加密 (CryptoJS)、系统密钥链 (keytar)
+- **插件**：内置 + 外部插件架构，支持动态加载
