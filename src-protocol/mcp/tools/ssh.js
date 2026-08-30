@@ -3,8 +3,31 @@ const os = require('os');
 const fs = require('fs');
 const { SshTerminalSession } = require('../../../plugins/ssh-terminal/backend/ssh.connector');
 const { Logger } = require('../../common/logger');
+const { ProfileService } = require('../../../src-electron/services/profileService');
 
 const log = new Logger('mcp-ssh');
+const profileService = new ProfileService(log);
+
+/** Build ssh config: supports profileName (resolved from YAET credentials) or manual host/username/password */
+async function resolveConfig(args) {
+  if (args.profileName) {
+    const cfg = await profileService.resolveSSHConfig(args.profileName);
+    return cfg;
+  }
+  const { host, port = 22, username, password, privateKey } = args;
+  if (!host || !username) throw new Error('Provide either profileName or host+username');
+  const config = { host, port, username };
+  if (password) config.password = password;
+  if (privateKey) {
+    if (privateKey.includes('-----BEGIN')) {
+      config.privateKey = privateKey;
+    } else {
+      const keyPath = path.resolve(privateKey.replace(/^~/, os.homedir()));
+      config.privateKey = fs.readFileSync(keyPath, 'utf8');
+    }
+  }
+  return config;
+}
 
 function createSSHTools() {
   const sessions = new Map();
@@ -12,35 +35,40 @@ function createSSHTools() {
   return [
     {
       name: 'ssh_execute',
-      description: 'Execute a command on a remote server via SSH and return the output',
+      description: 'Execute a command on a remote server via SSH and return the output. Use profileName to pull credentials from YAET profiles, OR pass host/username/password manually.',
       inputSchema: {
         type: 'object',
         properties: {
-          host: { type: 'string', description: 'SSH server hostname or IP' },
+          profileName: { type: 'string', description: 'YAET profile name (e.g. "0 PVE Nuc"). Resolves host/username/password from encrypted YAET store. Overrides manual creds.' },
+          host: { type: 'string', description: 'SSH server hostname or IP (ignored if profileName given)' },
           port: { type: 'number', description: 'SSH server port (default: 22)', default: 22 },
-          username: { type: 'string', description: 'SSH username' },
+          username: { type: 'string', description: 'SSH username (ignored if profileName given)' },
           password: { type: 'string', description: 'SSH password (optional if using key)' },
           privateKey: { type: 'string', description: 'SSH private key path or content (optional)' },
           command: { type: 'string', description: 'Command to execute on the remote server' },
         },
-        required: ['host', 'username', 'command'],
+        required: ['command'],
       },
       handler: async (args) => {
-        const { host, port = 22, username, password, privateKey, command } = args;
-        const sshConfig = { host, port, username };
-        if (password) sshConfig.password = password;
-        if (privateKey) {
-          if (privateKey.includes('-----BEGIN')) {
-            sshConfig.privateKey = privateKey;
-          } else {
-            const keyPath = path.resolve(privateKey.replace(/^~/, os.homedir()));
-            sshConfig.privateKey = fs.readFileSync(keyPath, 'utf8');
-          }
-        }
+        const { command } = args;
+        if (!command) throw new Error('Missing command');
+        const sshConfig = await resolveConfig(args);
         const session = new SshTerminalSession(log, sshConfig);
         const result = await session.exec(command);
         const output = (result.stdout || '') + (result.stderr || '');
         return output || '(no output)';
+      },
+    },
+    {
+      name: 'yaet_profiles',
+      description: 'List available SSH/SFTP profiles stored in YAET (name, host, port, authType). Use the name with other ssh_/scp_ tools via profileName.',
+      inputSchema: {
+        type: 'object',
+        properties: {},
+      },
+      handler: async () => {
+        const profiles = await profileService.listSSHProfiles();
+        return JSON.stringify(profiles, null, 2);
       },
     },
     {

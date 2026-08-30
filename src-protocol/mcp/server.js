@@ -150,8 +150,9 @@ class MCPServer {
     const rl = readline.createInterface({ input: process.stdin });
 
     for await (const line of rl) {
+      let request;
       try {
-        const request = JSON.parse(line);
+        request = JSON.parse(line);
 
         if (request.method === 'notifications/initialized') {
           continue;

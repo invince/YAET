@@ -2,6 +2,7 @@ const {LocalTerminalSession} = require('./connectors/terminal/local');
 const {ConfigService} = require('../services/configService');
 const {ProxyService} = require('../services/proxyService');
 const {decrypt} = require('../services/securityService');
+const {ProfileService} = require('../services/profileService');
 
 class RuntimeAPI {
   constructor(log) {
@@ -105,6 +106,30 @@ class RuntimeAPI {
       });
 
     return {profiles: safe};
+  }
+
+  /** 按名称查找 profile 并解析 SSH 配置 (供 MCP/ACP 等外部适配器使用) */
+  async resolveSSHConfigByName(profileName) {
+    if (!this._profileService) {
+      this._profileService = new ProfileService(this.log);
+    }
+    return this._profileService.resolveSSHConfigByName(profileName);
+  }
+
+  /** 按 ID 查找 profile 并解析 SSH 配置 */
+  async resolveSSHConfigById(profileId) {
+    if (!this._profileService) {
+      this._profileService = new ProfileService(this.log);
+    }
+    return this._profileService.resolveSSHConfigById(profileId);
+  }
+
+  /** 列出所有 SSH profile (供 tools/list 发现) */
+  async listSSHProfiles() {
+    if (!this._profileService) {
+      this._profileService = new ProfileService(this.log);
+    }
+    return this._profileService.listSSHProfiles();
   }
 
   async getConnector(profileId, options = {}) {
