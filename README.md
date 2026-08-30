@@ -77,6 +77,25 @@ YAET is a comprehensive remote connection and management tool built with Angular
 - **Persistent Chat History**: Manage multiple chat sessions with persistent storage, renaming, and history tracking
 - **Draggable Chat Panel**: Resizable, repositionable floating chat window
 
+### 🔌 MCP Server (Model Context Protocol)
+- **Standalone mode**: run `yaet mcp` to start an MCP server via stdio transport
+- **Tools**: `ssh_execute`, `scp_list_files`, `scp_read_file`, `scp_write_file`, `scp_delete_file`, `local_execute`, `yaet_profiles`
+- **Credential resolution**: supports YAET profile names (resolved from encrypted store) or manual host/username/password
+- **Electron entry point**: launch via Electron binary with `--mcp` flag — all source code stays inside asar, zero unpacking
+- **Tested with**: Hermes agent ✅
+
+Example config for Hermes (`~/.hermes/config.yaml`):
+```yaml
+mcp_servers:
+  yaet:
+    command: /path/to/yet-another-electron-term
+    args:
+      - --mcp
+    env:
+      YAET_MASTER_KEY: <your-master-key>
+    enabled: true
+```
+
 ### 🧩 Plugin System
 - **Modular architecture**: each connection type (SSH, Telnet, WinRM, etc.) is an independent plugin
 - **Bundled plugins**: ship with the app under `plugins/` — ready to use out of the box
@@ -259,3 +278,4 @@ Application logs can be found at:
 - **File Transfer**: ssh2, basic-ftp, v9u-smb2
 - **Remote Desktop**: @novnc/novnc
 - **AI Integration**: Agent Client Protocol (ACP) or OpenAI provider
+- **MCP**: Model Context Protocol server (stdio transport)

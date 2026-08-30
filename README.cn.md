@@ -72,6 +72,25 @@ YAET 是一款基于 Angular 和 Electron 构建的全能远程连接管理工�
 - **持久聊天记录**：管理多个聊天会话，支持持久存储、重命名和历史追踪
 - **可拖拽聊天面板**：可调整大小和位置的浮动聊天窗口
 
+### 🔌 MCP 服务器 (Model Context Protocol)
+- **独立模式**：运行 `yaet mcp` 启动 MCP 服务器（stdio 传输）
+- **工具**：`ssh_execute`、`scp_list_files`、`scp_read_file`、`scp_write_file`、`scp_delete_file`、`local_execute`、`yaet_profiles`
+- **凭据解析**：支持 YAET 配置文件名（从加密存储解析）或手动传入 host/username/password
+- **Electron 入口**：通过 Electron 二进制 + `--mcp` 标志启动 — 源码全部留在 asar 内，零解包
+- **已验证**：Hermes agent ✅
+
+Hermes 配置示例（`~/.hermes/config.yaml`）：
+```yaml
+mcp_servers:
+  yaet:
+    command: /path/to/yet-another-electron-term
+    args:
+      - --mcp
+    env:
+      YAET_MASTER_KEY: <your-master-key>
+    enabled: true
+```
+
 ### 🧩 插件系统
 - **模块化架构**：每种连接类型（SSH、Telnet、WinRM 等）都是独立的插件
 - **内置插件**：随应用一起发布，位于 `plugins/` 目录 — 开箱即用
@@ -255,3 +274,4 @@ npm run build
 - **文件传输**：ssh2、basic-ftp、v9u-smb2
 - **远程桌面**：@novnc/novnc
 - **AI 集成**：Agent Client Protocol (ACP) 或 OpenAI 提供商
+- **MCP**：Model Context Protocol 服务器（stdio 传输）
