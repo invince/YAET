@@ -1,4 +1,4 @@
-const { LocalTerminalSession } = require('../../../src-electron/runtime/connectors/terminal/local');
+const { exec } = require('child_process');
 const { Logger } = require('../../common/logger');
 
 const log = new Logger('mcp-local');
@@ -16,10 +16,18 @@ function createLocalTools() {
         required: ['command'],
       },
       handler: async (args) => {
-        const session = new LocalTerminalSession(log);
-        const result = await session.exec(args.command);
-        const output = (result.stdout || '') + (result.stderr || '');
-        return output || '(no output)';
+        const shell = process.platform === 'win32' ? { shell: 'cmd.exe' } : {};
+        return new Promise((resolve) => {
+          exec(args.command, {
+            ...shell,
+            timeout: 30000,
+            maxBuffer: 10 * 1024 * 1024,
+            windowsHide: true,
+          }, (error, stdout, stderr) => {
+            const output = (stdout || '') + (stderr || '');
+            resolve(output || '(no output)');
+          });
+        });
       },
     },
   ];

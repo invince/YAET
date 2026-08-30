@@ -30,6 +30,31 @@ let runtime = null;
 let sessionRegistry = null;
 let pluginManager = null;
 
+// ── MCP mode: run standalone MCP server without Electron GUI ────────────
+if (process.argv.includes('--mcp')) {
+  const { MCPServer } = require('../src-protocol/mcp/server');
+  const { createSSHTools } = require('../src-protocol/mcp/tools/ssh');
+  const { createSCPTools } = require('../src-protocol/mcp/tools/scp');
+  const { createLocalTools } = require('../src-protocol/mcp/tools/local');
+  const { Logger } = require('../src-protocol/common/logger');
+
+  const log = new Logger('mcp-server');
+  const server = new MCPServer({ name: 'YAET MCP Server', version: '5.0.0' });
+
+  for (const tool of [...createSSHTools(), ...createSCPTools(), ...createLocalTools()]) {
+    server.registerTool(tool.name, tool.description, tool.inputSchema, tool.handler);
+    log.info(`Registered tool: ${tool.name}`);
+  }
+
+  log.info('Starting MCP server (stdio transport)...');
+  server.runStdio().catch((err) => {
+    log.error('MCP server error: ' + err.message);
+    process.exit(1);
+  });
+  return; // skip all Electron GUI initialization
+}
+// ── End MCP mode ───────────────────────────────────────────────────────
+
 const log = require("electron-log")
 const configService = new ConfigService(log);
 const { initCommonIpc } = require("./adapter/ipc/commonIpc");

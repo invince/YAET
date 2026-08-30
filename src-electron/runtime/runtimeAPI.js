@@ -108,7 +108,7 @@ class RuntimeAPI {
     return {profiles: safe};
   }
 
-  /** 按名称查找 profile 并解析 SSH 配置 (供 MCP/ACP 等外部适配器使用) */
+  /** Resolve SSH config by profile name (for MCP/ACP external adapters) */
   async resolveSSHConfigByName(profileName) {
     if (!this._profileService) {
       this._profileService = new ProfileService(this.log);
@@ -116,7 +116,7 @@ class RuntimeAPI {
     return this._profileService.resolveSSHConfigByName(profileName);
   }
 
-  /** 按 ID 查找 profile 并解析 SSH 配置 */
+  /** Resolve SSH config by profile ID */
   async resolveSSHConfigById(profileId) {
     if (!this._profileService) {
       this._profileService = new ProfileService(this.log);
@@ -124,7 +124,7 @@ class RuntimeAPI {
     return this._profileService.resolveSSHConfigById(profileId);
   }
 
-  /** 列出所有 SSH profile (供 tools/list 发现) */
+  /** List all SSH profiles (for tools/list discovery) */
   async listSSHProfiles() {
     if (!this._profileService) {
       this._profileService = new ProfileService(this.log);

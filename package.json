@@ -1,6 +1,6 @@
 {
   "name": "yet-another-electron-term",
-  "version": "7.2.0",
+  "version": "7.2.1",
   "author": {
     "name": "invince",
     "email": "invincezero@gmail.com"
@@ -52,9 +52,7 @@
       "ext-plugins-example/",
       "package.json"
     ],
-    "asarUnpack": [
-      "src-protocol/cli.js"
-    ],
+    "asarUnpack": [],
     "win": {
       "target": "nsis",
       "icon": "src-electron/assets/icons/app-icon.ico"

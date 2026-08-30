@@ -1,32 +1,13 @@
-const path = require('path');
-const os = require('os');
-const fs = require('fs');
 const { SshTerminalSession } = require('../../../plugins/ssh-terminal/backend/ssh.connector');
 const { Logger } = require('../../common/logger');
-const { ProfileService } = require('../../../src-electron/services/profileService');
+const { resolveConfig, listSSHProfiles } = require('../../common/credentialResolver');
 
 const log = new Logger('mcp-ssh');
-const profileService = new ProfileService(log);
 
-/** Build ssh config: supports profileName (resolved from YAET credentials) or manual host/username/password */
-async function resolveConfig(args) {
-  if (args.profileName) {
-    const cfg = await profileService.resolveSSHConfig(args.profileName);
-    return cfg;
-  }
-  const { host, port = 22, username, password, privateKey } = args;
-  if (!host || !username) throw new Error('Provide either profileName or host+username');
-  const config = { host, port, username };
-  if (password) config.password = password;
-  if (privateKey) {
-    if (privateKey.includes('-----BEGIN')) {
-      config.privateKey = privateKey;
-    } else {
-      const keyPath = path.resolve(privateKey.replace(/^~/, os.homedir()));
-      config.privateKey = fs.readFileSync(keyPath, 'utf8');
-    }
-  }
-  return config;
+async function getMasterKey() {
+  const key = process.env.YAET_MASTER_KEY;
+  if (!key) throw new Error('YAET_MASTER_KEY env var not set');
+  return key;
 }
 
 function createSSHTools() {
@@ -52,7 +33,7 @@ function createSSHTools() {
       handler: async (args) => {
         const { command } = args;
         if (!command) throw new Error('Missing command');
-        const sshConfig = await resolveConfig(args);
+        const sshConfig = await resolveConfig(args, getMasterKey);
         const session = new SshTerminalSession(log, sshConfig);
         const result = await session.exec(command);
         const output = (result.stdout || '') + (result.stderr || '');
@@ -67,7 +48,7 @@ function createSSHTools() {
         properties: {},
       },
       handler: async () => {
-        const profiles = await profileService.listSSHProfiles();
+        const profiles = await listSSHProfiles(getMasterKey);
         return JSON.stringify(profiles, null, 2);
       },
     },
@@ -88,16 +69,7 @@ function createSSHTools() {
       },
       handler: async (args) => {
         const { host, port = 22, username, password, privateKey, initCommand } = args;
-        const sshConfig = { host, port, username };
-        if (password) sshConfig.password = password;
-        if (privateKey) {
-          if (privateKey.includes('-----BEGIN')) {
-            sshConfig.privateKey = privateKey;
-          } else {
-            const keyPath = path.resolve(privateKey.replace(/^~/, os.homedir()));
-            sshConfig.privateKey = fs.readFileSync(keyPath, 'utf8');
-          }
-        }
+        const sshConfig = await resolveConfig({ host, port, username, password, privateKey }, getMasterKey);
         const sessionId = `mcp-ssh-${Date.now()}`;
         const session = new SshTerminalSession(log);
         await session.connect({ ...sshConfig, initCmd: initCommand });

@@ -1,31 +1,13 @@
-const path = require('path');
-const os = require('os');
-const fs = require('fs');
 const { ScpFileExplorer } = require('../../../plugins/scp-file-explorer/backend/scp');
 const { Logger } = require('../../common/logger');
-const { ProfileService } = require('../../../src-electron/services/profileService');
+const { resolveConfig } = require('../../common/credentialResolver');
 
 const log = new Logger('mcp-scp');
-const profileService = new ProfileService(log);
 
-/** Build ssh config: supports profileName (resolved from YAET credentials) or manual host/username/password */
-async function resolveConfig(args) {
-  if (args.profileName) {
-    return profileService.resolveSSHConfigByName(args.profileName);
-  }
-  const { host, port = 22, username, password, privateKey } = args;
-  if (!host || !username) throw new Error('Provide either profileName or host+username');
-  const config = { host, port, username };
-  if (password) config.password = password;
-  if (privateKey) {
-    if (privateKey.includes('-----BEGIN')) {
-      config.privateKey = privateKey;
-    } else {
-      const keyPath = path.resolve(privateKey.replace(/^~/, os.homedir()));
-      config.privateKey = fs.readFileSync(keyPath, 'utf8');
-    }
-  }
-  return config;
+async function getMasterKey() {
+  const key = process.env.YAET_MASTER_KEY;
+  if (!key) throw new Error('YAET_MASTER_KEY env var not set');
+  return key;
 }
 
 function createSCPTools() {
@@ -47,7 +29,7 @@ function createSCPTools() {
         required: ['path'],
       },
       handler: async (args) => {
-        const config = await resolveConfig(args);
+        const config = await resolveConfig(args, getMasterKey);
         const explorer = new ScpFileExplorer(log, config);
         return explorer.listFiles(args.path);
       },
@@ -69,7 +51,7 @@ function createSCPTools() {
         required: ['path'],
       },
       handler: async (args) => {
-        const config = await resolveConfig(args);
+        const config = await resolveConfig(args, getMasterKey);
         const explorer = new ScpFileExplorer(log, config);
         const buffer = await explorer.readFile(args.path);
         return buffer.toString('utf-8');
@@ -94,7 +76,7 @@ function createSCPTools() {
         required: ['path', 'content'],
       },
       handler: async (args) => {
-        const config = await resolveConfig(args);
+        const config = await resolveConfig(args, getMasterKey);
         const explorer = new ScpFileExplorer(log, config);
         return explorer.writeFile(args.path, Buffer.from(args.content, 'utf-8'), {
           overwrite: args.overwrite,
@@ -119,7 +101,7 @@ function createSCPTools() {
         required: ['path', 'name'],
       },
       handler: async (args) => {
-        const config = await resolveConfig(args);
+        const config = await resolveConfig(args, getMasterKey);
         const explorer = new ScpFileExplorer(log, config);
         return explorer.deleteFiles(args.path, [
           { name: args.name, type: 'file' },
