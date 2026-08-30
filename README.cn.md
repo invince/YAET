@@ -66,7 +66,6 @@ YAET 是一款基于 Angular 和 Electron 构建的全能远程连接管理工�
 ### 🤖 AI 助手
 - **两种提供商模式**：
   - **Web 模式**：通过 URL 和 API Key 连接任意 OpenAI 兼容 API（OpenAI、本地 LLM 等）
-  - **ACP 模式**：通过 Agent Client Protocol 集成 AI 代理，实现自动化终端交互
 - **代理模式**：允许 AI 直接在终端中执行命令，实现自主问题解决
 - **上下文感知**：可就当前终端输出或特定会话上下文提问
 - **持久聊天记录**：管理多个聊天会话，支持持久存储、重命名和历史追踪
@@ -83,9 +82,11 @@ Hermes 配置示例（`~/.hermes/config.yaml`）：
 ```yaml
 mcp_servers:
   yaet:
-    command: /path/to/yet-another-electron-term
+    command: /opt/YetAnotherElectronTerm/yet-another-electron-term
     args:
       - --mcp
+      - --no-sandbox
+      - --ozone-platform=headless
     env:
       YAET_MASTER_KEY: <your-master-key>
     enabled: true
@@ -273,5 +274,5 @@ npm run build
 - **终端**：xterm.js
 - **文件传输**：ssh2、basic-ftp、v9u-smb2
 - **远程桌面**：@novnc/novnc
-- **AI 集成**：Agent Client Protocol (ACP) 或 OpenAI 提供商
+- **AI 集成**：OpenAI 提供商
 - **MCP**：Model Context Protocol 服务器（stdio 传输）

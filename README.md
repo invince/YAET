@@ -71,7 +71,6 @@ YAET is a comprehensive remote connection and management tool built with Angular
 ### 🤖 AI Assistant
 - **Two Provider Modes**:
   - **Web Mode**: Connect to any OpenAI-compatible API (OpenAI, local LLM, etc.) with a URL and API key
-  - **ACP Mode**: Use the Agent Client Protocol to integrate with AI agents for automated terminal interactions
 - **Agent Mode**: Enable the AI to execute commands directly in your terminal for autonomous problem solving
 - **Context Awareness**: Ask questions about your active terminal output or specific session context
 - **Persistent Chat History**: Manage multiple chat sessions with persistent storage, renaming, and history tracking
@@ -88,9 +87,11 @@ Example config for Hermes (`~/.hermes/config.yaml`):
 ```yaml
 mcp_servers:
   yaet:
-    command: /path/to/yet-another-electron-term
+    command: /opt/YetAnotherElectronTerm/yet-another-electron-term
     args:
       - --mcp
+      - --no-sandbox
+      - --ozone-platform=headless
     env:
       YAET_MASTER_KEY: <your-master-key>
     enabled: true
@@ -277,5 +278,5 @@ Application logs can be found at:
 - **Terminal**: xterm.js
 - **File Transfer**: ssh2, basic-ftp, v9u-smb2
 - **Remote Desktop**: @novnc/novnc
-- **AI Integration**: Agent Client Protocol (ACP) or OpenAI provider
+- **AI Integration**: OpenAI provider
 - **MCP**: Model Context Protocol server (stdio transport)
