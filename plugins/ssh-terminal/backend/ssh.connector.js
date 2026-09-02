@@ -123,12 +123,13 @@ class SshTerminalSession extends TerminalRuntimeApi {
     }
   }
 
-  async exec(command) {
+  async exec(command, timeoutSeconds = 30) {
     const config = this._initialConfig;
     if (!config) throw new Error('No SSH config available for exec');
 
     const merged = { ...config };
     const { proxy, secretRepo, ...sshConfig } = merged;
+    const ms = Math.max(1, Number(timeoutSeconds) || 30) * 1000;
 
     return new Promise((resolve, reject) => {
       const conn = new Client();
@@ -137,9 +138,9 @@ class SshTerminalSession extends TerminalRuntimeApi {
         if (!resolved) {
           resolved = true;
           conn.end();
-          reject(new Error('SSH command timed out after 30s'));
+          reject(new Error(`SSH command timed out after ${Math.floor(ms / 1000)}s`));
         }
-      }, 30000);
+      }, ms);
 
       const cleanup = () => {
         if (!resolved) {
@@ -178,13 +179,14 @@ class SshTerminalSession extends TerminalRuntimeApi {
     });
   }
 
-  async execWithSudo(command, sudoPassword) {
+  async execWithSudo(command, sudoPassword, timeoutSeconds = 30) {
     const config = this._initialConfig;
     if (!config) throw new Error('No SSH config available for execWithSudo');
 
     const merged = { ...config };
     const { proxy, secretRepo, ...sshConfig } = merged;
     const sudoCmd = sudoPassword ? `echo "${sudoPassword.replace(/"/g, '\\"')}" | sudo -S -p '' ${command}` : `sudo ${command}`;
+    const ms = Math.max(1, Number(timeoutSeconds) || 30) * 1000;
 
     return new Promise((resolve, reject) => {
       const conn = new Client();
@@ -193,9 +195,9 @@ class SshTerminalSession extends TerminalRuntimeApi {
         if (!resolved) {
           resolved = true;
           conn.end();
-          reject(new Error('SSH sudo command timed out after 30s'));
+          reject(new Error(`SSH sudo command timed out after ${Math.floor(ms / 1000)}s`));
         }
-      }, 30000);
+      }, ms);
 
       const cleanup = () => {
         if (!resolved) {

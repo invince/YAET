@@ -27,15 +27,16 @@ function createSSHTools() {
           password: { type: 'string', description: 'SSH password (optional if using key)' },
           privateKey: { type: 'string', description: 'SSH private key path or content (optional)' },
           command: { type: 'string', description: 'Command to execute on the remote server' },
+          timeoutSeconds: { type: 'number', description: 'Seconds to wait before timing out (default: 30). Raise for long-running commands.', default: 30 },
         },
         required: ['command'],
       },
       handler: async (args) => {
-        const { command } = args;
+        const { command, timeoutSeconds } = args;
         if (!command) throw new Error('Missing command');
         const sshConfig = await resolveConfig(args, getMasterKey);
         const session = new SshTerminalSession(log, sshConfig);
-        const result = await session.exec(command);
+        const result = await session.exec(command, timeoutSeconds);
         const output = (result.stdout || '') + (result.stderr || '');
         return output || '(no output)';
       },
@@ -53,16 +54,17 @@ function createSSHTools() {
           password: { type: 'string', description: 'Password for SSH login AND sudo (ignored if profileName given)' },
           privateKey: { type: 'string', description: 'SSH private key path or content (optional)' },
           command: { type: 'string', description: 'Sudo command to execute (e.g. "apt update", "systemctl restart nginx")' },
+          timeoutSeconds: { type: 'number', description: 'Seconds to wait before timing out (default: 30). Raise for long-running commands.', default: 30 },
         },
         required: ['command'],
       },
       handler: async (args) => {
-        const { command } = args;
+        const { command, timeoutSeconds } = args;
         if (!command) throw new Error('Missing command');
         const sshConfig = await resolveConfig(args, getMasterKey);
         const sudoPassword = sshConfig.password || null;
         const session = new SshTerminalSession(log, sshConfig);
-        const result = await session.execWithSudo(command, sudoPassword);
+        const result = await session.execWithSudo(command, sudoPassword, timeoutSeconds);
         const output = (result.stdout || '') + (result.stderr || '');
         return output || '(no output)';
       },

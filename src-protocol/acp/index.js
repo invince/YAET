@@ -31,7 +31,7 @@ function main() {
       const sshConfig = { host: args.host, port: args.port || 22, username: args.username };
       if (args.password) sshConfig.password = args.password;
       const session = new SshTerminalSession(log, sshConfig);
-      const result = await session.exec(args.command);
+      const result = await session.exec(args.command, args.timeoutSeconds);
       return (result.stdout || '') + (result.stderr || '');
     }
   );
@@ -62,7 +62,7 @@ function main() {
       const sshConfig = await resolveConfig(args, getMasterKey);
       const sudoPassword = sshConfig.password || null;
       const session = new SshTerminalSession(log, sshConfig);
-      const result = await session.execWithSudo(args.command, sudoPassword);
+      const result = await session.execWithSudo(args.command, sudoPassword, args.timeoutSeconds);
       const output = (result.stdout || '') + (result.stderr || '');
       return output || '(no output)';
     }
