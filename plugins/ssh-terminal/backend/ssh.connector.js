@@ -177,6 +177,58 @@ class SshTerminalSession extends TerminalRuntimeApi {
       conn.connect(sshConfig);
     });
   }
+
+  async execWithSudo(command, sudoPassword) {
+    const config = this._initialConfig;
+    if (!config) throw new Error('No SSH config available for execWithSudo');
+
+    const merged = { ...config };
+    const { proxy, secretRepo, ...sshConfig } = merged;
+    const sudoCmd = sudoPassword ? `echo "${sudoPassword.replace(/"/g, '\\"')}" | sudo -S -p '' ${command}` : `sudo ${command}`;
+
+    return new Promise((resolve, reject) => {
+      const conn = new Client();
+      let resolved = false;
+      const timeout = setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          conn.end();
+          reject(new Error('SSH sudo command timed out after 30s'));
+        }
+      }, 30000);
+
+      const cleanup = () => {
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timeout);
+          conn.end();
+        }
+      };
+
+      conn.on('ready', () => {
+        conn.exec(sudoCmd, (err, stream) => {
+          if (err) { cleanup(); reject(err); return; }
+          let stdout = '';
+          let stderr = '';
+          stream.on('close', (code) => {
+            cleanup();
+            resolve({ stdout: stdout.trim(), stderr: stderr.trim(), exitCode: code });
+          });
+          stream.on('data', (data) => { stdout += data.toString(); });
+          stream.stderr.on('data', (data) => { stderr += data.toString(); });
+        });
+      });
+
+      conn.on('error', (err) => {
+        if (!resolved) {
+          cleanup();
+          reject(err);
+        }
+      });
+
+      conn.connect(sshConfig);
+    });
+  }
 }
 
 module.exports = { SshTerminalSession };

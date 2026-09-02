@@ -41,6 +41,33 @@ function createSSHTools() {
       },
     },
     {
+      name: 'ssh_sudo_execute',
+      description: 'Execute a sudo command on a remote server via SSH. Uses the profile\'s stored password for sudo. Falls back to manual password if no profile. Returns output or error if password is wrong (manual intervention needed).',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          profileName: { type: 'string', description: 'YAET profile name. Resolves host/username/password from encrypted store. The profile password is reused for sudo.' },
+          host: { type: 'string', description: 'SSH server hostname or IP (ignored if profileName given)' },
+          port: { type: 'number', description: 'SSH server port (default: 22)', default: 22 },
+          username: { type: 'string', description: 'SSH username (ignored if profileName given)' },
+          password: { type: 'string', description: 'Password for SSH login AND sudo (ignored if profileName given)' },
+          privateKey: { type: 'string', description: 'SSH private key path or content (optional)' },
+          command: { type: 'string', description: 'Sudo command to execute (e.g. "apt update", "systemctl restart nginx")' },
+        },
+        required: ['command'],
+      },
+      handler: async (args) => {
+        const { command } = args;
+        if (!command) throw new Error('Missing command');
+        const sshConfig = await resolveConfig(args, getMasterKey);
+        const sudoPassword = sshConfig.password || null;
+        const session = new SshTerminalSession(log, sshConfig);
+        const result = await session.execWithSudo(command, sudoPassword);
+        const output = (result.stdout || '') + (result.stderr || '');
+        return output || '(no output)';
+      },
+    },
+    {
       name: 'yaet_profiles',
       description: 'List available SSH/SFTP profiles stored in YAET (name, host, port, authType). Use the name with other ssh_/scp_ tools via profileName.',
       inputSchema: {
