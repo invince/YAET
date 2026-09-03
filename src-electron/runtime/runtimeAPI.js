@@ -91,17 +91,15 @@ class RuntimeAPI {
       .filter(p => {
         if (!kw) return true;
         const name = (p.name || '').toLowerCase();
-        const host = this._getHostFromProfile(p);
-        return name.includes(kw) || host.includes(kw);
+        return name.includes(kw);
       })
       .map(p => {
-        const conn = this._getConnProfile(p);
+        // P0-1: expose only routing-neutral identity. No host/port/share,
+        // no login/password/secretId/proxyId — AI resolves via profileId only.
         return {
           id: p.id,
           name: p.name || '',
           type: p.profileType || '',
-          host: (conn && (conn.host || conn.share)) || '',
-          port: conn?.port || -1,
         };
       });
 
@@ -181,11 +179,17 @@ class RuntimeAPI {
 
     if (!connProfile) throw new Error(`Profile ${profileId} has no remote connection configuration`);
 
+    // P0-1: AI must not override secrets/proxy. options.secretId/options.proxyId
+    // are IGNORED here — only profile-bound connProfile.secretId and
+    // profile.proxyId are used. Custom resolvers receive the same bound values.
+    const boundSecretId = connProfile.secretId;
+    const boundProxyId = profile.proxyId || '';
+
     // Check if a plugin registered a custom config resolver for this type
     if (this._configResolvers[profileType]) {
       return this._configResolvers[profileType](connProfile, {
-        secretId: options.secretId,
-        proxyId: options.proxyId,
+        secretId: boundSecretId,
+        proxyId: boundProxyId,
         secretRepo: this.secretRepo,
         proxyRepo: this.proxyRepo,
         log: this.log,
@@ -200,11 +204,11 @@ class RuntimeAPI {
       port: connProfile.port || 22,
     };
 
-    const secretId = options.secretId || connProfile.secretId;
+    const secretId = boundSecretId;
     if (connProfile.authType === 'login' || connProfile.authType === 'LOGIN') {
       config.username = connProfile.login;
       config.password = connProfile.password;
-    } else if (connProfile.authType === 'secret' || connProfile.authType === 'SECRET' || options.secretId) {
+    } else if (connProfile.authType === 'secret' || connProfile.authType === 'SECRET') {
       const secrets = this.secretRepo ? this.secretRepo() : null;
       if (!secrets || !secrets.secrets) throw new Error('No secrets loaded');
 
@@ -235,12 +239,12 @@ class RuntimeAPI {
       }
     }
 
-    if (options.proxyId) {
+    if (boundProxyId) {
       const proxies = this.proxyRepo ? this.proxyRepo() : null;
       if (!proxies || !proxies.proxies) throw new Error('No proxies loaded');
 
-      const proxy = proxies.proxies.find(p => p.id === options.proxyId);
-      if (!proxy) throw new Error(`Proxy not found: ${options.proxyId}`);
+      const proxy = proxies.proxies.find(p => p.id === boundProxyId);
+      if (!proxy) throw new Error(`Proxy not found: ${boundProxyId}`);
 
       const proxyService = new ProxyService(this.log);
       const secrets = this.secretRepo ? this.secretRepo() : null;

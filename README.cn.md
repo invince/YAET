@@ -115,6 +115,7 @@ YAET 采用**四层架构**，分离关注点并支持多协议访问：
 **MCP 服务器 (Model Context Protocol)**：
 - **独立模式**：运行 `npm run mcp` 或 `yaet mcp` 启动 MCP 服务器（stdio 传输）
 - **工具**：`ssh_execute`、`ssh_connect_interactive`、`ssh_send_input`、`ssh_disconnect`、`scp_list_files`、`scp_read_file`、`scp_write_file`、`scp_delete_file`、`local_execute`、`yaet_profiles`
+- **工具**：`ssh_execute`、`ssh_sudo_execute`、`scp_list_files`、`scp_read_file`、`scp_write_file`、`scp_delete_file`、`local_execute`、`yaet_profiles`
 - **凭据解析**：支持 YAET 配置文件名（从加密存储解析）或手动传入 host/username/password
 - **Electron 入口**：通过 Electron 二进制 + `--mcp` 标志启动 — 源码全部留在 asar 内，零解包
 - **已验证**：Hermes agent ✅

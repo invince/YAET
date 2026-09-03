@@ -44,7 +44,7 @@ YAET uses a **4-layer architecture** that separates concerns and enables multi-p
 3. **Adapter is a thin protocol bridge** — one Adapter per protocol/interface
 4. **Adapters are independent** — adding a new protocol means adding a new Adapter
 5. **`runtimeAPI.getConnector(profileId, opts)`** is the unified factory; empty `profileId` returns a `LocalTerminalSession`
-6. **Credentials never exposed to AI** — `listProfiles()` returns only `{id, name, type, host, port}`
+6. **Credentials never exposed to AI** — `listProfiles()` returns only `{id, name, type}` (P0-1: no host/port/login/password/secretId/proxyId; AI resolves credentials via profileId only)
 
 ---
 
@@ -72,7 +72,7 @@ runtime/
 
 ```
 runtimeAPI
-  ├── listProfiles(keyword?)          → {profiles: [{id, name, type, host, port}]}
+  ├── listProfiles(keyword?)          → {profiles: [{id, name, type}]} (name-only filter)
   ├── getConnector(profileId, opts?)  → connector instance
   │     ├── undefined/null            → LocalTerminalSession
   │     ├── SSH_TERMINAL              → SshTerminalSession (via plugin)
@@ -222,9 +222,7 @@ Tools for the same operation across protocols (scp/ftp/samba) share a single imp
 | Tool | Description |
 |------|-------------|
 | `ssh_execute` | Execute command on remote server |
-| `ssh_connect_interactive` | Open interactive SSH session |
-| `ssh_send_input` | Send input to interactive session |
-| `ssh_disconnect` | Disconnect SSH session |
+| `ssh_sudo_execute` | Execute sudo command (reuses profile password) |
 | `scp_list_files` | List remote directory |
 | `scp_read_file` | Read remote file content |
 | `scp_write_file` | Write file to remote server |
@@ -304,7 +302,7 @@ sequenceDiagram
 Key guarantees:
 
 - **AI never sees plaintext credentials** — it only knows `profileId`, not host/port/username/password/privateKey
-- **Angular renderer can't see them either** — `profile_list` returns only `{id, name, type, host, port}`, no login/password/secretId
+- **Angular renderer can't see them either** — `profile_list` returns only `{id, name, type}`, no host/port/login/password/secretId/proxyId
 - **Credentials exist only in main process memory** — ToolExecutor decrypts, uses, and discards; never persisted, serialized, or sent back to renderer
 - **Encrypted storage** — `profiles.json` and `secrets.json` use AES + master key (OS keychain via keytar)
 - **AI can't access directly** — even with a malicious prompt, AI can only call 33+ tools with limited parameters; it can't enumerate secretId or read files directly

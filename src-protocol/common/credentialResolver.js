@@ -55,7 +55,7 @@ async function resolveConfig(args, getMasterKey) {
     if (authType === 'secret' && sh.secretId) {
       const secrets = await loadSecrets(getMasterKey);
       const sec = secrets[sh.secretId];
-      if (!sec) throw new Error(`Secret not found for profile '${args.profileName}' (id=${sh.secretId})`);
+      if (!sec) throw new Error(`Secret not found for profile '${args.profileName}'`);
       if (sec.login) config.username = sec.login;
       if (sec.password) config.password = sec.password;
     } else {
@@ -88,14 +88,13 @@ async function resolveConfig(args, getMasterKey) {
 
 async function listSSHProfiles(getMasterKey) {
   const profiles = await loadProfiles(getMasterKey);
+  // P0-1: expose identity only — no host/port/authType, no secrets.
+  // Agent resolves credentials server-side via profileName.
   return profiles
     .filter(p => p.profileData && p.profileData.SSH_TERMINAL && p.profileData.SSH_TERMINAL.host)
     .map(p => ({
       id: p.id,
       name: p.name,
-      host: p.profileData.SSH_TERMINAL.host,
-      port: p.profileData.SSH_TERMINAL.port || 22,
-      authType: p.profileData.SSH_TERMINAL.authType || 'unknown',
     }));
 }
 

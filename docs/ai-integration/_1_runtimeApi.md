@@ -43,7 +43,7 @@ Plugin Layer (all connection types)
 3. **Adapter is a thin protocol bridge** — one Adapter per protocol/interface
 4. **Adapters are independent** — adding a new protocol means adding a new Adapter
 5. **`runtimeAPI.getConnector(profileId, opts)`** is the unified factory; empty `profileId` returns a `LocalTerminalSession`
-6. **Credentials never exposed to AI** — `listProfiles()` returns only `{id, name, type, host, port}`
+6. **Credentials never exposed to AI** — `listProfiles()` returns only `{id, name, type}` (P0-1: no host/port/login/password/secretId/proxyId; AI resolves credentials via profileId only)
 
 ---
 
@@ -53,7 +53,7 @@ Plugin Layer (all connection types)
 
 ```
 runtimeAPI
-  ├── listProfiles(keyword?)          → {profiles: [{id, name, type, host, port}]}
+  ├── listProfiles(keyword?)          → {profiles: [{id, name, type}]} (name-only filter)
   ├── getConnector(profileId, opts?)  → connector instance
   │     ├── undefined/null            → LocalTerminalSession
   │     ├── SSH_TERMINAL              → SshTerminalSession (via plugin)

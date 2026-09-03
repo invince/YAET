@@ -83,6 +83,7 @@ YAET is a comprehensive remote connection and management tool built with Angular
 **MCP Server (Model Context Protocol)**:
 - **Standalone mode**: run `npm run mcp` or `yaet mcp` to start an MCP server via stdio transport
 - **Tools**: `ssh_execute`, `ssh_connect_interactive`, `ssh_send_input`, `ssh_disconnect`, `scp_list_files`, `scp_read_file`, `scp_write_file`, `scp_delete_file`, `local_execute`, `yaet_profiles`
+- **Tools**: `ssh_execute`, `ssh_sudo_execute`, `scp_list_files`, `scp_read_file`, `scp_write_file`, `scp_delete_file`, `local_execute`, `yaet_profiles`
 - **Credential resolution**: supports YAET profile names (resolved from encrypted store) or manual host/username/password
 - **Electron entry point**: launch via Electron binary with `--mcp` flag — source stays inside asar, zero unpacking
 - **Tested with**: Hermes agent ✅
