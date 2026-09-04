@@ -104,7 +104,6 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       profileType: [LOCAL_TERMINAL, Validators.required],
       remoteTerminalProfileForm: [null],
       rdpProfileForm: [null],
-      spiceProfileForm: [null],
       vncProfileForm: [null],
       ftpProfileForm: [null],
       sambaProfileForm: [null],

@@ -43,7 +43,14 @@ export class SettingService {
     // Fallback: settings may have been loaded before our IPC listener was registered
     electron.getSettings().then(data => {
       if (data) this.apply(data);
-    }).catch(() => {});
+    }).catch(err => {
+      const msg = 'Failed to load settings during startup fallback: ' + (err?.message || err);
+      this.log.warn(msg);
+      this.notification.error(msg);
+      if (!this._loaded) {
+        this.apply(null);
+      }
+    });
   }
 
   private apply(data: any) {

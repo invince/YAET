@@ -2,9 +2,7 @@ import {Injectable} from '@angular/core';
 import {
   CLIPBOARD_PASTE,
   ERROR,
-  SESSION_DISCONNECT_SPICE,
   SESSION_DISCONNECT_VNC,
-  SESSION_OPEN_SPICE,
   SESSION_OPEN_VNC,
   TRIGGER_NATIVE_CLIPBOARD_PASTE,
 } from './ElectronConstant';
@@ -35,7 +33,7 @@ export class ElectronRemoteDesktopService extends AbstractElectronService {
 
   initVncListener() {
     this.ipc.on(ERROR, (event, data) => {
-      if (data.category == 'vnc' || data.category == 'spice') {
+      if (data.category === 'vnc') {
         this.tabService.removeById(data.id);
       }
       return;
@@ -55,19 +53,4 @@ export class ElectronRemoteDesktopService extends AbstractElectronService {
       this.ipc.send(SESSION_DISCONNECT_VNC, { id: id});
     }
   }
-
-  async openSpiceSession(id: string, host: string, port: number, tls?: boolean) {
-    if (this.ipc) {
-      return this.ipc.invoke(SESSION_OPEN_SPICE, { id, host, port, tls });
-    }
-    return;
-  }
-
-  closeSpiceSession(id: string) {
-    if (this.ipc) {
-      this.ipc.send(SESSION_DISCONNECT_SPICE, { id: id});
-    }
-  }
-
-
 }

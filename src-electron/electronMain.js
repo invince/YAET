@@ -236,8 +236,9 @@ function initHandlerBeforeSettingLoad() {
   // Allow renderer to check if settings were already loaded before its listener registered
   ipcMain.handle('settings.get', () => lastSettings);
 
-  // Start API
-  const apiServer = expressApp.listen(13012, () => log.info('API listening on port 13012'));
+  // Start API — P0-S2: loopback only. LAN neighbors must never reach it
+  // (middleware asserts this too, but don't even listen publicly).
+  const apiServer = expressApp.listen(13012, '127.0.0.1', () => log.info('API listening on 127.0.0.1:13012'));
   apiServer.on('error', (err) => {
     log.error('Failed to start API server:', err.message);
   });

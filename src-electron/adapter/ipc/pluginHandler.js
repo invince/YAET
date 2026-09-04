@@ -39,7 +39,25 @@ function initPluginHandler(log) {
   });
 
   ipcMain.handle('plugins.readFrontend', (event, pluginId) => {
-    const filePath = path.join(os.homedir(), '.yaet', 'plugins', pluginId, 'frontend', 'index.js');
+    // P0-S7: pluginId=../../.. used to read arbitrary files (then executed
+    // via executePluginCode). Validate against discovered IDs + charset +
+    // resolved-path containment — all three, belt and suspenders.
+    const id = String(pluginId || '');
+    if (!/^[A-Za-z0-9_-]{1,64}$/.test(id)) {
+      log.warn(`Rejected suspicious plugin id: ${id}`);
+      return null;
+    }
+    const known = new Set((pluginManager.getPluginList() || []).map(p => p && p.id));
+    if (!known.has(id)) {
+      log.warn(`Rejected unknown plugin id: ${id}`);
+      return null;
+    }
+    const baseDir = path.resolve(os.homedir(), '.yaet', 'plugins');
+    const filePath = path.resolve(baseDir, id, 'frontend', 'index.js');
+    if (filePath !== path.join(baseDir, id, 'frontend', 'index.js') || !filePath.startsWith(baseDir + path.sep)) {
+      log.warn(`Rejected escaping plugin path: ${id}`);
+      return null;
+    }
     if (!fs.existsSync(filePath)) return null;
     return fs.readFileSync(filePath, 'utf-8');
   });

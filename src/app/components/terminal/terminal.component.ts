@@ -48,6 +48,9 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   private resizeObserver: ResizeObserver | undefined;
   private contextMenuHandler: ((event: MouseEvent) => void) | null = null;
   private terminalOutputCleanup: (() => void) | null = null;
+  // P0-R1: xterm.onData returns a disposable — re-registering per initTab
+  // without disposing duplicates every keystroke per tab switch.
+  private terminalOnDataDisposable: { dispose: () => void } | null = null;
 
   private scrollDisposable: { dispose: () => void } | null = null;
   private scrollResizeDisposable: { dispose: () => void } | null = null;
@@ -187,11 +190,10 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
       this.xtermUnderlying?.write(data.data);
     });
 
-    // Send user input back to Electron main process
-    // if (this.terminalOnDataSubscription) {
-    //   this.terminalOnDataSubscription.unsubscribe();
-    // }
-    this.xtermUnderlying.onData(data => this.electron.sendTerminalInput(this.session.id, data));
+    // Send user input back to Electron main process (dispose previous:
+    // initTab runs on every session switch, onData would stack otherwise).
+    this.terminalOnDataDisposable?.dispose();
+    this.terminalOnDataDisposable = this.xtermUnderlying.onData(data => this.electron.sendTerminalInput(this.session.id, data));
   }
 
   ngOnDestroy() {
@@ -204,6 +206,10 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     // Cleanup terminal output listener
     this.terminalOutputCleanup?.();
     this.terminalOutputCleanup = null;
+
+    // P0-R1: cleanup input listener
+    this.terminalOnDataDisposable?.dispose();
+    this.terminalOnDataDisposable = null;
 
     // Only close the session if the tab is actually removed from the service
     // If the tab still exists (e.g. moving between panes), don't close the session

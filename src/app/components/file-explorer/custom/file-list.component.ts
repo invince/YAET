@@ -13,7 +13,7 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSort, MatSortModule} from '@angular/material/sort';
 import {MatTableDataSource, MatTableModule} from '@angular/material/table';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
-import {Subscription} from 'rxjs';
+import {Subject, Subscription, takeUntil} from 'rxjs';
 import {Profile, ProfileCategory} from '../../../domain/profile/Profile';
 import {Session} from '../../../domain/session/Session';
 import {TabInstance} from '../../../domain/TabInstance';
@@ -80,6 +80,11 @@ export class FileListComponent implements OnInit, OnDestroy {
     private activeWatchers = new Map<string, { uploadUrl: string, remotePath: string, item: FileItem, isNew?: boolean }>();
     private fileChangeSub: Subscription | null = null;
 
+    // Lifecycle & cleanup
+    private destroy$ = new Subject<void>();
+    private destroyed = false;
+    private readSub?: Subscription;
+
     // Column resizing
     isResizing = false;
     resizingColumn: string | null = null;
@@ -107,14 +112,21 @@ export class FileListComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.refresh();
-        this.fileChangeSub = this.localFileService.fileChanges$.subscribe(path => {
+        this.fileChangeSub = this.localFileService.fileChanges$.pipe(takeUntil(this.destroy$)).subscribe(path => {
             this.handleLocalFileChange(path);
         });
     }
 
     ngOnDestroy() {
+        this.destroyed = true;
+        this.destroy$.next();
+        this.destroy$.complete();
+
         if (this.fileChangeSub) {
             this.fileChangeSub.unsubscribe();
+        }
+        if (this.readSub) {
+            this.readSub.unsubscribe();
         }
         // Cleanup global resize listeners if component destroyed mid-resize
         if (this.isResizing) {
@@ -134,7 +146,8 @@ export class FileListComponent implements OnInit, OnDestroy {
     refresh() {
         if (!this.ajaxSettings?.url) return;
         this.isLoading = true;
-        this.api.read(this.ajaxSettings.url, this.path).subscribe({
+        this.readSub?.unsubscribe();
+        this.readSub = this.api.read(this.ajaxSettings.url, this.path).pipe(takeUntil(this.destroy$)).subscribe({
             next: (res) => {
                 this.dataSource.data = res.files;
                 this.isLoading = false;
@@ -224,7 +237,7 @@ export class FileListComponent implements OnInit, OnDestroy {
         const separator = this.path.endsWith('/') ? '' : '/';
         const fullPath = `${this.path}${separator}`;
 
-        this.api.download(this.ajaxSettings.downloadUrl, fullPath, [item.name]).subscribe({
+        this.api.download(this.ajaxSettings.downloadUrl, fullPath, [item.name]).pipe(takeUntil(this.destroy$)).subscribe({
             next: (blob) => {
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -248,7 +261,7 @@ export class FileListComponent implements OnInit, OnDestroy {
         const separator = this.path.endsWith('/') ? '' : '/';
         const fullPath = `${this.path}${separator}`;
 
-        this.api.delete(this.ajaxSettings.url, fullPath, [item]).subscribe({
+        this.api.delete(this.ajaxSettings.url, fullPath, [item]).pipe(takeUntil(this.destroy$)).subscribe({
             next: () => {
                 this.refresh();
             },
@@ -265,13 +278,13 @@ export class FileListComponent implements OnInit, OnDestroy {
             data: { currentName: item.name, type: item.type }
         });
 
-        dialogRef.afterClosed().subscribe(newName => {
+        dialogRef.afterClosed().pipe(takeUntil(this.destroy$)).subscribe(newName => {
             if (newName) {
                 const separator = this.path.endsWith('/') ? '' : '/';
                 const fullPath = `${this.path}${separator}`;
 
                 this.isSaving = true;
-                this.api.rename(this.ajaxSettings.url, fullPath, item.name, newName).subscribe({
+                this.api.rename(this.ajaxSettings.url, fullPath, item.name, newName).pipe(takeUntil(this.destroy$)).subscribe({
                     next: () => {
                         this.isSaving = false;
                         this.refresh();
@@ -292,12 +305,12 @@ export class FileListComponent implements OnInit, OnDestroy {
             data: { title: 'Create New Folder', label: 'Folder Name' }
         });
 
-        dialogRef.afterClosed().subscribe(folderName => {
+        dialogRef.afterClosed().pipe(takeUntil(this.destroy$)).subscribe(folderName => {
             if (folderName) {
                 const separator = this.path.endsWith('/') ? '' : '/';
                 const fullPath = `${this.path}${separator}`;
 
-                this.api.create(this.ajaxSettings.url, fullPath, folderName, 'folder').subscribe({
+                this.api.create(this.ajaxSettings.url, fullPath, folderName, 'folder').pipe(takeUntil(this.destroy$)).subscribe({
                     next: () => {
                         this.refresh();
                     },
@@ -316,7 +329,7 @@ export class FileListComponent implements OnInit, OnDestroy {
             data: { title: 'Create New File', label: 'File Name' }
         });
 
-        dialogRef.afterClosed().subscribe(async (fileName) => {
+        dialogRef.afterClosed().pipe(takeUntil(this.destroy$)).subscribe(async (fileName) => {
             if (fileName) {
                 const separator = this.path.endsWith('/') ? '' : '/';
                 const fullPath = `${this.path}${separator}`;
@@ -328,6 +341,7 @@ export class FileListComponent implements OnInit, OnDestroy {
 
                 try {
                     const saveResult = await this.localFileService.saveToTemp(fileName, buffer, safePath);
+                    if (this.destroyed) return;
 
                     if (saveResult.success && saveResult.path) {
                         const localPath = saveResult.path;
@@ -358,6 +372,7 @@ export class FileListComponent implements OnInit, OnDestroy {
 
                         if (!this.watchedFiles.has(localPath)) {
                             await this.localFileService.watchFile(localPath);
+                            if (this.destroyed) return;
                             this.watchedFiles.add(localPath);
                         }
 
@@ -382,24 +397,25 @@ export class FileListComponent implements OnInit, OnDestroy {
         const separator = this.path.endsWith('/') ? '' : '/';
         const fullPath = `${this.path}${separator}`;
 
-        this.api.download(this.ajaxSettings.downloadUrl, fullPath, [item.name]).subscribe(blob => {
+        this.api.download(this.ajaxSettings.downloadUrl, fullPath, [item.name]).pipe(takeUntil(this.destroy$)).subscribe(blob => {
             const reader = new FileReader();
             reader.onload = () => {
+                if (this.destroyed) return;
                 const content = reader.result as string;
                 const dialogRef = this.dialog.open(FileEditorDialogComponent, {
                     width: '800px',
                     data: { fileName: item.name, content: content }
                 });
 
-                dialogRef.afterClosed().subscribe(result => {
+                dialogRef.afterClosed().pipe(takeUntil(this.destroy$)).subscribe(result => {
                     if (result !== null && result !== undefined) {
                         this.isSaving = true;
                         // Delete the original file first to prevent duplicates
-                        this.api.delete(this.ajaxSettings.url, fullPath, [item]).subscribe({
+                        this.api.delete(this.ajaxSettings.url, fullPath, [item]).pipe(takeUntil(this.destroy$)).subscribe({
                             next: () => {
                                 // Then upload the new version
                                 const file = new File([result], item.name, { type: 'text/plain' });
-                                this.api.upload(this.ajaxSettings.uploadUrl, fullPath, file).subscribe({
+                                this.api.upload(this.ajaxSettings.uploadUrl, fullPath, file).pipe(takeUntil(this.destroy$)).subscribe({
                                     next: () => {
                                         this.isSaving = false;
                                         this.refresh();
@@ -536,7 +552,7 @@ export class FileListComponent implements OnInit, OnDestroy {
 
         if (this.clipboardMode === 'copy') {
             this.isSaving = true;
-            this.api.copy(this.ajaxSettings.url, sourcePath, targetPath, names).subscribe({
+            this.api.copy(this.ajaxSettings.url, sourcePath, targetPath, names).pipe(takeUntil(this.destroy$)).subscribe({
                 next: () => {
                     this.isSaving = false;
                     this.refresh();
@@ -549,7 +565,7 @@ export class FileListComponent implements OnInit, OnDestroy {
             });
         } else if (this.clipboardMode === 'cut') {
             this.isSaving = true;
-            this.api.move(this.ajaxSettings.url, sourcePath, targetPath, names).subscribe({
+            this.api.move(this.ajaxSettings.url, sourcePath, targetPath, names).pipe(takeUntil(this.destroy$)).subscribe({
                 next: () => {
                     this.isSaving = false;
                     this.clipboard = [];
@@ -621,7 +637,7 @@ export class FileListComponent implements OnInit, OnDestroy {
 
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
-            this.api.upload(this.ajaxSettings.uploadUrl, fullPath, file).subscribe({
+            this.api.upload(this.ajaxSettings.uploadUrl, fullPath, file).pipe(takeUntil(this.destroy$)).subscribe({
                 next: () => {
                     uploadCount++;
                     if (uploadCount === totalFiles) {
@@ -718,7 +734,7 @@ export class FileListComponent implements OnInit, OnDestroy {
             const targetPath = `${this.path}${separator}${targetFolder.name}/`;
 
             this.isSaving = true;
-            this.api.move(this.ajaxSettings.url, this.path + separator, targetPath, [this.draggedItem.name]).subscribe({
+            this.api.move(this.ajaxSettings.url, this.path + separator, targetPath, [this.draggedItem.name]).pipe(takeUntil(this.destroy$)).subscribe({
                 next: () => {
                     this.isSaving = false;
                     this.refresh();
@@ -762,13 +778,13 @@ export class FileListComponent implements OnInit, OnDestroy {
             }
 
             // Download from source
-            this.api.download(dragData.ajaxSettings.downloadUrl, sourcePath, [file.name]).subscribe({
+            this.api.download(dragData.ajaxSettings.downloadUrl, sourcePath, [file.name]).pipe(takeUntil(this.destroy$)).subscribe({
                 next: (blob) => {
                     // Convert blob to File object
                     const fileObj = new File([blob], file.name, { type: blob.type || 'application/octet-stream' });
 
                     // Upload to target
-                    this.api.upload(this.ajaxSettings.uploadUrl, targetPath, fileObj).subscribe({
+                    this.api.upload(this.ajaxSettings.uploadUrl, targetPath, fileObj).pipe(takeUntil(this.destroy$)).subscribe({
                         next: () => {
                             transferCount++;
                             if (transferCount === totalFiles) {
@@ -859,7 +875,7 @@ export class FileListComponent implements OnInit, OnDestroy {
         const fullPath = `${this.path}${separator}`;
         const names = Array.from(this.selection);
 
-        this.api.download(this.ajaxSettings.downloadUrl, fullPath, names).subscribe({
+        this.api.download(this.ajaxSettings.downloadUrl, fullPath, names).pipe(takeUntil(this.destroy$)).subscribe({
             next: (blob) => {
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -891,7 +907,7 @@ export class FileListComponent implements OnInit, OnDestroy {
         const fullPath = `${this.path}${separator}`;
         const items = this.dataSource.data.filter(item => this.selection.has(item.name));
 
-        this.api.delete(this.ajaxSettings.url, fullPath, items).subscribe({
+        this.api.delete(this.ajaxSettings.url, fullPath, items).pipe(takeUntil(this.destroy$)).subscribe({
             next: () => {
                 this.clearSelection();
                 this.refresh();
@@ -982,20 +998,23 @@ export class FileListComponent implements OnInit, OnDestroy {
         const separator = this.path.endsWith('/') ? '' : '/';
         const fullPath = `${this.path}${separator}`;
 
-        this.api.download(this.ajaxSettings.downloadUrl, fullPath, [item.name]).subscribe({
+        this.api.download(this.ajaxSettings.downloadUrl, fullPath, [item.name]).pipe(takeUntil(this.destroy$)).subscribe({
             next: async (blob) => {
                 try {
                     const buffer = await blob.arrayBuffer();
+                    if (this.destroyed) return;
                     // Create a safe subfolder name based on current path to minimize collisions
                     const safePath = 'downloads_' + btoa(this.path).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
 
                     const saveResult = await this.localFileService.saveToTemp(item.name, buffer, safePath);
+                    if (this.destroyed) return;
 
                     if (saveResult.success && saveResult.path) {
                         const localPath = saveResult.path;
 
                         // Open with system default app
                         await this.localFileService.openFile(localPath);
+                        if (this.destroyed) return;
 
                         // If it is a text-based file, watch for changes
                         if (this.isTextBasedFile(item.name)) {
@@ -1007,6 +1026,7 @@ export class FileListComponent implements OnInit, OnDestroy {
 
                             if (!this.watchedFiles.has(localPath)) {
                                 await this.localFileService.watchFile(localPath);
+                                if (this.destroyed) return;
                                 this.watchedFiles.add(localPath);
                             }
                         }
@@ -1034,12 +1054,13 @@ export class FileListComponent implements OnInit, OnDestroy {
 
         // Debounce could be good, but for now direct upload
         this.localFileService.readFile(localPath).then(res => {
+            if (this.destroyed) return;
             if (res.success && typeof res.content === 'string') {
                 const file = new File([res.content], meta.item.name, { type: 'text/plain' });
 
                 this.isSaving = true;
 
-                this.api.upload(meta.uploadUrl, meta.remotePath, file, true).subscribe({
+                this.api.upload(meta.uploadUrl, meta.remotePath, file, true).pipe(takeUntil(this.destroy$)).subscribe({
                     next: () => {
                         this.isSaving = false;
                         console.log('Auto-uploaded file change for', meta.item.name);
