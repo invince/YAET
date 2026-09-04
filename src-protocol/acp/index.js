@@ -15,21 +15,22 @@ function main() {
 
   server.registerTool(
     'ssh_execute',
-    'Execute a command on a remote server via SSH',
+    'Execute a command on a remote server via SSH. Prefer profileName (credentials resolve server-side, never enter the LLM conversation) over manual host/username/password.',
     {
       type: 'object',
       properties: {
-        host: { type: 'string' },
+        profileName: { type: 'string', description: 'YAET profile name (resolves host/username/password from encrypted store). Prefer this — manual passwords end up in the LLM conversation.' },
+        host: { type: 'string', description: 'SSH hostname/IP (ignored if profileName given)' },
         port: { type: 'number', default: 22 },
-        username: { type: 'string' },
-        password: { type: 'string' },
+        username: { type: 'string', description: 'SSH username (ignored if profileName given)' },
+        password: { type: 'string', description: 'SSH password (only for manual fallback; prefer profileName)' },
+        privateKey: { type: 'string', description: 'SSH private key path or content (manual fallback only)' },
         command: { type: 'string' },
       },
-      required: ['host', 'username', 'command'],
+      required: ['command'],
     },
     async (args) => {
-      const sshConfig = { host: args.host, port: args.port || 22, username: args.username };
-      if (args.password) sshConfig.password = args.password;
+      const sshConfig = await resolveConfig(args, getMasterKey);
       const session = new SshTerminalSession(log, sshConfig);
       const result = await session.exec(args.command, args.timeoutSeconds);
       return (result.stdout || '') + (result.stderr || '');

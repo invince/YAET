@@ -1,4 +1,15 @@
-async function functionCallLoop(log, runtime, apiUrl, token, model, messages, toolDefs, depth, sendEvent, sessionContext = {}) {
+async function functionCallLoop(log, runtime, apiUrl, token, model, messages, toolDefs, depth, sendEvent, sessionContext = {}, opts = {}) {
+  const signal = opts.signal;
+  const timeoutMs = opts.timeoutMs;
+  // P1-1: never mutate the caller's payload — retries would resend tool results.
+  messages = messages.slice();
+  if (signal?.aborted) throw new Error('Cancelled by user');
+  // P1-1C: context-budget guard (same len/4 convention as aiChat.js).
+  // Depth cap stops long runs; this stops FAT runs (huge tool outputs).
+  if (opts.maxLoopTokens && estimateTokens(messages) > opts.maxLoopTokens) {
+    const note = 'Context budget exceeded. Please start a new chat or narrow the request.';
+    return { choices: [{ message: { role: 'assistant', content: note } }] };
+  }
   if (depth > 10) {
     messages.push({ role: 'assistant', content: 'Tool call limit reached. Please refine your request.' });
     return { choices: [{ message: { role: 'assistant', content: 'Tool call limit reached. Please refine your request.' } }] };
@@ -7,7 +18,7 @@ async function functionCallLoop(log, runtime, apiUrl, token, model, messages, to
   const { callChatWithTools } = require('./aiClient');
   const { executeTool } = require('./toolDefinitions');
 
-  const response = await callChatWithTools(log, apiUrl, token, model, messages, toolDefs);
+  const response = await callChatWithTools(log, apiUrl, token, model, messages, toolDefs, { signal, timeoutMs });
   const choice = response.choices?.[0];
   if (!choice) throw new Error('No response from AI');
 
@@ -22,6 +33,9 @@ async function functionCallLoop(log, runtime, apiUrl, token, model, messages, to
   });
 
   for (const tc of message.tool_calls) {
+    // P1-1: on abort, skip remaining tools (executed ones are discarded with
+    // the whole run) instead of burning more money/time.
+    if (signal?.aborted) break;
     try {
       const args = JSON.parse(tc.function.arguments);
       log.info(`AI tool call: ${tc.function.name}(${JSON.stringify(args)})`);
@@ -47,7 +61,24 @@ async function functionCallLoop(log, runtime, apiUrl, token, model, messages, to
     }
   }
 
-  return functionCallLoop(log, runtime, apiUrl, token, model, messages, toolDefs, depth + 1, sendEvent, sessionContext);
+  if (signal?.aborted) throw new Error('Cancelled by user');
+  return functionCallLoop(log, runtime, apiUrl, token, model, messages, toolDefs, depth + 1, sendEvent, sessionContext, opts);
+}
+
+function estimateTokens(messages) {
+  let len = 0;
+  for (const m of (messages || [])) {
+    if (typeof m.content === 'string') len += m.content.length;
+    else if (Array.isArray(m.content)) {
+      for (const p of m.content) {
+        if (p && typeof p.text === 'string') len += p.text.length;
+      }
+    }
+    for (const tc of (m.tool_calls || [])) {
+      try { len += (tc.function?.arguments || '').length; } catch (_) {}
+    }
+  }
+  return Math.ceil(len / 4);
 }
 
 module.exports = { functionCallLoop };

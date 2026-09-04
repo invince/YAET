@@ -5,11 +5,13 @@ import {CloudResponse} from '../../domain/setting/CloudResponse';
 import {SecretStorageService} from '../secret-storage.service';
 import {Log} from '../../domain/Log';
 import {
+  ACP_CLOSE,
   ACP_FETCH_MODELS,
   ACP_SEND,
   AI_COMMAND_APPROVED,
   AI_COMMAND_PENDING,
   AI_COMMAND_REJECTED,
+  AI_CANCEL_CHAT,
   AI_FETCH_MODELS,
   AI_SEND_CHAT,
   AI_SEND_WITH_TOOLS,
@@ -157,16 +159,28 @@ export class ElectronService extends AbstractElectronService {
     throw new Error('Electron IPC not available');
   }
 
-  async sendAiChat(apiUrl: string, token: string, model: string, messages: any[]): Promise<any> {
+  // P1-5: kill the backend ACP process for a stale (command, args, model)
+  // triple, e.g. after the user switches model. Fire-and-forget safe.
+  async closeAcpSession(command: string, args: string, model: string): Promise<void> {
     if (this.ipc) {
-      return await this.ipc.invoke(AI_SEND_CHAT, { apiUrl, token, model, messages });
+      try {
+        await this.ipc.invoke(ACP_CLOSE, { command, args, model });
+      } catch (_) {
+        // ignore — backend already gone or session never existed
+      }
+    }
+  }
+
+  async sendAiChat(apiUrl: string, token: string, model: string, messages: any[], chatSessionId?: string | null): Promise<any> {
+    if (this.ipc) {
+      return await this.ipc.invoke(AI_SEND_CHAT, { apiUrl, token, model, messages, chatSessionId: chatSessionId || null });
     }
     throw new Error('Electron IPC not available');
   }
 
-  async sendAiWithTools(apiUrl: string, token: string, model: string, messages: any[], crossSessionAccess: boolean = false, useContext: boolean = true, chatSessionId?: string | null): Promise<any> {
+  async sendAiWithTools(apiUrl: string, token: string, model: string, messages: any[], crossSessionAccess: boolean = false, useContext: boolean = true, chatSessionId?: string | null, activeTabId?: string | null): Promise<any> {
     if (this.ipc) {
-      return await this.ipc.invoke(AI_SEND_WITH_TOOLS, { apiUrl, token, model, messages, crossSessionAccess, useContext, chatSessionId });
+      return await this.ipc.invoke(AI_SEND_WITH_TOOLS, { apiUrl, token, model, messages, crossSessionAccess, useContext, chatSessionId, activeTabId: activeTabId || null });
     }
     throw new Error('Electron IPC not available');
   }
@@ -349,6 +363,18 @@ export class ElectronService extends AbstractElectronService {
   rejectCommand(requestId: string) {
     if (this.ipc) {
       this.ipc.send(AI_COMMAND_REJECTED, { requestId });
+    }
+  }
+
+  // P1-1: tell the backend to abort the in-flight agent run for this chat.
+  // Fire-and-forget — the backend loop/HTTP/tools all observe the signal.
+  cancelAiChat(chatSessionId?: string | null) {
+    if (this.ipc) {
+      try {
+        this.ipc.send(AI_CANCEL_CHAT, { chatSessionId: chatSessionId || null });
+      } catch (_) {
+        // ignore — backend already gone or channel unavailable
+      }
     }
   }
   //#endregion "Command Approval"

@@ -85,6 +85,7 @@ export const NODE_EXPRESS_API_ROOT = 'http://localhost:13012/api';
 
 export const ACP_SEND = 'acp.send';
 export const ACP_FETCH_MODELS = 'acp.fetch-models';
+export const ACP_CLOSE = 'acp.close';
 export const AI_FETCH_MODELS = 'ai.fetch-models';
 export const AI_SEND_CHAT = 'ai.send-chat';
 export const AI_SEND_WITH_TOOLS = 'ai.send-with-tools';
@@ -92,3 +93,4 @@ export const AI_TOOL_PROGRESS = 'ai.tool-progress';
 export const AI_COMMAND_PENDING = 'ai.command-pending';
 export const AI_COMMAND_APPROVED = 'ai.command-approved';
 export const AI_COMMAND_REJECTED = 'ai.command-rejected';
+export const AI_CANCEL_CHAT = 'ai.cancel-chat';

@@ -33,6 +33,7 @@ const CORE_SEND_CHANNELS = [
   'check-for-updates',
   'ai.command-approved',
   'ai.command-rejected',
+  'ai.cancel-chat',
   'session.close.fe.webdav',
 ];
 
@@ -45,6 +46,7 @@ const CORE_INVOKE_CHANNELS = [
   'plugins.reloadExternal',
   'acp.send',
   'acp.fetch-models',
+  'acp.close',
   'ai.fetch-models',
   'ai.send-chat',
   'ai.send-with-tools',

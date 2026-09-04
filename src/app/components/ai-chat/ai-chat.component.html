@@ -8,20 +8,20 @@
       <span class="session-name">{{ currentSessionName }}</span>
       <mat-icon class="dropdown-arrow">arrow_drop_down</mat-icon>
     </div>
-    <div class="header-center">
-      <button mat-icon-button (click)="toggleChat()" class="close-btn">
-        <mat-icon>close</mat-icon>
-      </button>
-    </div>
     <div class="header-right">
       <div class="toggle-group" title="Agent Mode (execute commands instantly)">
         <mat-icon>terminal</mat-icon>
+        <span class="toggle-label">Agent</span>
         <mat-slide-toggle [(ngModel)]="agentMode"></mat-slide-toggle>
       </div>
       <div class="toggle-group" title="Use active terminal context">
         <mat-icon>article</mat-icon>
+        <span class="toggle-label">Ctx</span>
         <mat-slide-toggle [(ngModel)]="useContext"></mat-slide-toggle>
       </div>
+      <button mat-icon-button (click)="toggleChat()" class="close-btn" title="Close">
+        <mat-icon>close</mat-icon>
+      </button>
     </div>
     @if (showHistoryDropdown) {
     <div class="history-dropdown" (click)="stopProp($event)">
@@ -50,16 +50,36 @@
   </div>
 
   <div class="chat-messages" #scrollMe [scrollTop]="scrollMe.scrollHeight">
-    @for (msg of messages; track msg; let i = $index) {
-    <div class="message" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'" [class.system]="msg.role === 'system'">
-      <div class="message-header">
-        <mat-icon class="message-avatar">{{ msg.role === 'user' ? 'person' : 'smart_toy' }}</mat-icon>
-        <span class="message-role">{{ msg.role === 'user' ? 'You' : 'AI' }}</span>
+    @if (pendingCommand) {
+    <div class="approval-banner">
+      <div class="approval-banner-content">
+        <mat-icon class="approval-icon">warning</mat-icon>
+        <span class="approval-text">AI wants to execute <strong>{{ pendingCommand.toolName }}</strong>: <strong>{{ pendingCommand.preview }}</strong></span>
       </div>
-      <div class="message-content" [innerHTML]="parseMarkdown(msg.content)"></div>
+      <div class="approval-banner-actions">
+        <button mat-stroked-button color="warn" (click)="rejectCommand()">Reject</button>
+        <button mat-flat-button color="primary" (click)="approveCommand()">Approve</button>
+      </div>
     </div>
-    @if (msg.role === 'user' && i === activeToolProgressMessageIndex && toolProgress.length > 0) {
+    }
+    @for (msg of messages; track msg) {
+    <div class="message" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'" [class.system]="msg.role === 'system'">
+      <div class="message-avatar">{{ msg.role === 'user' ? '你' : 'AI' }}</div>
+      <div class="message-body">
+        <div class="message-content" [innerHTML]="parseMarkdown(msg.content)"></div>
+      </div>
+    </div>
+    }
+    @if (messages.length <= 1) {
+    <div class="suggestions">
+      @for (s of suggestions; track s) {
+      <button class="suggestion-chip" (click)="sendSuggestion(s)">{{ s }}</button>
+      }
+    </div>
+    }
+    @if (toolProgress.length > 0) {
     <div class="tool-progress">
+      <div class="tool-progress-title">Agent activity ({{ toolProgress.length }})</div>
       @for (entry of toolProgress; track entry.ts) {
       <div class="tool-entry" [class.expanded]="entry.expanded" [class.error]="!!entry.error" (click)="toggleToolEntry(entry)">
         <div class="tool-entry-header">
@@ -81,32 +101,22 @@
       }
     </div>
     }
-    @if (pendingCommand && msg.role === 'user' && i === activeToolProgressMessageIndex) {
-    <div class="approval-banner">
-      <div class="approval-banner-content">
-        <mat-icon class="approval-icon">warning</mat-icon>
-        <span class="approval-text">AI wants to execute: <strong>{{ pendingCommand.preview }}</strong></span>
-      </div>
-      <div class="approval-banner-actions">
-        <button mat-stroked-button color="warn" (click)="rejectCommand()">Reject</button>
-        <button mat-flat-button color="primary" (click)="approveCommand()">Approve</button>
-      </div>
-    </div>
-    }
-    }
     @if (isLoading) {
     <div class="message assistant">
-      <div class="message-content">
-        @if (messages.length === 0 || messages[messages.length-1].role !== 'assistant' || messages[messages.length-1].content === '') {
-        <div class="typing-indicator">
-          <span class="typing-dot"></span>
-          <span class="typing-dot"></span>
-          <span class="typing-dot"></span>
+      <div class="message-avatar">AI</div>
+      <div class="message-body">
+        <div class="message-content">
+          @if (messages.length === 0 || messages[messages.length-1].role !== 'assistant' || messages[messages.length-1].content === '') {
+          <div class="typing-indicator">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+          </div>
+          }
+          <button mat-icon-button (click)="stop()" title="Stop Generation" class="stop-btn">
+            <mat-icon>stop_circle</mat-icon>
+          </button>
         </div>
-        }
-        <button mat-icon-button (click)="stop()" title="Stop Generation" class="stop-btn">
-          <mat-icon>stop_circle</mat-icon>
-        </button>
       </div>
     </div>
     }
@@ -114,8 +124,10 @@
 
   <div class="chat-input-area">
     <mat-form-field class="chat-input" appearance="outline">
-      <input matInput placeholder="Ask AI..." [(ngModel)]="userInput" (keyup.enter)="sendMessage()" [disabled]="isLoading">
-      <button matSuffix mat-icon-button (click)="sendMessage()" [disabled]="isLoading">
+      <textarea matInput #chatBox rows="1" placeholder="Ask AI...  (Enter 发送, Shift+Enter 换行)"
+        [(ngModel)]="userInput" (keydown)="onInputKeydown($event)" (input)="autoGrow(chatBox)"
+        [disabled]="isLoading"></textarea>
+      <button matSuffix mat-icon-button (click)="sendMessage()" [disabled]="isLoading || !userInput.trim()">
         <mat-icon>send</mat-icon>
       </button>
     </mat-form-field>

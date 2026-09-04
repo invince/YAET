@@ -1,6 +1,8 @@
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
+const { isSessionAlive } = require('../../runtime/sessionRegistry');
 
 function getToolDefinitions() {
   return [
@@ -50,12 +52,13 @@ function getToolDefinitions() {
       type: 'function',
       function: {
         name: 'scp_read_file',
-        description: 'Read a remote file content via SFTP using a saved profile',
+        description: 'Read a remote text file via SFTP using a saved profile. Binary files are rejected (use *_download_file). Large files are truncated (see truncated/totalBytes).',
         parameters: {
           type: 'object',
           properties: {
             profileId: { type: 'string', description: 'ID of the profile to use' },
             path: { type: 'string', description: 'Remote file path' },
+            maxBytes: { type: 'number', description: 'Max bytes to return (default 131072, clamped to 1024-1048576)' },
           },
           required: ['profileId', 'path'],
         },
@@ -188,7 +191,7 @@ function getToolDefinitions() {
           properties: {
             profileId: { type: 'string', description: 'ID of the profile to use' },
             path: { type: 'string', description: 'Remote file path' },
-            localPath: { type: 'string', description: 'Optional local file path to save the download to (e.g. /home/user/file.zip or C:\\Users\\me\\file.pdf)' },
+            localPath: { type: 'string', description: 'Optional local file path to save the download to. Must be inside the AI download directory (~/yaet-downloads/ by default, overridable via settings; relative names land there automatically).' },
           },
           required: ['profileId', 'path'],
         },
@@ -231,12 +234,13 @@ function getToolDefinitions() {
       type: 'function',
       function: {
         name: 'ftp_read_file',
-        description: 'Read a remote file content via FTP using a saved profile',
+        description: 'Read a remote text file via FTP using a saved profile. Binary files are rejected (use *_download_file). Large files are truncated (see truncated/totalBytes).',
         parameters: {
           type: 'object',
           properties: {
             profileId: { type: 'string', description: 'ID of the profile to use' },
             path: { type: 'string', description: 'Remote file path' },
+            maxBytes: { type: 'number', description: 'Max bytes to return (default 131072, clamped to 1024-1048576)' },
           },
           required: ['profileId', 'path'],
         },
@@ -369,7 +373,7 @@ function getToolDefinitions() {
           properties: {
             profileId: { type: 'string', description: 'ID of the profile to use' },
             path: { type: 'string', description: 'Remote file path' },
-            localPath: { type: 'string', description: 'Optional local file path to save to' },
+            localPath: { type: 'string', description: 'Optional local file path to save to. Must be inside the AI download directory (~/yaet-downloads/ by default).' },
           },
           required: ['profileId', 'path'],
         },
@@ -412,12 +416,13 @@ function getToolDefinitions() {
       type: 'function',
       function: {
         name: 'samba_read_file',
-        description: 'Read a remote file content via Samba/SMB using a saved profile',
+        description: 'Read a remote text file via Samba/SMB using a saved profile. Binary files are rejected (use *_download_file). Large files are truncated (see truncated/totalBytes).',
         parameters: {
           type: 'object',
           properties: {
             profileId: { type: 'string', description: 'ID of the profile to use' },
             path: { type: 'string', description: 'Remote file path' },
+            maxBytes: { type: 'number', description: 'Max bytes to return (default 131072, clamped to 1024-1048576)' },
           },
           required: ['profileId', 'path'],
         },
@@ -550,7 +555,7 @@ function getToolDefinitions() {
           properties: {
             profileId: { type: 'string', description: 'ID of the profile to use' },
             path: { type: 'string', description: 'Remote file path' },
-            localPath: { type: 'string', description: 'Optional local file path to save to' },
+            localPath: { type: 'string', description: 'Optional local file path to save to. Must be inside the AI download directory (~/yaet-downloads/ by default).' },
           },
           required: ['profileId', 'path'],
         },
@@ -586,7 +591,7 @@ function getToolDefinitions() {
       type: 'function',
       function: {
         name: 'terminal_open',
-        description: 'Open a persistent terminal session for AI interaction. The session stays connected and can be used with session_write/session_read.',
+        description: 'Open a persistent terminal session for AI interaction (SSH/Telnet/WinRM/Serial/local only). The session stays connected and can be used with session_write/session_read. File-explorer profiles cannot be opened — use scp_*/local_execute instead.',
         parameters: {
           type: 'object',
           properties: {
@@ -642,6 +647,49 @@ function needsApproval(toolName) {
   return SENSITIVE_TOOLS.includes(toolName) || DESTRUCTIVE_FILE_TOOL_SUFFIX.test(toolName || '');
 }
 
+// P0-3: AI-driven downloads may only touch the download directory (overridable
+// via settings.ai.downloadDir). Default is ~/yaet-downloads: visible so users
+// can find the files, always creatable (~/Downloads is NOT guaranteed —
+// headless servers, containers, localized Windows folder names), and
+// app-namespaced so it doesn't pollute anything else.
+const AI_DOWNLOAD_DIR_DEFAULT = path.join(os.homedir(), 'yaet-downloads');
+
+// Inline base64 return is capped so a multi-GB file can't blow up the LLM
+// context; oversized files must be saved via localPath instead.
+const AI_DOWNLOAD_INLINE_MAX_BYTES = 512 * 1024;
+
+function expandHome(p) {
+  const s = String(p || '');
+  return s.startsWith('~/') ? path.join(os.homedir(), s.slice(2)) : s;
+}
+
+function downloadBaseDir(sessionContext) {
+  return expandHome(sessionContext?.downloadDir || AI_DOWNLOAD_DIR_DEFAULT);
+}
+
+function resolveSandboxedPath(localPath, baseDir) {
+  const base = expandHome(baseDir || AI_DOWNLOAD_DIR_DEFAULT);
+  let p = String(localPath || '');
+  if (p.startsWith('~/')) p = path.join(os.homedir(), p.slice(2));
+  const abs = path.isAbsolute(p) ? path.normalize(p) : path.join(base, p);
+  const resolved = path.resolve(abs);
+  if (resolved !== base && !resolved.startsWith(base + path.sep)) {
+    throw new Error(`localPath outside allowed directory (${base}): ${localPath}`);
+  }
+  return resolved;
+}
+
+// P1-3: text-file reads are capped so a huge log can't blow up the LLM
+// context. Binary (NUL byte) is rejected outright — use *_download_file.
+const AI_READ_DEFAULT_MAX_BYTES = 128 * 1024;
+const AI_READ_MIN_MAX_BYTES = 1024;
+const AI_READ_HARD_MAX_BYTES = 1024 * 1024;
+
+function clampReadMaxBytes(v) {
+  const n = Number(v) || AI_READ_DEFAULT_MAX_BYTES;
+  return Math.min(AI_READ_HARD_MAX_BYTES, Math.max(AI_READ_MIN_MAX_BYTES, n));
+}
+
 async function executeTool(runtime, toolName, args, sessionContext = {}) {
   if (needsApproval(toolName) && runtime?.approvalManager) {
     const result = await runtime.approvalManager.request(toolName, args);
@@ -672,7 +720,21 @@ async function executeTool(runtime, toolName, args, sessionContext = {}) {
     case 'ftp_read_file':
     case 'samba_read_file': {
       const buf = await (await runtime.getConnector(args.profileId, opts)).readFile(args.path);
-      return { content: buf.toString('utf-8') };
+      // P1-3: NUL byte = binary (so/jpg/zip/db). Never return mojibake —
+      // point the agent at *_download_file instead.
+      if (buf.includes(0)) {
+        throw new Error(`'${args.path}' looks binary (${buf.length} bytes). Use *_download_file with localPath to fetch it.`);
+      }
+      const cap = clampReadMaxBytes(args.maxBytes);
+      if (buf.length > cap) {
+        return {
+          content: buf.subarray(0, cap).toString('utf-8'),
+          truncated: true,
+          totalBytes: buf.length,
+          hint: `Output truncated to ${cap} bytes. Use *_download_file with localPath, then read it back in chunks via local_execute.`,
+        };
+      }
+      return { content: buf.toString('utf-8'), truncated: false, totalBytes: buf.length };
     }
     case 'scp_write_file':
     case 'ftp_write_file':
@@ -733,13 +795,21 @@ async function executeTool(runtime, toolName, args, sessionContext = {}) {
       return runtime.sessionRegistry.read(args.id, args.lastN);
     }
     case 'terminal_open': {
+      // P1-4: only terminal-kind profiles hold a live channel. File-explorer
+      // connectors are stateless (connect per op) and have no connect() —
+      // reject with a useful error instead of `connect is not a function`.
+      const TERMINAL_TYPES = new Set(['SSH_TERMINAL', 'TELNET_TERMINAL', 'WIN_RM_TERMINAL', 'SERIAL_TERMINAL', 'LOCAL_TERMINAL']);
+      const profileTypeRaw = args.profileId
+        ? ((await runtime.listProfiles()).profiles.find(p => p.id === args.profileId)?.type || '')
+        : 'LOCAL_TERMINAL';
+      if (profileTypeRaw && !TERMINAL_TYPES.has(profileTypeRaw)) {
+        throw new Error(`Profile type ${profileTypeRaw} cannot hold a persistent session. Use scp_*/ftp_*/samba_* one-shot tools or local_execute instead.`);
+      }
       const session = await runtime.getConnector(args.profileId, opts);
       await session.connect({ rows: 24, cols: 80 });
       const sessionId = `ai_${Date.now()}_${crypto.randomBytes(6).toString('hex')}`;
-      const profileType = args.profileId
-        ? ((await runtime.listProfiles()).profiles.find(p => p.id === args.profileId)?.type || 'remote').toLowerCase()
-        : 'local';
-      const typeMap = { ssh_terminal: 'ssh', telnet_terminal: 'telnet', win_rm_terminal: 'winrm', local_terminal: 'local' };
+      const profileType = (profileTypeRaw || 'remote').toLowerCase();
+      const typeMap = { ssh_terminal: 'ssh', telnet_terminal: 'telnet', win_rm_terminal: 'winrm', serial_terminal: 'serial', local_terminal: 'local' };
       runtime.sessionRegistry.register(sessionId, typeMap[profileType] || profileType, 'ai', session, sessionContext.chatSessionId);
       return { sessionId, type: typeMap[profileType] || profileType, message: `Session ${sessionId} opened` };
     }
@@ -747,8 +817,8 @@ async function executeTool(runtime, toolName, args, sessionContext = {}) {
       const entry = runtime.sessionRegistry.get(args.id);
       if (!entry) throw new Error(`Session not found: ${args.id}`);
       if (entry.owner !== 'ai') throw new Error(`Cannot write to session ${args.id}: not AI-owned (owner: ${entry.owner})`);
-      const isRunning = entry.session._connected !== undefined ? entry.session._connected : true;
-      if (!isRunning) throw new Error(`Session ${args.id} is no longer running`);
+      // P1-4: shared probe (method → _connected → true), no ad-hoc ternary.
+      if (!isSessionAlive(entry.session)) throw new Error(`Session ${args.id} is no longer running`);
       const data = args.input.endsWith('\n') ? args.input : args.input + '\n';
       await entry.session.write(data);
       return { success: true, sessionId: args.id };
@@ -759,11 +829,16 @@ async function executeTool(runtime, toolName, args, sessionContext = {}) {
       const f = await runtime.getConnector(args.profileId, opts);
       const buffer = await f.downloadFile(args.path);
       const filename = args.path.split('/').pop() || args.path;
+      const dlBase = downloadBaseDir(sessionContext);
       if (args.localPath) {
-        const dir = path.dirname(args.localPath);
+        const target = resolveSandboxedPath(args.localPath, dlBase);
+        const dir = path.dirname(target);
         if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        fs.writeFileSync(args.localPath, buffer);
-        return { savedTo: path.resolve(args.localPath), size: buffer.length };
+        fs.writeFileSync(target, buffer);
+        return { savedTo: target, size: buffer.length };
+      }
+      if (buffer.length > AI_DOWNLOAD_INLINE_MAX_BYTES) {
+        throw new Error(`File too large for inline return (${buffer.length} bytes > ${AI_DOWNLOAD_INLINE_MAX_BYTES}). Retry with localPath inside ${dlBase} to save it to disk.`);
       }
       return { content: buffer.toString('base64'), encoding: 'base64', filename };
     }

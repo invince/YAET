@@ -40,6 +40,25 @@ export interface ToolProgressEntry {
   expanded: boolean;
 }
 
+// P1-2: bounded terminal tail for pure-chat/ACP modes (agent mode is fed by
+// the backend incrementally instead). Last 100 lines + 6000 chars cap.
+export function truncateTail(s: string): string {
+  const lines = String(s || '').split('\n').slice(-100).join('\n');
+  return lines.length > 6000 ? lines.slice(-6000) : lines;
+}
+
+// P2-1: progress entries dedupe on tool+args (args arrive as fresh objects
+// per event, so === never matched and every event appended a new row).
+export function progressKey(t: { toolName: string; args: any }): string {
+  let a = '';
+  try {
+    a = JSON.stringify(t.args ?? null);
+  } catch (_) {
+    a = String(t.args);
+  }
+  return `${t.toolName}|${a}`;
+}
+
 @Component({
   selector: 'app-ai-chat',
   templateUrl: './ai-chat.component.html',
@@ -59,27 +78,30 @@ export interface ToolProgressEntry {
 })
 export class AiChatComponent implements OnInit, AfterViewChecked {
   @ViewChild('scrollMe') private myScrollContainer!: ElementRef;
+  @ViewChild('chatBox') private chatBox?: ElementRef<HTMLTextAreaElement>;
   isOpen = false;
   userInput = '';
   messages: { role: string, content: string }[] = [];
   isLoading = false;
   toolProgress: ToolProgressEntry[] = [];
-  activeToolProgressMessageIndex = -1;
   pendingCommand: { requestId: string; toolName: string; args: any; preview: string } | null = null;
   private currentSubscription: Subscription | null = null;
   private _requestGeneration = 0;
+  // P1-5: last ACP (command, args, model) triple — a change means the old
+  // backend process must be closed before a new one is opened.
+  private lastAcpTriple: { command: string; args: string; model: string } | null = null;
   showHistoryDropdown = false;
   renamingId: string | null = null;
   renameInput = '';
 
   position: { x: number; y: number } | null = null;
-  size = { w: 350, h: 500 };
+  size = { w: 420, h: 500 };
   private dragOffset = { x: 0, y: 0 };
   isDragging = false;
   private dragPotential = false;
   private dragStartPos = { x: 0, y: 0 };
   private resizeStart = { x: 0, y: 0 };
-  private resizeStartSize = { w: 350, h: 500 };
+  private resizeStartSize = { w: 420, h: 500 };
   private isResizing = false;
   private resizeDirection: 'se' | 'nw' = 'se';
 
@@ -201,6 +223,12 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     this.clearToolProgress();
     this.saveMessages();
     this.historyService.createNew();
+    // P2-2: trimming used to silently discard old chats — say so.
+    const dropped = this.historyService.lastTrimmedCount;
+    this.historyService.lastTrimmedCount = 0;
+    if (dropped > 0) {
+      this.notificationService.info(`Removed ${dropped} oldest chat(s) — history keeps 10`);
+    }
     this.messages = [...(this.historyService.current?.messages ?? [])];
     this.showHistoryDropdown = false;
     this.cdr.detectChanges();
@@ -368,9 +396,11 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     const assistantMsg = msgs.find(m => m.role === 'assistant' && m !== msgs[0]);
     if (!userMsg || !assistantMsg) return;
 
+    // P1-2: title comes from the opening exchange; cap it so long chats
+    // don't pay a full-history read for a 3-word title.
     const renamePayload = [
       { role: 'system', content: 'Generate a short title (2-5 words) for this conversation. Respond with ONLY the title, nothing else.' },
-      ...msgs
+      ...msgs.slice(0, 4).map(m => ({ role: m.role, content: String(m.content || '').slice(0, 500) }))
     ];
 
     try {
@@ -383,7 +413,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
         title = this.aiService.extractAcpContent(resp);
       } else {
         const resp = await firstValueFrom(this.aiService.sendWebMessage(
-          aiSettings.apiUrl, aiSettings.token, aiSettings.model, renamePayload
+          aiSettings.apiUrl, aiSettings.token, aiSettings.model, renamePayload, session.id
         ));
         title = this.aiService.extractWebContent(resp);
       }
@@ -404,6 +434,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     if (!aiSettings) {
       this.messages.push({ role: 'assistant', content: 'Please configure AI settings in the Settings menu first.' });
       this.userInput = '';
+      this.resetChatBoxHeight();
       return;
     }
 
@@ -413,22 +444,24 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     if (mode === 'web' && !aiSettings.token) {
       this.messages.push({ role: 'assistant', content: 'Please configure a valid API token in the Settings menu first.' });
       this.userInput = '';
+      this.resetChatBoxHeight();
       return;
     }
 
     if (mode === 'acp' && !aiSettings.acpCommand) {
       this.messages.push({ role: 'assistant', content: 'Please configure the ACP command in the Settings menu first.' });
       this.userInput = '';
+      this.resetChatBoxHeight();
       return;
     }
 
     const userMessage = this.userInput;
     this.messages.push({ role: 'user', content: `${userMessage}` });
     this.userInput = '';
+    this.resetChatBoxHeight();
     this.saveMessages();
     this.isLoading = true;
     this.clearToolProgress();
-    this.activeToolProgressMessageIndex = this.messages.length - 1;
 
     const activeTab = this.tabService.getSelectedTab();
     let context = '';
@@ -438,16 +471,17 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
       }
     }
 
-    // NOTE: this injects xterm full content as a user message.
-    // There is a parallel injection on the backend side:
-    //   src-electron/adapter/ipc/ai/aiChat.js :: injectSessionContext()
-    //   which injects session buffer + status summary as a system message.
+    // P1-2: context is injected exactly once per mode, never twice.
+    // - agent mode: backend injects AI sessions + active tab incrementally
+    //   (aiChat.js injectSessionContext) — push nothing here.
+    // - pure-chat/ACP: backend injects nothing — push a BOUNDED tail here.
+    const isAgent = this.agentMode && mode === 'web';
     const payload = [...this.messages];
-    if (context) {
-        payload.push({ role: 'user', content: `Current terminal context:\n${context}` });
+    if (context && !isAgent) {
+        payload.push({ role: 'user', content: `Current terminal context (tail):\n${truncateTail(context)}` });
     }
 
-    if (this.agentMode && mode === 'web') {
+    if (isAgent) {
       this.sendWebMessageWithTools(aiSettings, payload, activeTab);
     } else if (mode === 'acp') {
       this.sendAcpMessage(aiSettings, payload, activeTab);
@@ -463,7 +497,8 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
       aiSettings.apiUrl,
       aiSettings.token,
       aiSettings.model,
-      payload
+      payload,
+      this.currentSessionId
     ).subscribe({
       next: (resp) => {
         this.currentSubscription = null;
@@ -474,6 +509,13 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
       error: (err) => {
         this.currentSubscription = null;
         if (gen !== this._requestGeneration) return;
+        // P1-1: user-cancelled runs are silent — no error bubble.
+        const msg = (err as any)?.message || String(err || '');
+        if (/cancelled by user/i.test(msg)) {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+          return;
+        }
         console.error(err);
         this.messages.push({ role: 'assistant', content: 'Error communicating with AI. Please check your configuration.' });
         this.isLoading = false;
@@ -492,17 +534,25 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
       this.cdr.detectChanges();
     });
     this.electronService.onToolProgress((data: ToolProgressEntry) => {
-      const existing = this.toolProgress.find(t => t.toolName === data.toolName && t.args === data.args);
-      if (!existing) {
+      // P2-1: same tool+args updates the row in place instead of appending
+      // a duplicate per event. Keep the user's expanded toggle.
+      const existing = this.toolProgress.find(t => progressKey(t) === progressKey(data));
+      if (existing) {
+        const expanded = existing.expanded;
+        Object.assign(existing, data);
+        existing.expanded = expanded || !!data.error;
+      } else {
         this.toolProgress.push({ ...data, expanded: !!data.error });
-        this.cdr.detectChanges();
-        this.scrollToBottom();
       }
+      this.cdr.detectChanges();
+      this.scrollToBottom();
     });
 
     const gen = this._requestGeneration;
     const useContext = aiSettings.useContext !== false;
     const chatSessionId = this.currentSessionId;
+    // P1-2: backend injects the active tab incrementally; it needs the id.
+    const activeTabId = useContext ? (activeTab?.id || null) : null;
     this.currentSubscription?.unsubscribe();
     this.currentSubscription = this.aiService.sendWithTools(
       aiSettings.apiUrl,
@@ -511,7 +561,8 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
       payload,
       aiSettings.crossSessionAccess,
       useContext,
-      chatSessionId
+      chatSessionId,
+      activeTabId
     ).subscribe({
       next: (resp) => {
         this.currentSubscription = null;
@@ -528,6 +579,13 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
         this.electronService.removeToolProgressListeners();
         this.electronService.removeCommandPendingListeners();
         this.pendingCommand = null;
+        // P1-1: user-cancelled runs are silent — no error bubble.
+        const msg = (err as any)?.message || String(err || '');
+        if (/cancelled by user/i.test(msg)) {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+          return;
+        }
         console.error(err);
         this.messages.push({ role: 'assistant', content: 'Error communicating with AI. Please check your configuration.' });
         this.isLoading = false;
@@ -535,8 +593,24 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     });
   }
 
+  private async closeStaleAcpSession(aiSettings: any) {
+    const triple = {
+      command: aiSettings.acpCommand || '',
+      args: aiSettings.acpArgs || '',
+      model: aiSettings.acpModel || '',
+    };
+    const prev = this.lastAcpTriple;
+    this.lastAcpTriple = triple;
+    if (prev && (prev.command !== triple.command || prev.args !== triple.args || prev.model !== triple.model)) {
+      await this.electronService.closeAcpSession(prev.command, prev.args, prev.model);
+    }
+  }
+
   private async sendAcpMessage(aiSettings: any, payload: any[], activeTab: any) {
     const gen = this._requestGeneration;
+    // P1-5: triple changed (new model/command) → kill the stale backend
+    // process before opening a new one, otherwise it lingers forever.
+    await this.closeStaleAcpSession(aiSettings);
     let assistantMessage = { role: 'assistant', content: '' };
     this.messages.push(assistantMessage);
 
@@ -610,8 +684,45 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     this.scrollToBottom();
   }
 
+  // UI: empty-state quick prompts (i18n-free, ops-oriented for a terminal app).
+  readonly suggestions: string[] = [
+    'Summarize the current terminal output',
+    'Check disk usage on this machine',
+    'Check system load and memory',
+  ];
+
+  sendSuggestion(text: string) {
+    if (this.isLoading) return;
+    this.userInput = text;
+    this.resetChatBoxHeight();
+    this.sendMessage();
+  }
+
+  // Enter 发送, Shift+Enter 换行.
+  onInputKeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      this.sendMessage();
+    }
+  }
+
+  autoGrow(el: HTMLTextAreaElement) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 140) + 'px';
+  }
+
+  private resetChatBoxHeight() {
+    try {
+      const el = this.chatBox?.nativeElement;
+      if (el) el.style.height = 'auto';
+    } catch (_) {}
+  }
+
   stop() {
     this._requestGeneration++;
+    // P1-1: abort the backend run too (loop + HTTP + pending tools).
+    // Opened ai_* sessions are kept. Also reject a pending approval prompt.
+    this.electronService.cancelAiChat(this.currentSessionId);
     this.isLoading = false;
     this.currentSubscription?.unsubscribe();
     this.currentSubscription = null;
@@ -627,8 +738,9 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
 
   private clearToolProgress() {
     this._requestGeneration++;
+    // P1-1: switching/new chat also aborts the previous backend run.
+    this.electronService.cancelAiChat(this.currentSessionId);
     this.toolProgress = [];
-    this.activeToolProgressMessageIndex = -1;
     if (this.pendingCommand) {
       this.electronService.rejectCommand(this.pendingCommand.requestId);
       this.notificationService.info('Command rejected');

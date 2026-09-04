@@ -39,9 +39,9 @@ export class AiService {
     });
   }
 
-  sendWebMessage(apiUrl: string, token: string, model: string, messages: any[]): Observable<any> {
+  sendWebMessage(apiUrl: string, token: string, model: string, messages: any[], chatSessionId?: string | null): Observable<any> {
     return new Observable<any>(observer => {
-      this.electronService.sendAiChat(apiUrl, token, model, messages).then(
+      this.electronService.sendAiChat(apiUrl, token, model, messages, chatSessionId).then(
         (resp) => {
           observer.next(resp);
           observer.complete();
@@ -53,9 +53,9 @@ export class AiService {
     });
   }
 
-  sendWithTools(apiUrl: string, token: string, model: string, messages: any[], crossSessionAccess: boolean = false, useContext: boolean = true, chatSessionId?: string | null): Observable<any> {
+  sendWithTools(apiUrl: string, token: string, model: string, messages: any[], crossSessionAccess: boolean = false, useContext: boolean = true, chatSessionId?: string | null, activeTabId?: string | null): Observable<any> {
     return new Observable<any>(observer => {
-      this.electronService.sendAiWithTools(apiUrl, token, model, messages, crossSessionAccess, useContext, chatSessionId).then(
+      this.electronService.sendAiWithTools(apiUrl, token, model, messages, crossSessionAccess, useContext, chatSessionId, activeTabId).then(
         (resp) => {
           observer.next(resp);
           observer.complete();

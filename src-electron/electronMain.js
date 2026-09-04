@@ -208,7 +208,7 @@ function initHandlerBeforeSettingLoad() {
   initCustomSessionHandler(log);
   initAcpClientIpcHandler(log);
   initAiIpcHandler(log);
-  initAiChatIpcHandler(log);
+  initAiChatIpcHandler(log, () => lastSettings);
 
   sessionRegistry = new SessionRegistry({ maxBufferLines: 50 });
   runtime.sessionRegistry = sessionRegistry;
@@ -305,8 +305,17 @@ function reloadSecrets() {
 }
 
 function _getApprovalPreview(toolName, args) {
-  if (toolName === 'local_execute') return args.command;
-  if (toolName === 'session_write') return args.input;
+  const a = args || {};
+  if (toolName === 'local_execute') return a.command || '';
+  if (toolName === 'session_write') return a.input || '';
+  // P2-3: file tools previously previewed as '' — show what/where.
+  if (toolName === 'terminal_open') return `open ${a.profileId || 'local terminal'}`;
+  if (/_write_file$/.test(toolName || '')) return `${a.path || ''} (${(a.content || '').length} chars)`;
+  if (/_delete_files$/.test(toolName || '')) return `${a.path || ''} :: ${(a.items || []).map(i => i && i.name).filter(Boolean).join(', ')}`;
+  if (/_(copy|move)_files$/.test(toolName || '')) return `${(a.names || []).join(', ')} → ${a.targetPath || ''}`;
+  if (/_rename_file$/.test(toolName || '')) return `${a.path || ''}/${a.name || ''} → ${a.newName || ''}`;
+  if (/_create_folder$/.test(toolName || '')) return `${a.path || ''}/${a.name || ''}`;
+  if (/_download_file$/.test(toolName || '')) return `${a.path || ''} → ${a.localPath || '(inline base64)'}`;
   return '';
 }
 

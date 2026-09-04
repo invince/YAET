@@ -121,6 +121,10 @@ export class SettingService {
     if (ai.agentMode === undefined) ai.agentMode = false;
     if (ai.crossSessionAccess === undefined) ai.crossSessionAccess = false;
     if (!ai.contextMaxLines || ai.contextMaxLines < 10) ai.contextMaxLines = 50;
+    // P1-1: floor 10s — a hand-edited 0 must not lock the user out.
+    if (!ai.requestTimeoutMs || ai.requestTimeoutMs < 10000) ai.requestTimeoutMs = 120000;
+    // P1-1C: floor 4000 — below that normal agent runs would trip instantly.
+    if (!ai.maxLoopTokens || ai.maxLoopTokens < 4000) ai.maxLoopTokens = 100000;
     if (!ai.contextOptimization) {
       ai.contextOptimization = { enabled: true, level: 2, idleSummary: true, maxContextTokens: 4000 };
     }

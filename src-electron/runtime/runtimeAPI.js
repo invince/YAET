@@ -60,9 +60,12 @@ class RuntimeAPI {
         return profile[oldField];
       }
     }
-    // Aggressive fallback: try any old field that has a host or share
+    // Aggressive fallback: try any old field that has a host or share.
+    // P2-4: this can connect to the WRONG host when a profile carries stale
+    // flat fields — log loudly so it gets migrated instead of silently used.
     for (const oldField of Object.keys(RuntimeAPI.OLD_FIELD_MAP)) {
       if (profile[oldField] && (profile[oldField].host || profile[oldField].share)) {
+        if (this.log) this.log.warn(`Profile ${profile.id || '?'} (${profile.name || '?'}) resolved via legacy fallback field '${oldField}' — migrate it to profileData format`);
         return profile[oldField];
       }
     }

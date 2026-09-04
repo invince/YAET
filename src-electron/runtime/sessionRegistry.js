@@ -1,3 +1,18 @@
+// P1-4: single liveness probe for all connector kinds. Method probes first
+// (overridable per connector), then the conventional _connected flag, then
+// true — stateless connectors (file explorers) are always usable.
+function isSessionAlive(session) {
+  if (!session) return false;
+  try {
+    if (typeof session.isAlive === 'function') return !!session.isAlive();
+    if (typeof session.isConnected === 'function') return !!session.isConnected();
+  } catch (_) {
+    return false;
+  }
+  if (session._connected !== undefined) return !!session._connected;
+  return true;
+}
+
 class SessionRegistry {
   constructor(options = {}) {
     this._sessions = new Map();
@@ -66,9 +81,7 @@ class SessionRegistry {
 
     const n = lastN || this._maxBufferLines;
     const output = entry.buffer.slice(-n);
-    const isRunning = entry.session._connected !== undefined
-      ? entry.session._connected
-      : true;
+    const isRunning = isSessionAlive(entry.session);
 
     return {
       id: entry.id,
@@ -80,4 +93,4 @@ class SessionRegistry {
   }
 }
 
-module.exports = { SessionRegistry };
+module.exports = { SessionRegistry, isSessionAlive };

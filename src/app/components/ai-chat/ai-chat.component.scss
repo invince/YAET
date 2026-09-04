@@ -64,7 +64,7 @@
   border-bottom: 1px solid var(--app-border-color);
   border-radius: t.$radius-lg t.$radius-lg 0 0;
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr auto;
   align-items: center;
   position: relative;
   min-height: 44px;
@@ -97,12 +97,6 @@
     }
   }
 
-  .header-center {
-    justify-self: center;
-    display: flex;
-    align-items: center;
-  }
-
   .close-btn {
     mat-icon { color: var(--app-text-color); opacity: 0.7; }
     &:hover mat-icon { color: var(--app-header-text-color); opacity: 1; }
@@ -126,6 +120,11 @@
       height: 16px;
       color: var(--app-text-color);
       opacity: 0.7;
+    }
+    .toggle-label {
+      font-size: t.$font-size-xs;
+      opacity: 0.7;
+      user-select: none;
     }
   }
 }
@@ -259,27 +258,27 @@
   font-size: t.$font-size-md;
   line-height: 1.4;
   box-shadow: t.$shadow-sm;
+  display: flex;
+  gap: t.$spacing-sm;
+  align-items: flex-start;
 
-  .message-header {
+  .message-avatar {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
-    gap: t.$spacing-xs;
-    padding: t.$spacing-sm t.$spacing-md 0;
+    justify-content: center;
+    font-size: t.$font-size-xs;
+    font-weight: t.$font-weight-semibold;
+    user-select: none;
+  }
 
-    .message-avatar {
-      font-size: 14px;
-      width: 14px;
-      height: 14px;
-      line-height: 14px;
-    }
-
-    .message-role {
-      font-size: t.$font-size-xs;
-      font-weight: t.$font-weight-semibold;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      opacity: 0.7;
-    }
+  .message-body {
+    flex: 1;
+    min-width: 0;
+    padding: t.$spacing-sm t.$spacing-md;
   }
 
   .message-content {
@@ -292,8 +291,9 @@
     background: t.$color-accent;
     color: white;
     border-bottom-right-radius: t.$radius-sm;
+    flex-direction: row-reverse;
 
-    .message-header .message-role { color: rgba(255,255,255,0.75); }
+    .message-avatar { background: rgba(255, 255, 255, 0.25); }
   }
 
   &.assistant {
@@ -303,7 +303,7 @@
     color: var(--app-text-color);
     border-bottom-left-radius: t.$radius-sm;
 
-    .message-header .message-role { color: var(--app-text-secondary); }
+    .message-avatar { background: var(--mat-sys-primary); color: white; }
   }
 
   &.system {
@@ -359,6 +359,36 @@
   ::ng-deep .mat-mdc-form-field-label {
     color: var(--app-text-color) !important;
     opacity: 0.6;
+  }
+  textarea {
+    resize: none;
+    max-height: 140px;
+    line-height: 1.4;
+  }
+}
+
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: t.$spacing-xs;
+  padding: 0 t.$spacing-xs;
+
+  .suggestion-chip {
+    border: 1px solid var(--app-border-color);
+    background: var(--app-surface-elevated);
+    color: var(--app-text-color);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: t.$font-size-xs;
+    cursor: pointer;
+    transition: background t.$transition-fast, border-color t.$transition-fast;
+
+    &:hover {
+      background: var(--app-hover-bg-color);
+      border-color: var(--mat-sys-primary);
+    }
+
+    &:active { transform: scale(0.97); }
   }
 }
 
@@ -470,6 +500,11 @@
   align-items: center;
   gap: t.$spacing-sm;
   animation: approval-in 0.2s ease-out;
+  // Sticky: approval used to anchor under a user message and scroll away —
+  // a missed Approve stalls the agent until the 60s auto-reject.
+  position: sticky;
+  top: 0;
+  z-index: 1;
 
   .approval-banner-content {
     flex: 1;
@@ -524,6 +559,14 @@
   flex-direction: column;
   gap: t.$spacing-xs;
   margin: t.$spacing-sm 0;
+
+  .tool-progress-title {
+    font-size: t.$font-size-xs;
+    font-weight: t.$font-weight-semibold;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    opacity: 0.6;
+  }
 }
 
 .tool-entry {

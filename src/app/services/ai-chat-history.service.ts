@@ -9,12 +9,15 @@ export interface ChatSession {
 }
 
 const STORAGE_KEY = 'yaet_ai_chat_sessions';
-const MAX_SESSIONS = 10;
+export const MAX_SESSIONS = 10;
 
 @Injectable({ providedIn: 'root' })
 export class AiChatHistoryService {
   private sessions: ChatSession[] = [];
   currentSessionId: string | null = null;
+  // P2-2: how many old sessions the last createNew() dropped (0 = none).
+  // The component reads + resets it to toast instead of silently discarding.
+  lastTrimmedCount = 0;
 
   constructor() {
     this.load();
@@ -41,7 +44,7 @@ export class AiChatHistoryService {
     };
     this.sessions.unshift(session);
     this.currentSessionId = session.id;
-    this.trim();
+    this.lastTrimmedCount = this.trim();
     this.save();
     return session;
   }
@@ -90,10 +93,13 @@ export class AiChatHistoryService {
     this.sessions.sort((a, b) => b.updatedAt - a.updatedAt);
   }
 
-  private trim() {
+  private trim(): number {
     if (this.sessions.length > MAX_SESSIONS) {
+      const dropped = this.sessions.length - MAX_SESSIONS;
       this.sessions = this.sessions.slice(0, MAX_SESSIONS);
+      return dropped;
     }
+    return 0;
   }
 
   private save() {
