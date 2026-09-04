@@ -631,10 +631,19 @@ function getToolDefinitions() {
   ];
 }
 
-const SENSITIVE_TOOLS = ['local_execute', 'session_write'];
+const SENSITIVE_TOOLS = ['local_execute', 'session_write', 'terminal_open'];
+
+// P0-2: file-mutating tools always go through the approval gate (auto mode
+// prompts for them, see ApprovalManager._isDangerous). Read-only tools
+// (profile_list, *_list_files, *_read_file, *_search_files, session_*) don't.
+const DESTRUCTIVE_FILE_TOOL_SUFFIX = /_(write_file|delete_files|rename_file|copy_files|move_files|create_folder|download_file)$/;
+
+function needsApproval(toolName) {
+  return SENSITIVE_TOOLS.includes(toolName) || DESTRUCTIVE_FILE_TOOL_SUFFIX.test(toolName || '');
+}
 
 async function executeTool(runtime, toolName, args, sessionContext = {}) {
-  if (SENSITIVE_TOOLS.includes(toolName) && runtime?.approvalManager) {
+  if (needsApproval(toolName) && runtime?.approvalManager) {
     const result = await runtime.approvalManager.request(toolName, args);
     if (!result.approved) {
       return { error: `Command rejected: ${result.reason}` };

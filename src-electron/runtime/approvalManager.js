@@ -1,6 +1,9 @@
 const DEFAULT_DANGEROUS_COMMANDS = ['rm', 'dd', 'shutdown', 'reboot', 'mkfs', 'fdisk', 'format', 'sudo', 'su', 'passwd', 'kill', 'pkill', 'systemctl'];
 const DEFAULT_DANGEROUS_PATTERNS = ['rm\\s+-rf\\s+/', '>\\s*/dev/sd', 'dd\\s+if=', 'chmod\\s+777', 'chown\\s+[^:]+:', 'wget\\s+http.*\\|\\s*bash', 'curl\\s+http.*\\|\\s*bash'];
 
+// Leading wrappers that don't change what actually runs (`sudo rm`, `nohup kill`).
+const WRAPPER_COMMANDS = new Set(['sudo', 'su', 'env', 'nohup', 'time', 'nice']);
+
 class ApprovalManager {
   constructor(log, getSettings) {
     this.log = log;
@@ -54,14 +57,48 @@ class ApprovalManager {
   }
 
   _isDangerous(toolName, args, rules) {
-    const cmd = args.command || args.input || '';
+    // P0-2: tools that mutate files or open new sessions always need a human
+    // look in auto mode — command-text analysis can't cover them (no command
+    // string to scan, and session_write inputs arrive fragmented).
+    if (/^(terminal_open|.*_(write_file|delete_files|rename_file|copy_files|move_files|create_folder|download_file))$/.test(toolName || '')) return true;
+
+    const raw = args.command || args.input || '';
+    // Normalize full-width / non-breaking spaces so `rm　-rf` can't dodge the split.
+    const cmd = String(raw).replace(/[\u3000\u00A0]/g, ' ');
     const dangerous = rules.dangerousCommands || [];
     const patterns = rules.dangerousPatterns || [];
-    const parts = cmd.trim().split(/\s+/);
-    const base = parts[0]?.toLowerCase();
-    if (dangerous.includes(base)) return true;
+    // Split compound shell lines so `echo hi; rm -rf /` or `a && b` are judged
+    // per segment, not just by the first word of the whole string.
+    const segments = cmd.split(/;|\r?\n|&&|\|\|/);
+    for (const seg of segments) {
+      const tokens = seg.trim().split(/\s+/).filter(Boolean);
+      let i = 0;
+      while (i < tokens.length) {
+        const base = tokens[i].split('/').pop().toLowerCase();
+        if (base === 'sudo' || base === 'su') {
+          i++;
+          // Skip sudo flags (`-u`, `-E`, ...) and `-u <user>` values.
+          while (i < tokens.length && tokens[i].startsWith('-')) {
+            const flag = tokens[i].toLowerCase();
+            i++;
+            if ((flag === '-u' || flag === '--user') && i < tokens.length) i++;
+          }
+          continue;
+        }
+        if (WRAPPER_COMMANDS.has(base)) { i++; continue; }
+        // Skip `VAR=val` env assignments: `FOO=1 rm ...`.
+        if (/^[A-Za-z_][A-Za-z0-9_]*=/.test(tokens[i])) { i++; continue; }
+        if (dangerous.includes(base)) return true;
+        break;
+      }
+    }
     for (const p of patterns) {
-      if (new RegExp(p).test(cmd)) return true;
+      try {
+        if (new RegExp(p).test(cmd)) return true;
+      } catch (_) {
+        // P0-4: a bad user-supplied pattern must not crash the loop.
+        if (this.log) this.log.warn(`ApprovalManager: ignoring invalid dangerousPattern: ${p}`);
+      }
     }
     return false;
   }
