@@ -8,7 +8,7 @@
   "defaultPort": 445,
   "icon": "folder",
   "enabled": true,
-  "secretTypes": ["LOGIN_PASSWORD"],
+  "secretTypes": ["LOGIN_PASSWORD", "PASSWORD_ONLY"],
   "supportedAuthTypes": ["login"],
   "backend": "./backend/index.js",
   "frontend": {

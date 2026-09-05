@@ -276,7 +276,7 @@
                   <mat-icon matSuffix style="font-size: 18px;">hourglass_top</mat-icon>
                   }
                 </mat-form-field>
-                <button mat-icon-button (click)="fetchAiModels()" [disabled]="isLoadingModels"
+                <button mat-icon-button (click)="onRefreshAiModels()" [disabled]="isLoadingModels"
                   title="Refresh models from API" style="margin-top: 4px;">
                   <mat-icon>refresh</mat-icon>
                 </button>
@@ -310,7 +310,7 @@
                   <mat-icon matSuffix style="font-size: 18px;">hourglass_top</mat-icon>
                   }
                 </mat-form-field>
-                <button mat-icon-button (click)="fetchAcpModels()" [disabled]="isLoadingAcpModels"
+                <button mat-icon-button (click)="onRefreshAcpModels()" [disabled]="isLoadingAcpModels"
                   title="Refresh models from ACP" style="margin-top: 4px;">
                   <mat-icon>refresh</mat-icon>
                 </button>

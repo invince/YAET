@@ -42,12 +42,9 @@ export function IsAChildForm<TBase extends Constructor>(Base: TBase) {
     template: `<p>Abstract Menu</p>`
 })
   abstract class IsAChildFormClazz extends Base implements OnInit, OnDestroy  {
-    // @ts-ignore
-
     form!: FormGroup;
     @Output() dirtyStateChange = new EventEmitter<boolean>();
     private lastDirtyState?: boolean = undefined;
-    // @ts-ignore
     @Output() invalidStateChange = new EventEmitter<boolean>();
     private lastInvalidState?: boolean = undefined;
 

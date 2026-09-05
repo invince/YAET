@@ -567,6 +567,16 @@ class PluginManager {
           api.registerConnector(type, factory);
         }
       },
+      registerConfigResolver(type, resolver) {
+        if (type !== allowedProfileType) {
+          self.logger.warn(`[PluginManager] Plugin blocked from registering config resolver for type "${type}" (declared: ${allowedProfileType})`);
+          return;
+        }
+        const api = typeof runtimeAPIGetter === 'function' ? runtimeAPIGetter() : runtimeAPIGetter;
+        if (api && typeof api.registerConfigResolver === 'function') {
+          api.registerConfigResolver(type, resolver);
+        }
+      },
       // Pass through other methods as-is (they're read-only or scoped)
       getApprovalManager() {
         const api = typeof runtimeAPIGetter === 'function' ? runtimeAPIGetter() : runtimeAPIGetter;

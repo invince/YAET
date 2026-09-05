@@ -1,5 +1,4 @@
 import {ElementRef, Injectable} from '@angular/core';
-// @ts-ignore
 import RFB from '@novnc/novnc/lib/rfb';
 import {Subject} from 'rxjs';
 import {VncProfile} from '../domain/VncProfile';
@@ -20,6 +19,7 @@ export class VncService {
   readonly XK_Shift_L = 0xffe1; // from keysym.js
   readonly XK_v = 0x0076; // from keysym.js
   vncMap: Map<string, RFB> = new Map();
+  private resizeHandlers: Map<string, () => void> = new Map();
 
   private clipboardEventSubject = new Subject<string>();
   clipboardEvent$ = this.clipboardEventSubject.asObservable();
@@ -89,7 +89,6 @@ export class VncService {
       this.electron.openVncSession(id, vncProfile.host, vncProfile.port).then(
         websocketPort => {
           const rfb = new RFB(vncCanvas.nativeElement, `ws://localhost:${websocketPort}`, {
-            // @ts-ignore
             credentials: { password: vncProfile.password },
           });
           rfb.qualityLevel = this.settingStorage.settings.remoteDesktop?.vncQuality || 7;
@@ -99,9 +98,9 @@ export class VncService {
           rfb.scaleViewport = true; // Scale the remote desktop to fit the container
           rfb.resizeSession = true; // Resize the remote session to match the container
           // Handle container resizing
-          window.addEventListener('resize', () => {
-            rfb.scaleViewport = true;
-          });
+          const onResize = () => { rfb.scaleViewport = true; };
+          window.addEventListener('resize', onResize);
+          this.resizeHandlers.set(id, onResize);
 
           rfb.addEventListener('clipboard', async (event: any) => {
             const serverClipboardText = event.detail.text;
@@ -121,5 +120,10 @@ export class VncService {
     let rfb = this.vncMap.get(id);
     rfb?.disconnect();
     this.vncMap.delete(id);
+    const onResize = this.resizeHandlers.get(id);
+    if (onResize) {
+      window.removeEventListener('resize', onResize);
+      this.resizeHandlers.delete(id);
+    }
   }
 }

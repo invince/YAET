@@ -11,7 +11,8 @@ import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {NgxSpinnerService} from 'ngx-spinner';
-import {Subscription} from 'rxjs';
+import {Observable, of, Subject, Subscription} from 'rxjs';
+import {debounceTime, finalize, switchMap, takeUntil, tap} from 'rxjs/operators';
 import packageJson from '../../../../../package.json';
 import {LocalTerminalProfile, LocalTerminalType} from '../../../domain/profile/LocalTerminalProfile';
 import {Proxy} from '../../../domain/Proxy';
@@ -112,6 +113,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
   settingsCopy!: MySettings;
   private subscriptions: Subscription[] = [];
+  private destroy$ = new Subject<void>();
   currentTabIndex: number = 0;
 
   GENERAL_FORM_TAB_INDEX = 0;
@@ -251,9 +253,21 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
     this.refreshForm(this.settingsCopy);
 
     this.subscriptions.push(
-      this.aiForm.get('aiApiUrl')!.valueChanges.subscribe(() => this.scheduleFetchModels()),
-      this.aiForm.get('aiToken')!.valueChanges.subscribe(() => this.scheduleFetchModels()),
-      this.aiForm.get('acpCommand')!.valueChanges.subscribe(() => this.scheduleFetchAcpModels()),
+      this.aiForm.get('aiApiUrl')!.valueChanges.pipe(
+        takeUntil(this.destroy$),
+        debounceTime(600),
+        switchMap(() => this.fetchAiModels()),
+      ).subscribe(),
+      this.aiForm.get('aiToken')!.valueChanges.pipe(
+        takeUntil(this.destroy$),
+        debounceTime(600),
+        switchMap(() => this.fetchAiModels()),
+      ).subscribe(),
+      this.aiForm.get('acpCommand')!.valueChanges.pipe(
+        takeUntil(this.destroy$),
+        debounceTime(600),
+        switchMap(() => this.fetchAcpModels()),
+      ).subscribe(),
     );
 
     this.subscriptions.push(this.settingService.settingLoadedEvent.subscribe(() => {
@@ -265,68 +279,51 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
 
   }
 
-  private fetchModelTimer: any;
-  private scheduleFetchModels() {
-    if (this.aiForm.get('aiMode')?.value !== 'web') return;
-    const url = this.aiForm.get('aiApiUrl')?.value;
-    const token = this.aiForm.get('aiToken')?.value;
-    if (!url || !token) return;
-    clearTimeout(this.fetchModelTimer);
-    this.fetchModelTimer = setTimeout(() => this.fetchAiModels(), 600);
+  onRefreshAiModels() {
+    this.fetchAiModels().subscribe();
   }
 
-  fetchAiModels() {
+  onRefreshAcpModels() {
+    this.fetchAcpModels().subscribe();
+  }
+
+  fetchAiModels(): Observable<string[]> {
+    if (this.aiForm.get('aiMode')?.value !== 'web') return of([] as string[]);
     const url = this.aiForm.get('aiApiUrl')?.value;
     const token = this.aiForm.get('aiToken')?.value;
-    if (!url || !token) return;
+    if (!url || !token) return of([] as string[]);
     this.isLoadingModels = true;
-    this.aiService.fetchModels(url, token).subscribe({
-      next: (models) => {
+    return this.aiService.fetchModels(url, token).pipe(
+      tap({ next: (models) => {
         this.aiModelOptions = models;
-        this.isLoadingModels = false;
         const currentModel = this.aiForm.get('aiModel')?.value;
         if (!currentModel && models.length > 0) {
           this.aiForm.get('aiModel')?.setValue(models[0]);
         }
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.isLoadingModels = false;
-        this.cdr.detectChanges();
-      }
-    });
+      }}),
+      finalize(() => { this.isLoadingModels = false; this.cdr.detectChanges(); }),
+    );
   }
 
-  private fetchAcpModelTimer: any;
-  private scheduleFetchAcpModels() {
-    if (this.aiForm.get('aiMode')?.value !== 'acp') return;
-    const command = this.aiForm.get('acpCommand')?.value;
-    if (!command) return;
-    clearTimeout(this.fetchAcpModelTimer);
-    this.fetchAcpModelTimer = setTimeout(() => this.fetchAcpModels(), 600);
-  }
-
-  fetchAcpModels() {
+  fetchAcpModels(): Observable<string[]> {
+    if (this.aiForm.get('aiMode')?.value !== 'acp') return of([] as string[]);
     const command = this.aiForm.get('acpCommand')?.value;
     const args = this.aiForm.get('acpArgs')?.value;
-    if (!command) return;
+    if (!command) return of([] as string[]);
     this.isLoadingAcpModels = true;
-    this.aiService.fetchAcpModels(command, args).subscribe({
-      next: (models) => {
+    return this.aiService.fetchAcpModels(command, args).pipe(
+      tap({ next: (models) => {
         this.acpModelOptions = models;
-        this.isLoadingAcpModels = false;
         const currentModel = this.aiForm.get('acpModel')?.value;
         if (!currentModel && models.length > 0) {
           this.aiForm.get('acpModel')?.setValue(models[0]);
         }
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.isLoadingAcpModels = false;
+      }}),
+      tap({ error: (err) => {
         this.notification.error('Failed to fetch ACP models: ' + (err.message || err));
-        this.cdr.detectChanges();
-      }
-    });
+      }}),
+      finalize(() => { this.isLoadingAcpModels = false; this.cdr.detectChanges(); }),
+    );
   }
 
   private initGeneralForm() {
@@ -354,8 +351,8 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
   ngOnDestroy(): void {
-    clearTimeout(this.fetchModelTimer);
-    clearTimeout(this.fetchAcpModelTimer);
+    this.destroy$.next();
+    this.destroy$.complete();
     if (this.subscriptions) {
       this.subscriptions.forEach(one => one.unsubscribe());
     }

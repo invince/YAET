@@ -10,7 +10,6 @@ export class MenuComponent {
 
   @Output() closeEvent = new EventEmitter();
 
-  // @ts-ignore
   unordered = (a: any, b: any)=>0
   close() {
     this.closeEvent.emit();

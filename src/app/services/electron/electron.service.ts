@@ -403,8 +403,3 @@ export class ElectronService extends AbstractElectronService {
   }
   //#endregion "Command Approval"
 }
-
-export class TermOutput {
-  id!: string;
-  data!: string
-}
