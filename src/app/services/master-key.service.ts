@@ -1,6 +1,5 @@
 import {Injectable, OnDestroy} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
-import CryptoJS from 'crypto-js';
 import {Subject, Subscription} from 'rxjs';
 import {ConfirmationComponent} from '../components/confirmation/confirmation.component';
 import {ElectronService} from './electron/electron.service';
@@ -47,12 +46,8 @@ export class MasterKeyService implements OnDestroy {
   }
 
   private refreshHasMasterKey() {
-    this.electron.getPassword().then(key => {
-      if (key && key.length > 0) {
-        this._hasMasterKey = true;
-      } else {
-        this._hasMasterKey = false;
-      }
+    this.electron.masterKeyExists().then(exists => {
+      this._hasMasterKey = exists;
       this._masterKeyLoaded = true;
     });
   }
@@ -72,13 +67,8 @@ export class MasterKeyService implements OnDestroy {
   }
 
 
-  private async getMasterKey(): Promise<string | undefined> {
-    return await this.electron.getPassword();
-  }
-
   async matchMasterKey(masterKey: string): Promise<boolean> {
-    const key = await this.electron.getPassword();
-    return masterKey === key;
+    return await this.electron.matchMasterKey(masterKey);
   }
 
   saveMasterKey(masterKey: string, suggestReencrypt: boolean = false) {
@@ -101,22 +91,18 @@ export class MasterKeyService implements OnDestroy {
 
 
   async encrypt(obj: any) {
-    const masterKey = await this.getMasterKey();
-    if (masterKey) {
-      const json = JSON.stringify(obj, null, 2);
-      return CryptoJS.AES.encrypt(json, masterKey).toString();
-    } else {
+    try {
+      return await this.electron.encrypt(obj);
+    } catch {
       this.log.info("Unable to load master key");
       return null;
     }
   }
 
   async decrypt2String(encrypted: string) {
-    const masterKey = await this.getMasterKey();
-    if (masterKey) {
-      const bytes = CryptoJS.AES.decrypt(encrypted, masterKey);
-      return bytes.toString(CryptoJS.enc.Utf8);
-    } else {
+    try {
+      return await this.electron.decrypt(encrypted);
+    } catch {
       this.log.info("No master key defined");
       return null;
     }

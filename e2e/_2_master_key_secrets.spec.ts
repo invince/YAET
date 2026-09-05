@@ -25,20 +25,20 @@ test.describe('2. Master Key & Secrets', () => {
 
       await app.invoke('masterkey.save', PASSWORD);
 
-      const key = await app.invoke('masterkey.get');
-      expect(key).toBe(PASSWORD);
+      const match = await app.invoke('masterkey.match', PASSWORD);
+      expect(match).toBe(true);
     });
 
     test('delete master key via IPC', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
 
       await app.invoke('masterkey.save', PASSWORD);
-      let key = await app.invoke('masterkey.get');
-      expect(key).toBe(PASSWORD);
+      let match = await app.invoke('masterkey.match', PASSWORD);
+      expect(match).toBe(true);
 
       await app.invoke('masterkey.delete');
-      key = await app.invoke('masterkey.get');
-      expect(key).toBeFalsy();
+      const exists = await app.invoke('masterkey.exists');
+      expect(exists).toBe(false);
     });
 
   });
@@ -58,16 +58,16 @@ test.describe('2. Master Key & Secrets', () => {
 
       await expect(app.masterKeyDialog).not.toBeVisible({ timeout: 3000 });
 
-      const key = await app.invoke('masterkey.get');
-      expect(key).toBe(PASSWORD);
+      const match = await app.invoke('masterkey.match', PASSWORD);
+      expect(match).toBe(true);
     });
 
     test('change master key with correct old password → re-encrypt OK', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
 
       await app.invoke('masterkey.save', PASSWORD);
-      let key = await app.invoke('masterkey.get');
-      expect(key).toBe(PASSWORD);
+      let match = await app.invoke('masterkey.match', PASSWORD);
+      expect(match).toBe(true);
 
       await app.guardedButton('Settings').click();
       await expect(app.settingsContainer).toBeVisible({ timeout: 3000 });
@@ -86,16 +86,16 @@ test.describe('2. Master Key & Secrets', () => {
       await app.confirmButton('OK').click();
       await expect(app.confirmationDialog).not.toBeVisible({ timeout: 3000 });
 
-      key = await app.invoke('masterkey.get');
-      expect(key).toBe(NEW_PASSWORD);
+      match = await app.invoke('masterkey.match', NEW_PASSWORD);
+      expect(match).toBe(true);
     });
 
     test('change master key with correct old password → re-encrypt Cancel', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
 
       await app.invoke('masterkey.save', PASSWORD);
-      let key = await app.invoke('masterkey.get');
-      expect(key).toBe(PASSWORD);
+      let match = await app.invoke('masterkey.match', PASSWORD);
+      expect(match).toBe(true);
 
       await app.guardedButton('Settings').click();
       await app.setMasterKeyInSettings.click();
@@ -112,16 +112,16 @@ test.describe('2. Master Key & Secrets', () => {
       await expect(app.confirmationDialog).not.toBeVisible({ timeout: 3000 });
 
       // Key is always saved; "Cancel" means skip re-encrypt only
-      key = await app.invoke('masterkey.get');
-      expect(key).toBe(NEW_PASSWORD);
+      match = await app.invoke('masterkey.match', NEW_PASSWORD);
+      expect(match).toBe(true);
     });
 
     test('change master key with wrong old password → force continue', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
 
       await app.invoke('masterkey.save', PASSWORD);
-      let key = await app.invoke('masterkey.get');
-      expect(key).toBe(PASSWORD);
+      let match = await app.invoke('masterkey.match', PASSWORD);
+      expect(match).toBe(true);
 
       await app.guardedButton('Settings').click();
       await app.setMasterKeyInSettings.click();
@@ -136,8 +136,8 @@ test.describe('2. Master Key & Secrets', () => {
       await app.confirmButton('Force Continue').click();
       await expect(app.masterKeyDialog).not.toBeVisible({ timeout: 3000 });
 
-      key = await app.invoke('masterkey.get');
-      expect(key).toBe(NEW_PASSWORD);
+      match = await app.invoke('masterkey.match', NEW_PASSWORD);
+      expect(match).toBe(true);
     });
 
   });

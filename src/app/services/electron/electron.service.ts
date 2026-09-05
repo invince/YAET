@@ -21,10 +21,13 @@ import {
   CLOUD_RELOAD,
   CLOUD_SAVE,
   CLOUD_UPLOAD,
+  CRYPTO_DECRYPT,
+  CRYPTO_ENCRYPT,
   DELETE_MASTERKEY,
   ERROR,
-  GET_MASTERKEY,
   LOG,
+  MASTERKEY_EXISTS,
+  MASTERKEY_MATCH,
   MASTER_KEY_CHANGED,
   OPEN_URL,
   PROFILES_RELOAD,
@@ -205,11 +208,32 @@ export class ElectronService extends AbstractElectronService {
 
 
   //#region "Secrets"
-  async getPassword(): Promise<string | undefined> {
+  async masterKeyExists(): Promise<boolean> {
     if (this.ipc) {
-      return await this.ipc.invoke(GET_MASTERKEY);
+      return await this.ipc.invoke(MASTERKEY_EXISTS);
     }
-    return;
+    return false;
+  }
+
+  async matchMasterKey(input: string): Promise<boolean> {
+    if (this.ipc) {
+      return await this.ipc.invoke(MASTERKEY_MATCH, input);
+    }
+    return false;
+  }
+
+  async encrypt(data: any): Promise<string | null> {
+    if (this.ipc) {
+      return await this.ipc.invoke(CRYPTO_ENCRYPT, data);
+    }
+    return null;
+  }
+
+  async decrypt(ciphertext: string): Promise<string | null> {
+    if (this.ipc) {
+      return await this.ipc.invoke(CRYPTO_DECRYPT, ciphertext);
+    }
+    return null;
   }
 
   async setPassword(masterKey: string) {

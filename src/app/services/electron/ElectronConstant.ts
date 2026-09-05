@@ -56,8 +56,11 @@ export const SECRETS_LOADED = 'secrets.loaded';
 export const SECRETS_SAVE = 'secrets.save';
 export const SECRETS_RELOAD = 'secrets.reload';
 export const SAVE_MASTERKEY = 'masterkey.save';
-export const GET_MASTERKEY = 'masterkey.get';
+export const MASTERKEY_EXISTS = 'masterkey.exists';
+export const MASTERKEY_MATCH = 'masterkey.match';
 export const DELETE_MASTERKEY = 'masterkey.delete';
+export const CRYPTO_ENCRYPT = 'crypto.encrypt';
+export const CRYPTO_DECRYPT = 'crypto.decrypt';
 //#endregion "Secrets"
 
 //#region "Cloud"
