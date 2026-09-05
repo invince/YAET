@@ -10,7 +10,14 @@ YAET uses a plugin system to manage connection types (SSH, Telnet, FTP, etc.). E
 Plugins live in two locations:
 - **Bundled**: `plugins/<id>/` at the project root (shipped with the app)
 - **External**: `~/.yaet/plugins/<id>/` (user-installed)
-  - **Security**: external plugins CANNOT override bundled plugins with the same id
+  - **Security**: external plugins are **disabled by default** and must be explicitly enabled via `pluginManager.enablePlugin(id)` (stored in `~/.yaet/plugins/enabled.json`)
+  - **Security**: external plugins that conflict with bundled plugin IDs are **skipped** entirely
+  - **Security**: external plugins run with `npm install --ignore-scripts` (blocks postinstall scripts)
+  - **Security**: IPC is restricted — plugins can only register channels declared in their manifest
+  - **Security**: `secretService` is filtered by `secretTypes` — plugins only access declared secret types
+  - **Security**: `projectRequire` is whitelisted — only modules declared in manifest `dependencies` + Node.js builtins
+  - **Security**: manifest SHA-256 integrity check; optional HMAC-SHA256 signature
+  - **Security**: CSP removes `unsafe-inline`/`unsafe-eval`; frontend loaded via blob URL
 
 See [`ext-plugins-example/webdav-file-explorer/`](../ext-plugins-example/webdav-file-explorer/) for a working external WebDAV FILE_EXPLORER plugin example.
 
@@ -734,6 +741,7 @@ The build script `scripts/generate-plugin-barrel.js` scans all `plugins/*/manife
 - [ ] Frontend `index.js` exposes `window.__<ID>_PLUGIN__` metadata
 - [ ] IPC channels added to manifest `ipc` section
 - [ ] Plugin works without any core code changes
+- [ ] Plugin must be explicitly enabled by user (disabled by default for security)
 
 ### Bundled Plugins
 - [ ] All of the above, plus:

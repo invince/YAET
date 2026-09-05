@@ -15,9 +15,6 @@ import {SettingStorageService} from '../../../../src/app/services/setting-storag
   providedIn: 'root',
 })
 export class VncService {
-  readonly XK_Control_L = 0xffe3; // from keysym.js
-  readonly XK_Shift_L = 0xffe1; // from keysym.js
-  readonly XK_v = 0x0076; // from keysym.js
   vncMap: Map<string, RFB> = new Map();
   private resizeHandlers: Map<string, () => void> = new Map();
 
@@ -37,23 +34,6 @@ export class VncService {
       let rfb = this.vncMap.get(id);
       if (rfb) {
         rfb.clipboardPasteFrom(text);
-        // we trigger ctrl+v to paste the text
-        // setTimeout(() => {
-        //   rfb.sendKey(this.XK_Control_L, "ControlLeft", true);
-        //   rfb.sendKey(this.XK_v, "KeyV", true);
-        //   rfb.sendKey(this.XK_v, "KeyV", false);
-        //   rfb.sendKey(this.XK_Control_L, "ControlLeft", false);
-        // }, 50);
-
-        // if (this.settingStorage.settings?.remoteDesktop?.vncClipboardCompatibleMode) {
-        //   setTimeout(() => {
-        //     rfb.sendKey(this.XK_Control_L, "ControlLeft", true);
-        //     rfb.sendKey(this.XK_Shift_L, "ShiftLeft", true);
-        //     rfb.sendKey(this.XK_v, "KeyV");
-        //     rfb.sendKey(this.XK_Shift_L, "ShiftLeft", false);
-        //     rfb.sendKey(this.XK_Control_L, "ControlLeft", false);
-        //   }, 50);
-        // }
         return true;
       }
     }

@@ -2,6 +2,8 @@
 
 This guide explains how to add new remote desktop connection types to YAET via the **plugin system**.
 
+> **Note**: The SPICE examples below are from the external plugin ([`ext-plugins-example/spice-remote-desktop/`](../ext-plugins-example/spice-remote-desktop/)), which is not bundled with YAET. Use it as a reference when building your own remote desktop plugin.
+
 ## 1. Architecture Overview
 
 YAET uses a plugin architecture for remote desktop backends:
@@ -223,7 +225,7 @@ For protocols that need a custom frontend (like SPICE), create an Angular compon
 ## 6. Plugin Locations
 
 - **Bundled**: `plugins/<id>/` — shipped with the app
-- **External**: `~/.yaet/plugins/<id>/` — user-installed, overrides bundled plugins
+- **External**: `~/.yaet/plugins/<id>/` — user-installed, disabled by default (must be explicitly enabled). Conflicts with bundled plugin IDs are skipped for security.
 
 ## 7. Examples
 

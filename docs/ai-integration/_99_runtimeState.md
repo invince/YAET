@@ -1,7 +1,7 @@
 # Phase 3: Runtime Session State Classification
 
 > Give the AI session-level state awareness so it understands what a terminal is doing beyond raw text output.
-> Last updated: 2026-05-25
+> Last updated: 2026-09-05
 
 ---
 

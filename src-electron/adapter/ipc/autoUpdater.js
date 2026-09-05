@@ -7,6 +7,7 @@ function initAutoUpdater(log, settings, proxyRepo, secretRepo) {
   log.info("AutoUpdate is active");
 
   autoUpdater.logger = log;
+  autoUpdater.verifyUpdateCodeSignature = true;
 
   const isDev = process.env.NODE_ENV === 'development';
 

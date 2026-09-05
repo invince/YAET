@@ -1,7 +1,7 @@
 # Phase 3: AI Thinking Process Visualization
 
 > Show the AI's intermediate reasoning steps in the chat UI so users understand what the AI is doing in real time.
-> Last updated: 2026-05-27
+> Last updated: 2026-09-05
 
 ---
 

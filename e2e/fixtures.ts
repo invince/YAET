@@ -8,6 +8,7 @@ export type E2EFixtures = {
   mainWindow: Page;
   tempUserData: string;
   seedConfig: Record<string, string> | undefined;
+  useRealPty: boolean;
 };
 
 export const test = base.extend<E2EFixtures>({
@@ -19,7 +20,9 @@ export const test = base.extend<E2EFixtures>({
 
   seedConfig: [undefined, { option: true }],
 
-  electronApp: async ({ tempUserData, seedConfig }, use) => {
+  useRealPty: [false, { option: true }],
+
+  electronApp: async ({ tempUserData, seedConfig, useRealPty }, use) => {
     if (seedConfig) {
       const yaetDir = path.join(tempUserData, '.yaet');
       fs.mkdirSync(yaetDir, { recursive: true });
@@ -28,12 +31,16 @@ export const test = base.extend<E2EFixtures>({
       }
     }
 
+    const entryPoint = useRealPty
+      ? 'electronMain.e2e-pty.js'
+      : 'electronMain.e2e.js';
+
     // Default: headless. Set YAET_SHOW_WINDOW=1 for visible window (debugging).
     const headless = !process.env.YAET_SHOW_WINDOW;
     const electronApp = await electron.launch({
       args: [
         ...(headless ? ['--headless'] : []),
-        path.join(__dirname, '..', 'src-electron', 'electronMain.e2e.js'),
+        path.join(__dirname, '..', 'src-electron', entryPoint),
       ],
       env: {
         ...process.env,

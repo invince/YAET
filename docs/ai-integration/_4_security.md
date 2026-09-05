@@ -1,7 +1,7 @@
 # Phase 4: Command Approval Gate
 
 > Require user consent before the AI executes sensitive commands, preventing accidental or malicious destructive operations.
-> Last updated: 2026-05-27
+> Last updated: 2026-09-05
 
 ---
 

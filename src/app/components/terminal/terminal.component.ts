@@ -43,7 +43,6 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   private isViewInitialized = false;
 
   private xtermUnderlying: Terminal;
-  // private webglAddon = new WebglAddon();
   private fitAddon = new FitAddon();
   private resizeObserver: ResizeObserver | undefined;
   private contextMenuHandler: ((event: MouseEvent) => void) | null = null;
@@ -98,18 +97,6 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
       }
     }));
     this.xtermUnderlying.loadAddon(this.fitAddon);
-    // this.webglAddon.onContextLoss(e => {
-    //   this.webglAddon.dispose();
-    // });
-    // this.xtermUnderlying.loadAddon(this.webglAddon);
-    // this.terminal.setXtermOptions({
-    //   fontFamily: '"Cascadia Code", Menlo, monospace',
-    //   // theme: {
-    //   //   background: 'rgba(0, 0, 0, 0)' // Fully transparent background
-    //   // },
-    //   convertEol: false,
-    //   cursorBlink: true
-    // });
 
     this.scrollResizeDisposable = this.xtermUnderlying.onResize(() => {
       this.updateScrollbarThumb();

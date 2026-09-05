@@ -164,7 +164,6 @@ export class ProfilesMenuComponent extends HasChildForm(MenuComponent) implement
     this.selectedProfileId = profile.id;
 
     this.cdr.detectChanges();
-    // this.refreshSecretForm();
   }
 
 

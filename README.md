@@ -72,7 +72,7 @@ YAET is a comprehensive remote connection and management tool built with Angular
 - **Two Provider Modes**:
   - **Web Mode**: Connect to any OpenAI-compatible API (OpenAI, local LLM, etc.) with a URL and API key
 - **Agent Mode**: Enable the AI to execute commands directly in your terminal for autonomous problem solving
-- **33+ AI Tools**: profile management, terminal execution, SCP/FTP/Samba file operations, session management
+- **36 AI Tools**: profile management, terminal execution, SCP/FTP/Samba file operations, session management
 - **Context Awareness**: Ask questions about your active terminal output or specific session context
 - **Command Approval**: Dangerous commands require user approval before execution
 - **Persistent Chat History**: Manage multiple chat sessions with persistent storage, renaming, and history tracking
@@ -82,8 +82,7 @@ YAET is a comprehensive remote connection and management tool built with Angular
 
 **MCP Server (Model Context Protocol)**:
 - **Standalone mode**: run `npm run mcp` or `yaet mcp` to start an MCP server via stdio transport
-- **Tools**: `ssh_execute`, `ssh_connect_interactive`, `ssh_send_input`, `ssh_disconnect`, `scp_list_files`, `scp_read_file`, `scp_write_file`, `scp_delete_file`, `local_execute`, `yaet_profiles`
-- **Tools**: `ssh_execute`, `ssh_sudo_execute`, `scp_list_files`, `scp_read_file`, `scp_write_file`, `scp_delete_file`, `local_execute`, `yaet_profiles`
+- **Tools**: `ssh_execute`, `ssh_sudo_execute`, `ssh_connect_interactive`, `ssh_send_input`, `ssh_disconnect`, `scp_list_files`, `scp_read_file`, `scp_write_file`, `scp_delete_file`, `local_execute`, `yaet_profiles`
 - **Credential resolution**: supports YAET profile names (resolved from encrypted store) or manual host/username/password
 - **Electron entry point**: launch via Electron binary with `--mcp` flag — source stays inside asar, zero unpacking
 - **Tested with**: Hermes agent ✅
@@ -110,7 +109,7 @@ mcp_servers:
 ### 🧩 Plugin System
 - **Modular architecture**: each connection type is an independent plugin with manifest, backend, and frontend
 - **10 bundled plugins**: SSH, Telnet, WinRM, Serial, SCP, SFTP, FTP, Samba, VNC, RDP — ship with the app under `plugins/`
-- **External plugins**: install third-party plugins to `~/.yaet/plugins/<id>/` — they automatically override bundled ones if they share the same id
+- **External plugins**: install third-party plugins to `~/.yaet/plugins/<id>/` — they are disabled by default and must be explicitly enabled via `pluginManager.enablePlugin(id)`. External plugins that conflict with bundled plugin IDs are skipped for security
 - **Self-contained backends**: external plugins resolve npm dependencies via `context.projectRequire()` or self-managed `package.json`
 - **Dynamic frontend loading**: external plugin frontend bundles are loaded at runtime via IPC — no rebuild required
 - **Shared UI**: plugins can reuse core components like `TerminalComponent`, `FileExplorerComponent`, and `RemoteTerminalProfileFormComponent`
@@ -126,7 +125,7 @@ YAET uses a **4-layer architecture** that separates concerns and enables multi-p
 │                    Interface Layer (Adapters)                    │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐   │
 │  │ Electron  │  │AI Chat   │  │MCP Server│  │ACP Server    │   │
-│  │ IPC Adapter│ │(33 tools)│  │(stdio)   │  │(stdin/stdout)│   │
+│  │ IPC Adapter│ │(36 tools)│  │(stdio)   │  │(stdin/stdout)│   │
 │  └─────┬─────┘  └─────┬────┘  └─────┬────┘  └──────┬───────┘   │
 │        └───────────────┴─────────────┴──────────────┘           │
 ├─────────────────────────────────────────────────────────────────┤
@@ -254,11 +253,11 @@ npx playwright test -g "add Password Only"
 **How it works:**
 - Angular is built first (`ng build`), then Electron loads the built files
 - Each test gets a fresh Electron instance with an isolated temp directory
-- Mock keychain ([`security.mock.js`](src-electron/adapter/ipc/security.mock.js)) replaces the OS keychain — no system creds touched
+- Mock keychain ([`security.mock.js`](src-electron/adapter/ipc/security.mock.js)) replaces the OS keychain — no system creds touched. It is loaded **only during e2e tests** via [`electronMain.e2e.js`](src-electron/electronMain.e2e.js), which intercepts `require.cache` before the real `security.js` loads; the production app always uses the real OS keychain (keytar).
 - Tests run **headless** by default. Set `YAET_SHOW_WINDOW=1` for a visible window
 - CI runs e2e on every PR/push ([`.github/workflows/e2e.yml`](.github/workflows/e2e.yml)) and before each release
 
-**Current coverage (97 tests):**
+**Current coverage (141 E2E tests + 160 unit tests):**
 | Section | Tests | Status |
 |---------|-------|--------|
 | 0. App Bootstrap | 4 | ✅ |
@@ -314,9 +313,9 @@ Releases are now automated via **GitHub Actions**.
 ## Logs
 
 Application logs can be found at:
-- **Linux**: `~/.config/{app name}/logs/main.log`
-- **macOS**: `~/Library/Logs/{app name}/main.log`
-- **Windows**: `%USERPROFILE%\AppData\Roaming\{app name}\logs\main.log`
+- **Linux**: `~/.config/YetAnotherElectronTerm/logs/main.log`
+- **macOS**: `~/Library/Logs/YetAnotherElectronTerm/main.log`
+- **Windows**: `%USERPROFILE%\AppData\Roaming\YetAnotherElectronTerm\logs\main.log`
 
 ## Technology Stack
 
@@ -325,7 +324,7 @@ Application logs can be found at:
 - **Terminal**: xterm.js
 - **File Transfer**: ssh2 (SFTP), basic-ftp (FTP), v9u-smb2 (SMB)
 - **Remote Desktop**: @novnc/novnc (VNC)
-- **AI Integration**: OpenAI-compatible API, function calling (33+ tools)
+- **AI Integration**: OpenAI-compatible API, function calling (36 tools)
 - **Protocols**: MCP (Model Context Protocol), ACP (Agent Communication Protocol)
-- **Security**: AES encryption (CryptoJS), system keychain (keytar)
+- **Security**: AES encryption (main process, CryptoJS), system keychain (keytar), master key never exposed to renderer
 - **Plugins**: Bundled + external plugin architecture with dynamic loading

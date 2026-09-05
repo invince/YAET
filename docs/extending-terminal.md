@@ -250,7 +250,7 @@ The factory function signature is `(logger, config) => ConnectorInstance` where 
 ## 5. Plugin Locations
 
 - **Bundled**: `plugins/<id>/` — shipped with the app
-- **External**: `~/.yaet/plugins/<id>/` — user-installed, overrides bundled plugins with the same id
+- **External**: `~/.yaet/plugins/<id>/` — user-installed, disabled by default (must be explicitly enabled). Conflicts with bundled plugin IDs are skipped for security.
 
 External plugins must be self-contained. They cannot `require()` from `src-electron/` via relative paths. Use `context.projectRequire()` for npm dependencies.
 

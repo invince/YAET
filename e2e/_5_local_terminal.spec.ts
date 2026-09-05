@@ -84,3 +84,46 @@ test.describe('5. Local Terminal (UI only)', () => {
   });
 
 });
+
+test.describe('5b. Local Terminal — real PTY smoke', () => {
+
+  test.use({ useRealPty: true });
+
+  test('opens real terminal, sends command, receives output', async ({ mainWindow }) => {
+    const btn = mainWindow.locator('app-sidebar button[aria-label="Local Terminal"]');
+    await expect(btn).toBeVisible();
+    await btn.click();
+
+    // Wait for the xterm terminal to appear
+    const xterm = mainWindow.locator('app-terminal .xterm');
+    await expect(xterm).toBeVisible({ timeout: 10000 });
+
+    // Wait for shell to be ready
+    await mainWindow.waitForTimeout(2000);
+
+    // Focus the terminal and type a unique echo command
+    const marker = `yaet-pty-${Date.now()}`;
+    await xterm.click();
+    await mainWindow.keyboard.type(`echo ${marker}`, { delay: 30 });
+    await mainWindow.keyboard.press('Enter');
+
+    // Wait for the command to execute and output to render
+    await mainWindow.waitForTimeout(3000);
+
+    // Read xterm screen buffer via evaluate
+    const hasMarker = await mainWindow.evaluate((m) => {
+      const termEl = document.querySelector('app-terminal .xterm');
+      if (!termEl) return false;
+      // xterm.js stores screen buffer in the terminal instance
+      // Access via the xterm addon or the screen rows
+      const rows = termEl.querySelectorAll('.xterm-rows > div');
+      for (const row of rows) {
+        if (row.textContent?.includes(m)) return true;
+      }
+      return false;
+    }, marker);
+
+    expect(hasMarker).toBeTruthy();
+  });
+
+});

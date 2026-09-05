@@ -14,7 +14,7 @@ YAET uses a **4-layer architecture** that separates concerns and enables multi-p
 │                    Interface Layer (Adapters)                    │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐   │
 │  │ Electron  │  │AI Chat   │  │MCP Server│  │ACP Server    │   │
-│  │ IPC Adapter│ │(33 tools)│  │(stdio)   │  │(stdin/stdout)│   │
+│  │ IPC Adapter│ │(36 tools)│  │(stdio)   │  │(stdin/stdout)│   │
 │  └─────┬─────┘  └─────┬────┘  └─────┬────┘  └──────┬───────┘   │
 │        └───────────────┴─────────────┴──────────────┘           │
 ├─────────────────────────────────────────────────────────────────┤
@@ -174,7 +174,7 @@ adapter/ipc/
 ```
 adapter/ai/
 ├── aiClient.js                ← OpenAI-compatible HTTP client
-├── toolDefinitions.js         ← 33+ tool definitions + executeTool dispatcher
+├── toolDefinitions.js         ← 36 tool definitions + executeTool dispatcher
 └── functionLoop.js            ← Recursive function calling loop (max 10 depth)
 ```
 
@@ -202,7 +202,7 @@ src-protocol/
 
 ---
 
-## AI Tools (33+)
+## AI Tools (36)
 
 ### Built-in AI Chat Tools
 
@@ -289,7 +289,7 @@ sequenceDiagram
    ┌─ Electron Main Process ───────────────────────┐
    │  ToolExecutor:                                 │
    │    1. reads ~/.yaet/profiles.json              │  ← encrypted storage
-   │    2. decrypts with master key (keytar)        │  ← OS keychain
+   │    2. decrypts with master key (keytar)        │  ← OS keychain (main process only)
    │    3. finds profile by ID                      │
    │    4. resolves secretId → secrets.json         │  ← encrypted storage
    │    5. decrypts secret → login/password/key     │
@@ -303,9 +303,13 @@ Key guarantees:
 
 - **AI never sees plaintext credentials** — it only knows `profileId`, not host/port/username/password/privateKey
 - **Angular renderer can't see them either** — `profile_list` returns only `{id, name, type}`, no host/port/login/password/secretId/proxyId
+- **Master key never leaves renderer** — `masterkey.get` replaced by `masterkey.exists` (boolean only) + `masterkey.match` (main process timing-safe comparison) + `crypto.encrypt/decrypt` (main process encryption). Renderer has zero access to the master key or CryptoJS.
 - **Credentials exist only in main process memory** — ToolExecutor decrypts, uses, and discards; never persisted, serialized, or sent back to renderer
-- **Encrypted storage** — `profiles.json` and `secrets.json` use AES + master key (OS keychain via keytar)
-- **AI can't access directly** — even with a malicious prompt, AI can only call 33+ tools with limited parameters; it can't enumerate secretId or read files directly
+- **Encrypted storage** — `profiles.json` and `secrets.json` use AES encryption + master key (OS keychain via keytar)
+- **AI can't access directly** — even with a malicious prompt, AI can only call 36 tools with limited parameters; it can't enumerate secretId or read files directly
+- **AI privilege escalation blocked** — `executeTool` ignores AI-passed `secretId`/`proxyId`, uses only profile-bound credentials; 16 tool schemas enforce this at the schema level
+- **AI command approval** — dangerous commands and destructive file operations require user approval; regex rules pre-compiled with ReDoS protection
+- **AI download sandbox** — `localPath` restricted to configurable download directory; base64 inline capped at 512KB
 - **Proxy support** — SSH/SCP connections can route through configured proxies
 
 ---

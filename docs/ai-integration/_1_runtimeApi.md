@@ -1,7 +1,7 @@
 # Phase 1: Runtime API Layer
 
 > Extract business logic from Electron IPC handlers into an Electron-free Runtime layer.
-> Last updated: 2026-08-30
+> Last updated: 2026-09-05
 
 ---
 
@@ -12,7 +12,7 @@ Electron UI / AI Agent / MCP Client / ACP Agent
     |
 Adapter Layer (one per protocol)
     |--- adapter/ipc/          - Electron IPC (UI)
-    |--- adapter/ai/           - AI Chat (function calling loop, 33+ tools)
+    |--- adapter/ai/           - AI Chat (function calling loop, 36 tools)
     |--- src-protocol/mcp/     - MCP Server (stdio)
     |--- src-protocol/acp/     - ACP Server (stdin/stdout)
     |
@@ -118,11 +118,11 @@ The only non-plugin connector is the Local Terminal (`runtime/connectors/termina
 
 ```
 aiClient.js              -- OpenAI-compatible HTTP client
-toolDefinitions.js       -- 33+ tool definitions + executeTool dispatcher
+toolDefinitions.js       -- 36 tool definitions + executeTool dispatcher
 functionLoop.js          -- Recursive function calling loop (max 10 depth)
 ```
 
-### AI Tools (33+)
+### AI Tools (36)
 
 | Category | Tools |
 |----------|-------|
@@ -198,7 +198,7 @@ src-protocol/
 - [x] `npm run mcp` / `npm run acp` scripts work
 - [x] All connection types migrated to plugins (10 bundled + 4 external examples)
 - [x] Runtime layer has zero Electron dependency
-- [x] AI Chat integrates 33+ tools (including `local_execute`, `session_*`)
+- [x] AI Chat integrates 36 tools (including `local_execute`, `session_*`, `ssh_sudo_execute`)
 - [x] `toolDefinitions.js` switch refactored — protocol fall-through grouping
 - [x] `getConnector()` supports empty `profileId` → `LocalTerminalSession`
 - [x] `adapter/ui-ipc/` renamed to `adapter/ipc/`

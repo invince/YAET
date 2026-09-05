@@ -1,11 +1,36 @@
 const path = require('path');
 const { promises: fsPromise } = require('fs');
+const { tmpdir } = require('os');
 const simpleGit = require('simple-git');
 const { ProxyService } = require('./proxyService');
 const { APP_CONFIG_PATH, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, PROXIES_JSON } = require('./configService');
 
 const GIT_FOLDER = 'git';
 const BACKUP_FOLDER = 'backup';
+
+function maskUrl(url) {
+  return url.replace(/\/\/([^:]+):([^@]+)@/, '//$1:****@');
+}
+
+function maskError(err, password) {
+  if (!password) return err.message || String(err);
+  return String(err.message || err).replace(new RegExp(password.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '****');
+}
+
+async function createAskpassScript(login, password) {
+  const script = `#!/bin/sh
+case "$1" in
+  *Username*) echo '${login.replace(/'/g, "'\\''")}' ;;
+  *Password*) echo '${password.replace(/'/g, "'\\''")}' ;;
+esac`;
+  const scriptPath = path.join(tmpdir(), `git-askpass-${Date.now()}.sh`);
+  await fsPromise.writeFile(scriptPath, script, { mode: 0o700 });
+  return scriptPath;
+}
+
+async function removeAskpassScript(scriptPath) {
+  try { await fsPromise.unlink(scriptPath); } catch {}
+}
 
 class CloudService {
   constructor(log) {
@@ -41,14 +66,11 @@ class CloudService {
       return response;
     }
 
+    const askpassScript = await createAskpassScript(cloudSettings.login || '', cloudSettings.password || '');
+
     try {
       const gitAbsDir = path.join(APP_CONFIG_PATH, GIT_FOLDER);
-
-      let gitUser = encodeURIComponent(cloudSettings.login);
-      let gitPassword = encodeURIComponent(cloudSettings.password);
-      let gitRepoUrl = cloudSettings.url;
-      gitRepoUrl = gitRepoUrl.replace('https://', `https://${gitUser}:${gitPassword}@`);
-      gitRepoUrl = gitRepoUrl.replace('http://', `http://${gitUser}:${gitPassword}@`);
+      const gitRepoUrl = cloudSettings.url;
 
       let jsonFiles = this.getJsonFilesForCloud(cloudSettings.items);
 
@@ -56,7 +78,7 @@ class CloudService {
       await fsPromise.rm(gitAbsDir, { recursive: true, force: true });
 
       this.log.info('Cloning repository...');
-      const git = simpleGit();
+      const git = simpleGit().env('GIT_ASKPASS', askpassScript);
 
       let proxyId = cloudSettings.proxyId;
       let proxy = null;
@@ -103,9 +125,12 @@ class CloudService {
       response.ok.push('pushed');
 
     } catch (error) {
-      this.log.error('Error during upload:', error.message);
-      response.ko.push(error.message);
+      const masked = maskError(error, cloudSettings.password);
+      this.log.error('Error during upload:', masked);
+      response.ko.push(masked);
       return response;
+    } finally {
+      await removeAskpassScript(askpassScript);
     }
     response.succeed = true;
     return response;
@@ -119,14 +144,11 @@ class CloudService {
       return response;
     }
 
+    const askpassScript = await createAskpassScript(cloudSettings.login || '', cloudSettings.password || '');
+
     const backupAbsDir = path.join(APP_CONFIG_PATH, BACKUP_FOLDER);
     const gitAbsDir = path.join(APP_CONFIG_PATH, GIT_FOLDER);
-
-    let gitUser = encodeURIComponent(cloudSettings.login);
-    let gitPassword = encodeURIComponent(cloudSettings.password);
-    let gitRepoUrl = cloudSettings.url;
-    gitRepoUrl = gitRepoUrl.replace('https://', `https://${gitUser}:${gitPassword}@`);
-    gitRepoUrl = gitRepoUrl.replace('http://', `http://${gitUser}:${gitPassword}@`);
+    const gitRepoUrl = cloudSettings.url;
 
     let jsonFiles = this.getJsonFilesForCloud(cloudSettings.items);
 
@@ -153,7 +175,7 @@ class CloudService {
       await fsPromise.rm(gitAbsDir, { recursive: true, force: true });
 
       this.log.info('Cloning repository...');
-      const git = simpleGit();
+      const git = simpleGit().env('GIT_ASKPASS', askpassScript);
 
       let proxy = null;
       if (cloudSettings.proxyId && proxyRepo) {
@@ -184,9 +206,12 @@ class CloudService {
         }
       }
     } catch (error) {
-      this.log.error('Error:', error.message);
-      response.ko.push(error.message);
+      const masked = maskError(error, cloudSettings.password);
+      this.log.error('Error:', masked);
+      response.ko.push(masked);
       return response;
+    } finally {
+      await removeAskpassScript(askpassScript);
     }
     response.succeed = true;
     return response;

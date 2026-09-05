@@ -106,7 +106,6 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
     this.secretsCopy.secrets.push(secret);
     this.selectedId = secret.id;
     this.selectedSecret = secret;
-    // this.refreshSecretForm();
   }
 
 
@@ -126,7 +125,6 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
     }
     this.selectedId = secret.id;
     this.selectedSecret = secret;
-    // this.refreshSecretForm();
   }
 
   async onDelete($event: Secret) {
@@ -145,7 +143,6 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
           await this.commitChange();
           this.selectedId = undefined;
           this.selectedSecret = undefined;
-          // this.refreshSecretForm();
         }
       }));
     } else {
@@ -160,7 +157,6 @@ export class SecretsMenuComponent extends HasChildForm(MenuComponent) implements
           await this.commitChange();
           this.selectedId = undefined;
           this.selectedSecret = undefined;
-          // this.refreshSecretForm();
         }
       }));
     }

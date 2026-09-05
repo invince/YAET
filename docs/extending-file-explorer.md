@@ -231,7 +231,7 @@ By calling `api.registerConnector('WEBDAV_FILE_EXPLORER', factory)`, your connec
 ## 7. Plugin Locations
 
 - **Bundled**: `plugins/<id>/` — shipped with the app
-- **External**: `~/.yaet/plugins/<id>/` — user-installed, overrides bundled plugins with the same id
+- **External**: `~/.yaet/plugins/<id>/` — user-installed, disabled by default (must be explicitly enabled). Conflicts with bundled plugin IDs are skipped for security.
 
 ## 8. Examples
 

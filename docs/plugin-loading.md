@@ -78,6 +78,8 @@ app.component.ts → ngOnInit()
 
 External plugins live at `~/.yaet/plugins/<id>/` and are loaded entirely at runtime — no rebuild required. Their frontend code is pre-compiled JavaScript, not TypeScript.
 
+**Security**: External plugins are disabled by default and must be explicitly enabled. IPC channels are restricted to manifest declarations. `secretService`, `projectRequire`, and `runtimeAPI` are all sandboxed.
+
 #### Backend loading flow (Electron main process)
 
 ```
@@ -177,7 +179,7 @@ plugins/
     └── index.js               # Pre-built JS bundle (Web Component or metadata only)
 ```
 
-**Important**: The directory name MUST match `manifest.json → id`. PluginManager constructs backend path as `path.join(baseDir, id, backend)`.
+**Important**: The directory name MUST match `manifest.json → id`. PluginManager constructs backend path as `path.join(baseDir, id, backend)`. External plugins are disabled by default — they must be explicitly enabled via `~/.yaet/plugins/enabled.json`.
 
 ---
 

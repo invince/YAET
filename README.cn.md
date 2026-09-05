@@ -59,7 +59,7 @@ YAET 采用**四层架构**，分离关注点并支持多协议访问：
 │                    接口层 (适配器)                                │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐   │
 │  │ Electron  │  │AI Chat   │  │MCP Server│  │ACP Server    │   │
-│  │ IPC 适配器│  │(33 工具) │  │(stdio)   │  │(stdin/stdout)│   │
+│  │ IPC 适配器│  │(36 工具) │  │(stdio)   │  │(stdin/stdout)│   │
 │  └─────┬─────┘  └─────┬────┘  └─────┬────┘  └──────┬───────┘   │
 │        └───────────────┴─────────────┴──────────────┘           │
 ├─────────────────────────────────────────────────────────────────┤
@@ -104,7 +104,7 @@ YAET 采用**四层架构**，分离关注点并支持多协议访问：
 - **两种提供商模式**：
   - **Web 模式**：通过 URL 和 API Key 连接任意 OpenAI 兼容 API（OpenAI、本地 LLM 等）
 - **代理模式**：允许 AI 直接在终端中执行命令，实现自主问题解决
-- **33+ AI 工具**：配置管理、终端执行、SCP/FTP/Samba 文件操作、会话管理
+- **36 AI 工具**：配置管理、终端执行、SCP/FTP/Samba 文件操作、会话管理
 - **上下文感知**：可就当前终端输出或特定会话上下文提问
 - **命令审批**：危险命令需要用户批准后才能执行
 - **持久聊天记录**：管理多个聊天会话，支持持久存储、重命名和历史追踪
@@ -142,7 +142,7 @@ mcp_servers:
 ### 🧩 插件系统
 - **模块化架构**：每种连接类型都是独立的插件，包含清单、后端和前端
 - **10 个内置插件**：SSH、Telnet、WinRM、串口、SCP、SFTP、FTP、Samba、VNC、RDP — 位于 `plugins/` 目录
-- **外部插件**：安装第三方插件到 `~/.yaet/plugins/<id>/` — 如果 id 相同，会自动覆盖内置插件
+- **外部插件**：安装第三方插件到 `~/.yaet/plugins/<id>/` — 默认禁用，需用户通过 `pluginManager.enablePlugin(id)` 显式启用。与内置插件 ID 冲突的外部插件会被跳过以确保安全
 - **自包含后端**：外部插件通过 `context.projectRequire()` 或自管理的 `package.json` 解析 npm 依赖
 - **动态前端加载**：外部插件的前端 bundle 在运行时通过 IPC 加载 — 无需重新构建
 - **共享 UI**：插件可以复用核心组件，如 `TerminalComponent`、`FileExplorerComponent` 和 `RemoteTerminalProfileFormComponent`
@@ -249,7 +249,7 @@ npx playwright test -g "add Password Only"
 **工作原理：**
 - 先编译 Angular（`ng build`），然后 Electron 加载编译产物
 - 每个测试使用独立的临时目录启动全新 Electron 实例
-- 模拟密钥链（[`security.mock.js`](src-electron/adapter/ipc/security.mock.js)）替代操作系统密钥链 —— 不接触系统凭据
+- 模拟密钥链（[`security.mock.js`](src-electron/adapter/ipc/security.mock.js)）替代操作系统密钥链 —— 不接触系统凭据。仅在 e2e 测试中通过 [`electronMain.e2e.js`](src-electron/electronMain.e2e.js) 加载（在 `require.cache` 中拦截真实 `security.js`）；生产应用始终使用真实系统密钥链（keytar）。
 - 测试默认**无头**运行。设置 `YAET_SHOW_WINDOW=1` 可显示窗口
 - CI 在每次 PR/推送（[`.github/workflows/e2e.yml`](.github/workflows/e2e.yml)）和每次发布前运行 E2E
 
@@ -310,9 +310,9 @@ npm run build
 ## 日志
 
 应用日志位于：
-- **Linux**：`~/.config/{应用名称}/logs/main.log`
-- **macOS**：`~/Library/Logs/{应用名称}/main.log`
-- **Windows**：`%USERPROFILE%\AppData\Roaming\{应用名称}\logs\main.log`
+- **Linux**：`~/.config/YetAnotherElectronTerm/logs/main.log`
+- **macOS**：`~/Library/Logs/YetAnotherElectronTerm/main.log`
+- **Windows**：`%USERPROFILE%\AppData\Roaming\YetAnotherElectronTerm\logs\main.log`
 
 ## 技术栈
 
@@ -321,7 +321,7 @@ npm run build
 - **终端**：xterm.js
 - **文件传输**：ssh2 (SFTP)、basic-ftp (FTP)、v9u-smb2 (SMB)
 - **远程桌面**：@novnc/novnc (VNC)
-- **AI 集成**：OpenAI 兼容 API、函数调用（33+ 工具）
+- **AI 集成**：OpenAI 兼容 API、函数调用（36 工具）
 - **协议**：MCP (Model Context Protocol)、ACP (Agent Communication Protocol)
 - **安全**：AES 加密 (CryptoJS)、系统密钥链 (keytar)
 - **插件**：内置 + 外部插件架构，支持动态加载
