@@ -7,9 +7,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <!-- Fonts bundled locally for offline use -->
+  <!-- P0-S4 Phase 4: CSP hardening — removed unsafe-inline/unsafe-eval -->
   <meta http-equiv="Content-Security-Policy" content="
-    default-src 'self' 'unsafe-inline' 'unsafe-eval' file: data: blob:;
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' file: blob:;
+    default-src 'self' file: data: blob:;
+    script-src 'self' file: blob:;
     worker-src 'self' blob:;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com file: data:;
     font-src 'self' https://fonts.gstatic.com file: data:;
@@ -17,7 +18,7 @@
     img-src 'self' data: blob: file:;
     media-src 'self' file:;
     object-src 'none';
-    frame-src 'none';
+    frame-src 'self' blob:;
     base-uri 'self' file:;
   ">
 </head>

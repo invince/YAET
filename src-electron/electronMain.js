@@ -153,8 +153,9 @@ app.on('ready', () => {
   initHandlerBeforeSettingLoad();
 
   // ── Phase 2: Load plugin backends (after sessionRegistry is created) ────
+  // Note: ipcMain is NOT passed directly — plugins get a restricted wrapper
+  // that only allows registering handlers for declared channels (P0-S4 fix).
   pluginManager.loadAll({
-    ipcMain,
     logger: log,
     terminalMap,
     sessionRegistry: () => sessionRegistry,

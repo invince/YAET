@@ -13,12 +13,13 @@ declare const window: any;
  * This service:
  *   1. Reads the merged manifest to discover external plugins
  *   2. Reads each plugin's frontend JS via IPC (avoids CSP file:// restriction)
- *   3. Injects it as an inline <script> to execute in the renderer
+ *   3. Executes it via blob URL (CSP-safe, no unsafe-inline needed)
  *   4. Registers the plugin in the PluginRegistryService
  */
 @Injectable({providedIn: 'root'})
 export class PluginLoaderService {
   private loadedPlugins = new Set<string>();
+  private blobUrls: string[] = [];
 
   constructor(
     private registry: PluginRegistryService,
@@ -76,6 +77,7 @@ export class PluginLoaderService {
    */
   async reloadExternalPlugins(): Promise<void> {
     await window.electronAPI.invoke('plugins.reloadExternal');
+    this.revokeBlobUrls();
     this.loadedPlugins.clear();
     await this.loadExternalPlugins();
   }
@@ -89,15 +91,34 @@ export class PluginLoaderService {
   }
 
   /**
-   * Execute plugin frontend code as an inline script.
-   * This avoids CSP restrictions on file:// URLs.
+   * Execute plugin frontend code via blob URL (CSP-safe).
+   * Avoids the need for 'unsafe-inline' in script-src.
    */
   private executePluginCode(pluginId: string, code: string): void {
+    const blob = new Blob([code], {type: 'application/javascript'});
+    const blobUrl = URL.createObjectURL(blob);
+    this.blobUrls.push(blobUrl);
+
     const script = document.createElement('script');
-    script.textContent = code;
+    script.src = blobUrl;
+    script.onload = () => {
+      script.remove();
+    };
+    script.onerror = () => {
+      console.error(`[PluginLoader] Failed to execute plugin ${pluginId}`);
+      script.remove();
+    };
     document.head.appendChild(script);
-    // Clean up the script element after execution
-    script.remove();
+  }
+
+  /**
+   * Revoke all blob URLs to free memory.
+   */
+  private revokeBlobUrls(): void {
+    for (const url of this.blobUrls) {
+      try { URL.revokeObjectURL(url); } catch {}
+    }
+    this.blobUrls = [];
   }
 
   /**

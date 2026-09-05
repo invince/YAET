@@ -1,0 +1,12 @@
+{
+  "ftp-file-explorer": "d848e284388c382889b425d52216545395dcf37422276de7452b15d964d75624",
+  "rdp-remote-desktop": "2fa6fcdccc474dcd7bce199e929f4211c9223e964283b7a6a2b2632f1d645f07",
+  "samba-file-explorer": "286900310ac0a80c32663bfd6edae26b07b5740573270772dbfec9c05acaf402",
+  "scp-file-explorer": "6a7cb11bc6e59f4902fb9369ecb85fb7720c059dae1e223e8c978ef3b471618f",
+  "serial-terminal": "1c8c185b87e8f4751e6a8a9551cf1061f1a26e0e984dbf71e8bbeba6f8e55cae",
+  "sftp-file-explorer": "8d0d8aaa4988292dd5dbb0dc5f923df7d338bde4e439dc2dd6a58a8bf3bb2e9d",
+  "ssh-terminal": "c5f8ce11d91c459f0b4c391332a4d989122a2ecf1226ce4d3f52b74b6dc4c105",
+  "telnet-terminal": "46073f987ab42c2f483c83bfc6a860eac5c3749faa370d12188358a168967f19",
+  "vnc-remote-desktop": "df8555978a876dee84ee207d2db61bdff59bccf87829058c7bb24ed0b4274719",
+  "winrm-terminal": "a32cce02e54859bddf5fca105c97f200457674afefdee46011fcbf8211afb62b"
+}

@@ -9,7 +9,7 @@
   "defaultPort": 5985,
   "icon": "terminal",
   "enabled": true,
-  "dependencies": [],
+  "dependencies": ["node-pty"],
   "ipc": {
     "send": ["session.open.terminal.winrm", "session.close.terminal.winrm"],
     "invoke": [],
