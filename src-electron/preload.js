@@ -66,6 +66,7 @@ const CORE_INVOKE_CHANNELS = [
   'masterkey.save',
   'masterkey.exists',
   'masterkey.match',
+  'masterkey.change',
   'masterkey.delete',
   'crypto.encrypt',
   'crypto.decrypt',

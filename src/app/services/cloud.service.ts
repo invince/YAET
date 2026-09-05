@@ -43,13 +43,11 @@ export class CloudService implements OnDestroy {
     electron.onLoadedEvent(CLOUD_LOADED, data => this.apply(data));
     this.subscriptions.push(masterKeyService.updateEvent$.subscribe({
       next: event => {
+        // 'invalid' fires only on force-continue. Re-encryption happens in main.
         if (event === 'invalid') {
           this._cloud = new CloudSettings();
           this.save();
           this.notification.info('Cloud Settings cleared');
-        } else {
-          this.save();
-          this.notification.info('Cloud Settings re-encrypted');
         }
       },
       error: err => this.log.error('Cloud service update event error: ' + err)

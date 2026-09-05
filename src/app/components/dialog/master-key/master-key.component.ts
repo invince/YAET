@@ -9,6 +9,7 @@ import {ConfirmationComponent} from '../../confirmation/confirmation.component';
 import {MasterKeyService} from '../../../services/master-key.service';
 import {Subscription} from 'rxjs';
 import {passwordMatchValidator} from '../../../utils/PasswordValidators';
+import {NotificationService} from '../../../services/notification.service';
 
 @Component({
     selector: 'app-master-key',
@@ -35,6 +36,7 @@ export class MasterKeyComponent implements OnInit, OnDestroy{
     @Inject(MAT_DIALOG_DATA) public data: any,
     private fb: FormBuilder,
     private dialog: MatDialog,
+    private notification: NotificationService,
   ) {
     this.resetPasswordForm = this.fb.group(
       {
@@ -67,33 +69,35 @@ export class MasterKeyComponent implements OnInit, OnDestroy{
 
   async update() {
     if (this.resetPasswordForm.valid) {
+      const newPassword = this.resetPasswordForm.get('newPassword')?.value;
       if (this.masterKeyService.hasMasterKey) {
-        let willSecretsInvalid = false;
-        let oldPassword = this.resetPasswordForm.get("oldPassword");
-        if (oldPassword && oldPassword.value) {
-          if (!await this.masterKeyService.matchMasterKey(oldPassword.value)) {
-            willSecretsInvalid = true;
-          }
-        } else {
-          willSecretsInvalid = true;
-        }
-        if (willSecretsInvalid) {
+        const oldPassword = this.resetPasswordForm.get('oldPassword')?.value;
+        // Old password required & must match when changing an existing key.
+        if (!oldPassword || !await this.masterKeyService.matchMasterKey(oldPassword)) {
           this.openConfirmationDialog();
-        } else {
-          this.doSubmit();
+          return;
+        }
+        // Normal change: the MAIN process validates the old key, decrypts every
+        // encrypted config with it, switches the keyring, and re-encrypts all
+        // files with the new key — atomically. The renderer does NOT re-encrypt
+        // from in-memory copies (that used to wipe profiles/secrets).
+        const result = await this.masterKeyService.changeMasterKey(oldPassword, newPassword);
+        if (result.ok) {
+          this.notification.success('Master key changed and settings re-encrypted');
           this.dialogRef.close();
+        } else {
+          const reason = result.reason === 'mismatch'
+            ? 'Old password is incorrect.'
+            : result.reason === 'decrypt-failed'
+              ? 'Could not decrypt saved settings with the old key.'
+              : 'Failed to change master key.';
+          this.notification.error(reason);
         }
       } else {
-        this.doSubmit(false);
+        // First-time setup: no prior data to migrate.
+        this.masterKeyService.saveMasterKey(newPassword);
         this.dialogRef.close();
       }
-    }
-  }
-
-  doSubmit(suggestReencrypt = true) {
-    let newPassword = this.resetPasswordForm.get("newPassword");
-    if (newPassword) {
-      this.masterKeyService.saveMasterKey(newPassword.value, suggestReencrypt);
     }
   }
 
@@ -111,9 +115,11 @@ export class MasterKeyComponent implements OnInit, OnDestroy{
       },
     });
 
-    this.subscriptions.push(dialogRef.afterClosed().subscribe((result) => {
+    this.subscriptions.push(dialogRef.afterClosed().subscribe(async (result) => {
       if (result) {
-        this.doSubmit(false);
+        // User accepts losing old data: set the new key and clear everything.
+        const newPassword = this.resetPasswordForm.get('newPassword')?.value;
+        this.masterKeyService.saveMasterKey(newPassword);
         this.masterKeyService.invalidSettings();
         this.dialogRef.close();
       }

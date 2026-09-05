@@ -28,6 +28,7 @@ import {
   LOG,
   MASTERKEY_EXISTS,
   MASTERKEY_MATCH,
+  MASTERKEY_CHANGE,
   MASTER_KEY_CHANGED,
   OPEN_URL,
   PROFILES_RELOAD,
@@ -220,6 +221,14 @@ export class ElectronService extends AbstractElectronService {
       return await this.ipc.invoke(MASTERKEY_MATCH, input);
     }
     return false;
+  }
+
+  /** Atomic master-key change + full re-encrypt, done in the main process. */
+  async changeMasterKey(oldPassword: string, newPassword: string): Promise<{ok: boolean; reason?: string; file?: string}> {
+    if (this.ipc) {
+      return await this.ipc.invoke(MASTERKEY_CHANGE, { oldPassword, newPassword });
+    }
+    return { ok: false, reason: 'no-ipc' };
   }
 
   async encrypt(data: any): Promise<string | null> {

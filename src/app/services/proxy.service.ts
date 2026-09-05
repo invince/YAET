@@ -34,13 +34,11 @@ export class ProxyService implements OnDestroy {
 
         this.subscriptions.push(masterKeyService.updateEvent$.subscribe({
             next: event => {
+                // 'invalid' fires only on force-continue. Re-encryption in main.
                 if (event === 'invalid') {
                     this.proxyStorage.data = new Proxies();
                     this.saveAll();
                     this.notification.info('Proxies cleared');
-                } else {
-                    this.saveAll();
-                    this.notification.info('Proxies re-encrypted');
                 }
             },
             error: err => this.log.error('Proxy service update event error: ' + err)

@@ -62,7 +62,7 @@ test.describe('2. Master Key & Secrets', () => {
       expect(match).toBe(true);
     });
 
-    test('change master key with correct old password → re-encrypt OK', async ({ mainWindow }) => {
+    test('change master key with correct old password → re-encrypt happens in main process', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
 
       await app.invoke('masterkey.save', PASSWORD);
@@ -79,18 +79,14 @@ test.describe('2. Master Key & Secrets', () => {
       await app.masterKeyInput('confirmPassword').fill(NEW_PASSWORD);
       await app.masterKeySubmit.click();
 
+      // Atomic change in main process: dialog closes directly (no extra confirm).
       await expect(app.masterKeyDialog).not.toBeVisible({ timeout: 3000 });
-      await expect(app.confirmationDialog).toBeVisible({ timeout: 5000 });
-      await expect(app.confirmationDialog).toContainText(/re-encrypt/i);
-
-      await app.confirmButton('OK').click();
-      await expect(app.confirmationDialog).not.toBeVisible({ timeout: 3000 });
 
       match = await app.invoke('masterkey.match', NEW_PASSWORD);
       expect(match).toBe(true);
     });
 
-    test('change master key with correct old password → re-encrypt Cancel', async ({ mainWindow }) => {
+    test('change master key with correct old password but no data file → still changes key', async ({ mainWindow }) => {
       const app = new AppPage(mainWindow);
 
       await app.invoke('masterkey.save', PASSWORD);
@@ -106,12 +102,6 @@ test.describe('2. Master Key & Secrets', () => {
       await app.masterKeySubmit.click();
 
       await expect(app.masterKeyDialog).not.toBeVisible({ timeout: 3000 });
-      await expect(app.confirmationDialog).toBeVisible({ timeout: 5000 });
-
-      await app.confirmationAbort.click();
-      await expect(app.confirmationDialog).not.toBeVisible({ timeout: 3000 });
-
-      // Key is always saved; "Cancel" means skip re-encrypt only
       match = await app.invoke('masterkey.match', NEW_PASSWORD);
       expect(match).toBe(true);
     });

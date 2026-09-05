@@ -58,6 +58,7 @@ export const SECRETS_RELOAD = 'secrets.reload';
 export const SAVE_MASTERKEY = 'masterkey.save';
 export const MASTERKEY_EXISTS = 'masterkey.exists';
 export const MASTERKEY_MATCH = 'masterkey.match';
+export const MASTERKEY_CHANGE = 'masterkey.change';
 export const DELETE_MASTERKEY = 'masterkey.delete';
 export const CRYPTO_ENCRYPT = 'crypto.encrypt';
 export const CRYPTO_DECRYPT = 'crypto.decrypt';

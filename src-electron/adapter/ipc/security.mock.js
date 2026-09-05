@@ -1,9 +1,22 @@
 const { ipcMain } = require('electron');
 const CryptoJS = require("crypto-js");
+const { ConfigService, PROFILES_JSON, SECRETS_JSON, PROXIES_JSON, CLOUD_JSON } = require("../../services/configService");
 
 const mockStore = new Map();
 
+function timingSafeEqual(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
 function initSecurityIpcHandler(log) {
+  const configService = new ConfigService(log);
+
   // ── Key management ──
   ipcMain.handle('masterkey.save', async (_event, password) => {
     log.info("master key saving (mock)...");
@@ -26,12 +39,47 @@ function initSecurityIpcHandler(log) {
   ipcMain.handle('masterkey.match', async (_event, input) => {
     const stored = mockStore.get('masterkey');
     if (!stored) return false;
-    if (input.length !== stored.length) return false;
-    let result = 0;
-    for (let i = 0; i < input.length; i++) {
-      result |= input.charCodeAt(i) ^ stored.charCodeAt(i);
+    return timingSafeEqual(input, stored);
+  });
+
+  // Mirror of real handler: atomic change + full re-encrypt reading from disk.
+  ipcMain.handle('masterkey.change', async (_event, { oldPassword, newPassword }) => {
+    const oldKey = mockStore.get('masterkey');
+    if (!oldKey) return { ok: false, reason: 'no-key' };
+    if (typeof oldPassword !== 'string' || !timingSafeEqual(oldPassword, oldKey)) {
+      return { ok: false, reason: 'mismatch' };
     }
-    return result === 0;
+    if (typeof newPassword !== 'string' || newPassword.length === 0) {
+      return { ok: false, reason: 'empty-new' };
+    }
+
+    const encryptedFiles = [PROFILES_JSON, SECRETS_JSON, PROXIES_JSON, CLOUD_JSON];
+    const plain = {};
+    for (const file of encryptedFiles) {
+      try {
+        const ct = await configService.load(file, true);
+        if (ct === undefined) continue;
+        const bytes = CryptoJS.AES.decrypt(ct, oldKey);
+        const json = bytes.toString(CryptoJS.enc.Utf8);
+        if (!json) {
+          log.error(`masterkey.change (mock): ${file} failed to decrypt; aborting.`);
+          return { ok: false, reason: 'decrypt-failed', file };
+        }
+        plain[file] = json;
+      } catch (err) {
+        log.error(`masterkey.change (mock): ${file} failed: ${err.message}`);
+        return { ok: false, reason: 'decrypt-failed', file };
+      }
+    }
+
+    mockStore.set('masterkey', newPassword);
+    for (const file of encryptedFiles) {
+      const json = plain[file];
+      if (json === undefined) continue;
+      await configService.save(file, CryptoJS.AES.encrypt(json, newPassword).toString(), true);
+    }
+    _event.sender.send('masterkey-changed');
+    return { ok: true };
   });
 
   ipcMain.handle('crypto.encrypt', async (_event, plaintext) => {

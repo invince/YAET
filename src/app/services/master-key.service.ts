@@ -1,7 +1,5 @@
 import {Injectable, OnDestroy} from '@angular/core';
-import {MatDialog} from '@angular/material/dialog';
 import {Subject, Subscription} from 'rxjs';
-import {ConfirmationComponent} from '../components/confirmation/confirmation.component';
 import {ElectronService} from './electron/electron.service';
 import {LogService} from './log.service';
 
@@ -18,13 +16,17 @@ export class MasterKeyService implements OnDestroy {
 
   private cleanupFns: (() => void)[] = [];
 
+  // NOTE: 'invalid' is emitted when the user force-continues with a wrong/absent
+  // old password (they accept losing the old data). Every data service that
+  // subscribes clears its in-memory store and re-saves an empty blob under the
+  // current key. There is no longer a 'reencrypt' event: re-encryption now
+  // happens atomically in the main process inside masterkey.change.
   private updateEventSubject = new Subject<string>();
   updateEvent$ = this.updateEventSubject.asObservable();
 
   constructor(
     private log: LogService,
     private electron: ElectronService,
-    private dialog: MatDialog,
   ) {
     this.refreshHasMasterKey();
     this.listenForMasterKeyChanges();
@@ -71,24 +73,27 @@ export class MasterKeyService implements OnDestroy {
     return await this.electron.matchMasterKey(masterKey);
   }
 
-  saveMasterKey(masterKey: string, suggestReencrypt: boolean = false) {
+  /**
+   * Set the master key the very first time (no existing key, nothing to migrate).
+   */
+  saveMasterKey(masterKey: string) {
     this.electron.setPassword(masterKey).then(r => {
       this.refreshHasMasterKey();
-      if (suggestReencrypt) {
-        const dialogRef = this.dialog.open(ConfirmationComponent, {
-          width: '300px',
-          data: { message: 'Master Key changed, do you want re-encrypt settings?' },
-        });
-        this.subscriptions.push(dialogRef.afterClosed().subscribe(result => {
-          if (result) {
-            this.log.debug('Start re-encrypt');
-            this.updateEventSubject.next('reencrypt');
-          }
-        }));
-      }
     });
   }
 
+  /**
+   * Change an existing master key. The old password is validated and every
+   * encrypted config (profiles/secrets/proxies/cloud) is atomically migrated in
+   * the MAIN process (read with old key -> switch keyring -> write with new key).
+   * Never run re-encryption in the renderer from in-memory copies — that was the
+   * source of data loss (stale/empty in-memory data could be written back).
+   */
+  async changeMasterKey(oldMasterKey: string, newMasterKey: string): Promise<{ok: boolean; reason?: string}> {
+    const result = await this.electron.changeMasterKey(oldMasterKey, newMasterKey);
+    this.refreshHasMasterKey();
+    return result;
+  }
 
   async encrypt(obj: any) {
     try {

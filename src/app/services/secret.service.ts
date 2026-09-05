@@ -37,13 +37,11 @@ export class SecretService implements OnDestroy{
 
     this.subscriptions.push(masterKeyService.updateEvent$.subscribe({
       next: event => {
-        if(event === 'invalid') {
+        // 'invalid' fires only on force-continue. Re-encryption happens in main.
+        if (event === 'invalid') {
           this.secretStorage.data = new Secrets();
           this.saveAll();
           this.notification.info('Secrets cleared');
-        } else {
-          this.saveAll();
-          this.notification.info('Secrets re-encrypted');
         }
       },
       error: err => this.log.error('Secret service update event error: ' + err)

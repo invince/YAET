@@ -41,13 +41,13 @@ export class ProfileService implements OnDestroy{
 
     this.subscriptions.push(masterKeyService.updateEvent$.subscribe({
       next: event => {
-        if(event === 'invalid') {
+        // 'invalid' fires only on force-continue (user accepted losing old data).
+        // Master-key re-encryption now happens atomically in the main process,
+        // so there is no per-service re-encrypt to run here.
+        if (event === 'invalid') {
           this._profiles = new Profiles();
           this.save();
           this.notification.info('Profiles cleared');
-        } else {
-          this.save();
-          this.notification.info('Profiles re-encrypted');
         }
       },
       error: err => this.log.error('Profile service update event error: ' + err)
