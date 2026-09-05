@@ -153,6 +153,49 @@
 - [x] Upload button disabled when form incomplete
 - [x] Auth type radio buttons toggle fields (login/password, secret)
 
+## 9. Security Review (P0)
+
+- [x] P0-R1: Terminal onData not duplicated across tab switches
+- [x] P0-R2: FileListComponent destroy$ cleanup (smoke — no JS errors)
+- [x] P0-R3: SPICE dead-code removed; app stable without SPICE service
+- [x] P0-R4: Startup settings error is surfaced via notification (corrupt JSON)
+- [x] P0-S1: Express /api requires a valid per-launch token (403 without / wrong token)
+
+## 10. AI Chat Panel
+
+- [x] Bottom toolbar AI button opens the chat panel
+- [x] Clicking AI button again closes the chat panel
+- [x] Close button inside header closes the panel
+- [x] Chat panel shows welcome message on first open
+- [x] Agent toggle exists in chat header (default off)
+- [x] Context toggle exists in chat header (default on)
+- [x] Clicking session name opens history dropdown
+- [x] History dropdown shows "New Chat" option
+- [x] Creating a new chat resets messages to welcome
+- [x] History dropdown closes on document click
+- [x] No approval banner when no pending commands
+- [x] Chat input area is always visible
+- [x] Send button is disabled when input is empty
+- [x] IPC channels: ai.command-approved, ai.command-rejected, ai.cancel-chat are allowed
+- [x] IPC channels: ai.tool-progress, ai.command-pending are listened
+- [x] Opening/closing AI chat produces no JS errors
+- [x] Typing in chat input does not cause errors
+
+## 11. AI Settings (New Fields)
+
+- [x] Context max lines input exists (number type, min=10)
+- [x] Use context checkbox exists (default checked)
+- [x] Agent mode checkbox exists (default unchecked)
+- [x] Cross session access checkbox exists (default unchecked)
+- [x] Clicking agent mode checkbox toggles its state
+- [x] Web mode shows API URL, token, model fields
+- [x] ACP mode shows command, args fields; hides web fields
+- [x] API URL field has default value
+- [x] Seeded AI settings load correctly (contextMaxLines, agentMode, etc.)
+- [x] Seeded AI settings reflect in the form
+- [x] Clear button exists in AI settings
+- [x] Navigating to AI settings tab produces no JS errors
+
 ---
 
 ## Untested / Blocked Items
