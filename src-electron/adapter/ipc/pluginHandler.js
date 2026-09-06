@@ -44,6 +44,18 @@ function discoverExamples() {
   return out;
 }
 
+function readMergedManifest() {
+  const bundledPath = path.join(__dirname, '..', '..', 'plugins', 'generated-plugin-manifest.json');
+  const externalPath = path.join(os.homedir(), '.yaet', 'plugins', 'generated-plugin-manifest.json');
+  const manifestPath = fs.existsSync(externalPath) ? externalPath : bundledPath;
+  if (!fs.existsSync(manifestPath)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+  } catch {
+    return null;
+  }
+}
+
 function initPluginHandler(log) {
   if (initialized) return pluginManager;
   initialized = true;
@@ -56,16 +68,16 @@ function initPluginHandler(log) {
 
   ipcMain.handle('plugins.list', () => pluginManager.getPluginList());
 
-  ipcMain.handle('plugins.getMergedManifest', () => {
-    const bundledPath = path.join(__dirname, '..', '..', 'plugins', 'generated-plugin-manifest.json');
-    const externalPath = path.join(os.homedir(), '.yaet', 'plugins', 'generated-plugin-manifest.json');
-    const manifestPath = fs.existsSync(externalPath) ? externalPath : bundledPath;
-    if (!fs.existsSync(manifestPath)) return null;
-    try {
-      return JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
-    } catch {
-      return null;
-    }
+  ipcMain.handle('plugins.getMergedManifest', () => readMergedManifest());
+
+  // P0-S3: sandboxed preload has no fs, so it fetches the plugin channel
+  // allowlist synchronously at load time. initPluginHandler always runs (and
+  // writeMergedManifest completes) before any renderer navigation commits,
+  // so the file is fresh here; read from disk on every call to stay correct
+  // across enable/disable hot-reloads.
+  ipcMain.on('plugins.getMergedManifestSync', (event) => {
+    const merged = readMergedManifest();
+    event.returnValue = (merged && merged.ipc) || { send: [], invoke: [], on: [] };
   });
 
   ipcMain.handle('plugins.reloadExternal', () => {

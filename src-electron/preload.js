@@ -1,7 +1,8 @@
+// P0-S3: sandbox:true — preload runs WITHOUT Node.js. Only require('electron')
+// works here (plus a limited `process`, e.g. process.platform). Never add
+// path/fs/os or any other Node builtin: the script will fail to load and
+// window.electronAPI will be undefined.
 const { contextBridge, ipcRenderer } = require('electron');
-const path = require('path');
-const fs = require('fs');
-const os = require('os');
 
 // ── Core IPC channels (always allowed) ──────────────────────────────────────
 
@@ -101,21 +102,19 @@ const CORE_ON_CHANNELS = [
 ];
 
 // ── Plugin IPC channels (loaded from merged manifest) ───────────────────────
-
+// Sandbox has no fs: ask the main process (which owns the manifest files)
+// via a synchronous channel. Fail closed — core channels only — if the main
+// side isn't ready yet.
 function loadPluginChannels() {
-  const bundledPath = path.join(__dirname, '../plugins/generated-plugin-manifest.json');
-  const externalPath = path.join(os.homedir(), '.yaet', 'plugins', 'generated-plugin-manifest.json');
-
-  const manifestPath = fs.existsSync(externalPath) ? externalPath : bundledPath;
-  if (!fs.existsSync(manifestPath)) {
-    return { send: [], invoke: [], on: [] };
-  }
   try {
-    const merged = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
-    return merged.ipc || { send: [], invoke: [], on: [] };
+    const ipc = ipcRenderer.sendSync('plugins.getMergedManifestSync');
+    if (ipc && Array.isArray(ipc.send) && Array.isArray(ipc.invoke) && Array.isArray(ipc.on)) {
+      return ipc;
+    }
   } catch {
-    return { send: [], invoke: [], on: [] };
+    // main handler not registered yet — core channels only
   }
+  return { send: [], invoke: [], on: [] };
 }
 
 const pluginIpc = loadPluginChannels();

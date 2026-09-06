@@ -96,7 +96,7 @@ app.on('ready', () => {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      sandbox: false, // for plugin, we need load add require other path
+      sandbox: true, // P0-S3: renderer has no Node; plugins run in main/utility, preload uses contextBridge only
       enableRemoteModule: false,
       enableBlinkFeatures: 'Accelerated2dCanvas',
       preload: path.join(__dirname, 'preload.js'),

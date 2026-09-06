@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **AI terminal_open approval + chunk bypass fix**: `terminal_open` added to `SENSITIVE_TOOLS`; `*_write/delete/rename/copy/move/create/download` all go through approval; `_isDangerous` segments by `; && ||`/newlines, strips `sudo/su` + flags/`VAR=`/wrappers, basename comparison, fullwidth space normalization, regex try-wrap (P0-2)
 - **AI download sandbox**: `localPath` must fall within download directory; base64 capped at 512KB (P0-3)
 - **AI regex ReDoS protection**: `_sanitizeRules` pre-compiles: max 50 rules, nested quantifier heuristic discard, invalid discard (P0-4)
+- **Renderer sandbox enabled**: `sandbox:true` (P0-S3); preload rewritten sandbox-compatible (no Node builtins, plugin channel allowlist fetched via sync IPC from main, fail-closed); verified by e2e under sandbox + real plugin-channel call
 ### Changed
 - **File explorer factory**: SCP/SFTP/FTP/Samba four-file backend merged into `file-explorer-backend.factory` (eliminated ~300 lines of mirrored code)
 - **VNC handler cleanup**: Removed redundant VNC handler code
