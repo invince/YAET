@@ -110,9 +110,11 @@ test.describe('5b. Local Terminal — real PTY smoke', () => {
     // Wait for the command to execute and output to render
     await mainWindow.waitForTimeout(3000);
 
-    // Read xterm screen buffer via evaluate
+    // Read xterm screen buffer via evaluate.
+    // NOTE: app-terminal uses ViewEncapsulation.ShadowDom, so pierce the
+    // shadow root — document.querySelector can't see inside it.
     const hasMarker = await mainWindow.evaluate((m) => {
-      const termEl = document.querySelector('app-terminal .xterm');
+      const termEl = document.querySelector('app-terminal')?.shadowRoot?.querySelector('.xterm');
       if (!termEl) return false;
       // xterm.js stores screen buffer in the terminal instance
       // Access via the xterm addon or the screen rows

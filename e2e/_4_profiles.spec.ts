@@ -3,6 +3,13 @@ import {AppPage} from './app.po';
 
 const PASSWORD = 'test-password';
 
+async function clickAddProfile(mainWindow: any) {
+  await mainWindow.locator('app-profiles-menu button[aria-label="Add Profile"]').click();
+  // The new-profile form swaps in asynchronously after the click; wait for the
+  // cleared name field so subsequent fills can't land in the previous form.
+  await expect(mainWindow.locator('app-profile-form input[formControlName="name"]')).toHaveValue('', { timeout: 5000 });
+}
+
 async function fillSSHForm(mainWindow: any, name: string, host: string) {
   await mainWindow.locator('app-profile-form input[formControlName="name"]').fill(name);
   await mainWindow.locator('app-profile-form mat-select[formControlName="category"]').click();
@@ -121,13 +128,13 @@ test.describe('4. Profiles', () => {
       await expect(mainWindow.locator('app-profiles-menu .modal-container')).toBeVisible({ timeout: 5000 });
 
       // Add first profile
-      await mainWindow.locator('app-profiles-menu button[aria-label="Add Profile"]').click();
+      await clickAddProfile(mainWindow);
       await fillSSHForm(mainWindow, 'ServerA', 'server-a');
       await mainWindow.locator('app-profile-form .modal-footer button').filter({ hasText: 'Save' }).click();
       await mainWindow.waitForTimeout(500);
 
       // Add second profile
-      await mainWindow.locator('app-profiles-menu button[aria-label="Add Profile"]').click();
+      await clickAddProfile(mainWindow);
       await fillSSHForm(mainWindow, 'ServerB', 'server-b');
       await mainWindow.locator('app-profile-form .modal-footer button').filter({ hasText: 'Save' }).click();
       await mainWindow.waitForTimeout(500);
