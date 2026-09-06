@@ -97,7 +97,15 @@ export class MasterKeyService implements OnDestroy {
 
   async encrypt(obj: any) {
     try {
-      return await this.electron.encrypt(obj);
+      // Serialize BEFORE crossing the IPC boundary. Profile instances keep
+      // their credentials in a Map (`profileData`) with a custom toJSON().
+      // Electron IPC structured-clones args: prototypes (incl. toJSON) are
+      // dropped while Maps survive as Maps, so a main-process JSON.stringify
+      // would turn every Map into {} and silently wipe all profile
+      // credentials (secretId/login/password/host/...). Stringifying here
+      // honors toJSON; the main handler stores string payloads verbatim.
+      const payload = typeof obj === 'string' ? obj : JSON.stringify(obj);
+      return await this.electron.encrypt(payload);
     } catch {
       this.log.info("Unable to load master key");
       return null;

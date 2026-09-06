@@ -43,7 +43,11 @@ export class PluginLoaderService {
             console.warn(`[PluginLoader] No frontend code for plugin ${id}`);
             continue;
           }
-          this.executePluginCode(id, code);
+          // Execute the plugin code and WAIT until the <script> actually runs
+          // (its onload fires after the module sets window.__<ID>_PLUGIN__).
+          // Without awaiting, registerPluginFromWindow runs too early and the
+          // global isn't set yet -> plugin is silently never registered.
+          await this.executePluginCode(id, code);
           this.registerPluginFromWindow(id, plugin);
           this.loadedPlugins.add(id);
           console.log(`[PluginLoader] Loaded external plugin: ${id}`);
@@ -93,22 +97,28 @@ export class PluginLoaderService {
   /**
    * Execute plugin frontend code via blob URL (CSP-safe).
    * Avoids the need for 'unsafe-inline' in script-src.
+   * Returns a Promise that resolves once the <script> has actually loaded and
+   * executed (so callers can then read window.__<ID>_PLUGIN__ safely).
    */
-  private executePluginCode(pluginId: string, code: string): void {
-    const blob = new Blob([code], {type: 'application/javascript'});
-    const blobUrl = URL.createObjectURL(blob);
-    this.blobUrls.push(blobUrl);
+  private executePluginCode(pluginId: string, code: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const blob = new Blob([code], {type: 'application/javascript'});
+      const blobUrl = URL.createObjectURL(blob);
+      this.blobUrls.push(blobUrl);
 
-    const script = document.createElement('script');
-    script.src = blobUrl;
-    script.onload = () => {
-      script.remove();
-    };
-    script.onerror = () => {
-      console.error(`[PluginLoader] Failed to execute plugin ${pluginId}`);
-      script.remove();
-    };
-    document.head.appendChild(script);
+      const script = document.createElement('script');
+      script.src = blobUrl;
+      script.onload = () => {
+        script.remove();
+        resolve();
+      };
+      script.onerror = () => {
+        console.error(`[PluginLoader] Failed to execute plugin ${pluginId}`);
+        script.remove();
+        reject(new Error(`Failed to execute plugin ${pluginId}`));
+      };
+      document.head.appendChild(script);
+    });
   }
 
   /**

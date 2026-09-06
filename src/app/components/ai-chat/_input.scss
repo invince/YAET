@@ -1,0 +1,57 @@
+@use 'tokens' as t;
+
+.chat-input-area {
+  padding: t.$spacing-sm t.$spacing-lg t.$spacing-lg t.$spacing-lg;
+  background: var(--app-sidebar-bg-color);
+  border-top: 1px solid var(--app-border-color);
+  border-radius: 0 0 t.$radius-lg t.$radius-lg;
+}
+
+.chat-input {
+  width: 100%;
+  ::ng-deep .mat-mdc-text-field-wrapper {
+    background-color: var(--app-bg-color) !important;
+    padding-left: t.$spacing-md !important;
+    padding-right: t.$spacing-md !important;
+  }
+  ::ng-deep .mat-mdc-form-field-infix {
+    color: var(--app-text-color) !important;
+  }
+  ::ng-deep .mat-mdc-input-element {
+    color: var(--app-text-color) !important;
+  }
+  ::ng-deep .mat-mdc-form-field-label {
+    color: var(--app-text-color) !important;
+    opacity: 0.6;
+  }
+  textarea {
+    resize: none;
+    max-height: 140px;
+    line-height: 1.4;
+  }
+}
+
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: t.$spacing-xs;
+  padding: 0 t.$spacing-xs;
+
+  .suggestion-chip {
+    border: 1px solid var(--app-border-color);
+    background: var(--app-surface-elevated);
+    color: var(--app-text-color);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: t.$font-size-xs;
+    cursor: pointer;
+    transition: background t.$transition-fast, border-color t.$transition-fast;
+
+    &:hover {
+      background: var(--app-hover-bg-color);
+      border-color: var(--mat-sys-primary);
+    }
+
+    &:active { transform: scale(0.97); }
+  }
+}

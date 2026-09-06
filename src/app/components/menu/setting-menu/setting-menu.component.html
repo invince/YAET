@@ -348,7 +348,11 @@
 <div>
   <div class="settings-header" style="display:flex;align-items:center">
     {{ 'SETTINGS.PLUGINS' | translate }}
-    <button mat-stroked-button color="accent" (click)="reloadExternalPlugins()" style="margin-left:auto;font-size:12px;padding:2px 12px;line-height:28px;flex-shrink:0">
+    <button mat-stroked-button color="primary" (click)="openExampleInstallDialog()" style="margin-left:auto;font-size:12px;padding:2px 12px;line-height:28px;flex-shrink:0">
+      <mat-icon style="font-size:14px;width:14px;height:14px;line-height:14px;margin-right:4px">download</mat-icon>
+      {{ 'SETTINGS.PLUGIN_INSTALL' | translate }}
+    </button>
+    <button mat-stroked-button color="accent" (click)="reloadExternalPlugins()" style="font-size:12px;padding:2px 12px;line-height:28px;flex-shrink:0;margin-left:8px">
       <mat-icon style="font-size:14px;width:14px;height:14px;line-height:14px;margin-right:4px">refresh</mat-icon>
       Reload External
     </button>
@@ -378,6 +382,17 @@
                   </div>
                   @if (!plugin.enabled) {
                   <div style="font-size: 12px; color: #9ca3af;">{{ 'SETTINGS.DISABLED' | translate }}</div>
+                  }
+                  @if (plugin.source === 'external') {
+                  <button mat-stroked-button
+                    color="{{ plugin.enabled ? 'warn' : 'primary' }}"
+                    style="font-size:12px;padding:0 12px;line-height:28px;flex-shrink:0;margin-left:8px"
+                    (click)="togglePluginEnabled(plugin)">
+                    <mat-icon style="font-size:14px;width:14px;height:14px;line-height:14px;margin-right:4px">
+                      {{ plugin.enabled ? 'close' : 'check' }}
+                    </mat-icon>
+                    {{ (plugin.enabled ? 'SETTINGS.PLUGIN_DISABLE' : 'SETTINGS.PLUGIN_ENABLE') | translate }}
+                  </button>
                   }
                 </div>
                 }

@@ -14,6 +14,23 @@ function timingSafeEqual(a, b) {
   return result === 0;
 }
 
+// Mirror of the real handler: convert Maps to plain objects recursively
+// before JSON.stringify (see security.js for rationale).
+function serializeForEncrypt(value) {
+  if (value instanceof Map) {
+    const obj = {};
+    for (const [k, v] of value) obj[k] = serializeForEncrypt(v);
+    return obj;
+  }
+  if (Array.isArray(value)) return value.map(serializeForEncrypt);
+  if (value && typeof value === 'object') {
+    const obj = {};
+    for (const [k, v] of Object.entries(value)) obj[k] = serializeForEncrypt(v);
+    return obj;
+  }
+  return value;
+}
+
 function initSecurityIpcHandler(log) {
   const configService = new ConfigService(log);
 
@@ -85,7 +102,7 @@ function initSecurityIpcHandler(log) {
   ipcMain.handle('crypto.encrypt', async (_event, plaintext) => {
     const key = mockStore.get('masterkey');
     if (!key) throw new Error('Master key not set');
-    const json = typeof plaintext === 'string' ? plaintext : JSON.stringify(plaintext, null, 2);
+    const json = typeof plaintext === 'string' ? plaintext : JSON.stringify(serializeForEncrypt(plaintext), null, 2);
     return CryptoJS.AES.encrypt(json, key).toString();
   });
 

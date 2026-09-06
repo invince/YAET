@@ -1,0 +1,91 @@
+@use 'tokens' as t;
+
+.message-content {
+  padding: 2px t.$spacing-md t.$spacing-sm;
+  word-break: break-word;
+  color: inherit;
+  user-select: text;
+
+  ::ng-deep {
+    * { user-select: text; }
+
+    p {
+      margin: t.$spacing-sm 0;
+      &:first-child { margin-top: 0; }
+      &:last-child { margin-bottom: 0; }
+    }
+
+    code {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 4px;
+      border-radius: t.$radius-sm;
+      font-family: t.$font-family-mono;
+      font-size: 0.9em;
+      color: inherit;
+    }
+
+    .code-block {
+      position: relative;
+      margin: t.$spacing-sm 0;
+
+      &:hover .code-copy-btn {
+        opacity: 0.8;
+      }
+    }
+
+    .code-copy-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.15s;
+      background: var(--app-bg-color);
+      border: 1px solid var(--app-border-color);
+      color: var(--app-text-color);
+      cursor: pointer;
+      padding: 2px 8px;
+      border-radius: t.$radius-sm;
+      font-size: 11px;
+      line-height: 1.4;
+      font-family: inherit;
+
+      &:hover {
+        opacity: 1;
+        background: var(--app-hover-bg-color);
+      }
+    }
+
+    pre {
+      background: rgba(0, 0, 0, 0.5);
+      padding: t.$spacing-md;
+      border-radius: t.$radius-md;
+      overflow-x: auto;
+      margin: 0;
+
+      code {
+        background: transparent;
+        padding: 0;
+        color: inherit;
+      }
+    }
+
+    ul, ol {
+      margin: t.$spacing-sm 0;
+      padding-left: 20px;
+    }
+
+    li {
+      margin: t.$spacing-xs 0;
+    }
+
+    a {
+      color: var(--mat-sys-primary);
+      text-decoration: underline;
+    }
+  }
+}
+
+::ng-deep .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}

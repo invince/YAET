@@ -3,7 +3,7 @@ import {ChangeDetectorRef, Component, Inject, OnDestroy, OnInit} from '@angular/
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatCheckbox} from '@angular/material/checkbox';
-import {MatDialog} from '@angular/material/dialog';
+import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIcon} from '@angular/material/icon';
@@ -41,6 +41,7 @@ import {
 } from '../../../utils/ModelFormController';
 import {ConfirmationComponent} from '../../confirmation/confirmation.component';
 import {MasterKeyComponent} from '../../dialog/master-key/master-key.component';
+import {ExamplePluginInstallComponent} from '../../dialog/example-plugin-install/example-plugin-install.component';
 import {MenuComponent} from '../menu.component';
 import {GroupsFormComponent} from './groups-form/groups-form.component';
 import {TagsFormComponent} from './tags-form/tags-form.component';
@@ -52,6 +53,7 @@ import {PluginLoaderService} from '../../../plugin/services/plugin-loader.servic
   imports: [
     TagsFormComponent,
     GroupsFormComponent,
+    MatDialogModule,
     FormsModule,
     ReactiveFormsModule,
     CommonModule,
@@ -442,6 +444,63 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
       await this.loadPlugins();
     } catch (err) {
       console.error('[Settings] Failed to reload external plugins:', err);
+    }
+  }
+
+  /**
+   * Open the "Install Example Plugins" checklist dialog. After install, refresh
+   * the plugin list so newly copied (still-disabled) plugins appear, ready for
+   * the user to Enable.
+   */
+  openExampleInstallDialog() {
+    const dialogRef = this.dialog.open(ExamplePluginInstallComponent, {
+      width: '560px',
+      panelClass: 'example-plugin-dialog',
+    });
+    this.subscriptions.push(dialogRef.afterClosed().subscribe(async (result) => {
+      if (result && Array.isArray(result.installed) && result.installed.length > 0) {
+        const ok = result.installed.filter((r: any) => r?.ok);
+        const fail = result.installed.filter((r: any) => !r?.ok);
+        if (ok.length > 0) {
+          this.notification.success(this.translate.instant('SETTINGS.PLUGIN_INSTALLED_N', { n: ok.length }));
+        }
+        if (fail.length > 0) {
+          this.notification.error(this.translate.instant('SETTINGS.PLUGIN_INSTALL_FAIL', { n: fail.length }));
+        }
+        await this.loadPlugins();
+      }
+    }));
+  }
+
+  /**
+   * Enable or disable an external plugin, then hot-reload so it takes effect
+   * immediately. Bundled plugins cannot be toggled here.
+   */
+  async togglePluginEnabled(plugin: any) {
+    try {
+      const ipc = (window as any).electronAPI;
+      if (!ipc) return;
+      const action = plugin.enabled ? 'plugins.disable' : 'plugins.enable';
+      const result = await ipc.invoke(action, plugin.id);
+      if (!result?.ok) {
+        const reason = result?.reason === 'not-external'
+          ? this.translate.instant('SETTINGS.PLUGIN_BUNDLED_CANNOT')
+          : result?.reason === 'unknown-plugin'
+            ? this.translate.instant('SETTINGS.PLUGIN_UNKNOWN')
+            : this.translate.instant('SETTINGS.PLUGIN_OP_FAIL');
+        this.notification.error(reason);
+        return;
+      }
+      const msgKey = plugin.enabled ? 'SETTINGS.PLUGIN_DISABLED' : 'SETTINGS.PLUGIN_ENABLED';
+      this.notification.success(this.translate.instant(msgKey, { name: plugin.name }));
+      // Re-read the merged manifest and reload external plugin frontends into the
+      // PluginRegistryService, so newly-enabled plugins become selectable as profile
+      // types immediately (not only after an app restart).
+      await this.pluginLoader.reloadExternalPlugins();
+      await this.loadPlugins();
+    } catch (err) {
+      console.error('[Settings] Failed to toggle plugin:', err);
+      this.notification.error(this.translate.instant('SETTINGS.PLUGIN_TOGGLE_FAIL'));
     }
   }
 

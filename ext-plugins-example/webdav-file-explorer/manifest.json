@@ -2,6 +2,7 @@
   "id": "webdav-file-explorer",
   "name": "WebDAV File Explorer",
   "version": "1.0.0",
+  "dependencies": ["multer", "uuid", "yazl"],
   "description": "External WebDAV file explorer plugin — zero npm dependencies, uses built-in http/https",
   "category": "FILE_EXPLORER",
   "profileType": "WEBDAV_FILE_EXPLORER",

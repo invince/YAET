@@ -22,9 +22,13 @@ class SshTerminalSession extends TerminalRuntimeApi {
     const merged = { ...(this._initialConfig || {}), ...options };
     const { proxy, secretRepo, initPath, initCmd, rows, cols, id, ...sshConfig } = merged;
 
-    sshConfig.debug = (info) => {
-      this.log.info('SSH DEBUG:', info);
-    };
+    // P2: SSH wire-protocol debug is chatty — only attach it when explicitly
+    // enabled via SSH_DEBUG=1, and log at debug level (off by default).
+    if (process.env.SSH_DEBUG === '1' || process.env.SSH_DEBUG === 'true') {
+      sshConfig.debug = (info) => {
+        this.log.debug('SSH DEBUG:', info);
+      };
+    }
 
     if (proxy && proxy.id) {
       try {

@@ -1,0 +1,49 @@
+<h2 mat-dialog-title style="font-size:16px;font-weight:600;margin:0 0 8px;">{{ 'SETTINGS.PLUGIN_INSTALL' | translate }}</h2>
+<mat-dialog-content style="min-width:420px;max-width:520px;font-size:13px;">
+
+  <div style="color:#9ca3af;margin-bottom:10px;">
+    {{ 'SETTINGS.PLUGIN_INSTALL_DESC' | translate }}
+  </div>
+
+  @if (error) {
+    <div style="color:#f87171;margin:8px 0;">{{ error }}</div>
+  }
+
+  @if (loading) {
+    <div style="display:flex;align-items:center;gap:8px;padding:12px 0;">
+      <mat-progress-spinner diameter="18" mode="indeterminate"></mat-progress-spinner>
+      {{ 'SETTINGS.PLUGIN_LOADING' | translate }}
+    </div>
+  } @else if (installable.length === 0) {
+    <div style="color:#9ca3af;padding:16px 0;">{{ 'SETTINGS.PLUGIN_ALL_INSTALLED' | translate }}</div>
+  } @else {
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <label style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #333;cursor:pointer;">
+        <mat-checkbox [checked]="allSelected" (change)="toggleAll($event.checked)"></mat-checkbox>
+        <span style="font-weight:500;">{{ 'SETTINGS.PLUGIN_SELECT_ALL' | translate }}</span>
+      </label>
+
+      @for (ex of installable; track ex.id) {
+        <label style="display:flex;align-items:flex-start;gap:10px;padding:8px;border:1px solid #333;border-radius:6px;cursor:pointer;">
+          <mat-checkbox [(ngModel)]="ex.selected" style="margin-top:2px;"></mat-checkbox>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <mat-icon style="font-size:16px;width:16px;height:16px;color:#f59e0b;">{{ ex.icon || 'extension' }}</mat-icon>
+              <span style="font-weight:500;">{{ ex.name }}</span>
+              <span style="font-size:11px;color:#9ca3af;">v{{ ex.version }}</span>
+            </div>
+            <div style="font-size:12px;color:#9ca3af;margin-top:2px;">{{ ex.description }}</div>
+          </div>
+        </label>
+      }
+    </div>
+  }
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" style="padding:8px 16px 12px;">
+  <button mat-button (click)="onClose()" [disabled]="installing">{{ 'COMMON.CANCEL' | translate }}</button>
+  <button mat-raised-button color="primary" (click)="install()" [disabled]="loading || !anySelected || installing">
+    {{ (installing ? 'SETTINGS.PLUGIN_INSTALLING' : 'SETTINGS.PLUGIN_INSTALL_BTN') | translate }}
+  </button>
+</mat-dialog-actions>

@@ -2,6 +2,7 @@
   "id": "s3-file-explorer",
   "name": "S3 File Explorer",
   "version": "1.0.0",
+  "dependencies": ["multer", "uuid", "yazl"],
   "description": "Amazon S3 / S3-compatible storage browser (MinIO, Cloudflare R2, etc.)",
   "category": "FILE_EXPLORER",
   "profileType": "S3_FILE_EXPLORER",

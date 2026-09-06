@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **File explorer factory**: SCP/SFTP/FTP/Samba four-file backend merged into `file-explorer-backend.factory` (eliminated ~300 lines of mirrored code)
 - **VNC handler cleanup**: Removed redundant VNC handler code
+- **SSH DEBUG log gating**: ssh2 `debug` callback now attached only when `SSH_DEBUG=1` and logged at `debug` level (off by default, no more wire-protocol log spam)
+- **ai-chat styles split**: `ai-chat.component.scss` (695 lines) split into 7 partials (`_header`, `_history`, `_messages`, `_input`, `_message-content`, `_tools`, `_resize`); entry file only composes them via `@use`
 ### Added
 - **AI function cancellation**: AbortController real cancel (loop + HTTP + tools); configurable 120s timeout; input param non-pollution; token budget cutoff (P1-1)
 - **AI context optimization**: Single injection (agent backend increment/user pinned, chat-only bounded tail); fixed `ts/timestamp` increment dead bug (P1-2)
@@ -32,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **MCP `ssh_sudo_execute`**: New sudo execution tool
 - **AI progress dedup**: Same tool+args updates in-place, no more chat flooding (P2)
 - **AI approval preview**: `_getApprovalPreview` covers open/write/delete/copy/move/rename/mkdir/download (P2)
+- **Profile field migration script**: `scripts/migrate-profile-fields.js` (+ `npm run migrate:profiles`) converts legacy flat profile fields (`sshProfile`, `sambaProfile`, …) into `profileData[profileType]`, re-encrypts and writes back; idempotent, supports `--dry-run`, resolves master key from `--master-key` / `YAET_MASTER_KEY` / keytar
 
 ## [7.2.3]
 ###

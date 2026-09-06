@@ -1,0 +1,46 @@
+@use 'tokens' as t;
+
+.resize-handle {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  z-index: 2;
+
+  &::after {
+    content: '';
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0.4;
+    transition: opacity t.$transition-fast;
+  }
+
+  &:hover::after { opacity: 0.8; }
+
+  &.resize-handle-se {
+    bottom: 0;
+    right: 0;
+    &::after {
+      bottom: 3px;
+      right: 3px;
+      border-right: 1px solid var(--app-text-color);
+      border-bottom: 1px solid var(--app-text-color);
+      border-left: 7px solid transparent;
+      border-top: 7px solid transparent;
+    }
+  }
+
+  &.resize-handle-nw {
+    top: 0;
+    left: 0;
+    &::after {
+      top: 3px;
+      left: 3px;
+      border-top: 1px solid var(--app-text-color);
+      border-left: 1px solid var(--app-text-color);
+      border-right: 7px solid transparent;
+      border-bottom: 7px solid transparent;
+    }
+  }
+}

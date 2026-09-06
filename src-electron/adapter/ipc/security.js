@@ -3,6 +3,27 @@ const { SecurityService, decrypt } = require('../../services/securityService');
 const { ConfigService, PROFILES_JSON, SECRETS_JSON, PROXIES_JSON, CLOUD_JSON } = require('../../services/configService');
 const CryptoJS = require('crypto-js');
 
+// Convert Maps to plain objects recursively before JSON.stringify.
+// Background: renderer class instances (e.g. Profile.profileData) may cross
+// Electron IPC as structured-cloned plain objects holding real Maps. A bare
+// JSON.stringify would turn every Map into {} and silently wipe credentials.
+// The renderer now pre-serializes (string payloads pass through verbatim),
+// this is defense-in-depth for any future object payload.
+function serializeForEncrypt(value) {
+  if (value instanceof Map) {
+    const obj = {};
+    for (const [k, v] of value) obj[k] = serializeForEncrypt(v);
+    return obj;
+  }
+  if (Array.isArray(value)) return value.map(serializeForEncrypt);
+  if (value && typeof value === 'object') {
+    const obj = {};
+    for (const [k, v] of Object.entries(value)) obj[k] = serializeForEncrypt(v);
+    return obj;
+  }
+  return value;
+}
+
 // Constant-time string comparison.
 function timingSafeEqual(a, b) {
   if (typeof a !== 'string' || typeof b !== 'string') return false;
@@ -105,7 +126,7 @@ function initSecurityIpcHandler(log) {
   ipcMain.handle('crypto.encrypt', async (_event, plaintext) => {
     const key = await securityService.get();
     if (!key) throw new Error('Master key not set');
-    const json = typeof plaintext === 'string' ? plaintext : JSON.stringify(plaintext, null, 2);
+    const json = typeof plaintext === 'string' ? plaintext : JSON.stringify(serializeForEncrypt(plaintext), null, 2);
     return CryptoJS.AES.encrypt(json, key).toString();
   });
 

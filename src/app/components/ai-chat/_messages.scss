@@ -1,0 +1,98 @@
+@use 'tokens' as t;
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: t.$spacing-lg;
+  display: flex;
+  flex-direction: column;
+  gap: t.$spacing-md;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb { background: var(--app-border-color); border-radius: t.$radius-sm; }
+}
+
+.message {
+  max-width: 85%;
+  padding: 0;
+  border-radius: t.$radius-lg;
+  font-size: t.$font-size-md;
+  line-height: 1.4;
+  box-shadow: t.$shadow-sm;
+  display: flex;
+  gap: t.$spacing-sm;
+  align-items: flex-start;
+
+  .message-avatar {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: t.$font-size-xs;
+    font-weight: t.$font-weight-semibold;
+    user-select: none;
+  }
+
+  .message-body {
+    flex: 1;
+    min-width: 0;
+    padding: t.$spacing-sm t.$spacing-md;
+  }
+
+  .message-content {
+    word-break: break-word;
+    color: inherit;
+  }
+
+  &.user {
+    align-self: flex-end;
+    background: t.$color-accent;
+    color: white;
+    border-bottom-right-radius: t.$radius-sm;
+    flex-direction: row-reverse;
+
+    .message-avatar { background: rgba(255, 255, 255, 0.25); }
+  }
+
+  &.assistant {
+    align-self: flex-start;
+    max-width: 100%;
+    background: var(--app-surface-elevated);
+    color: var(--app-text-color);
+    border-bottom-left-radius: t.$radius-sm;
+
+    .message-avatar { background: var(--mat-sys-primary); color: white; }
+  }
+
+  &.system {
+      display: none;
+  }
+}
+
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 0;
+}
+
+.typing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--app-text-color);
+  opacity: 0.4;
+  animation: typing-bounce 1.6s ease-in-out infinite;
+
+  &:nth-child(1) { animation-delay: 0s; }
+  &:nth-child(2) { animation-delay: 0.3s; }
+  &:nth-child(3) { animation-delay: 0.6s; }
+}
+
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-6px); opacity: 0.9; }
+}

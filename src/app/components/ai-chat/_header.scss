@@ -1,0 +1,130 @@
+@use 'tokens' as t;
+
+.chat-container {
+  position: fixed;
+  bottom: 60px;
+  right: 20px;
+  width: 350px;
+  height: 500px;
+  background: var(--app-bg-color);
+  border: 1px solid var(--app-border-color);
+  border-radius: t.$radius-lg;
+  box-shadow: t.$shadow-xl;
+  display: flex;
+  flex-direction: column;
+  z-index: t.$z-modal;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity t.$transition-slow ease, box-shadow t.$transition-slow ease;
+  color: var(--app-text-color);
+
+  &.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  &.dragging {
+    transition: none;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+  }
+
+  // Ensure all icons and text inherit proper colors
+  mat-icon {
+    color: inherit;
+  }
+
+  // Style Material components for theme compatibility
+  ::ng-deep .mat-mdc-icon-button {
+    --mdc-icon-button-icon-color: var(--app-text-color);
+    --mdc-icon-button-hover-icon-color: var(--app-header-text-color);
+  }
+
+  ::ng-deep .mat-mdc-slide-toggle {
+    --mdc-switch-selected-focus-state-layer-color: var(--mat-sys-primary);
+    --mdc-switch-selected-hover-state-layer-color: var(--mat-sys-primary);
+    --mdc-switch-selected-pressed-state-layer-color: var(--mat-sys-primary);
+    --mdc-switch-selected-focus-track-color: var(--mat-sys-primary);
+    --mdc-switch-selected-hover-track-color: var(--mat-sys-primary);
+    --mdc-switch-selected-pressed-track-color: var(--mat-sys-primary);
+    --mdc-switch-selected-track-color: var(--mat-sys-primary);
+  }
+
+  ::ng-deep .mat-mdc-progress-spinner {
+    .mdc-circular-progress__determinate-circle,
+    .mdc-circular-progress__indeterminate-circle-graphic {
+      stroke: var(--mat-sys-primary);
+    }
+  }
+}
+
+.chat-header {
+  padding: t.$spacing-sm t.$spacing-md;
+  cursor: grab;
+  background: var(--app-sidebar-bg-color);
+  border-bottom: 1px solid var(--app-border-color);
+  border-radius: t.$radius-lg t.$radius-lg 0 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  position: relative;
+  min-height: 44px;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: t.$spacing-xs;
+    font-weight: t.$font-weight-medium;
+    color: var(--app-text-color);
+    cursor: pointer;
+    user-select: none;
+    padding: 2px 6px;
+    border-radius: t.$radius-sm;
+    transition: background t.$transition-fast;
+    justify-self: start;
+    &:hover { background: var(--app-hover-bg-color); }
+    mat-icon { font-size: 20px; width: 20px; height: 20px; }
+    .session-name {
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: t.$font-size-sm;
+    }
+    .dropdown-arrow {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .close-btn {
+    mat-icon { color: var(--app-text-color); opacity: 0.7; }
+    &:hover mat-icon { color: var(--app-header-text-color); opacity: 1; }
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: t.$spacing-sm;
+    justify-self: end;
+  }
+
+  .toggle-group {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    cursor: help;
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      color: var(--app-text-color);
+      opacity: 0.7;
+    }
+    .toggle-label {
+      font-size: t.$font-size-xs;
+      opacity: 0.7;
+      user-select: none;
+    }
+  }
+}
