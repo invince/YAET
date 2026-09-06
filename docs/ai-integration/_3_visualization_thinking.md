@@ -7,7 +7,7 @@
 
 ## Problem
 
-Today the AI chat UI shows the final response only. When the AI calls multiple tools (`session_list` → `session_read` → `terminal_execute`), the user sees nothing until all tools complete, then a wall of text appears.
+Today the AI chat UI shows the final response only. When the AI calls multiple tools (`session_list` → `session_read` → `terminal_open`), the user sees nothing until all tools complete, then a wall of text appears.
 
 This creates a poor UX:
 - Users don't know if the AI is "thinking" or stuck
@@ -60,7 +60,7 @@ User: "what's running on my server?"
   📖 session_read (session_abc)
     → output: "load average: 0.45, 0.30, 0.25"
 
-  ⚡ terminal_execute (profile: web-server)
+  ⚡ terminal_open (profile: web-server)
     → "top -bn1" completed
 
 AI: The server is running normally...
@@ -72,7 +72,7 @@ AI: The server is running normally...
 |---|---|---|
 | `pending` | 🔍 session_list ... | Tool dispatched, waiting for result |
 | `success` | ✅ session_list → 2 sessions | Tool returned successfully |
-| `error` | ❌ terminal_execute → "command not found" | Tool threw exception |
+| `error` | ❌ terminal_open → "command not found" | Tool threw exception |
 
 ### Interaction
 

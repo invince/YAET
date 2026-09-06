@@ -65,7 +65,7 @@ session_focus(id)  — boost this session, always include its output
 Or the system can infer relevance heuristically:
 - If AI has read session A in the last 2 turns → keep including
 - If AI has ignored session A for 5+ turns → drop from context
-- If AI just used `terminal_execute` on profile P → boost P's session priority
+- If AI just used `terminal_open` on profile P → boost P's session priority
 
 ---
 

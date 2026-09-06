@@ -208,7 +208,7 @@ The `context` object passed to `register()` provides:
 
 | Property | Type | Description |
 |---|---|---|
-| `ipcMain` | `Electron.IpcMain` | Register IPC handlers |
+| `ipcMain` | Restricted wrapper (`handle`/`on`/`removeHandler`/`removeAllListeners`) | Register IPC handlers — **only for channels declared in the plugin manifest's `ipc` section**; anything else is rejected |
 | `logger` | `Logger` | Electron-log instance |
 | `sessionRegistry` | `() => SessionRegistry` | Register/list/unregister sessions |
 | `runtimeAPI` | `() => RuntimeAPI` | Register connectors for AI tools |
@@ -225,8 +225,7 @@ For a custom frontend, create an Angular component and register it in the bundle
 
 ## 6. AI Tool Integration
 
-By calling `api.registerConnector('WEBDAV_FILE_EXPLORER', factory)`, your connector becomes available to AI tools:
-- `file_read`, `file_write`, `file_delete`, `file_list` — work automatically with any registered file explorer connector
+By calling `api.registerConnector('WEBDAV_FILE_EXPLORER', factory)`, your connector becomes resolvable via `RuntimeAPI.getConnector()` (used by `terminal_open` and the session tools for terminal-type connectors). The built-in AI file-operation tools currently cover the bundled protocols only (`scp_*_files`, `ftp_*_files`, `samba_*_files` in `toolDefinitions.js`) — a custom file protocol needs new tool definitions there; it is not picked up automatically.
 
 ## 7. Plugin Locations
 

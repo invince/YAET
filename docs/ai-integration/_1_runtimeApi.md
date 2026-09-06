@@ -127,11 +127,11 @@ functionLoop.js          -- Recursive function calling loop (max 10 depth)
 | Category | Tools |
 |----------|-------|
 | **Profile** | `profile_list` |
-| **Terminal** | `terminal_execute`, `local_execute` |
+| **Terminal** | `local_execute` |
 | **SCP** | `scp_list_files`, `scp_read_file`, `scp_write_file`, `scp_delete_files`, `scp_rename_file`, `scp_copy_files`, `scp_move_files`, `scp_create_folder`, `scp_search_files`, `scp_download_file` |
 | **FTP** | `ftp_list_files`, `ftp_read_file`, `ftp_write_file`, `ftp_delete_files`, `ftp_rename_file`, `ftp_copy_files`, `ftp_move_files`, `ftp_create_folder`, `ftp_search_files`, `ftp_download_file` |
 | **Samba** | `samba_list_files`, `samba_read_file`, `samba_write_file`, `samba_delete_files`, `samba_rename_file`, `samba_copy_files`, `samba_move_files`, `samba_create_folder`, `samba_search_files`, `samba_download_file` |
-| **Session** | `session_list`, `session_read`, `session_write` |
+| **Session** | `session_list`, `session_read`, `terminal_open`, `session_write` |
 
 Tools for the same operation across protocols (scp/ftp/samba) share a single implementation via switch fall-through.
 
@@ -180,7 +180,7 @@ src-protocol/
 │   ├── server.js              -- MCP Server (JSON-RPC 2.0, stdio)
 │   ├── index.js               -- MCP bootstrap
 │   └── tools/
-│       ├── ssh.js             -- SSH tools (execute, connect, send, disconnect)
+│   ├── ssh.js             -- SSH tools (execute, sudo_execute, profiles)
 │       ├── scp.js             -- SCP tools (list, read, write, delete)
 │       └── local.js           -- Local tool (execute)
 └── acp/
@@ -198,7 +198,7 @@ src-protocol/
 - [x] `npm run mcp` / `npm run acp` scripts work
 - [x] All connection types migrated to plugins (10 bundled + 4 external examples)
 - [x] Runtime layer has zero Electron dependency
-- [x] AI Chat integrates 36 tools (including `local_execute`, `session_*`, `ssh_sudo_execute`)
+- [x] AI Chat integrates 36 tools (including `local_execute`, `session_*`, `terminal_open`)
 - [x] `toolDefinitions.js` switch refactored — protocol fall-through grouping
 - [x] `getConnector()` supports empty `profileId` → `LocalTerminalSession`
 - [x] `adapter/ui-ipc/` renamed to `adapter/ipc/`

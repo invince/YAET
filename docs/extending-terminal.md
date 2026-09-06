@@ -226,7 +226,7 @@ The `context` object passed to `register()` provides:
 
 | Property | Type | Description |
 |---|---|---|
-| `ipcMain` | `Electron.IpcMain` | Register IPC handlers |
+| `ipcMain` | Restricted wrapper (`handle`/`on`/`removeHandler`/`removeAllListeners`) | Register IPC handlers — **only for channels declared in the plugin manifest's `ipc` section**; anything else is rejected |
 | `logger` | `Logger` | Electron-log instance |
 | `terminalMap` | `Map` | Shared map for terminal resize/input routing |
 | `sessionRegistry` | `() => SessionRegistry` | Register/list/unregister sessions |
@@ -256,4 +256,4 @@ External plugins must be self-contained. They cannot `require()` from `src-elect
 
 ## 6. Example
 
-See `plugins/ssh-terminal/` for a complete bundled example, or `~/.yaet/plugins/ssh-terminal/` for an external example.
+See `plugins/ssh-terminal/` for a complete bundled example, or `ext-plugins-example/` for external plugin examples (note: an external plugin whose id conflicts with a bundled one is skipped, never overrides).

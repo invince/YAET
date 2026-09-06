@@ -92,7 +92,8 @@ electronMain.js → app.on('ready')
   │
   ├─ pluginManager.writeMergedManifest()
   │   └─ combined ipc channels → plugins/generated-plugin-manifest.json
-  │       (preload.js reads this to build the IPC whitelist)
+  │       (sandboxed preload has no fs: the main process serves it
+  │        via sync IPC `plugins.getMergedManifestSync` at window load)
   │
   └─ pluginManager.loadAll(context)
       └─ For each enabled plugin:
@@ -113,7 +114,8 @@ App starts → app.component.ts → ngOnInit()
   │   ├─ For each plugin where source === 'external':
   │   │   ├─ IPC invoke: plugins.readFrontend(id)
   │   │   │   (main process reads frontend/index.js, returns as string)
-  │   │   ├─ Inject as inline <script> (avoids CSP file:// restriction)
+  │   │   ├─ Execute via blob-URL <script> (CSP-safe, no unsafe-inline needed;
+  │   │   │   URLs revoked on reload)
   │   │   ├─ Plugin registers: window.__<ID>_PLUGIN__ = { manifest, profileFormElement }
   │   │   └─ PluginLoaderService calls registry.registerExternalPlugin()
   │   │
@@ -348,7 +350,7 @@ module.exports = { SshTerminalSession };
 
 ## Plugin Self-Managed Dependencies
 
-External plugins can declare their own npm dependencies via a `package.json` in the plugin directory. When `PluginManager.discover()` scans a plugin directory, it checks for `package.json`. If found, and `node_modules` is missing or out of date, it automatically runs `npm install` in that directory.
+External plugins can declare their own npm dependencies via a `package.json` in the plugin directory. When `PluginManager.discover()` scans a plugin directory, it checks for `package.json`. If found, and `node_modules` is missing or out of date, it automatically runs `npm install --ignore-scripts` in that directory.
 
 **Where this happens:** `PluginManager._installPluginDeps()` in `src-electron/services/pluginManager.js` (called from `_scanDirectory()`):
 
@@ -368,7 +370,7 @@ _installPluginDeps(pluginDir) {
     }
 
     try {
-        execSync('npm install', { cwd: pluginDir, stdio: 'pipe', timeout: 60000 });
+        execSync('npm install --ignore-scripts', { cwd: pluginDir, stdio: 'pipe', timeout: 60000 });
     } catch (err) {
         // Non-fatal — plugin can still use context.projectRequire() as fallback
     }
@@ -378,7 +380,7 @@ _installPluginDeps(pluginDir) {
 **When it runs:**
 - On every `discover()` call (app startup, external reload)
 - For both bundled and external plugins that have `package.json`
-- Installs all dependencies (`npm install`, not `--production`) so both runtime and build deps are available
+- Installs all dependencies (`npm install --ignore-scripts`, not `--production`) so both runtime and build deps are available without executing install scripts
 
 **Use cases:**
 - A plugin that ships a pre-built frontend bundle but needs a build dependency like `spice-client` at build time
@@ -443,7 +445,7 @@ The merged manifest includes per-plugin `ipcChannels`:
 | `plugins/generated-plugin-registry.ts` | Auto-generated: statically imports all bundled plugin modules |
 | `plugins/generated-plugin-manifest.json` | Auto-generated: merged IPC channels for preload whitelist |
 | `src-electron/services/pluginManager.js` | Main process: discovers plugins, writes merged manifest, loads backends |
-| `src-electron/preload.js` | IPC whitelist (reads merged manifest, external preferred) |
+| `src-electron/preload.js` | Sandboxed IPC whitelist (core list + plugin channels fetched from main via sync IPC; no Node builtins, fail-closed) |
 | `src-electron/adapter/ipc/pluginHandler.js` | IPC handlers: frontend reading, manifest serving |
 | `src/app/plugin/services/plugin-import-registry.ts` | Renderer: registry for bundled plugin `register()` functions |
 | `src/app/plugin/services/plugin-loader.service.ts` | Renderer: loads external plugin frontend bundles via IPC |
@@ -457,7 +459,7 @@ The `context` passed to `register()` in backend code includes:
 
 | Property | Type | Description |
 |---|---|---|
-| `ipcMain` | Electron `ipcMain` | Register IPC handlers |
+| `ipcMain` | Restricted wrapper (`handle`/`on`/`removeHandler`/`removeAllListeners`) | Register IPC handlers — **only for channels declared in the manifest's `ipc` section** |
 | `logger` | `electron-log` | Logging |
 | `terminalMap` | `Map` | Shared terminal session map |
 | `sessionRegistry` | `SessionRegistry` or `() => SessionRegistry` | Session tracking |

@@ -43,6 +43,8 @@ YAET 是一款基于 Angular 和 Electron 构建的全能远程连接管理工�
 - SSH 密钥管理，支持密码短语
 - 凭据可在多个配置文件中复用
 - 支持用户名/密码和 SSH 密钥两种认证方式
+- 修改主密钥时，所有加密文件在主进程中原子重加密（绝不使用渲染器内存数据）
+- 请备份 `~/.yaet/`：如果密钥链里的密钥与文件对不上，所有解密会报 `Malformed UTF-8 data` / `No master key defined` —— 此时先恢复文件，再把对应时期的主密钥放回密钥链（删除后走首次设置流程）；密钥对不上时不要保存、不要 Force Continue，否则空数据会覆盖好文件
 - <img width="2879" height="1653" alt="screenshot" src="https://github.com/user-attachments/assets/3ea5f344-2c70-4eb9-a310-bca7f8451cd1" />
 
 ### ☁️ 云端同步
@@ -114,8 +116,7 @@ YAET 采用**四层架构**，分离关注点并支持多协议访问：
 
 **MCP 服务器 (Model Context Protocol)**：
 - **独立模式**：运行 `npm run mcp` 或 `yaet mcp` 启动 MCP 服务器（stdio 传输）
-- **工具**：`ssh_execute`、`ssh_connect_interactive`、`ssh_send_input`、`ssh_disconnect`、`scp_list_files`、`scp_read_file`、`scp_write_file`、`scp_delete_file`、`local_execute`、`yaet_profiles`
-- **工具**：`ssh_execute`、`ssh_sudo_execute`、`scp_list_files`、`scp_read_file`、`scp_write_file`、`scp_delete_file`、`local_execute`、`yaet_profiles`
+- **工具（8 个）**：`ssh_execute`、`ssh_sudo_execute`、`scp_list_files`、`scp_read_file`、`scp_write_file`、`scp_delete_file`、`local_execute`、`yaet_profiles`
 - **凭据解析**：支持 YAET 配置文件名（从加密存储解析）或手动传入 host/username/password
 - **Electron 入口**：通过 Electron 二进制 + `--mcp` 标志启动 — 源码全部留在 asar 内，零解包
 - **已验证**：Hermes agent ✅
@@ -125,17 +126,13 @@ YAET 采用**四层架构**，分离关注点并支持多协议访问：
 - **会话管理**：创建、提示、关闭会话
 - **相同工具集**：与 MCP 服务器共享工具
 
-Hermes 配置示例（`~/.hermes/config.yaml`）：
+Hermes 配置示例（`~/.hermes/config.yaml`）—— 使用 `yaet-mcp` 启动器，它从系统密钥链读取主密钥并以无头模式启动 Electron 二进制（密钥不会进入聊天上下文）：
 ```yaml
 mcp_servers:
   yaet:
-    command: /opt/YetAnotherElectronTerm/yet-another-electron-term
+    command: ~/.local/bin/yaet-mcp
     args:
       - --mcp
-      - --no-sandbox
-      - --ozone-platform=headless
-    env:
-      YAET_MASTER_KEY: <your-master-key>
     enabled: true
 ```
 
@@ -251,22 +248,25 @@ npx playwright test -g "add Password Only"
 - 每个测试使用独立的临时目录启动全新 Electron 实例
 - 模拟密钥链（[`security.mock.js`](src-electron/adapter/ipc/security.mock.js)）替代操作系统密钥链 —— 不接触系统凭据。仅在 e2e 测试中通过 [`electronMain.e2e.js`](src-electron/electronMain.e2e.js) 加载（在 `require.cache` 中拦截真实 `security.js`）；生产应用始终使用真实系统密钥链（keytar）。
 - 测试默认**无头**运行。设置 `YAET_SHOW_WINDOW=1` 可显示窗口
-- CI 在每次 PR/推送（[`.github/workflows/e2e.yml`](.github/workflows/e2e.yml)）和每次发布前运行 E2E
+- CI 在每次版本标签（`v*`）推送时先跑全量 E2E（绿了才发布，[`.github/workflows/build.yml`](.github/workflows/build.yml)）；该套件同样跑在沙盒渲染器下，覆盖生产安全姿态
 
-**当前覆盖（97 个测试）：**
+**当前覆盖（139 个 E2E 测试）：**
 
 | 模块 | 测试数 | 状态 |
 |---------|-------|--------|
-| 0. 应用启动 | 4 | ✅ |
-| 1. 应用初始化 | 7 | ✅ |
+| 1. 应用启动 | 7 | ✅ |
 | 2. 主密钥与密钥管理 | 19 | ✅ |
 | 3. 设置菜单 | 29 | ✅ |
-| 4. 不兼容设置 | 4 | ✅ |
-| 5. 配置文件 | 11 | ✅ |
-| 6. 本地终端 | 3 | ✅ |
-| 7. UI/UX | 7 | ✅ |
-| 8. 代理管理 | 4 | ✅ |
-| 9. 云端设置 | 4 | ✅ |
+| 3. 不兼容设置 | 4 | ✅ |
+| 4. 配置文件 | 11 | ✅ |
+| 5. 本地终端（UI + 真 PTY） | 4 | ✅ |
+| 5. 主密钥重加密（原子操作，主进程） | 1 | ✅ |
+| 6. UI/UX | 7 | ✅ |
+| 7. 代理管理 | 4 | ✅ |
+| 8. 云端设置 | 4 | ✅ |
+| 9. 安全审查（P0） | 9 | ✅ |
+| 10. AI 聊天面板 | 22 | ✅ |
+| 11. AI 设置 | 18 | ✅ |
 
 完整测试计划参见 [TestPlanE2E.md](./TestPlanE2E.md)。
 
@@ -290,8 +290,8 @@ npm run build
 2.  **提交、打标签并推送**：
     ```bash
     git add package.json
-    git commit -m "chore: bump version to v5.x.x"
-    git tag v5.x.x
+    git commit -m "chore: bump version to v7.x.x"
+    git tag v7.x.x
     git push && git push --tags
     ```
 
@@ -300,10 +300,11 @@ npm run build
 - 工作流在推送任何匹配 `v*` 的标签时自动触发。
 
 **工作流内容：**
-1. 在 Windows 和 Linux（Ubuntu）运行器上触发并行构建。
-2. 编译 Angular 前端。
-3. 构建 Electron 安装包（`.exe`、`.AppImage`、`.deb`）。
-4. 创建/更新 GitHub Release 并上传所有产物。
+1. 先跑全量 E2E（绿了才继续发布）。
+2. 在 Windows、Linux（x64 + ARM64）、macOS 运行器上触发并行构建。
+3. 编译 Angular 前端。
+4. 构建 Electron 安装包（`.exe`、`.AppImage`、`.deb`、`.dmg`/`.zip`）。
+5. 创建/更新 GitHub Release 并上传所有产物。
 
 **发布包地址：** https://github.com/invince/YAET-RELEASE
 
@@ -323,5 +324,5 @@ npm run build
 - **远程桌面**：@novnc/novnc (VNC)
 - **AI 集成**：OpenAI 兼容 API、函数调用（36 工具）
 - **协议**：MCP (Model Context Protocol)、ACP (Agent Communication Protocol)
-- **安全**：AES 加密 (CryptoJS)、系统密钥链 (keytar)
+- **安全**：AES 加密（主进程内，CryptoJS）、系统密钥链 (keytar)、主密钥永不出渲染器
 - **插件**：内置 + 外部插件架构，支持动态加载

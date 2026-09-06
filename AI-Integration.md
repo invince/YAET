@@ -1,7 +1,7 @@
 ﻿# YAET AI Integration Architecture
 
 > How YAET exposes its capabilities to AI Agents via MCP, ACP, and built-in AI Chat.
-> Last updated: 2026-08-30
+> Last updated: 2026-09-06
 
 ---
 
@@ -192,7 +192,7 @@ src-protocol/
 │   ├── server.js              ← MCP Server (JSON-RPC 2.0, stdio)
 │   ├── index.js               ← MCP bootstrap
 │   └── tools/
-│       ├── ssh.js             ← SSH tools (execute, connect, send, disconnect)
+│   ├── ssh.js             ← SSH tools (execute, sudo_execute, profiles)
 │       ├── scp.js             ← SCP tools (list, read, write, delete)
 │       └── local.js           ← Local tool (execute)
 └── acp/
@@ -209,11 +209,11 @@ src-protocol/
 | Category | Tools |
 |----------|-------|
 | **Profile** | `profile_list` |
-| **Terminal** | `terminal_execute`, `local_execute` |
+| **Terminal** | `local_execute` |
 | **SCP** | `scp_list_files`, `scp_read_file`, `scp_write_file`, `scp_delete_files`, `scp_rename_file`, `scp_copy_files`, `scp_move_files`, `scp_create_folder`, `scp_search_files`, `scp_download_file` |
 | **FTP** | `ftp_list_files`, `ftp_read_file`, `ftp_write_file`, `ftp_delete_files`, `ftp_rename_file`, `ftp_copy_files`, `ftp_move_files`, `ftp_create_folder`, `ftp_search_files`, `ftp_download_file` |
 | **Samba** | `samba_list_files`, `samba_read_file`, `samba_write_file`, `samba_delete_files`, `samba_rename_file`, `samba_copy_files`, `samba_move_files`, `samba_create_folder`, `samba_search_files`, `samba_download_file` |
-| **Session** | `session_list`, `session_read`, `session_write` |
+| **Session** | `session_list`, `session_read`, `terminal_open`, `session_write` |
 
 Tools for the same operation across protocols (scp/ftp/samba) share a single implementation via switch fall-through.
 
@@ -255,7 +255,7 @@ sequenceDiagram
     OpenAI-->>AILoop: tool_calls: profile_list({})
     AILoop->>TE: execute('profile_list', {})
     TE->>TE: decrypt profiles.json
-    TE-->>AILoop: {profiles: [{id, name, host, ...}]}
+    TE-->>AILoop: {profiles: [{id, name, type}]}
     AILoop->>OpenAI: POST /chat/completions (messages + tool result)
     OpenAI-->>AILoop: tool_calls: ssh_execute({profileId, command})
     AILoop->>TE: execute('ssh_execute', ...)

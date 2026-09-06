@@ -6,8 +6,8 @@ We provide security updates for the latest stable release.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 3.1.x   | :white_check_mark: |
-| < 3.1   | :x:                |
+| 7.3.x   | :white_check_mark: |
+| < 7.3   | :x:                |
 
 ## Reporting a Vulnerability
 

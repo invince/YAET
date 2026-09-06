@@ -191,7 +191,7 @@ The `context` object passed to `register()` provides:
 
 | Property | Type | Description |
 |---|---|---|
-| `ipcMain` | `Electron.IpcMain` | Register IPC handlers |
+| `ipcMain` | Restricted wrapper (`handle`/`on`/`removeHandler`/`removeAllListeners`) | Register IPC handlers — **only for channels declared in the plugin manifest's `ipc` section**; anything else is rejected |
 | `logger` | `Logger` | Electron-log instance |
 | `sessionRegistry` | `() => SessionRegistry` | Register/list/unregister sessions |
 | `runtimeAPI` | `() => RuntimeAPI` | Register connectors for AI tools |

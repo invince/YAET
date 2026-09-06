@@ -1,6 +1,6 @@
 # Yet Another Electron Terminal (YAET)
 
-English | [简体中文](./README.cn.md)
+English | [Chinese](./README.cn.md)
 
 ## Description
 
@@ -46,6 +46,8 @@ YAET is a comprehensive remote connection and management tool built with Angular
 - SSH key management with passphrase support
 - Reusable credentials across multiple profiles
 - Support for login/password and SSH key authentication
+- Master-key change re-encrypts every encrypted file atomically in the main process (never from renderer memory)
+- Keep a backup of `~/.yaet/`: if the keyring key no longer matches the files, decryption fails with `Malformed UTF-8 data` / `No master key defined` — restore the files, then put the matching-era master key back into the keyring (delete + first-time setup); never save or Force Continue while the key mismatches, or empty data will overwrite the good files
 - <img width="2879" height="1653" alt="image" src="https://github.com/user-attachments/assets/3ea5f344-2c70-4eb9-a310-bca7f8451cd1" />
 
 
@@ -82,7 +84,7 @@ YAET is a comprehensive remote connection and management tool built with Angular
 
 **MCP Server (Model Context Protocol)**:
 - **Standalone mode**: run `npm run mcp` or `yaet mcp` to start an MCP server via stdio transport
-- **Tools**: `ssh_execute`, `ssh_sudo_execute`, `ssh_connect_interactive`, `ssh_send_input`, `ssh_disconnect`, `scp_list_files`, `scp_read_file`, `scp_write_file`, `scp_delete_file`, `local_execute`, `yaet_profiles`
+- **Tools (8)**: `ssh_execute`, `ssh_sudo_execute`, `scp_list_files`, `scp_read_file`, `scp_write_file`, `scp_delete_file`, `local_execute`, `yaet_profiles`
 - **Credential resolution**: supports YAET profile names (resolved from encrypted store) or manual host/username/password
 - **Electron entry point**: launch via Electron binary with `--mcp` flag — source stays inside asar, zero unpacking
 - **Tested with**: Hermes agent ✅
@@ -92,17 +94,13 @@ YAET is a comprehensive remote connection and management tool built with Angular
 - **Sessions**: create, prompt, close sessions with tools
 - **Same toolset** as MCP server
 
-Example config for Hermes (`~/.hermes/config.yaml`):
+Example config for Hermes (`~/.hermes/config.yaml`) — uses the `yaet-mcp` launcher, which reads the master key from the OS keyring and starts the Electron binary headless (the key never lands in chat context):
 ```yaml
 mcp_servers:
   yaet:
-    command: /opt/YetAnotherElectronTerm/yet-another-electron-term
+    command: ~/.local/bin/yaet-mcp
     args:
       - --mcp
-      - --no-sandbox
-      - --ozone-platform=headless
-    env:
-      YAET_MASTER_KEY: <your-master-key>
     enabled: true
 ```
 
@@ -255,21 +253,24 @@ npx playwright test -g "add Password Only"
 - Each test gets a fresh Electron instance with an isolated temp directory
 - Mock keychain ([`security.mock.js`](src-electron/adapter/ipc/security.mock.js)) replaces the OS keychain — no system creds touched. It is loaded **only during e2e tests** via [`electronMain.e2e.js`](src-electron/electronMain.e2e.js), which intercepts `require.cache` before the real `security.js` loads; the production app always uses the real OS keychain (keytar).
 - Tests run **headless** by default. Set `YAET_SHOW_WINDOW=1` for a visible window
-- CI runs e2e on every PR/push ([`.github/workflows/e2e.yml`](.github/workflows/e2e.yml)) and before each release
+- CI runs the e2e suite on every version tag (`v*`) before release ([`.github/workflows/build.yml`](.github/workflows/build.yml)); the suite also runs under the sandboxed renderer, so it covers the production security posture
 
-**Current coverage (141 E2E tests + 160 unit tests):**
+**Current coverage (139 E2E tests):**
 | Section | Tests | Status |
 |---------|-------|--------|
-| 0. App Bootstrap | 4 | ✅ |
 | 1. Application Startup | 7 | ✅ |
 | 2. Master Key & Secrets | 19 | ✅ |
 | 3. Settings Menu | 29 | ✅ |
-| 4. Incompatible Settings | 4 | ✅ |
-| 5. Profiles | 11 | ✅ |
-| 6. Local Terminal | 3 | ✅ |
-| 7. UI/UX | 7 | ✅ |
-| 8. Proxy Management | 4 | ✅ |
-| 9. Cloud Settings | 4 | ✅ |
+| 3. Incompatible Settings | 4 | ✅ |
+| 4. Profiles | 11 | ✅ |
+| 5. Local Terminal (UI + real-PTY smoke) | 4 | ✅ |
+| 5. Master-key re-encrypt (atomic, main process) | 1 | ✅ |
+| 6. UI/UX | 7 | ✅ |
+| 7. Proxy Management | 4 | ✅ |
+| 8. Cloud Settings | 4 | ✅ |
+| 9. Security Review (P0) | 9 | ✅ |
+| 10. AI Chat Panel | 22 | ✅ |
+| 11. AI Settings | 18 | ✅ |
 
 See [TestPlanE2E.md](./TestPlanE2E.md) for the full test plan.
 
@@ -293,8 +294,8 @@ Releases are now automated via **GitHub Actions**.
 2.  **Commit, Tag, and Push**:
     ```bash
     git add package.json
-    git commit -m "chore: bump version to v5.x.x"
-    git tag v5.x.x
+    git commit -m "chore: bump version to v7.x.x"
+    git tag v7.x.x
     git push && git push --tags
     ```
 
@@ -303,10 +304,11 @@ Releases are now automated via **GitHub Actions**.
 - The workflow triggers automatically on any tag push matching `v*`.
 
 **What it does:**
-1. Triggers parallel builds on Windows and Linux (Ubuntu) runners.
-2. Compiles the Angular frontend.
-3. Builds the Electron installers (`.exe`, `.AppImage`, `.deb`).
-4. Creates/Updates a GitHub Release and uploads all artifacts.
+1. Runs the full e2e suite first (release is blocked on green e2e).
+2. Triggers parallel builds on Windows, Linux (x64 + ARM64), and macOS runners.
+3. Compiles the Angular frontend.
+4. Builds the Electron installers (`.exe`, `.AppImage`, `.deb`, `.dmg`/`.zip`).
+5. Creates/Updates a GitHub Release and uploads all artifacts.
 
 **Released packages:** https://github.com/invince/YAET-RELEASE
 

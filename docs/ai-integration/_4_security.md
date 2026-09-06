@@ -14,7 +14,7 @@ The AI has access to tools that can:
 - **Escalate privileges**: `sudo`, `su`, `chmod 777`
 - **Access network**: `curl`, `wget`, `ssh`
 
-A single mistaken or hallucinated command could cause data loss or system damage. Currently every `terminal_execute`, `local_execute`, and `session_write` call executes immediately without user oversight.
+A single mistaken or hallucinated command could cause data loss or system damage. Currently every `terminal_open`, `local_execute`, and `session_write` call executes immediately without user oversight.
 
 ---
 
@@ -25,7 +25,7 @@ When the AI calls a command tool, the system intercepts it if it matches sensiti
 ### Flow
 
 ```
-AI calls terminal_execute
+AI calls terminal_open / local_execute / session_write
   │
   ├── (mode: "off") → execute immediately (current behavior)
   │
@@ -93,7 +93,7 @@ Configurable in `settings.json`:
 | Mode | Behavior | Use Case |
 |---|---|---|
 | `auto` | Intercept only commands matching dangerous lists | Production |
-| `all` | Intercept every `terminal_execute` and `session_write` | Maximum security |
+| `all` | Intercept every approval-gated tool call (`terminal_open`, `local_execute`, `session_write`, destructive file tools) | Maximum security |
 | `off` | Never intercept (current behavior) | Development / trusted AI |
 
 ---
@@ -138,7 +138,7 @@ async function executeTool(runtime, toolName, args) {
 }
 ```
 
-`SENSITIVE_TOOLS = ['local_execute', 'session_write']` (defined in `toolDefinitions.js`).
+`SENSITIVE_TOOLS = ['local_execute', 'session_write', 'terminal_open']` plus `DESTRUCTIVE_FILE_TOOL_SUFFIX` (`_write_file|_delete_files|_rename_file|_copy_files|_move_files|_create_folder|_download_file`) — all defined in `toolDefinitions.js`.
 
 ### functionLoop
 
@@ -185,7 +185,7 @@ This prevents dangling approval requests when the user navigates away.
 | Auto-reject on chat switch / new / close | ✅ Implemented |
 | Notification on auto-reject | ✅ Implemented |
 | Preload channel allowlist fix (approved/rejected in SEND) | ✅ Implemented |
-| `terminal_execute` removed from `SENSITIVE_TOOLS` | ✅ Implemented |
+| `terminal_execute` retired; `terminal_open` added to `SENSITIVE_TOOLS` | ✅ Implemented |
 | Session-level access control in `session_list`/`session_read` | ✅ Implemented (Phase 2) |
 
 ### Future

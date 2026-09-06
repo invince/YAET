@@ -160,6 +160,6 @@
 - [ ] XSS: AI chat output does NOT execute HTML/scripts (DOMPurify sanitizes)
 - [ ] IPC channels are whitelisted (unexpected channels are rejected)
 - [ ] Corrupted JSON data does not crash the app (caught by try-catch in profile/secret/proxy services)
-- [ ] Express API requires valid token (401 on missing/invalid token)
+- [ ] Express API requires valid token (403 on missing/invalid token)
 - [ ] Proxy credentials are scoped to auto-updater lifecycle only
 - [ ] Command injection: shell commands use `spawn` with argument arrays

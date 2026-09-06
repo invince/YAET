@@ -30,13 +30,14 @@ Electron app starts
   │
   ├─ PluginManager.discover()             ← scans plugins/ AND ~/.yaet/plugins/
   │   ├─ for each plugin dir with package.json:
-  │   │   └─ auto-run npm install if node_modules missing or outdated
+  │   │   └─ auto-run npm install --ignore-scripts if node_modules missing or outdated
   │   └─ external plugins that conflict with bundled ids are SKIPPED (security)
   ├─ PluginManager.writeMergedManifest()  ← writes generated-plugin-manifest.json to both locations
   │
   ├─ new BrowserWindow(preload.js)
-  │   └─ preload.js reads generated-plugin-manifest.json (external preferred over bundled)
-  │       └─ merges plugin IPC channels into whitelist
+  │   └─ preload.js (sandboxed, no fs) fetches the merged manifest from the
+  │       main process via sync IPC `plugins.getMergedManifestSync`
+  │       └─ merges plugin IPC channels into whitelist (fail-closed: core only)
   │
   ├─ initHandlerBeforeSettingLoad()       ← core IPC handlers
   └─ PluginManager.loadAll(context)       ← plugin backends register their IPC handlers
@@ -77,7 +78,7 @@ electronMain.js
   │   │
   │   ├─ pluginManager.writeMergedManifest()
   │   │   └─ combine all plugin ipc channels → plugins/generated-plugin-manifest.json
-  │   │      (preload.js reads this file to build the IPC whitelist)
+  │   │      (served to the sandboxed preload via sync IPC; preload never reads files)
   │   │
   │   ├─ new BrowserWindow({ preload: 'preload.js' })
   │   │
@@ -107,12 +108,13 @@ PluginManager.loadAll(context)
   │   └─ register({ ipcMain, logger, ... })
   │       └─ ipcMain.on('session.open.terminal.ssh', handler)
   │
-  ├─ ~/.yaet/plugins/ssh-terminal (external, overrides bundled)
-  │   ├─ require('~/.yaet/plugins/ssh-terminal/backend/index.js')
-  │   │   └─ const { SshTerminalSession } = require('./ssh.connector')
+  ├─ ~/.yaet/plugins/my-terminal (external, non-conflicting id)
+  │   ├─ require('~/.yaet/plugins/my-terminal/backend/index.js')
+  │   │   └─ const { MyTerminalSession } = require('./my-terminal.connector')
   │   │       └─ uses context.projectRequire('ssh2') for npm deps
   │   └─ register({ ipcMain, logger, projectRequire, ... })
-  │       └─ ipcMain.on('session.open.terminal.ssh', handler)
+  │       └─ ipcMain.on('session.open.terminal.my-terminal', handler)
+  │           (an external id conflicting with a bundled plugin is SKIPPED, never overrides)
   │
   ├─ plugins/telnet-terminal (bundled)
   │   ├─ require('./plugins/telnet-terminal/backend/index.js')
@@ -136,7 +138,7 @@ App starts → app.component.ts → ngOnInit()
   │   ├─ Read ~/.yaet/plugins/generated-plugin-manifest.json (via IPC)
   │   ├─ For each plugin where source === 'external':
   │   │   ├─ Read frontend code via IPC: plugins.readFrontend(id)
-  │   │   ├─ Inject as inline <script> (avoids CSP file:// restriction)
+  │   │   ├─ Execute via blob-URL <script> (CSP-safe, no unsafe-inline needed)
   │   │   ├─ Plugin registers: window.__<ID>_PLUGIN__ = { manifest, profileFormElement }
   │   │   └─ Register with PluginRegistryService.registerExternalPlugin()
   │   │
@@ -154,7 +156,7 @@ App starts → app.component.ts → ngOnInit()
 | Aspect | Backend | Frontend (Bundled) | Frontend (External) |
 |---|---|---|---|
 | Runtime | Node.js (main process) | Browser (renderer process) | Browser (renderer process) |
-| Loading | `require()` at app startup | Compiled into bundle at build time | Inline `<script>` at runtime |
+| Loading | `require()` at app startup | Compiled into bundle at build time | Blob-URL `<script>` at runtime (CSP-safe) |
 | Discovery | `PluginManager` scans `plugins/` | `tsconfig.app.json` includes `plugins/**/*.ts` | Reads merged manifest |
 | Registration | `ipcMain.on/handle()` in `register()` | `PluginRegistryService.register()` | `window.__<ID>_PLUGIN__` + `registerExternalPlugin()` |
 | npm deps | `context.projectRequire()` for external | N/A (bundled) | N/A (backend handles deps) |
@@ -195,7 +197,7 @@ See [`ext-plugins-example/webdav-file-explorer/`](../ext-plugins-example/webdav-
 
 ### Self-Managed Dependencies
 
-External plugins can declare npm dependencies in their own `package.json`. On startup, `PluginManager` detects the `package.json` and runs `npm install` in the plugin directory if `node_modules` is missing or out of date.
+External plugins can declare npm dependencies in their own `package.json`. On startup, `PluginManager` detects the `package.json` and runs `npm install --ignore-scripts` in the plugin directory if `node_modules` is missing or out of date (scripts are never executed — postinstall hooks are blocked).
 
 **When to use:**
 - Your plugin needs a build-time dependency (e.g. `spice-client` for frontend bundling)
@@ -359,13 +361,13 @@ module.exports = { register };
 
 | Property | Type | Description |
 |---|---|---|
-| `ipcMain` | Electron `ipcMain` | Register IPC handlers |
+| `ipcMain` | Restricted wrapper (`handle`/`on`/`removeHandler`/`removeAllListeners`) | Register IPC handlers — **only for channels declared in the manifest's `ipc` section** |
 | `logger` | `electron-log` | Logging |
 | `terminalMap` | `Map` | Shared terminal session map (for resize/input routing) |
 | `sessionRegistry` | `SessionRegistry` or `() => SessionRegistry` | Session tracking for AI tools |
-| `runtimeAPI` | `RuntimeAPI` or `() => RuntimeAPI` | Runtime API facade |
+| `runtimeAPI` | Restricted wrapper | `registerConnector()` only for the manifest's declared `profileType` |
 | `proxyService` | object or `() => object` | Proxy configuration |
-| `secretService` | array or `() => array` | Decrypted secrets |
+| `secretService` | Restricted wrapper | Secrets filtered by the manifest's declared `secretTypes` |
 | `expressApp` | Express app or `() => Express` | Backend REST API (for file explorers) |
 | `projectRequire` | Function | `createRequire()` from project root — use for npm deps like `require('ssh2')` |
 | `appRoot` | string | Absolute path to the project root (for reference) |
@@ -621,9 +623,9 @@ my-plugin/
     └── index.js
 ```
 
-**How it works**: On startup, `PluginManager` detects `package.json` and runs `npm install` automatically if `node_modules` is missing or outdated. No manual install step needed by the user.
+**How it works**: On startup, `PluginManager` detects `package.json` and runs `npm install --ignore-scripts` automatically if `node_modules` is missing or outdated. No manual install step needed by the user.
 
-**Distribution**: Zip the directory **without** `node_modules/`. Users extract to `~/.yaet/plugins/my-plugin/`, and the app handles `npm install` on first launch.
+**Distribution**: Zip the directory **without** `node_modules/`. Users extract to `~/.yaet/plugins/my-plugin/`, and the app handles `npm install --ignore-scripts` on first launch.
 
 #### Plugin with frontend build step
 
@@ -714,7 +716,7 @@ npm run build
 # 3. The frontend/index.js is now ready for distribution
 ```
 
-**Distribution**: Zip the directory including `frontend/index.js` but **excluding** `node_modules/`. Users extract to `~/.yaet/plugins/my-plugin/`. The app runs `npm install` on first launch to restore backend dependencies.
+**Distribution**: Zip the directory including `frontend/index.js` but **excluding** `node_modules/`. Users extract to `~/.yaet/plugins/my-plugin/`. The app runs `npm install --ignore-scripts` on first launch to restore backend dependencies.
 
 ### Bundled Plugin Packaging
 
@@ -727,7 +729,7 @@ The build script `scripts/generate-plugin-barrel.js` scans all `plugins/*/manife
 | Plugin Type | Build Step | Distribution | User Install |
 |---|---|---|---|
 | Simple external | None | Zip directory | Extract to `~/.yaet/plugins/<id>/` |
-| External with deps | `npm install` (auto on startup) | Zip directory (no `node_modules/`) | Extract to `~/.yaet/plugins/<id>/` |
+| External with deps | `npm install --ignore-scripts` (auto on startup) | Zip directory (no `node_modules/`) | Extract to `~/.yaet/plugins/<id>/` |
 | External with frontend build | `npm run build` → `frontend/index.js` | Zip directory (include `frontend/index.js`, no `node_modules/`) | Extract to `~/.yaet/plugins/<id>/` |
 | Bundled | `npm run build` (Angular build) | Git commit to `plugins/` | Ships with app |
 
@@ -753,7 +755,7 @@ The build script `scripts/generate-plugin-barrel.js` scans all `plugins/*/manife
 ## Notes
 
 - **External plugin npm deps (option 1 — projectRequire)**: Use `context.projectRequire(moduleName)` in your connector to resolve npm packages from the project's `node_modules`. Direct `require()` will fail for external plugins since they live in `~/.yaet/plugins/`.
-- **External plugin npm deps (option 2 — self-managed)**: Add `package.json` to your plugin directory. `PluginManager` runs `npm install` automatically on startup. This is useful for build-time dependencies (e.g. `spice-client`) or when you need packages not available in the core project. Both approaches can be mixed — Node.js resolves from plugin's `node_modules` first, then falls through to `projectRequire`.
+- **External plugin npm deps (option 2 — self-managed)**: Add `package.json` to your plugin directory. `PluginManager` runs `npm install --ignore-scripts` automatically on startup. This is useful for build-time dependencies (e.g. `spice-client`) or when you need packages not available in the core project. Both approaches can be mixed — Node.js resolves from plugin's `node_modules` first, then falls through to `projectRequire`.
 - **Session view sharing**: Terminal plugins (SSH, Telnet, Local, WinRM) all share `TerminalComponent` for the UI. External plugins reuse it automatically via `PluginSession`.
 - **Profile form sharing**: `RemoteTerminalProfileFormComponent` is shared between SSH, Telnet, WinRM. External terminal plugins use it automatically via the `@default` case in `profile-form.component.html`.
 - **Preload whitelist**: IPC channels are automatically added to the preload whitelist from the plugin manifest. No manual whitelist editing needed.

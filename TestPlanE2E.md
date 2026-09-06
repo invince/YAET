@@ -20,13 +20,14 @@
 ## 2. Master Key & Secrets
 
 - [x] First-time setup: clicking Cloud, Profile, Secret, or Quick Connect prompts to set a master key
-- [x] Setting a new master key: works without triggering re-encrypt prompt
-- [x] Changing master key with correct old key: re-encrypt prompt appears
-  - [x] Click "OK" → all settings re-encrypted
-  - [x] Click "Cancel" → no changes (key still saved)
-- [x] Changing master key with incorrect old key: force continue prompt
+- [x] Setting a new master key: works without migration (nothing to re-encrypt)
+- [x] Changing master key with correct old key: atomic re-encrypt in the main process (read all files with old key → switch keyring → write all files with new key); success toast, dialog closes
+- [x] Changing master key with incorrect old key: Force Continue confirm → new key saved and all stores cleared (`invalid` event); Cancel → no changes
 - [x] Deleting master key: via IPC
 - [x] Master key status is updated in real-time (event-driven, no polling)
+
+### Master-key re-encrypt (atomic, main process)
+- [x] Seeded profile + secret encrypted under old key survive a real UI master-key change: both files readable with the new key, `secretId` intact, old key no longer decrypts
 
 ### Secrets CRUD
 - [x] Add: Password Only
@@ -118,11 +119,15 @@
 ### Quick Connect
 - [x] Quick connect form opens and renders fields
 
-## 5. Local TerminalHandler (UI only)
+## 5. Local Terminal (UI only)
 
 - [x] Clicking local terminal button on sidebar opens a terminal tab immediately
 - [x] "Open terminal at startup" setting works (seed `defaultOpen: true` → tab appears)
 - [x] Switch terminal type via settings does not break terminal opening
+
+## 5b. Local Terminal — real PTY smoke
+
+- [x] Real PTY (no mocks): terminal opens, typed `echo <marker>` executes, marker found in the xterm buffer (read via shadow DOM — `app-terminal` uses `ViewEncapsulation.ShadowDom`)
 
 ## 6. UI/UX
 
