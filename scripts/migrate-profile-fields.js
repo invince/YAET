@@ -7,12 +7,16 @@
  * Usage:
  *   node scripts/migrate-profile-fields.js [--master-key <key>] [--dry-run]
  * Master key resolution order: --master-key, $YAET_MASTER_KEY, then keytar
- * (service=io.github.invince.YAET).
+ * (env-aware identity from src-electron/services/envConfig.js: production
+ * keyring, or the isolated debug keyring under NODE_ENV=development).
+ * Target directory likewise follows envConfig (~/.yaet vs ~/.yaet-debug,
+ * $YAET_HOME base override respected).
  */
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const CryptoJS = require('crypto-js');
+const { getAppConfigPath, getKeytarIdentity } = require('../src-electron/services/envConfig');
 
 // Must stay in sync with RuntimeAPI.OLD_FIELD_MAP
 const OLD_FIELD_MAP = {
@@ -40,7 +44,8 @@ async function resolveMasterKey(explicit) {
   if (process.env.YAET_MASTER_KEY) return process.env.YAET_MASTER_KEY;
   try {
     const keytar = require('keytar');
-    const key = await keytar.get('io.github.invince.YAET', 'ac13ba1ac2f841d19a9f73bd8c335086');
+    const { service, account } = getKeytarIdentity();
+    const key = await keytar.get(service, account);
     if (key) return key;
   } catch (e) {
     // keytar not installed or no entry — fall through to error
@@ -70,7 +75,7 @@ async function main() {
   const opts = getArgs();
   const masterKey = await resolveMasterKey(opts.masterKey);
 
-  const yaetDir = path.join(process.env.YAET_HOME || os.homedir(), '.yaet');
+  const yaetDir = getAppConfigPath();
   const profilesPath = path.join(yaetDir, 'profiles.json');
 
   if (!fs.existsSync(profilesPath)) {

@@ -1,8 +1,10 @@
 const keytar = require("keytar");
 const CryptoJS = require("crypto-js");
+const { getKeytarIdentity } = require("./envConfig");
 
-const service = 'io.github.invince.YAET';
-const account = 'ac13ba1ac2f841d19a9f73bd8c335086';
+// Env-aware: production keyring identity, or an isolated debug identity under
+// NODE_ENV=development so local testing never touches the production key.
+const { service, account } = getKeytarIdentity();
 
 class SecurityService {
   constructor(log) {

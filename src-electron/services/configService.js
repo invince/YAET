@@ -1,9 +1,10 @@
 const path = require('path');
 const fs = require('fs');
-const os = require('os');
+const { getAppConfigPath } = require('./envConfig');
 
-const USER_HOME = process.env.YAET_HOME || os.homedir();
-const APP_CONFIG_PATH = USER_HOME + '/.yaet';
+// Env-aware: ~/.yaet in production, ~/.yaet-debug under NODE_ENV=development,
+// $YAET_HOME/.yaet for e2e temp dirs. See envConfig.js.
+const APP_CONFIG_PATH = getAppConfigPath();
 const SETTINGS_JSON = 'settings.json';
 const PROFILES_JSON = 'profiles.json';
 const SECRETS_JSON = 'secrets.json';

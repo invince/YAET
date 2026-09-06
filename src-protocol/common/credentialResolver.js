@@ -1,14 +1,16 @@
 /**
- * YAET credential resolver — pure JS, no native modules.
- * Reads encrypted profiles.json / secrets.json from ~/.yaet/.
+ * YAET credential resolver — pure JS, no native modules (no keytar/electron).
+ * Reads encrypted profiles.json / secrets.json from the env-aware config dir
+ * (~/.yaet in production, ~/.yaet-debug under NODE_ENV=development).
  * Master key source is injected via getMasterKey callback.
  */
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const CryptoJS = require('crypto-js');
+const { getAppConfigPath } = require('../../src-electron/services/envConfig');
 
-const YAET_DIR = path.join(os.homedir(), '.yaet');
+const YAET_DIR = getAppConfigPath();
 
 async function decryptFile(filename, getMasterKey) {
   const file = path.join(YAET_DIR, filename);

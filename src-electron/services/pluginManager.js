@@ -3,15 +3,17 @@ const fs = require('fs');
 const os = require('os');
 const crypto = require('crypto');
 const {execSync} = require('child_process');
+const { getAppConfigPath } = require('./envConfig');
 
 /**
  * PluginManager — discovers and loads backend plugins.
  *
  * Scans two directories for plugins:
  *   1. Bundled:  <appRoot>/../plugins/        (shipped with the app)
- *   2. External: ~/.yaet/plugins/              (user-installed, overrides bundled)
+ *   2. External: <configDir>/plugins/          (user-installed; ~/.yaet in
+ *      production, ~/.yaet-debug under NODE_ENV=development — see envConfig.js)
  *
- * External plugins with the same id as a bundled plugin will override it.
+ * External plugins with the same id as a bundled plugin are SKIPPED (security).
  *
  * Usage in electronMain.js:
  *   const pluginManager = new PluginManager(__dirname, log);
@@ -32,8 +34,8 @@ class PluginManager {
     // Bundled plugins (shipped with the app)
     this.bundledDir = path.join(appRoot, '..', 'plugins');
 
-    // External plugins (user-installed at ~/.yaet/plugins/)
-    this.externalDir = path.join(os.homedir(), '.yaet', 'plugins');
+    // External plugins (user-installed at <configDir>/plugins/)
+    this.externalDir = path.join(getAppConfigPath(), 'plugins');
 
     // User-controlled enabled list for external plugins
     this.enabledListPath = path.join(this.externalDir, 'enabled.json');
@@ -168,13 +170,13 @@ class PluginManager {
 
   /**
    * Verify optional HMAC signature on a manifest.
-   * Requires user-provided signing key in ~/.yaet/signing.key
+   * Requires user-provided signing key in <configDir>/signing.key
    * Returns { valid: boolean, reason?: string }
    */
   _verifyManifestHmac(manifest, pluginDir) {
     if (!manifest._hmac) return {valid: true}; // No HMAC = skip verification
 
-    const signingKeyPath = path.join(os.homedir(), '.yaet', 'signing.key');
+    const signingKeyPath = path.join(getAppConfigPath(), 'signing.key');
     try {
       if (!fs.existsSync(signingKeyPath)) {
         return {valid: false, reason: `Plugin declares HMAC signature but no signing key found at ${signingKeyPath}`};
@@ -652,8 +654,8 @@ class PluginManager {
     const bundledPath = path.join(this.bundledDir, 'generated-plugin-manifest.json');
     this._writeIfDirExists(bundledPath, content);
 
-    // Write to external location (for production — preload.js reads from here)
-    const externalDir = path.join(os.homedir(), '.yaet');
+    // Write to external location (served to sandboxed preload via sync IPC)
+    const externalDir = getAppConfigPath();
     if (!fs.existsSync(externalDir)) {
       fs.mkdirSync(externalDir, {recursive: true});
     }

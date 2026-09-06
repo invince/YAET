@@ -208,6 +208,8 @@ npm run electron:dev
 
 > **注意：** 修改插件代码后，需重新运行 `npm run generate-plugin-barrel` 或重启 `npm run start`。
 
+> **开发/生产隔离：** 本地开发构建（`NODE_ENV=development`，即 `npm start` / `npm run electron:dev`）使用隔离的数据目录（`~/.yaet-debug`）和隔离的系统密钥链条目，测试不会触碰生产环境的 `~/.yaet` 文件和主密钥。开发工作区首次启动是空的——在里面设置一次主密钥即可。用 `NODE_ENV=development npm run mcp` 可让 MCP 服务器读取调试数据。
+
 ### 安装 Electron 依赖后
 
 如果你安装的任何 npm 包被 Electron 主进程使用：

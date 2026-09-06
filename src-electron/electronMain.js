@@ -65,6 +65,7 @@ const { initLocalTerminalIpcHandler } = require("./adapter/ipc/terminal/localHan
 const { RuntimeAPI } = require("./runtime/runtimeAPI");
 const { SessionRegistry } = require("./runtime/sessionRegistry");
 const { ApprovalManager } = require("./runtime/approvalManager");
+const { getAppConfigPath, getKeytarIdentity } = require("./services/envConfig");
 
 const logPath = path.join(app.getPath('userData'), 'logs/main.log');
 console.log(logPath);
@@ -76,6 +77,9 @@ log.transports.file.level = "debug"
 app.on('ready', () => {
 
   log.info("Starting yaet app");
+  // Dev/debug visibility: confirm which data dir + keyring identity is active
+  // (production ~/.yaet vs. isolated ~/.yaet-debug, see envConfig.js).
+  { const kid = getKeytarIdentity(); log.info(`Config dir: ${getAppConfigPath()} | keytar service: ${kid.service}`); }
 
   const isDev = process.env.NODE_ENV === 'development';
 

@@ -213,6 +213,8 @@ npm run electron:dev
 
 > **Note:** If you modify plugin code, re-run `npm run generate-plugin-barrel` or restart `npm run start`.
 
+> **Dev/prod isolation:** local dev builds (`NODE_ENV=development`, i.e. `npm start` / `npm run electron:dev`) use an isolated data directory (`~/.yaet-debug`) and an isolated OS-keychain entry, so testing never touches your production `~/.yaet` files or master key. Your dev workspace starts empty — set a master key there once. Run `NODE_ENV=development npm run mcp` to point the MCP server at debug data.
+
 ### After Installing Electron Dependencies
 
 If you install any npm packages used by the Electron main process:

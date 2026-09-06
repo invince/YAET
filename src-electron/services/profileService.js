@@ -6,8 +6,10 @@
 const keytar = require('keytar');
 const { resolveConfig, listSSHProfiles } = require('../../src-protocol/common/credentialResolver');
 
-const SERVICE = 'io.github.invince.YAET';
-const ACCOUNT = 'ac13ba1ac2f841d19a9f73bd8c335086';
+const { getKeytarIdentity } = require('./envConfig');
+
+// Same env-aware identity as SecurityService (prod vs. local-debug keyring).
+const { service: SERVICE, account: ACCOUNT } = getKeytarIdentity();
 
 async function getMasterKey() {
   const key = await keytar.getPassword(SERVICE, ACCOUNT);

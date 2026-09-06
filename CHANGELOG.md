@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **ai-chat styles split**: `ai-chat.component.scss` (695 lines) split into 7 partials (`_header`, `_history`, `_messages`, `_input`, `_message-content`, `_tools`, `_resize`); entry file only composes them via `@use`
 - **Global styles actually load under hardened CSP**: production build disables `inlineCritical` CSS — the `media="print" onload` deferred-stylesheet pattern relied on an inline `onload` handler that the P0-S4 CSP (`script-src` without `unsafe-inline`) blocks, leaving the whole global stylesheet print-only (modals/menus unstyled, e2e Add buttons unclickable). Now emits a plain `<link rel="stylesheet">`
 - **E2E fixes**: real-PTY test pierces `app-terminal` ShadowDom when reading the xterm buffer; profile tag-dirty test waits for the cleared name field after Add Profile (avoids filling the stale form)
+- **Dev/prod isolation**: local debug builds (`NODE_ENV=development`) now use `~/.yaet-debug` plus a separate keytar identity (`io.github.invince.YAET.debug`), so testing can never read or overwrite production config files or the production master key; the active dir/identity is logged at startup
 ### Added
 - **AI function cancellation**: AbortController real cancel (loop + HTTP + tools); configurable 120s timeout; input param non-pollution; token budget cutoff (P1-1)
 - **AI context optimization**: Single injection (agent backend increment/user pinned, chat-only bounded tail); fixed `ts/timestamp` increment dead bug (P1-2)

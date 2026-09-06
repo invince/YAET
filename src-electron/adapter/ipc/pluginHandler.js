@@ -2,6 +2,7 @@ const path = require('path');
 const os = require('os');
 const fs = require('fs');
 const { PluginManager } = require('../../services/pluginManager');
+const { getAppConfigPath } = require('../../services/envConfig');
 
 let pluginManager = null;
 let initialized = false;
@@ -45,8 +46,8 @@ function discoverExamples() {
 }
 
 function readMergedManifest() {
-  const bundledPath = path.join(__dirname, '..', '..', 'plugins', 'generated-plugin-manifest.json');
-  const externalPath = path.join(os.homedir(), '.yaet', 'plugins', 'generated-plugin-manifest.json');
+    const bundledPath = path.join(__dirname, '..', '..', 'plugins', 'generated-plugin-manifest.json');
+    const externalPath = path.join(getAppConfigPath(), 'plugins', 'generated-plugin-manifest.json');
   const manifestPath = fs.existsSync(externalPath) ? externalPath : bundledPath;
   if (!fs.existsSync(manifestPath)) return null;
   try {
@@ -85,7 +86,7 @@ function initPluginHandler(log) {
   });
 
   ipcMain.handle('plugins.getExternalDir', () => {
-    return path.join(os.homedir(), '.yaet', 'plugins');
+    return path.join(getAppConfigPath(), 'plugins');
   });
 
   // ── Enable / Disable an external plugin ──────────────────────────────────
@@ -188,7 +189,7 @@ function initPluginHandler(log) {
       log.warn(`Rejected unknown plugin id: ${id}`);
       return null;
     }
-    const baseDir = path.resolve(os.homedir(), '.yaet', 'plugins');
+    const baseDir = path.resolve(getAppConfigPath(), 'plugins');
     const filePath = path.resolve(baseDir, id, 'frontend', 'index.js');
     if (filePath !== path.join(baseDir, id, 'frontend', 'index.js') || !filePath.startsWith(baseDir + path.sep)) {
       log.warn(`Rejected escaping plugin path: ${id}`);
