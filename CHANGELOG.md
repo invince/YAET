@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [7.2.4] - 2026-09-05 Sept review
+## [7.3.0] - 2026-09-05 Sept review
 ### Security
 - **Express `/api` auth hardening**: Missing/wrong token returns 403 (`timingSafeEqual`); loopback assertion; CORS whitelist (P0-S1)
 - **Express loopback binding**: Listen on `127.0.0.1:13012` instead of `0.0.0.0` (P0-S2)
@@ -35,6 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **AI progress dedup**: Same tool+args updates in-place, no more chat flooding (P2)
 - **AI approval preview**: `_getApprovalPreview` covers open/write/delete/copy/move/rename/mkdir/download (P2)
 - **Profile field migration script**: `scripts/migrate-profile-fields.js` (+ `npm run migrate:profiles`) converts legacy flat profile fields (`sshProfile`, `sambaProfile`, …) into `profileData[profileType]`, re-encrypts and writes back; idempotent, supports `--dry-run`, resolves master key from `--master-key` / `YAET_MASTER_KEY` / keytar
+- Plugin management refactor: install menu, external plugin after install will be disabled by default, add checksum on plugin
+### Fixed
+- Master key reset bug: profile will lose secret id after reencrypt
+
 
 ## [7.2.3]
 ###
