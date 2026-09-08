@@ -4,6 +4,7 @@ const { Logger } = require('../common/logger');
 const { SshTerminalSession } = require('../../plugins/ssh-terminal/backend/ssh.connector');
 const { LocalTerminalSession } = require('../../src-electron/runtime/connectors/terminal/local');
 const { resolveConfig } = require('../common/credentialResolver');
+const { resolveMasterKey } = require('../common/masterKey');
 
 const log = new Logger('acp-server');
 
@@ -38,9 +39,7 @@ function main() {
   );
 
   async function getMasterKey() {
-    const key = process.env.YAET_MASTER_KEY;
-    if (!key) throw new Error('YAET_MASTER_KEY env var not set');
-    return key;
+    return resolveMasterKey();
   }
 
   server.registerTool(

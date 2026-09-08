@@ -83,10 +83,12 @@ YAET is a comprehensive remote connection and management tool built with Angular
 ### 🔌 MCP / ACP Protocol Servers
 
 **MCP Server (Model Context Protocol)**:
-- **Standalone mode**: run `npm run mcp` or `yaet mcp` to start an MCP server via stdio transport
+- **From source**: run `npm run mcp` (i.e. `node src-protocol/cli.js mcp`) to start an MCP server via stdio transport
+- **Packaged app**: the installed binary handles it directly — no wrapper script needed (source stays inside asar): `~/.local/bin/YetAnotherElectronTerm.AppImage --mcp`
+- **Headless flags**: when launched by an agent (no display), add Electron flags: `--mcp --no-sandbox --ozone-platform=headless`
+- **Master key**: headless environments have no OS keyring, so export `YAET_MASTER_KEY` (or `YAET_MASTER_KEY_FILE` pointing to a 0600 file) before starting — otherwise profile decryption fails
 - **Tools (8)**: `ssh_execute`, `ssh_sudo_execute`, `scp_list_files`, `scp_read_file`, `scp_write_file`, `scp_delete_file`, `local_execute`, `yaet_profiles`
 - **Credential resolution**: supports YAET profile names (resolved from encrypted store) or manual host/username/password
-- **Electron entry point**: launch via Electron binary with `--mcp` flag — source stays inside asar, zero unpacking
 - **Tested with**: Hermes agent ✅
 
 **ACP Server (Agent Communication Protocol)**:
@@ -94,15 +96,66 @@ YAET is a comprehensive remote connection and management tool built with Angular
 - **Sessions**: create, prompt, close sessions with tools
 - **Same toolset** as MCP server
 
-Example config for Hermes (`~/.hermes/config.yaml`) — uses the `yaet-mcp` launcher, which reads the master key from the OS keyring and starts the Electron binary headless (the key never lands in chat context):
+The master key never lands in chat context — pass it via environment. Two ways to supply it to the MCP server's `env` block in the Hermes config (both point at the installed YAET binary; resolution order is `YAET_MASTER_KEY` → `YAET_MASTER_KEY_FILE` → OS keyring):
+
+**Scenario 1 — plain env variable (simplest, agent-managed)**: export `YAET_MASTER_KEY` in the agent's own environment (`~/.hermes/.env`), then reference it in the MCP entry:
+
 ```yaml
+# ~/.hermes/config.yaml
 mcp_servers:
   yaet:
-    command: ~/.local/bin/yaet-mcp
+    command: ~/.local/bin/YetAnotherElectronTerm.AppImage
     args:
       - --mcp
+      - --no-sandbox
+      - --ozone-platform=headless
+    env:
+      YAET_MASTER_KEY: ${YAET_MASTER_KEY}
     enabled: true
 ```
+
+**Scenario 2 — key file (`YAET_MASTER_KEY_FILE`, Docker / systemd friendly)**: keep the key in a `0600` file and point the env var at it. This suits systemd `LoadCredential` and Docker secrets, where the secret is injected as a file rather than an env var:
+
+```yaml
+# ~/.hermes/config.yaml
+mcp_servers:
+  yaet:
+    command: ~/.local/bin/YetAnotherElectronTerm.AppImage
+    args:
+      - --mcp
+      - --no-sandbox
+      - --ozone-platform=headless
+    env:
+      YAET_MASTER_KEY_FILE: /run/secrets/yaet_master_key
+    enabled: true
+```
+
+Provision that file either way (mounted file content must match the key that encrypted `~/.yaet/profiles.json`):
+
+```yaml
+# docker-compose.yml — secret mounted as a file
+services:
+  yaet:
+    command: /opt/YetAnotherElectronTerm/yet-another-electron-term --mcp --no-sandbox --ozone-platform=headless
+    environment:
+      YAET_MASTER_KEY_FILE: /run/secrets/yaet_master_key
+    secrets:
+      - yaet_master_key
+secrets:
+  yaet_master_key:
+    file: /path/to/0600/keyfile   # chmod 600; trailing newline is stripped
+```
+
+```ini
+# systemd unit — LoadCredential injects the file at /run/credentials/yaet.service/yaet_master_key
+[Service]
+Environment=YAET_MASTER_KEY_FILE=/run/credentials/yaet.service/yaet_master_key
+LoadCredential=yaet_master_key:/etc/yaet/yaet_master_key
+```
+
+**Headless CLI (read-only bootstrap)**: on machines without a desktop,
+`masterkey set` → `cloud download` → `doctor` → `mcp`.
+See [docs/headless-cli.md](docs/headless-cli.md) for the full flow and command reference.
 
 ### 🧩 Plugin System
 - **Modular architecture**: each connection type is an independent plugin with manifest, backend, and frontend

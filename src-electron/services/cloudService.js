@@ -78,7 +78,9 @@ class CloudService {
       await fsPromise.rm(gitAbsDir, { recursive: true, force: true });
 
       this.log.info('Cloning repository...');
-      const git = simpleGit().env('GIT_ASKPASS', askpassScript);
+      // NB: simple-git >=3.28 blocks GIT_ASKPASS env unless explicitly
+      // allowed. The askpass script is ours (0700, tmpdir), so opt in.
+      const git = simpleGit({ unsafe: { allowUnsafeAskPass: true } }).env('GIT_ASKPASS', askpassScript);
 
       let proxyId = cloudSettings.proxyId;
       let proxy = null;
@@ -175,7 +177,8 @@ class CloudService {
       await fsPromise.rm(gitAbsDir, { recursive: true, force: true });
 
       this.log.info('Cloning repository...');
-      const git = simpleGit().env('GIT_ASKPASS', askpassScript);
+      // See upload(): simple-git requires an explicit opt-in for GIT_ASKPASS.
+      const git = simpleGit({ unsafe: { allowUnsafeAskPass: true } }).env('GIT_ASKPASS', askpassScript);
 
       let proxy = null;
       if (cloudSettings.proxyId && proxyRepo) {

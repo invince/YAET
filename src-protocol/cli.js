@@ -4,7 +4,7 @@ const path = require('path');
 function printHelp() {
   console.log(`
 YAET Protocol Server - MCP/ACP Server CLI
-===========================================
+==========================================
 
 Usage:
   node src-protocol/cli.js <command> [options]
@@ -12,6 +12,9 @@ Usage:
 Commands:
   mcp           Start MCP server (Model Context Protocol)
   acp           Start ACP server (Agent Communication Protocol)
+  masterkey     Manage the master key on headless machines (set|check)
+  cloud         Cloud sync on headless machines (status|download)
+  doctor        Local self-check for headless machines
 
 Options:
   --transport <type>   Transport type: stdio (default)
@@ -52,6 +55,30 @@ function main() {
     case 'acp':
       require('./acp/index');
       break;
+    case 'masterkey': {
+      const { runMasterkey } = require('./masterkey/command');
+      runMasterkey(args.slice(1)).catch((err) => {
+        console.error(`Error: ${err.message}`);
+        process.exit(1);
+      });
+      break;
+    }
+    case 'cloud': {
+      const { runCloud } = require('./cloud/command');
+      runCloud(args.slice(1)).catch((err) => {
+        console.error(`Error: ${err.message}`);
+        process.exit(1);
+      });
+      break;
+    }
+    case 'doctor': {
+      const { runDoctor } = require('./doctor/command');
+      runDoctor().catch((err) => {
+        console.error(`Error: ${err.message}`);
+        process.exit(1);
+      });
+      break;
+    }
     default:
       console.error(`Unknown command: ${command}`);
       printHelp();

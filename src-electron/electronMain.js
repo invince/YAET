@@ -31,7 +31,10 @@ let sessionRegistry = null;
 let pluginManager = null;
 
 // ── MCP mode: run standalone MCP server without Electron GUI ────────────
-if (process.argv.includes('--mcp')) {
+// Packaged app entry point (src-protocol/ ships inside the asar, so the
+// installed binary handles this directly — no wrapper script needed):
+//   YetAnotherElectronTerm.AppImage --mcp   (or: electron . --mcp in dev)
+if (process.argv.includes('--mcp') || process.argv.slice(1).includes('mcp')) {
   const { MCPServer } = require('../src-protocol/mcp/server');
   const { createSSHTools } = require('../src-protocol/mcp/tools/ssh');
   const { createSCPTools } = require('../src-protocol/mcp/tools/scp');

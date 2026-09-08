@@ -115,10 +115,12 @@ YAET 采用**四层架构**，分离关注点并支持多协议访问：
 ### 🔌 MCP / ACP 协议服务器
 
 **MCP 服务器 (Model Context Protocol)**：
-- **独立模式**：运行 `npm run mcp` 或 `yaet mcp` 启动 MCP 服务器（stdio 传输）
+- **源码运行**：运行 `npm run mcp`（即 `node src-protocol/cli.js mcp`）启动 MCP 服务器（stdio 传输）
+- **打包后运行**：安装好的二进制直接支持，无需 wrapper 脚本（源码留在 asar 内）：`~/.local/bin/YetAnotherElectronTerm.AppImage --mcp`
+- **无头启动参数**：被 agent 拉起时（无显示器）需加 Electron 参数：`--mcp --no-sandbox --ozone-platform=headless`
+- **主密钥**：无头环境没有系统密钥链，启动前必须 `export YAET_MASTER_KEY`（或 `YAET_MASTER_KEY_FILE` 指向 0600 权限文件），否则无法解密 profile
 - **工具（8 个）**：`ssh_execute`、`ssh_sudo_execute`、`scp_list_files`、`scp_read_file`、`scp_write_file`、`scp_delete_file`、`local_execute`、`yaet_profiles`
 - **凭据解析**：支持 YAET 配置文件名（从加密存储解析）或手动传入 host/username/password
-- **Electron 入口**：通过 Electron 二进制 + `--mcp` 标志启动 — 源码全部留在 asar 内，零解包
 - **已验证**：Hermes agent ✅
 
 **ACP 服务器 (Agent Communication Protocol)**：
@@ -126,15 +128,64 @@ YAET 采用**四层架构**，分离关注点并支持多协议访问：
 - **会话管理**：创建、提示、关闭会话
 - **相同工具集**：与 MCP 服务器共享工具
 
-Hermes 配置示例（`~/.hermes/config.yaml`）—— 使用 `yaet-mcp` 启动器，它从系统密钥链读取主密钥并以无头模式启动 Electron 二进制（密钥不会进入聊天上下文）：
+主密钥绝不进聊天上下文——通过环境变量传入 MCP 服务器的 `env` 块。以下两种方式都直接指向安装好的 YAET 二进制（解析顺序为 `YAET_MASTER_KEY` → `YAET_MASTER_KEY_FILE` → 系统密钥链）：
+
+**场景 1 — 明文环境变量（最简单，agent 托管）**：在 agent 自身环境（`~/.hermes/.env`）里 `export YAET_MASTER_KEY`，再在 MCP 条目中引用：
+
 ```yaml
+# ~/.hermes/config.yaml
 mcp_servers:
   yaet:
-    command: ~/.local/bin/yaet-mcp
+    command: ~/.local/bin/YetAnotherElectronTerm.AppImage
     args:
       - --mcp
+      - --no-sandbox
+      - --ozone-platform=headless
+    env:
+      YAET_MASTER_KEY: ${YAET_MASTER_KEY}
     enabled: true
 ```
+
+**场景 2 — 密钥文件（`YAET_MASTER_KEY_FILE`，Docker / systemd 友好）**：把主密钥放进一个 `0600` 权限文件，用环境变量指向它。适用于 systemd `LoadCredential` 与 Docker secrets——这类场景把密钥作为文件而非环境变量注入：
+
+```yaml
+# ~/.hermes/config.yaml
+mcp_servers:
+  yaet:
+    command: ~/.local/bin/YetAnotherElectronTerm.AppImage
+    args:
+      - --mcp
+      - --no-sandbox
+      - --ozone-platform=headless
+    env:
+      YAET_MASTER_KEY_FILE: /run/secrets/yaet_master_key
+    enabled: true
+```
+
+用下面任一种方式提供该文件（挂载的文件内容必须与加密 `~/.yaet/profiles.json` 的主密钥一致）：
+
+```yaml
+# docker-compose.yml — 以文件形式挂载 secret
+services:
+  yaet:
+    command: /opt/YetAnotherElectronTerm/yet-another-electron-term --mcp --no-sandbox --ozone-platform=headless
+    environment:
+      YAET_MASTER_KEY_FILE: /run/secrets/yaet_master_key
+    secrets:
+      - yaet_master_key
+secrets:
+  yaet_master_key:
+    file: /path/to/0600/keyfile   # chmod 600；末尾换行会被剥离
+```
+
+```ini
+# systemd 单元 — LoadCredential 把文件注入 /run/credentials/yaet.service/yaet_master_key
+[Service]
+Environment=YAET_MASTER_KEY_FILE=/run/credentials/yaet.service/yaet_master_key
+LoadCredential=yaet_master_key:/etc/yaet/yaet_master_key
+```
+
+**无头 CLI（只读摆渡）**：无桌面机器上按 `masterkey set` → `cloud download` → `doctor` → `mcp` 四步摆渡后开服。完整流程与命令手册见 [docs/headless-cli.md](docs/headless-cli.md)。
 
 ### 🧩 插件系统
 - **模块化架构**：每种连接类型都是独立的插件，包含清单、后端和前端

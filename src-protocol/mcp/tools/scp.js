@@ -2,12 +2,12 @@ const { ScpFileExplorer } = require('../../../plugins/scp-file-explorer/backend/
 const { Logger } = require('../../common/logger');
 const { resolveConfig } = require('../../common/credentialResolver');
 
+const { resolveMasterKey } = require('../../common/masterKey');
+
 const log = new Logger('mcp-scp');
 
 async function getMasterKey() {
-  const key = process.env.YAET_MASTER_KEY;
-  if (!key) throw new Error('YAET_MASTER_KEY env var not set');
-  return key;
+  return resolveMasterKey();
 }
 
 function createSCPTools() {
