@@ -141,6 +141,7 @@ mcp_servers:
       - --mcp
       - --no-sandbox
       - --ozone-platform=headless
+      - --disable-gpu
     env:
       YAET_MASTER_KEY: ${YAET_MASTER_KEY}
     enabled: true
@@ -157,6 +158,7 @@ mcp_servers:
       - --mcp
       - --no-sandbox
       - --ozone-platform=headless
+      - --disable-gpu
     env:
       YAET_MASTER_KEY_FILE: /run/secrets/yaet_master_key
     enabled: true
@@ -168,7 +170,7 @@ mcp_servers:
 # docker-compose.yml — 以文件形式挂载 secret
 services:
   yaet:
-    command: /opt/YetAnotherElectronTerm/yet-another-electron-term --mcp --no-sandbox --ozone-platform=headless
+    command: /opt/YetAnotherElectronTerm/yet-another-electron-term --mcp --no-sandbox --ozone-platform=headless --disable-gpu
     environment:
       YAET_MASTER_KEY_FILE: /run/secrets/yaet_master_key
     secrets:

@@ -109,6 +109,7 @@ mcp_servers:
       - --mcp
       - --no-sandbox
       - --ozone-platform=headless
+      - --disable-gpu
     env:
       YAET_MASTER_KEY: ${YAET_MASTER_KEY}
     enabled: true
@@ -125,6 +126,7 @@ mcp_servers:
       - --mcp
       - --no-sandbox
       - --ozone-platform=headless
+      - --disable-gpu
     env:
       YAET_MASTER_KEY_FILE: /run/secrets/yaet_master_key
     enabled: true
@@ -136,7 +138,7 @@ Provision that file either way (mounted file content must match the key that enc
 # docker-compose.yml — secret mounted as a file
 services:
   yaet:
-    command: /opt/YetAnotherElectronTerm/yet-another-electron-term --mcp --no-sandbox --ozone-platform=headless
+    command: /opt/YetAnotherElectronTerm/yet-another-electron-term --mcp --no-sandbox --ozone-platform=headless --disable-gpu
     environment:
       YAET_MASTER_KEY_FILE: /run/secrets/yaet_master_key
     secrets:
