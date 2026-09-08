@@ -20,14 +20,30 @@ function defaultKeyFile() {
 }
 
 function parseArgs(argv) {
-  const opts = { file: null, key: null, force: false };
+  const opts = { file: null, key: null, force: false, stdin: false };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--file') opts.file = argv[++i];
     else if (argv[i] === '--key') opts.key = argv[++i];
     else if (argv[i] === '--force') opts.force = true;
+    else if (argv[i] === '--stdin') opts.stdin = true;
     else throw new Error(`Unknown option: ${argv[i]}`);
   }
   return opts;
+}
+
+function readStdin() {
+  return new Promise((resolve, reject) => {
+    if (process.stdin.isTTY) {
+      reject(new Error('--stdin given but stdin is a TTY (nothing piped).'));
+      return;
+    }
+    let data = '';
+    process.stdin.setEncoding('utf8');
+    process.stdin.on('data', (c) => { data += c; });
+    process.stdin.on('end', () => resolve(data.replace(/\r?\n$/, '')));
+    process.stdin.on('error', reject);
+    process.stdin.resume();
+  });
 }
 
 function promptLine(query, hidden) {
@@ -68,10 +84,16 @@ async function cmdSet(argv) {
   const file = opts.file || defaultKeyFile();
 
   let key = opts.key || null;
+  if (!key && opts.stdin) {
+    // Piped input: no TTY games, no echo issues, nothing in argv/ps.
+    // Caller confirms out-of-band; single entry is enough.
+    key = await readStdin();
+    if (!key) throw new Error('Empty master key on stdin, aborted.');
+  }
   if (!key) {
-    const first = await promptLine('Master key (hidden): ', true);
+    const first = await promptLine('[1/2] Master key (hidden): ', true);
     if (!first) throw new Error('Empty master key, aborted.');
-    const second = await promptLine('Repeat master key: ', true);
+    const second = await promptLine('[2/2] Repeat master key: ', true);
     if (first !== second) throw new Error('Keys do not match, aborted.');
     key = first;
   }
@@ -121,7 +143,7 @@ function printHelp() {
 yaet masterkey — headless master key management
 
 Usage:
-  yaet masterkey set [--file <path>] [--key <key>] [--force]
+  yaet masterkey set [--file <path>] [--key <key> | --stdin] [--force]
   yaet masterkey check [--master-key <key>]
 
 Default key file: $YAET_MASTER_KEY_FILE or <configDir>/.masterkey (mode 0600).

@@ -55,26 +55,26 @@ function runCommand(args) {
       break;
     case 'masterkey': {
       const { runMasterkey } = require('./masterkey/command');
-      runMasterkey(args.slice(1)).catch((err) => {
-        console.error(`Error: ${err.message}`);
-        process.exit(1);
-      });
+      runMasterkey(args.slice(1)).then(
+        () => process.exit(0),
+        (err) => { console.error(`Error: ${err.message}`); process.exit(1); }
+      );
       break;
     }
     case 'cloud': {
       const { runCloud } = require('./cloud/command');
-      runCloud(args.slice(1)).catch((err) => {
-        console.error(`Error: ${err.message}`);
-        process.exit(1);
-      });
+      runCloud(args.slice(1)).then(
+        () => process.exit(0),
+        (err) => { console.error(`Error: ${err.message}`); process.exit(1); }
+      );
       break;
     }
     case 'doctor': {
       const { runDoctor } = require('./doctor/command');
-      runDoctor().catch((err) => {
-        console.error(`Error: ${err.message}`);
-        process.exit(1);
-      });
+      runDoctor().then(
+        () => process.exit(0),
+        (err) => { console.error(`Error: ${err.message}`); process.exit(1); }
+      );
       break;
     }
     default:

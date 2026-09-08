@@ -19,9 +19,20 @@ From source, the equivalent entry point is `node src-protocol/cli.js`.
 node src-protocol/cli.js doctor
 ```
 
-Below uses `yaet` as shorthand for `/opt/YetAnotherElectronTerm/yet-another-electron-term`
-(`alias yaet=/opt/YetAnotherElectronTerm/yet-another-electron-term`).
-`--cli …` is accepted as an equivalent prefix, e.g. `yaet --cli doctor`.
+Below uses `yaet` as shorthand for the binary **plus the flags Chromium
+requires without a display** (same as `--mcp` headless mode — Electron
+initializes the Ozone platform before `main()` runs, so omitting them
+fails with `Missing X server or $DISPLAY`):
+
+```bash
+alias yaet='/opt/YetAnotherElectronTerm/yet-another-electron-term --no-sandbox --ozone-platform=headless --disable-gpu --disable-logging'
+```
+
+`--disable-gpu --disable-logging` silence the GPU-process and Chromium
+stderr spam. The remaining `dbus` ERROR lines are harmless noise on
+servers without a session bus. Commands exit promptly with code 0/1
+(the CLI calls `process.exit` instead of letting Electron tear down
+windowing code that doesn't exist headless).
 
 ## 0. Install on a server (no FUSE)
 
@@ -41,6 +52,7 @@ sudo apt install ./YetAnotherElectronTerm-*.deb
 ## 1. Bootstrap (do once per headless machine)
 
 ```bash
+alias yaet='/opt/YetAnotherElectronTerm/yet-another-electron-term --no-sandbox --ozone-platform=headless'
 # 1. install the master key (hidden prompt, typed twice)
 yaet masterkey set
 # writes <configDir>/.masterkey with mode 0600
@@ -54,8 +66,8 @@ yaet cloud download
 # 4. verify
 yaet doctor
 
-# 5. serve (existing flag, unchanged)
-yaet --mcp --no-sandbox --ozone-platform=headless
+# 5. serve (existing flag, unchanged — headless flags already in the alias)
+yaet --mcp
 ```
 
 Config dir is `~/.yaet` (`$YAET_HOME` overrides the base,
@@ -63,13 +75,21 @@ Config dir is `~/.yaet` (`$YAET_HOME` overrides the base,
 
 ## 2. Command reference
 
-### `masterkey set [--file <path>] [--key <key>] [--force]`
+### `masterkey set [--file <path>] [--key <key> | --stdin] [--force]`
 
 Stores the master key in a `0600` file. Default path is
 `$YAET_MASTER_KEY_FILE` if set, else `<configDir>/.masterkey`.
-Without `--key` it prompts on `/dev/tty` (hidden, confirmed twice);
-without a TTY `--key` is required. If `profiles.json` already exists,
-the key is verified against it before writing (use `--force` to override).
+Key input, in order of preference for headless use:
+
+1. `--stdin` (recommended): `printf '%s' "$KEY" | yaet masterkey set --stdin`.
+   No TTY games, no echo, nothing visible in `ps`. Single entry —
+   confirm the key out-of-band before piping.
+2. Interactive prompt (needs a TTY): hidden, typed twice (`[1/2]`, `[2/2]`).
+3. `--key` (discouraged): leaks into shell history and `ps` output;
+   automation without a TTY only.
+
+If `profiles.json` already exists, the key is verified against it before
+writing (use `--force` to override).
 
 ### `masterkey check [--master-key <key>]`
 
@@ -118,4 +138,5 @@ JSONs cannot be decrypted.
 | `No cloud.json found…` | cloud sync was never configured/uploaded in the GUI |
 | `doctor` FAIL on one file only | that file was overwritten while the key mismatched — restore from `backup/` or re-download |
 | `dlopen(): error loading libfuse.so.2` | AppImage needs FUSE — use the .deb release or `--appimage-extract` (see §0) |
+| `Missing X server or $DISPLAY` | Chromium headless flags missing — use the `yaet` alias from §1 (includes `--ozone-platform=headless --no-sandbox`) |
 | `Unknown command/subcommand` | bare form needs the full words, e.g. `masterkey set` — not `masterkey se` |
