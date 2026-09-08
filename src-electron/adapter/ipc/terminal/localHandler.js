@@ -19,7 +19,7 @@ function initLocalTerminalIpcHandler(settings, log, terminalMap, registry) {
         process: session.process,
         callback: (input) => session.write(input),
         resize: (cols, rows) => session.process?.resize(cols, rows),
-        close: () => { try { session.process?.kill(); } catch { /* ignore */ } },
+        close: () => { try { session.close(); } catch { /* ignore */ } },
       });
       if (registry) registry.register(data.id, 'local', 'user', session);
     }).catch((err) => {

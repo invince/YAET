@@ -8,6 +8,11 @@ class LocalTerminalSession extends TerminalRuntimeApi {
     this.log = log;
     this.process = null;
     this._connected = false;
+    this._closing = false;
+    // Defensive: 'error' is special on EventEmitter — emitting it without a
+    // listener throws ERR_UNHANDLED_ERROR and crashes the main process.
+    // Keep a no-op listener so any future emit('error') can never crash us.
+    this.on('error', () => {});
   }
 
   async connect(options = {}) {
@@ -36,8 +41,16 @@ class LocalTerminalSession extends TerminalRuntimeApi {
     });
 
     ptyProcess.on('error', (err) => {
+      const msg = (err && err.message) ? err.message : String(err);
+      // Benign race on Linux: after kill()/child exit the pty master read
+      // fails with EIO. Not a real error — the 'exit' handler below already
+      // emits 'disconnect'. Swallow it instead of crashing.
+      if (this._closing || !this._connected || /EIO|closed|hang ?up/i.test(msg)) {
+        this._connected = false;
+        return;
+      }
       this.log.error('Local terminal error:', err);
-      this.emit('error', { error: err.message });
+      this.emit('error', { error: msg });
     });
 
     ptyProcess.on('exit', (exitCode) => {
@@ -66,7 +79,8 @@ class LocalTerminalSession extends TerminalRuntimeApi {
 
   async close() {
     if (this.process) {
-      this.process.kill();
+      this._closing = true;
+      try { this.process.kill(); } catch { /* ignore — already dead */ }
       this.process = null;
       this._connected = false;
     }
