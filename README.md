@@ -154,7 +154,9 @@ LoadCredential=yaet_master_key:/etc/yaet/yaet_master_key
 ```
 
 **Headless CLI (read-only bootstrap)**: on machines without a desktop,
-`masterkey set` → `cloud download` → `doctor` → `mcp`.
+`masterkey set` → `cloud download` → `doctor` → `--mcp`
+(bare subcommands on the installed binary; `--cli …` form also works).
+AppImage needs FUSE — on servers prefer the .deb or `--appimage-extract`.
 See [docs/headless-cli.md](docs/headless-cli.md) for the full flow and command reference.
 
 ### 🧩 Plugin System

@@ -5,30 +5,57 @@ The headless machine is **read-only**: configure everything in the GUI,
 sync it down, and serve MCP/ACP from the synced files. There is no
 `cloud upload` on purpose — edit in the GUI, upload there, re-download here.
 
-All commands share one entry point:
+The packaged app does **not** unpack: `src-protocol/` ships inside the asar
+and the installed binary dispatches CLI commands itself.
+From source, the equivalent entry point is `node src-protocol/cli.js`.
 
 ```bash
-node src-protocol/cli.js <command> [options]
+# installed (.deb): full path is /opt/YetAnotherElectronTerm/yet-another-electron-term
+/opt/YetAnotherElectronTerm/yet-another-electron-term doctor
+/opt/YetAnotherElectronTerm/yet-another-electron-term cloud download
+# AppImage without FUSE: extract once, run AppRun (see §0)
+./squashfs-root/AppRun doctor
+# from source
+node src-protocol/cli.js doctor
+```
+
+Below uses `yaet` as shorthand for `/opt/YetAnotherElectronTerm/yet-another-electron-term`
+(`alias yaet=/opt/YetAnotherElectronTerm/yet-another-electron-term`).
+`--cli …` is accepted as an equivalent prefix, e.g. `yaet --cli doctor`.
+
+## 0. Install on a server (no FUSE)
+
+AppImage needs `libfuse.so.2` to run, which headless servers often lack.
+Two supported ways around it:
+
+```bash
+# option A (recommended): use the .deb release instead of AppImage
+sudo apt install ./YetAnotherElectronTerm-*.deb
+/opt/YetAnotherElectronTerm/yet-another-electron-term doctor
+
+# option B: extract the AppImage once, run AppRun directly (no FUSE needed)
+./YetAnotherElectronTerm.AppImage --appimage-extract
+./squashfs-root/AppRun doctor
 ```
 
 ## 1. Bootstrap (do once per headless machine)
 
 ```bash
 # 1. install the master key (hidden prompt, typed twice)
-node src-protocol/cli.js masterkey set
+yaet masterkey set
 # writes <configDir>/.masterkey with mode 0600
 
 # 2. point the environment at it (shell profile, systemd EnvironmentFile, …)
 export YAET_MASTER_KEY_FILE=~/.yaet/.masterkey
 
 # 3. pull the GUI-configured profiles/secrets/settings
-node src-protocol/cli.js cloud download
+yaet cloud download
 
 # 4. verify
-node src-protocol/cli.js doctor
+yaet doctor
 
-# 5. serve
-node src-protocol/cli.js mcp
+# 5. serve (existing flag, unchanged)
+yaet --mcp --no-sandbox --ozone-platform=headless
 ```
 
 Config dir is `~/.yaet` (`$YAET_HOME` overrides the base,
@@ -90,3 +117,5 @@ JSONs cannot be decrypted.
 | `decrypt failed (wrong master key?)` | key file doesn't match the key that encrypted the JSONs — restore the matching-era key |
 | `No cloud.json found…` | cloud sync was never configured/uploaded in the GUI |
 | `doctor` FAIL on one file only | that file was overwritten while the key mismatched — restore from `backup/` or re-download |
+| `dlopen(): error loading libfuse.so.2` | AppImage needs FUSE — use the .deb release or `--appimage-extract` (see §0) |
+| `Unknown command/subcommand` | bare form needs the full words, e.g. `masterkey set` — not `masterkey se` |

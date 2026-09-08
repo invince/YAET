@@ -185,7 +185,7 @@ Environment=YAET_MASTER_KEY_FILE=/run/credentials/yaet.service/yaet_master_key
 LoadCredential=yaet_master_key:/etc/yaet/yaet_master_key
 ```
 
-**无头 CLI（只读摆渡）**：无桌面机器上按 `masterkey set` → `cloud download` → `doctor` → `mcp` 四步摆渡后开服。完整流程与命令手册见 [docs/headless-cli.md](docs/headless-cli.md)。
+**无头 CLI（只读摆渡）**：无桌面机器上按 `masterkey set` → `cloud download` → `doctor` → `--mcp` 四步摆渡后开服（安装后二进制直接认裸子命令，`--cli …` 写法等价）。AppImage 需要 FUSE，服务器上优先用 .deb 或 `--appimage-extract`。完整流程与命令手册见 [docs/headless-cli.md](docs/headless-cli.md)。
 
 ### 🧩 插件系统
 - **模块化架构**：每种连接类型都是独立的插件，包含清单、后端和前端

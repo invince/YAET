@@ -30,6 +30,29 @@ let runtime = null;
 let sessionRegistry = null;
 let pluginManager = null;
 
+// ── CLI mode: headless commands without Electron GUI ───────────────────
+// Packaged app entry point (src-protocol/ ships inside the asar):
+//   YetAnotherElectronTerm.AppImage --cli doctor
+//   YetAnotherElectronTerm.AppImage --cli cloud download
+//   YetAnotherElectronTerm.AppImage --cli masterkey set
+if (process.argv.includes('--cli')) {
+  const { runCommand } = require('../src-protocol/cli');
+  runCommand(process.argv.slice(process.argv.indexOf('--cli') + 1));
+  return; // skip all Electron GUI initialization
+}
+// Bare subcommand form: `AppImage doctor`, `AppImage cloud download`, …
+// (same as `--cli …`, just shorter). Only the first positional token counts,
+// so normal GUI launches (no positional args) are unaffected.
+{
+  const isPathToken = (a) => a === '.' || a.startsWith('/') || a.startsWith('./') || a.startsWith('../');
+  const firstPositional = process.argv.slice(1).find((a) => !isPathToken(a) && !a.startsWith('-'));
+  if (['masterkey', 'cloud', 'doctor'].includes(firstPositional)) {
+    const { runCommand } = require('../src-protocol/cli');
+    runCommand(process.argv.slice(process.argv.indexOf(firstPositional)));
+    return; // skip all Electron GUI initialization
+  }
+}
+// ── End CLI mode ─────────────────────────────────────────────────────────
 // ── MCP mode: run standalone MCP server without Electron GUI ────────────
 // Packaged app entry point (src-protocol/ ships inside the asar, so the
 // installed binary handles this directly — no wrapper script needed):

@@ -38,9 +38,7 @@ Claude Desktop Config (claude_desktop_config.json):
 `);
 }
 
-function main() {
-  const args = process.argv.slice(2);
-
+function runCommand(args) {
   if (args.includes('--help') || args.includes('-h') || args.length === 0) {
     printHelp();
     process.exit(0);
@@ -86,4 +84,12 @@ function main() {
   }
 }
 
-main();
+function main() {
+  runCommand(process.argv.slice(2));
+}
+
+if (require.main === module) {
+  main();
+}
+
+module.exports = { runCommand };
