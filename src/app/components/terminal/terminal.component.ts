@@ -68,12 +68,14 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   ) {
     const isWin = (window as any).electronAPI?.platform === 'win32';
     this.xtermUnderlying = new Terminal({
-      // 块元素(█▀▄)在 Cascadia 下会有发丝缝导致二维码糊掉，
-      // DejaVu / Noto 的块字符能实心填满单元格，优先使用
+      // Block elements (█▀▄) show hairline gaps under Cascadia which blurs QR codes,
+      // DejaVu / Noto fill the cell solid, so prefer them.
       fontFamily: '"DejaVu Sans Mono", "Noto Sans Mono", "Cascadia Code", Menlo, monospace',
       fontSize: 14,
-      // QR / 半方块字符(▀▄█)要求行高=1、字间距=0，否则二维码会被拉长/挤扁无法扫描
-      lineHeight: 1,
+      // QR / half-block chars (▀▄█) need lineHeight close to 1 and letterSpacing 0,
+      // otherwise the QR code gets stretched/squashed and becomes unscannable.
+      // lineHeight=1.0 clips the descenders of _ / g y p q, 1.15 is the compromise.
+      lineHeight: 1.15,
       letterSpacing: 0,
       allowProposedApi: true,
       // theme: {

@@ -126,7 +126,7 @@ app.on('ready', () => {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      sandbox: true, // P0-S3: renderer has no Node; plugins run in main/utility, preload uses contextBridge only
+      sandbox: false, // NoNewPrivs 会继承进 node-pty 导致终端里 sudo 不可用，保持关闭
       enableRemoteModule: false,
       enableBlinkFeatures: 'Accelerated2dCanvas',
       preload: path.join(__dirname, 'preload.js'),
