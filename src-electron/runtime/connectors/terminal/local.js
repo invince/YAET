@@ -1,6 +1,30 @@
 const pty = require('node-pty');
 const { exec } = require('child_process');
+const fs = require('fs');
+const os = require('os');
 const { TerminalRuntimeApi } = require('../../interfaces/terminalRuntimeApi');
+
+function resolveMacShell(terminalExec) {
+  if (terminalExec) return { shell: terminalExec, args: [] };
+  // Prefer user's login shell ($SHELL), then zsh, then bash — absolute paths
+  // because packaged Electron apps on macOS have a minimal PATH.
+  const candidates = [
+    process.env.SHELL,
+    '/bin/zsh',
+    '/bin/bash',
+    '/usr/bin/zsh',
+    '/usr/bin/bash',
+  ].filter(Boolean);
+  for (const c of candidates) {
+    try {
+      if (fs.existsSync(c) && fs.statSync(c).isFile()) {
+        // -l = login shell so profile/rc files load (PATH, etc.)
+        return { shell: c, args: ['-l'] };
+      }
+    } catch { /* try next */ }
+  }
+  return { shell: '/bin/zsh', args: ['-l'] };
+}
 
 class LocalTerminalSession extends TerminalRuntimeApi {
   constructor(log) {
@@ -17,7 +41,14 @@ class LocalTerminalSession extends TerminalRuntimeApi {
 
   async connect(options = {}) {
     const { terminalExec, rows, cols, cwd } = options;
-    const shell = terminalExec || (process.platform === 'win32' ? 'cmd.exe' : 'bash');
+    const isMac = process.platform === 'darwin';
+    let shell, args;
+    if (isMac) {
+      ({ shell, args } = resolveMacShell(terminalExec));
+    } else {
+      shell = terminalExec || (process.platform === 'win32' ? 'cmd.exe' : 'bash');
+      args = [];
+    }
 
     const isWindows = process.platform === 'win32';
     const isDebuggerAttached = typeof v8debug === 'object' || 
@@ -27,14 +58,21 @@ class LocalTerminalSession extends TerminalRuntimeApi {
 
     const useConpty = isWindows && !isDebuggerAttached;
 
-    const ptyProcess = pty.spawn(shell, [], {
+    let ptyProcess;
+    try {
+      ptyProcess = pty.spawn(shell, args, {
       name: 'xterm-color',
       cols: cols || 80,
       rows: rows || 30,
-      cwd: cwd || process.env.HOME,
-      env: process.env,
+      cwd: cwd || process.env.HOME || os.homedir(),
+      env: { ...process.env, TERM: 'xterm-256color' },
       useConpty: useConpty,
     });
+    } catch (err) {
+      this.log.error('Local terminal spawn failed:', shell, err);
+      this.emit('error', { error: 'Failed to start shell (' + shell + '): ' + (err && err.message ? err.message : String(err)) });
+      return;
+    }
 
     ptyProcess.onData((data) => {
       this.emit('output', { data: data.toString() });

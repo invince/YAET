@@ -7,7 +7,11 @@ function initAutoUpdater(log, settings, proxyRepo, secretRepo) {
   log.info("AutoUpdate is active");
 
   autoUpdater.logger = log;
-  autoUpdater.verifyUpdateCodeSignature = true;
+  // Unsigned/self-built macOS apps fail Squirrel.Mac code-signature
+  // verification ("Apple cannot verify"). Disable it on darwin so
+  // dev/unsigned builds can still install downloaded updates.
+  autoUpdater.verifyUpdateCodeSignature = process.platform !== 'darwin';
+  autoUpdater.autoInstallOnAppQuit = true;
 
   const isDev = process.env.NODE_ENV === 'development';
 
@@ -94,27 +98,14 @@ function initAutoUpdater(log, settings, proxyRepo, secretRepo) {
       buttons: ['Restart', 'Later'],
     }).then((result) => {
       if (result.response === 0) {
-        // macOS requires special handling for quitAndInstall to work properly
-        // See: https://github.com/electron-userland/electron-builder/issues/8997
-        if (process.platform === 'darwin') {
-          const { app } = require('electron');
-          const { autoUpdater: nativeUpdater } = require('electron');
-
-          // Remove listeners that might prevent the app from quitting
-          app.removeAllListeners('before-quit');
-          app.removeAllListeners('window-all-closed');
-          BrowserWindow.getAllWindows().forEach((win) => {
-            if (win.isDestroyed()) return;
-            win.removeAllListeners('close');
-            win.close();
-          });
-
-          nativeUpdater.once('before-quit-for-update', () => {
-            app.exit();
-          });
-        }
-
-        autoUpdater.quitAndInstall();
+        // quitAndInstall must be allowed to close windows itself.
+        // Previously we manually closed windows + app.exit() first,
+        // which killed the Squirrel.Mac installer before it ran.
+        // Also quit all other windows cleanly to unblock quitting.
+        BrowserWindow.getAllWindows().forEach((win) => {
+          if (!win.isDestroyed()) win.removeAllListeners('close');
+        });
+        autoUpdater.quitAndInstall(true, true);
       }
     });
   });
