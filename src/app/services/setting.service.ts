@@ -147,6 +147,20 @@ export class SettingService {
 
   validateTerminalSettings(terminalSettings: TerminalSettings) {
     if (terminalSettings.localTerminal) {
+      const platform = (window as any).electronAPI?.platform;
+      const isUnix = platform === 'darwin' || platform === 'linux';
+      // Migrate Windows-only defaults on macOS/Linux (e.g. fresh default is CMD)
+      if (isUnix && (
+        terminalSettings.localTerminal.type === LocalTerminalType.CMD ||
+        terminalSettings.localTerminal.type === LocalTerminalType.POWERSHELL ||
+        terminalSettings.localTerminal.type === LocalTerminalType.POWERSHELL_7
+      )) {
+        terminalSettings.localTerminal.type = platform === 'darwin' ? LocalTerminalType.ZSH : LocalTerminalType.BASH;
+      }
+      // Migrate old relative execPaths saved before absolute-path fix
+      if (isUnix && terminalSettings.localTerminal.execPath === 'bash') {
+        terminalSettings.localTerminal.execPath = '/bin/bash';
+      }
       if (!terminalSettings.localTerminal.type) {
         terminalSettings.localTerminal.type = LocalTerminalType.CMD;
       }
@@ -162,10 +176,16 @@ export class SettingService {
           if (isWin32) {
             terminalSettings.localTerminal.execPath = 'wsl.exe';
           } else {
-            terminalSettings.localTerminal.execPath = 'bash';
+            terminalSettings.localTerminal.execPath = '/bin/bash';
           }
         } break;
-        // case LocalTerminalType.CUSTOM: terminalSettings.localTerminal.execPath = ''; break;
+        case LocalTerminalType.ZSH:
+          terminalSettings.localTerminal.execPath = '/bin/zsh';
+          break;
+        case LocalTerminalType.SH:
+          terminalSettings.localTerminal.execPath = '/bin/sh';
+          break;
+        // CUSTOM: keep user-entered execPath untouched
       }
     }
   }

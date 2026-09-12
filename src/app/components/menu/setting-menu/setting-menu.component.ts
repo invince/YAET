@@ -631,11 +631,14 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
   getLocalTermOptions(): LocalTerminalType[] {
-    const isWin32 = (window as any).electronAPI?.platform === 'win32';
-    if (isWin32) {
+    const platform = (window as any).electronAPI?.platform;
+    if (platform === 'win32') {
       return [LocalTerminalType.CMD, LocalTerminalType.POWERSHELL, LocalTerminalType.POWERSHELL_7, LocalTerminalType.BASH];
+    } else if (platform === 'darwin') {
+      // macOS default shell is zsh — list it first
+      return [LocalTerminalType.ZSH, LocalTerminalType.BASH, LocalTerminalType.SH, LocalTerminalType.CUSTOM];
     } else {
-      return [LocalTerminalType.BASH];
+      return [LocalTerminalType.BASH, LocalTerminalType.ZSH, LocalTerminalType.SH, LocalTerminalType.CUSTOM];
     }
   }
 

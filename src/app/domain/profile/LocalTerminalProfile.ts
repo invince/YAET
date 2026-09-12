@@ -4,6 +4,8 @@ export enum LocalTerminalType {
   POWERSHELL_7 = 'powershell 7', // pwsh.exe
 
   BASH = 'bash',
+  ZSH = 'zsh',
+  SH = 'sh',
   CUSTOM = 'custom'
 }
 

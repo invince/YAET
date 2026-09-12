@@ -5,7 +5,19 @@ const os = require('os');
 const { TerminalRuntimeApi } = require('../../interfaces/terminalRuntimeApi');
 
 function resolveMacShell(terminalExec) {
-  if (terminalExec) return { shell: terminalExec, args: [] };
+  // Normalize bare names saved by older versions ('bash'/'zsh'/'sh')
+  // to absolute paths — packaged apps have a minimal PATH.
+  const alias = { bash: '/bin/bash', zsh: '/bin/zsh', sh: '/bin/sh' };
+  if (terminalExec) {
+    const normalized = alias[terminalExec] || alias[terminalExec.split('/').pop()] || terminalExec;
+    try {
+      if (fs.existsSync(normalized) && fs.statSync(normalized).isFile()) {
+        // Custom absolute path: use as-is but still as login shell for env setup
+        return { shell: normalized, args: ['-l'] };
+      }
+      // Saved path doesn't exist (e.g. stale custom path) — fall through to candidates
+    } catch { /* fall through to candidates */ }
+  }
   // Prefer user's login shell ($SHELL), then zsh, then bash — absolute paths
   // because packaged Electron apps on macOS have a minimal PATH.
   const candidates = [
@@ -70,8 +82,9 @@ class LocalTerminalSession extends TerminalRuntimeApi {
     });
     } catch (err) {
       this.log.error('Local terminal spawn failed:', shell, err);
-      this.emit('error', { error: 'Failed to start shell (' + shell + '): ' + (err && err.message ? err.message : String(err)) });
-      return;
+      const msg = 'Failed to start shell (' + shell + '): ' + (err && err.message ? err.message : String(err));
+      this.emit('error', { error: msg });
+      throw new Error(msg);
     }
 
     ptyProcess.onData((data) => {
