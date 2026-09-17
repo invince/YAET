@@ -198,7 +198,7 @@
     "EXEC_HINT": "您可以在命令中使用 $login $password"
   },
   "CLOUD": {
-    "TITLE": "同步",
+    "TITLE": "设置同步",
     "GIT_URL": "Git URL",
     "PROXY": "代理",
     "AUTH_TYPE": "认证类型",
@@ -214,6 +214,10 @@
     "DOWNLOADED": "已下载",
     "UPLOAD_FAILED": "上传失败",
     "DOWNLOAD_FAILED": "下载失败",
+    "BACKUP": "备份",
+    "BACKED_UP": "已备份",
+    "BACKUP_FAILED": "备份失败",
+    "NO_ITEMS_SELECTED": "请至少勾选一项",
     "ERROR_OCCURRED": "发生错误",
     "SYNC_SETTING": "设置",
     "SYNC_PROFILE": "配置文件",

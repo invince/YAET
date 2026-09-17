@@ -218,6 +218,29 @@ export class CloudComponent extends MenuComponent implements OnInit, OnDestroy {
     }
   }
 
+  backup() {
+    const items: string[] = this.form.get('items')?.value || [];
+    if (!items.length) {
+      this.notification.error(this.translate.instant('CLOUD.NO_ITEMS_SELECTED'));
+      return;
+    }
+    this.spinner.show();
+    this.processing = true;
+    this.cloudService.backup(items).then((response) => {
+      this.spinner.hide();
+      if (response.succeed) {
+        this.notification.info(this.translate.instant('CLOUD.BACKED_UP') + ': ' + response.ok.join(', '));
+      } else {
+        this.notification.error(this.translate.instant('CLOUD.BACKUP_FAILED') + ': ' + response.ko);
+      }
+      this.processing = false;
+    }).catch((err) => {
+      this.spinner.hide();
+      this.processing = false;
+      this.notification.error(this.translate.instant('CLOUD.BACKUP_FAILED') + ': ' + err.message);
+    });
+  }
+
   getItemControlName(item: string) {
     return 'items_' + item;
   }

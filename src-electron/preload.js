@@ -77,6 +77,7 @@ const CORE_INVOKE_CHANNELS = [
   'crypto.decrypt',
   'cloud.upload',
   'cloud.download',
+  'setting.backup',
   'local-file.save-temp',
   'local-file.open',
   'local-file.read',

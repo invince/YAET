@@ -13,7 +13,7 @@ Commands:
   mcp           Start MCP server (Model Context Protocol)
   acp           Start ACP server (Agent Communication Protocol)
   masterkey     Manage the master key on headless machines (set|check)
-  cloud         Cloud sync on headless machines (status|download)
+  cloud         Cloud sync on headless machines (status|download|setup)
   doctor        Local self-check for headless machines
 
 Options:
@@ -71,7 +71,7 @@ function runCommand(args) {
     }
     case 'doctor': {
       const { runDoctor } = require('./doctor/command');
-      runDoctor().then(
+      runDoctor(args.slice(1)).then(
         () => process.exit(0),
         (err) => { console.error(`Error: ${err.message}`); process.exit(1); }
       );

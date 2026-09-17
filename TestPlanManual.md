@@ -125,12 +125,13 @@
 - [ ] Custom command configured in profile
 - [ ] Custom command executes (e.g., launching RealVNC)
 
-## 7. Cloud Sync
+## 7. Setting Sync
 
-- [ ] Cloud settings form validation
+- [ ] Sync settings form validation
 - [ ] Authentication via login/password or secret
 - [ ] Upload profiles/secrets to remote git repo
 - [ ] Download profiles/secrets from remote git repo
+- [ ] Backup checked items to a zip file
 
 ## 8. AI Chat
 

@@ -41,6 +41,7 @@ import {
   SETTINGS_GET,
   SETTINGS_RELOAD,
   SETTINGS_SAVE,
+  SETTING_BACKUP,
 } from './ElectronConstant';
 import {resolveLoginPassword} from '../../utils/SecretResolver';
 import {NotificationService} from '../notification.service';
@@ -318,6 +319,13 @@ export class ElectronService extends AbstractElectronService {
         return undefined;
       }
       return await this.ipc.invoke(CLOUD_UPLOAD, { data: cloud });
+    }
+    return undefined;
+  }
+
+  async backupSettings(items: string[]): Promise<CloudResponse | undefined> {
+    if (this.ipc) {
+      return await this.ipc.invoke(SETTING_BACKUP, { items });
     }
     return undefined;
   }

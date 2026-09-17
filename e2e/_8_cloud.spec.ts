@@ -3,7 +3,7 @@ import {AppPage} from './app.po';
 
 const PASSWORD = 'test-password';
 
-test.describe('8. Cloud Settings', () => {
+test.describe('8. Setting Sync', () => {
 
   test.beforeEach(async ({ mainWindow }) => {
     const app = new AppPage(mainWindow);
@@ -12,13 +12,13 @@ test.describe('8. Cloud Settings', () => {
   });
 
     test('open cloud menu from sidebar', async ({ mainWindow }) => {
-        await mainWindow.locator('app-sidebar button[aria-label="Cloud Sync"]').click();
+        await mainWindow.locator('app-sidebar button[aria-label="Setting Sync"]').click();
         await expect(mainWindow.locator('app-cloud-menu')).toBeVisible({ timeout: 15000 });
     });
 
     test('form fields exist', async ({ mainWindow }) => {
-        await mainWindow.locator('app-sidebar button[aria-label="Cloud Sync"]').click();
-        await expect(mainWindow.locator('app-cloud-menu h2')).toContainText('Sync', { timeout: 5000 });
+        await mainWindow.locator('app-sidebar button[aria-label="Setting Sync"]').click();
+        await expect(mainWindow.locator('app-cloud-menu h2')).toContainText('Setting Sync', { timeout: 5000 });
 
         await expect(mainWindow.locator('input[formControlName="url"]')).toBeVisible();
         await expect(mainWindow.locator('mat-select[formControlName="proxyId"]')).toBeVisible();
@@ -27,7 +27,7 @@ test.describe('8. Cloud Settings', () => {
     });
 
     test('upload button disabled when form incomplete', async ({ mainWindow }) => {
-        await mainWindow.locator('app-sidebar button[aria-label="Cloud Sync"]').click();
+        await mainWindow.locator('app-sidebar button[aria-label="Setting Sync"]').click();
         await expect(mainWindow.locator('app-cloud-menu h2')).toBeVisible({ timeout: 15000 });
 
         const uploadBtn = mainWindow.locator('app-cloud-menu button').filter({ hasText: /Upload/i });
@@ -35,7 +35,7 @@ test.describe('8. Cloud Settings', () => {
     });
 
     test('auth type radio buttons exist and toggle fields', async ({ mainWindow }) => {
-        await mainWindow.locator('app-sidebar button[aria-label="Cloud Sync"]').click();
+        await mainWindow.locator('app-sidebar button[aria-label="Setting Sync"]').click();
         await expect(mainWindow.locator('app-cloud-menu h2')).toBeVisible({ timeout: 5000 });
 
         // Fill URL first so form has less invalid reasons

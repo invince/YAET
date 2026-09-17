@@ -1,6 +1,6 @@
 {
   "name": "yet-another-electron-term",
-  "version": "7.4.4",
+  "version": "7.4.5",
   "author": {
     "name": "invince",
     "email": "invincezero@gmail.com"
@@ -49,6 +49,7 @@
       "dist/",
       "src-electron/",
       "src-protocol/",
+      "scripts/yaet",
       "plugins/",
       "ext-plugins-example/",
       "package.json"
@@ -109,6 +110,7 @@
     "express-rate-limit": "^8.5.2",
     "find-free-ports": "^3.1.1",
     "https-proxy-agent": "^7.0.6",
+    "jszip": "^3.10.2",
     "keytar": "^7.9.0",
     "lodash": "^4.18.1",
     "marked": "^17.0.3",

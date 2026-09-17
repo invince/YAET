@@ -196,7 +196,7 @@
     "EXEC_HINT": "Sie können $login $password im Befehl verwenden"
   },
   "CLOUD": {
-    "TITLE": "Synchronisieren",
+    "TITLE": "Einstellungen synchronisieren",
     "GIT_URL": "Git-URL",
     "PROXY": "Proxy",
     "AUTH_TYPE": "Authentifizierungstyp",
@@ -212,6 +212,10 @@
     "DOWNLOADED": "Heruntergeladen",
     "UPLOAD_FAILED": "Hochladen fehlgeschlagen",
     "DOWNLOAD_FAILED": "Herunterladen fehlgeschlagen",
+    "BACKUP": "Sichern",
+    "BACKED_UP": "Gesichert",
+    "BACKUP_FAILED": "Sicherung fehlgeschlagen",
+    "NO_ITEMS_SELECTED": "Mindestens ein Element auswählen",
     "ERROR_OCCURRED": "Ein Fehler ist aufgetreten",
     "SYNC_SETTING": "Einstellungen",
     "SYNC_PROFILE": "Profile",

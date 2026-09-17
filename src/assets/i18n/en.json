@@ -198,7 +198,7 @@
     "EXEC_HINT": "you can use $login $password in the command"
   },
   "CLOUD": {
-    "TITLE": "Sync",
+    "TITLE": "Setting Sync",
     "GIT_URL": "Git URL",
     "PROXY": "Proxy",
     "AUTH_TYPE": "Auth Type",
@@ -214,6 +214,10 @@
     "DOWNLOADED": "Downloaded",
     "UPLOAD_FAILED": "Upload failed",
     "DOWNLOAD_FAILED": "Download failed",
+    "BACKUP": "Backup",
+    "BACKED_UP": "Backed up",
+    "BACKUP_FAILED": "Backup failed",
+    "NO_ITEMS_SELECTED": "Select at least one item",
     "ERROR_OCCURRED": "Error Occurred",
     "SYNC_SETTING": "Settings",
     "SYNC_PROFILE": "Profiles",

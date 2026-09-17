@@ -196,7 +196,7 @@
     "EXEC_HINT": "puede usar $login $password en el comando"
   },
   "CLOUD": {
-    "TITLE": "Sincronizar",
+    "TITLE": "Sincronizar ajustes",
     "GIT_URL": "URL de Git",
     "PROXY": "Proxy",
     "AUTH_TYPE": "Tipo de autenticación",
@@ -212,6 +212,10 @@
     "DOWNLOADED": "Descargado",
     "UPLOAD_FAILED": "Error al subir",
     "DOWNLOAD_FAILED": "Error al descargar",
+    "BACKUP": "Respaldar",
+    "BACKED_UP": "Respaldado",
+    "BACKUP_FAILED": "Respaldo fallido",
+    "NO_ITEMS_SELECTED": "Seleccione al menos un elemento",
     "ERROR_OCCURRED": "Ha ocurrido un error",
     "SYNC_SETTING": "Configuración",
     "SYNC_PROFILE": "Perfiles",

@@ -6,6 +6,16 @@ English | [Chinese](./README.cn.md)
 
 YAET is a comprehensive remote connection and management tool built with Angular and Electron. It provides a unified interface for managing remote servers, executing commands, transferring files, and accessing remote desktops — all from a single application.
 
+## Quick Install (Linux)
+
+One command downloads the latest AppImage, registers it in the application menu, and installs the `yaet` headless CLI shim:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/invince/YAET/master/install.sh | bash
+```
+
+On servers without a display, prefer the `.deb` release (AppImage needs FUSE) and follow [docs/headless-cli.md](docs/headless-cli.md) for the headless bootstrap (`doctor --fix-shim` → `masterkey set` → `cloud setup` → `cloud download`).
+
 ## Key Features
 
 ### 🖥️ Terminal Connections
@@ -155,10 +165,8 @@ Environment=YAET_MASTER_KEY_FILE=/run/credentials/yaet.service/yaet_master_key
 LoadCredential=yaet_master_key:/etc/yaet/yaet_master_key
 ```
 
-**Headless CLI (read-only bootstrap)**: on machines without a desktop,
-`masterkey set` → `cloud download` → `doctor` → `--mcp`
-(bare subcommands on the installed binary; `--cli …` form also works).
-AppImage needs FUSE — on servers prefer the .deb or `--appimage-extract`.
+**Headless CLI**: on machines without a desktop, `doctor --fix-shim` installs the `yaet` shim, then `masterkey set` → `cloud setup` → `cloud download` → `doctor` → `--mcp`.
+AppImage needs FUSE — on servers prefer the .deb.
 See [docs/headless-cli.md](docs/headless-cli.md) for the full flow and command reference.
 
 ### 🧩 Plugin System

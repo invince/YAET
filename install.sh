@@ -88,6 +88,40 @@ Comment=Yet Another Electron Terminal
 Terminal=false
 EOF
 
+# Create headless CLI shim
+# NOTE: keep in sync with scripts/yaet (shipped in the asar, used by
+# `yaet doctor --fix-shim`). Inlined here so the installer stays
+# self-contained (no repo checkout needed).
+echo "Creating yaet CLI shim..."
+cat > "$HOME/.local/bin/yaet" <<'EOF'
+#!/bin/sh
+# yaet — headless CLI shim. See scripts/yaet in the YAET repo.
+set -u
+
+FLAGS="--no-sandbox --ozone-platform=headless --disable-gpu --disable-logging"
+
+# 1. .deb install
+if [ -x /opt/YetAnotherElectronTerm/yet-another-electron-term ]; then
+  # shellcheck disable=SC2086
+  exec /opt/YetAnotherElectronTerm/yet-another-electron-term $FLAGS "$@"
+fi
+
+# 2. user-local AppImage (installed by install.sh)
+if [ -x "$HOME/.local/bin/YetAnotherElectronTerm.AppImage" ]; then
+  # shellcheck disable=SC2086
+  exec "$HOME/.local/bin/YetAnotherElectronTerm.AppImage" $FLAGS "$@"
+fi
+
+echo "yaet: no installed YAET binary found (looked in /opt/YetAnotherElectronTerm and ~/.local/bin)." >&2
+exit 1
+EOF
+chmod +x "$HOME/.local/bin/yaet"
+
 echo -e "${GREEN}Installation complete!${NC}"
 echo -e "You can now find $APP_NAME in your application menu."
 echo -e "Or run it manually: $DOWNLOAD_PATH"
+echo -e "Headless CLI is available as: ${BLUE}yaet${NC} (e.g. yaet doctor)"
+case ":$PATH:" in
+  *":$HOME/.local/bin:"*) ;;
+  *) echo -e "${RED}Note: ~/.local/bin is not on your PATH — add it to your shell profile to use the yaet command.${NC}";;
+esac

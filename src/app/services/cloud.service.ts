@@ -135,4 +135,9 @@ export class CloudService implements OnDestroy {
     const result = await this.electron.downloadCloud(cloudSettings);
     return result ?? { succeed: false, ok: [], ko: ['Download failed: no response from backend'] };
   }
+
+  async backup(items: string[]): Promise<CloudResponse> {
+    const result = await this.electron.backupSettings(items);
+    return result ?? { succeed: false, ok: [], ko: ['Backup failed: no response from backend'] };
+  }
 }

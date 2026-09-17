@@ -226,11 +226,13 @@ LoadCredential=yaet_master_key:/etc/yaet/yaet_master_key
 
 ### 快速安装（Linux）
 
-Linux 用户只需运行以下命令即可下载最新 AppImage 并集成到桌面环境：
+Linux 用户只需运行以下命令即可下载最新 AppImage 并集成到桌面环境（同时安装 `yaet` 无头 CLI）：
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/invince/YAET/master/install.sh | bash
 ```
+
+无显示器的服务器请用 `.deb` 包，并按 [docs/headless-cli.md](docs/headless-cli.md) 做无头初始化（`doctor --fix-shim` → `masterkey set` → `cloud setup` → `cloud download`）。
 
 3. **重新编译原生模块**（安装失败时执行）
    ```bash

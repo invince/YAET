@@ -105,4 +105,8 @@
     <mat-icon>cloud_download</mat-icon>
     {{ 'CLOUD.DOWNLOAD' | translate }}
   </button>
+  <button mat-fab extended (click)="backup()" class="small-icon" [disabled]="processing || !(form.get('items')?.value?.length)">
+    <mat-icon>archive</mat-icon>
+    {{ 'CLOUD.BACKUP' | translate }}
+  </button>
 </div>

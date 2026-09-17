@@ -7,6 +7,7 @@ const { ConfigService, APP_CONFIG_PATH, SETTINGS_JSON, PROFILES_JSON, SECRETS_JS
 const { initConfigFilesIpcHandler } = require('./adapter/ipc/configFiles');
 const { initTerminalIpcHandler } = require('./adapter/ipc/terminal/terminalHandler');
 const { initCloudIpcHandler } = require('./adapter/ipc/cloud');
+const { initSettingBackupIpcHandler } = require('./adapter/ipc/settingBackup');
 const { initSecurityIpcHandler, decrypt } = require('./adapter/ipc/security');
 const { initClipboard } = require('./adapter/ipc/clipboard');
 const { initCustomSessionHandler } = require("./adapter/ipc/customSession");
@@ -230,6 +231,7 @@ function initHandlerBeforeSettingLoad() {
   initConfigFilesIpcHandler(log, mainWindow, reloadProxies, reloadSecrets,
     (settings) => { lastSettings = settings; });
   initCloudIpcHandler(log, () => allProxies, () => allSecrets);
+  initSettingBackupIpcHandler(log, mainWindow);
   initSecurityIpcHandler(log);
   initTerminalIpcHandler(log, terminalMap);
 
