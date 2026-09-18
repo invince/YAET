@@ -22,9 +22,11 @@ jobs:
           cache: 'npm'
 
       - name: Install Dependencies
-        run: |
-          npm ci
-          npm run rebuild-native
+        # No rebuild-native: all required natives are N-API (keytar, node-pty,
+        # serialport) and ship working prebuilds; the only nan module
+        # (ssh2's optional cpu-features) no longer compiles on new V8 and is
+        # safely skipped by ssh2 itself (try/catch fallback).
+        run: npm ci
 
       - name: Install xvfb (Linux)
         run: sudo apt-get install -y xvfb
