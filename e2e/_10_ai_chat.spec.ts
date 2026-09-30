@@ -110,14 +110,16 @@ test.describe('10.1 AI Chat panel', () => {
     expect(hasOpen).toBe(false);
   });
 
-  test('chat panel shows welcome message on first open', async ({mainWindow}) => {
+  test('chat panel shows welcome empty state on first open', async ({mainWindow}) => {
     const aiBtn = mainWindow.locator('button[aria-label="Toggle AI Assistant"]');
     await aiBtn.click();
     await mainWindow.waitForTimeout(500);
 
-    const messages = mainWindow.locator('.chat-container .message');
-    await expect(messages.first()).toBeVisible({timeout: 5000});
-    const text = await messages.first().textContent();
+    // Greeting-only chats render the hero empty state (title + quick
+    // prompts) instead of a lone assistant bubble.
+    const emptyState = mainWindow.locator('.chat-container .empty-state');
+    await expect(emptyState).toBeVisible({timeout: 5000});
+    const text = await emptyState.textContent();
     expect(text).toBeTruthy();
   });
 });
@@ -223,9 +225,9 @@ test.describe('10.3 Chat History', () => {
     await mainWindow.locator('.chat-container .history-dropdown .new-chat-item').click();
     await mainWindow.waitForTimeout(500);
 
-    const messages = mainWindow.locator('.chat-container .message');
-    const count = await messages.count();
-    expect(count).toBeGreaterThanOrEqual(1);
+    // New chat → greeting only → hero empty state again (0 message rows).
+    const emptyState = mainWindow.locator('.chat-container .empty-state');
+    await expect(emptyState).toBeVisible({timeout: 3000});
   });
 
   test('history dropdown closes on document click', async ({mainWindow}) => {

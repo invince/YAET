@@ -79,11 +79,16 @@
   margin: t.$spacing-sm 0;
 
   .tool-progress-title {
+    display: flex;
+    align-items: center;
+    gap: t.$spacing-xs;
     font-size: t.$font-size-xs;
     font-weight: t.$font-weight-semibold;
     text-transform: uppercase;
     letter-spacing: 0.8px;
     opacity: 0.6;
+
+    mat-icon { font-size: 14px; width: 14px; height: 14px; color: var(--mat-sys-primary); }
   }
 }
 
@@ -121,6 +126,20 @@
       font-family: t.$font-family-mono;
       font-size: t.$font-size-xs;
       color: var(--app-text-color);
+    }
+
+    .tool-index {
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+      border-radius: t.$radius-sm;
+      background: var(--app-hover-bg-color);
+      color: var(--app-text-muted);
+      font-size: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
     }
 
     .tool-args {

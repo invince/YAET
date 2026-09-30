@@ -1,55 +1,156 @@
 @use 'tokens' as t;
 
 .chat-input-area {
-  padding: t.$spacing-sm t.$spacing-lg t.$spacing-lg t.$spacing-lg;
+  padding: t.$spacing-sm t.$spacing-md t.$spacing-sm;
   background: var(--app-sidebar-bg-color);
   border-top: 1px solid var(--app-border-color);
   border-radius: 0 0 t.$radius-lg t.$radius-lg;
+  display: flex;
+  flex-direction: column;
+  gap: t.$spacing-xs;
 }
 
-.chat-input {
-  width: 100%;
-  ::ng-deep .mat-mdc-text-field-wrapper {
-    background-color: var(--app-bg-color) !important;
-    padding-left: t.$spacing-md !important;
-    padding-right: t.$spacing-md !important;
+.chat-input-box {
+  display: flex;
+  align-items: flex-end;
+  gap: t.$spacing-sm;
+  background: var(--app-bg-color);
+  border: 1px solid var(--app-border-color);
+  border-radius: t.$radius-lg;
+  padding: 6px 6px 6px t.$spacing-md;
+  transition: border-color t.$transition-fast, box-shadow t.$transition-fast;
+
+  &:focus-within {
+    border-color: var(--mat-sys-primary);
+    box-shadow: 0 0 0 3px rgba(0, 122, 204, 0.18);
   }
-  ::ng-deep .mat-mdc-form-field-infix {
-    color: var(--app-text-color) !important;
+}
+
+.chat-textarea {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  color: var(--app-text-color);
+  font-family: inherit;
+  font-size: t.$font-size-md;
+  line-height: 1.45;
+  max-height: 160px;
+  padding: t.$spacing-xs 0;
+  caret-color: var(--mat-sys-primary);
+
+  &::placeholder {
+    color: var(--app-text-muted);
+    opacity: 0.8;
   }
-  ::ng-deep .mat-mdc-input-element {
-    color: var(--app-text-color) !important;
+}
+
+.input-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.send-btn {
+  // mat-icon-button ships MDC default padding (~12px); without zeroing it
+  // the fixed 34px box squeezes/clips the arrow icon.
+  flex-shrink: 0;
+  width: 34px !important;
+  height: 34px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50% !important;
+  background: var(--mat-sys-primary);
+  color: #fff !important;
+  transition: transform t.$transition-fast, opacity t.$transition-fast;
+
+  mat-icon {
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+    margin: 0;
+    line-height: 1;
   }
-  ::ng-deep .mat-mdc-form-field-label {
-    color: var(--app-text-color) !important;
-    opacity: 0.6;
+
+  &:hover:not(:disabled) { transform: translateY(-1px); }
+  &:disabled {
+    background: var(--app-hover-bg-color);
+    color: var(--app-text-muted) !important;
+    cursor: not-allowed;
   }
-  textarea {
-    resize: none;
-    max-height: 140px;
-    line-height: 1.4;
+
+  &.stop {
+    background: t.$color-error;
+    &:hover { background: t.$color-error-hover; }
   }
+}
+
+.input-hints {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: t.$font-size-xs;
+  color: var(--app-text-muted);
+  padding: 0 t.$spacing-xs;
+
+  kbd {
+    font-family: t.$font-family-mono;
+    font-size: 10px;
+    background: var(--app-surface-elevated);
+    border: 1px solid var(--app-border-color);
+    border-bottom-width: 2px;
+    border-radius: 3px;
+    padding: 0 4px;
+  }
+
+  .hint-running {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--mat-sys-primary);
+  }
+
+  .pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--mat-sys-primary);
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.1); }
 }
 
 .suggestions {
   display: flex;
   flex-wrap: wrap;
-  gap: t.$spacing-xs;
-  padding: 0 t.$spacing-xs;
+  gap: t.$spacing-sm;
+  justify-content: center;
+  margin-top: t.$spacing-md;
+  max-width: 420px;
 
   .suggestion-chip {
     border: 1px solid var(--app-border-color);
     background: var(--app-surface-elevated);
     color: var(--app-text-color);
     border-radius: 999px;
-    padding: 4px 12px;
-    font-size: t.$font-size-xs;
+    padding: 6px 14px;
+    font-size: t.$font-size-sm;
     cursor: pointer;
-    transition: background t.$transition-fast, border-color t.$transition-fast;
+    transition: background t.$transition-fast, border-color t.$transition-fast, transform t.$transition-fast;
 
     &:hover {
       background: var(--app-hover-bg-color);
       border-color: var(--mat-sys-primary);
+      color: var(--mat-sys-primary);
+      transform: translateY(-1px);
     }
 
     &:active { transform: scale(0.97); }

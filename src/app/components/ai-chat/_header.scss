@@ -4,8 +4,8 @@
   position: fixed;
   bottom: 60px;
   right: 20px;
-  width: 350px;
-  height: 500px;
+  width: 480px;
+  height: 620px;
   background: var(--app-bg-color);
   border: 1px solid var(--app-border-color);
   border-radius: t.$radius-lg;
@@ -64,7 +64,7 @@
   border-bottom: 1px solid var(--app-border-color);
   border-radius: t.$radius-lg t.$radius-lg 0 0;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   position: relative;
   min-height: 44px;
@@ -72,7 +72,7 @@
   .header-left {
     display: flex;
     align-items: center;
-    gap: t.$spacing-xs;
+    gap: t.$spacing-sm;
     font-weight: t.$font-weight-medium;
     color: var(--app-text-color);
     cursor: pointer;
@@ -81,19 +81,56 @@
     border-radius: t.$radius-sm;
     transition: background t.$transition-fast;
     justify-self: start;
+    min-width: 0;
+    overflow: hidden;
     &:hover { background: var(--app-hover-bg-color); }
-    mat-icon { font-size: 20px; width: 20px; height: 20px; }
+
+    .header-logo {
+      width: 28px;
+      height: 28px;
+      border-radius: t.$radius-md;
+      background: linear-gradient(135deg, rgba(0, 122, 204, 0.9), rgba(0, 122, 204, 0.55));
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      mat-icon { font-size: 17px; width: 17px; height: 17px; color: #fff; }
+    }
+
+    .header-titles {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+      min-width: 0;
+    }
+
     .session-name {
-      max-width: 120px;
+      max-width: 150px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      font-size: t.$font-size-sm;
+      font-size: t.$font-size-md;
+      font-weight: t.$font-weight-semibold;
+      color: var(--app-header-text-color);
     }
+
+    .model-label {
+      max-width: 150px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 10px;
+      font-weight: t.$font-weight-normal;
+      color: var(--app-text-muted);
+      letter-spacing: 0.2px;
+    }
+
     .dropdown-arrow {
       font-size: 18px;
       width: 18px;
       height: 18px;
+      color: var(--app-text-muted);
     }
   }
 

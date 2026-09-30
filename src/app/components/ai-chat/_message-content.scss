@@ -1,7 +1,7 @@
 @use 'tokens' as t;
 
 .message-content {
-  padding: 2px t.$spacing-md t.$spacing-sm;
+  padding: 2px 0 t.$spacing-xs;
   word-break: break-word;
   color: inherit;
   user-select: text;
@@ -84,8 +84,4 @@
       text-decoration: underline;
     }
   }
-}
-
-::ng-deep .mat-mdc-form-field-subscript-wrapper {
-  display: none;
 }

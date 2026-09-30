@@ -10,9 +10,7 @@ import {
 } from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
-import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
-import {MatInputModule} from '@angular/material/input';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
@@ -38,6 +36,13 @@ export interface ToolProgressEntry {
   error?: string;
   ts: number;
   expanded: boolean;
+}
+
+export interface ChatMessage {
+  role: string;
+  content: string;
+  /** client-side timestamp; absent on sessions saved before it existed */
+  ts?: number;
 }
 
 // P1-2: bounded terminal tail for pure-chat/ACP modes (agent mode is fed by
@@ -69,8 +74,6 @@ export function progressKey(t: { toolName: string; args: any }): string {
     FormsModule,
     MatButtonModule,
     MatIconModule,
-    MatInputModule,
-    MatFormFieldModule,
     MatProgressSpinnerModule,
     MatSlideToggleModule,
     RedactPipe
@@ -81,7 +84,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   @ViewChild('chatBox') private chatBox?: ElementRef<HTMLTextAreaElement>;
   isOpen = false;
   userInput = '';
-  messages: { role: string, content: string }[] = [];
+  messages: ChatMessage[] = [];
   isLoading = false;
   toolProgress: ToolProgressEntry[] = [];
   pendingCommand: { requestId: string; toolName: string; args: any; preview: string } | null = null;
@@ -93,15 +96,20 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   showHistoryDropdown = false;
   renamingId: string | null = null;
   renameInput = '';
+  /** index of the message whose copy feedback ("done") is showing */
+  copiedIndex: number | null = null;
+  private copyResetTimer: any = null;
+  /** show the floating "jump to latest" button when scrolled up */
+  showScrollButton = false;
 
   position: { x: number; y: number } | null = null;
-  size = { w: 420, h: 500 };
+  size = { w: 480, h: 620 };
   private dragOffset = { x: 0, y: 0 };
   isDragging = false;
   private dragPotential = false;
   private dragStartPos = { x: 0, y: 0 };
   private resizeStart = { x: 0, y: 0 };
-  private resizeStartSize = { w: 420, h: 500 };
+  private resizeStartSize = { w: 480, h: 620 };
   private isResizing = false;
   private resizeDirection: 'se' | 'nw' = 'se';
 
@@ -131,6 +139,37 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
 
   get currentSessionId() {
     return this.historyService.currentSessionId;
+  }
+
+  /** compact "agent · gpt-4o" style label for the header status line */
+  get modelLabel(): string {
+    const ai = this.settingStorage.settings.ai as any;
+    if (!ai) return '';
+    const mode = ai.mode || (ai.acpCommand ? 'acp' : 'web');
+    if (mode === 'acp') {
+      const cmd = String(ai.acpCommand || '').split('/').pop() || 'acp';
+      return `acp · ${cmd}${ai.acpModel ? ' · ' + ai.acpModel : ''}`;
+    }
+    const parts = [this.agentMode ? 'agent' : 'chat'];
+    if (ai.model) parts.push(String(ai.model).split('/').pop()!);
+    return parts.join(' · ');
+  }
+
+  /** greeting used for brand-new / cleared chats */
+  private greeting(): ChatMessage {
+    return { role: 'assistant', content: 'Hello! How can I help you today?', ts: Date.now() };
+  }
+
+  private pushMessage(msg: ChatMessage) {
+    if (msg.ts == null) msg.ts = Date.now();
+    this.messages.push(msg);
+  }
+
+  formatTime(ts?: number): string {
+    if (!ts) return '';
+    try {
+      return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch { return ''; }
   }
 
   @HostListener('document:click')
@@ -178,6 +217,27 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
         this.myScrollContainer.nativeElement.scrollTop = this.myScrollContainer.nativeElement.scrollHeight;
       }
     } catch (err) { }
+  }
+
+  /** jump to the newest message regardless of "near bottom" heuristic */
+  jumpToLatest(): void {
+    try {
+      const el = this.myScrollContainer.nativeElement;
+      el.scrollTop = el.scrollHeight;
+      this.showScrollButton = false;
+    } catch { }
+  }
+
+  onMessagesScroll(): void {
+    // Fires for user drags AND programmatic scrollTop changes — the only
+    // place showScrollButton may be mutated (afterViewChecked would risk
+    // ExpressionChangedAfterItHasBeenCheckedError in dev mode).
+    try {
+      const el = this.myScrollContainer.nativeElement;
+      const dist = el.scrollHeight - el.scrollTop - el.clientHeight;
+      this.showScrollButton = dist > 120;
+      if (dist < 40) this.showScrollButton = false;
+    } catch { }
   }
 
   private markdownCache = new Map<string, SafeHtml>();
@@ -332,8 +392,8 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
         ? event.clientY - this.resizeStart.y
         : this.resizeStart.y - event.clientY;
       this.size = {
-        w: Math.max(280, Math.min(600, this.resizeStartSize.w + dx)),
-        h: Math.max(300, Math.min(800, this.resizeStartSize.h + dy)),
+        w: Math.max(320, Math.min(1000, this.resizeStartSize.w + dx)),
+        h: Math.max(300, Math.min(1200, this.resizeStartSize.h + dy)),
       };
     }
   }
@@ -384,6 +444,17 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
       const size = localStorage.getItem('ai-chat-size');
       if (pos) this.position = JSON.parse(pos);
       if (size) this.size = JSON.parse(size);
+      // Migrate the pre-lift default footprint (420x500) to the roomier
+      // one — users who never resized shouldn't be stuck on the tiny box.
+      if (this.size.w === 420 && this.size.h === 500) {
+        this.size = { w: 480, h: 620 };
+        localStorage.setItem('ai-chat-size', JSON.stringify(this.size));
+      }
+      // Clamp anything out of range (hand-edited / window shrank).
+      this.size = {
+        w: Math.max(320, Math.min(1000, this.size.w || 480)),
+        h: Math.max(300, Math.min(1200, this.size.h || 620)),
+      };
     } catch { }
   }
 
@@ -442,7 +513,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
 
     const aiSettings = this.settingStorage.settings.ai;
     if (!aiSettings) {
-      this.messages.push({ role: 'assistant', content: 'Please configure AI settings in the Settings menu first.' });
+      this.pushMessage({ role: 'assistant', content: 'Please configure AI settings in the Settings menu first.' });
       this.userInput = '';
       this.resetChatBoxHeight();
       return;
@@ -452,26 +523,32 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     aiSettings.mode = mode;
 
     if (mode === 'web' && !aiSettings.token) {
-      this.messages.push({ role: 'assistant', content: 'Please configure a valid API token in the Settings menu first.' });
+      this.pushMessage({ role: 'assistant', content: 'Please configure a valid API token in the Settings menu first.' });
       this.userInput = '';
       this.resetChatBoxHeight();
       return;
     }
 
     if (mode === 'acp' && !aiSettings.acpCommand) {
-      this.messages.push({ role: 'assistant', content: 'Please configure the ACP command in the Settings menu first.' });
+      this.pushMessage({ role: 'assistant', content: 'Please configure the ACP command in the Settings menu first.' });
       this.userInput = '';
       this.resetChatBoxHeight();
       return;
     }
 
     const userMessage = this.userInput;
-    this.messages.push({ role: 'user', content: `${userMessage}` });
+    this.pushMessage({ role: 'user', content: `${userMessage}` });
     this.userInput = '';
     this.resetChatBoxHeight();
     this.saveMessages();
-    this.isLoading = true;
+    // Reset BEFORE flipping isLoading — clearToolProgress() itself sets
+    // isLoading=false (it also runs on switch/new-chat), so ordering it
+    // after made the loading state vanish instantly (no typing dots, no
+    // Stop button, input stayed editable mid-run).
     this.clearToolProgress();
+    this.isLoading = true;
+    // Sending always snaps to the newest message (user may be scrolled up).
+    this.jumpToLatest();
 
     const activeTab = this.tabService.getSelectedTab();
     let context = '';
@@ -533,7 +610,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
           return;
         }
         console.error(err);
-        this.messages.push({ role: 'assistant', content: 'Error communicating with AI. Please check your configuration.' });
+        this.pushMessage({ role: 'assistant', content: 'Error communicating with AI. Please check your configuration.' });
         this.isLoading = false;
       }
     });
@@ -603,7 +680,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
           return;
         }
         console.error(err);
-        this.messages.push({ role: 'assistant', content: 'Error communicating with AI. Please check your configuration.' });
+        this.pushMessage({ role: 'assistant', content: 'Error communicating with AI. Please check your configuration.' });
         this.isLoading = false;
       }
     });
@@ -627,7 +704,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     // P1-5: triple changed (new model/command) → kill the stale backend
     // process before opening a new one, otherwise it lingers forever.
     await this.closeStaleAcpSession(aiSettings);
-    let assistantMessage = { role: 'assistant', content: '' };
+    let assistantMessage: ChatMessage = { role: 'assistant', content: '', ts: Date.now() };
     this.messages.push(assistantMessage);
 
     this.electronService.removeAcpChunkListeners();
@@ -690,7 +767,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
 
     const lastMsg = this.messages[this.messages.length - 1];
     if (!lastMsg || lastMsg.role !== 'assistant') {
-      this.messages.push({ role: 'assistant', content: aiResponse });
+      this.pushMessage({ role: 'assistant', content: aiResponse });
     }
     this.saveMessages();
     this.autoRenameSession();
@@ -786,6 +863,67 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
       this.electronService.rejectCommand(this.pendingCommand.requestId);
       this.pendingCommand = null;
       this.cdr.detectChanges();
+    }
+  }
+
+  // ── Message actions ────────────────────────────────────────────────
+  copyMessage(index: number, event?: Event) {
+    event?.stopPropagation();
+    const msg = this.messages[index];
+    if (!msg) return;
+    navigator.clipboard.writeText(msg.content || '').then(() => {
+      this.copiedIndex = index;
+      if (this.copyResetTimer) clearTimeout(this.copyResetTimer);
+      this.copyResetTimer = setTimeout(() => { this.copiedIndex = null; this.cdr.detectChanges(); }, 1500);
+      this.cdr.detectChanges();
+    }).catch(() => this.notificationService.info('Copy failed'));
+  }
+
+  /** Re-send a user message: drop it + every answer after it, resend. */
+  retryFrom(index: number) {
+    if (this.isLoading) return;
+    const idx = index;
+    if (idx < 0 || idx >= this.messages.length || this.messages[idx].role !== 'user') return;
+    const text = (this.messages[idx].content || '').trim();
+    if (!text) return;
+    this.messages = this.messages.slice(0, idx);
+    this.userInput = text;
+    this.saveMessages();
+    this.cdr.detectChanges();
+    this.sendMessage();
+  }
+
+  /** Wipe the current conversation back to the greeting. */
+  clearChat() {
+    this.clearToolProgress();
+    this.messages = [this.greeting()];
+    this.saveMessages();
+    this.showHistoryDropdown = false;
+    this.notificationService.info('Conversation cleared');
+    this.cdr.detectChanges();
+  }
+
+  /** Export current conversation as Markdown (download via data URL). */
+  exportChat() {
+    if (this.messages.length === 0) return;
+    this.showHistoryDropdown = false;
+    const name = this.currentSessionName || 'chat';
+    const lines = this.messages.map(m => {
+      const who = m.role === 'user' ? '**You**' : '**AI**';
+      const when = m.ts ? ` · ${new Date(m.ts).toLocaleString()}` : '';
+      return `### ${who}${when}\n\n${m.content || ''}\n`;
+    });
+    const header = `# ${name}\n\n_Exported ${new Date().toLocaleString()} · ${this.modelLabel}_\n\n`;
+    try {
+      const blob = new Blob([header + lines.join('\n---\n\n')], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${name.replace(/[^\w\u4e00-\u9fa5-]+/g, '_').slice(0, 60) || 'chat'}.md`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    } catch (e) {
+      this.notificationService.info('Export failed');
     }
   }
 

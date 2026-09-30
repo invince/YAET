@@ -4,12 +4,17 @@
     [style.width.px]="size.w" [style.height.px]="size.h">
   <div class="chat-header" (mousedown)="onHeaderMouseDown($event)">
     <div class="header-left" (click)="toggleHistoryDropdown($event)">
-      <mat-icon>chat</mat-icon>
-      <span class="session-name">{{ currentSessionName }}</span>
-      <mat-icon class="dropdown-arrow">arrow_drop_down</mat-icon>
+      <span class="header-logo">
+        <mat-icon>smart_toy</mat-icon>
+      </span>
+      <div class="header-titles">
+        <span class="session-name">{{ currentSessionName }}</span>
+        <span class="model-label">{{ modelLabel || 'AI Assistant' }}</span>
+      </div>
+      <mat-icon class="dropdown-arrow">expand_more</mat-icon>
     </div>
     <div class="header-right">
-      <div class="toggle-group" title="Agent Mode (execute commands instantly)">
+      <div class="toggle-group" title="Agent Mode (AI executes commands)">
         <mat-icon>terminal</mat-icon>
         <span class="toggle-label">Agent</span>
         <mat-slide-toggle [(ngModel)]="agentMode"></mat-slide-toggle>
@@ -19,10 +24,11 @@
         <span class="toggle-label">Ctx</span>
         <mat-slide-toggle [(ngModel)]="useContext"></mat-slide-toggle>
       </div>
-      <button mat-icon-button (click)="toggleChat()" class="close-btn" title="Close">
+      <button mat-icon-button (click)="toggleChat()" class="close-btn" title="Close (Ctrl+Shift+I)">
         <mat-icon>close</mat-icon>
       </button>
     </div>
+
     @if (showHistoryDropdown) {
     <div class="history-dropdown" (click)="stopProp($event)">
       <div class="history-item new-chat-item" (click)="newChat()">
@@ -36,20 +42,31 @@
           @if (renamingId === session.id) {
           <input class="rename-input" [(ngModel)]="renameInput" (keyup.enter)="confirmRename()" (keyup.escape)="cancelRename()" (blur)="confirmRename()" (click)="stopProp($event)" />
           } @else {
-          <div class="history-item-name" (dblclick)="startRename(session.id, session.name); stopProp($event)">{{ session.name }}</div>
+          <div class="history-item-name" (dblclick)="startRename(session.id, session.name); stopProp($event)" title="Double-click to rename">{{ session.name }}</div>
           }
           <div class="history-item-time">{{ session.updatedAt | date:'short' }}</div>
         </div>
-        <button class="history-item-delete" (click)="deleteSession(session.id)" mat-icon-button>
+        <button class="history-item-delete" (click)="deleteSession(session.id)" mat-icon-button title="Delete chat">
           <mat-icon>close</mat-icon>
         </button>
       </div>
       }
+      @if (sessions.length > 0) {
+      <div class="history-divider"></div>
+      }
+      <div class="history-item history-action" (click)="exportChat()">
+        <mat-icon>download</mat-icon>
+        <span>Export as Markdown</span>
+      </div>
+      <div class="history-item history-action danger" (click)="clearChat()">
+        <mat-icon>delete_sweep</mat-icon>
+        <span>Clear conversation</span>
+      </div>
     </div>
     }
   </div>
 
-  <div class="chat-messages" #scrollMe [scrollTop]="scrollMe.scrollHeight">
+  <div class="chat-messages" #scrollMe (scroll)="onMessagesScroll()">
     @if (pendingCommand) {
     <div class="approval-banner">
       <div class="approval-banner-content">
@@ -62,28 +79,63 @@
       </div>
     </div>
     }
-    @for (msg of messages; track $index) {
-    <div class="message" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'" [class.system]="msg.role === 'system'">
-      <div class="message-avatar">{{ msg.role === 'user' ? '你' : 'AI' }}</div>
+
+    @if (messages.length > 1) {
+    @for (msg of messages; track $index; let i = $index) {
+    @if (msg.role !== 'system') {
+    <div class="message" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'">
+      <div class="message-avatar">
+        <mat-icon>{{ msg.role === 'user' ? 'person' : 'smart_toy' }}</mat-icon>
+      </div>
       <div class="message-body">
+        <div class="message-meta">
+          <span class="message-role">{{ msg.role === 'user' ? 'You' : 'AI' }}</span>
+          @if (msg.ts) {
+          <span class="message-time">{{ formatTime(msg.ts) }}</span>
+          }
+          <span class="message-actions">
+            <button class="msg-action-btn" [class.done]="copiedIndex === i"
+                    (click)="copyMessage(i, $event)" title="Copy message">
+              <mat-icon>{{ copiedIndex === i ? 'check' : 'content_copy' }}</mat-icon>
+            </button>
+            @if (msg.role === 'user' && !isLoading) {
+            <button class="msg-action-btn" (click)="retryFrom(i); $event.stopPropagation()" title="Re-send this message (drops the answers after it)">
+              <mat-icon>replay</mat-icon>
+            </button>
+            }
+          </span>
+        </div>
         <div class="message-content" [innerHTML]="parseMarkdown(msg.content)"></div>
       </div>
     </div>
     }
-    @if (messages.length <= 1) {
-    <div class="suggestions">
-      @for (s of suggestions; track s) {
-      <button class="suggestion-chip" (click)="sendSuggestion(s)">{{ s }}</button>
-      }
+    }
+    } @else {
+    <div class="empty-state">
+      <div class="empty-logo">
+        <mat-icon>auto_awesome</mat-icon>
+      </div>
+      <div class="empty-title">How can I help you?</div>
+      <div class="empty-sub">Ask about the terminal, files, or anything else.</div>
+      <div class="suggestions">
+        @for (s of suggestions; track s) {
+        <button class="suggestion-chip" (click)="sendSuggestion(s)">{{ s }}</button>
+        }
+      </div>
     </div>
     }
+
     @if (toolProgress.length > 0) {
     <div class="tool-progress">
-      <div class="tool-progress-title">Agent activity ({{ toolProgress.length }})</div>
-      @for (entry of toolProgress; track $index) {
+      <div class="tool-progress-title">
+        <mat-icon>bolt</mat-icon>
+        Agent activity ({{ toolProgress.length }})
+      </div>
+      @for (entry of toolProgress; track $index; let i = $index) {
       <div class="tool-entry" [class.expanded]="entry.expanded" [class.error]="!!entry.error" (click)="toggleToolEntry(entry)">
         <div class="tool-entry-header">
           <mat-icon class="tool-status-icon">{{ entry.error ? 'error' : entry.result ? 'check_circle' : 'hourglass_empty' }}</mat-icon>
+          <span class="tool-index">{{ i + 1 }}</span>
           <span class="tool-name">{{ entry.toolName }}</span>
           <span class="tool-args">{{ entry.args | redact | json }}</span>
           <mat-icon class="expand-icon">{{ entry.expanded ? 'expand_less' : 'expand_more' }}</mat-icon>
@@ -101,19 +153,24 @@
       }
     </div>
     }
+
     @if (isLoading) {
-    <div class="message assistant">
-      <div class="message-avatar">AI</div>
+    <div class="message assistant loading-message">
+      <div class="message-avatar thinking">
+        <mat-icon>smart_toy</mat-icon>
+      </div>
       <div class="message-body">
-        <div class="message-content">
-          @if (messages.length === 0 || messages[messages.length-1].role !== 'assistant' || messages[messages.length-1].content === '') {
+        <div class="message-meta">
+          <span class="message-role">AI</span>
+          <span class="thinking-text">{{ toolProgress.length > 0 ? 'Working · step ' + toolProgress.length : 'Thinking' }}</span>
+        </div>
+        <div class="message-content loading-row">
           <div class="typing-indicator">
             <span class="typing-dot"></span>
             <span class="typing-dot"></span>
             <span class="typing-dot"></span>
           </div>
-          }
-          <button mat-icon-button (click)="stop()" title="Stop Generation" class="stop-btn">
+          <button mat-icon-button (click)="stop()" title="Stop generation" class="stop-btn">
             <mat-icon>stop_circle</mat-icon>
           </button>
         </div>
@@ -122,15 +179,34 @@
     }
   </div>
 
+  @if (showScrollButton) {
+  <button class="scroll-bottom-btn" (click)="jumpToLatest()" title="Jump to latest">
+    <mat-icon>keyboard_arrow_down</mat-icon>
+  </button>
+  }
+
   <div class="chat-input-area">
-    <mat-form-field class="chat-input" appearance="outline">
-      <textarea matInput #chatBox rows="1" placeholder="Ask AI...  (Enter 发送, Shift+Enter 换行)"
-        [(ngModel)]="userInput" (keydown)="onInputKeydown($event)" (input)="autoGrow(chatBox)"
-        [disabled]="isLoading"></textarea>
-      <button matSuffix mat-icon-button (click)="sendMessage()" [disabled]="isLoading || !userInput.trim()">
-        <mat-icon>send</mat-icon>
-      </button>
-    </mat-form-field>
+    <div class="chat-input-box">
+      <textarea #chatBox rows="1" class="chat-textarea" placeholder="Ask AI anything…"
+        [(ngModel)]="userInput" (keydown)="onInputKeydown($event)" (input)="autoGrow(chatBox)"></textarea>
+      <div class="input-actions">
+        @if (isLoading) {
+        <button mat-icon-button class="send-btn stop" (click)="stop()" title="Stop generation">
+          <mat-icon>stop_circle</mat-icon>
+        </button>
+        } @else {
+        <button mat-icon-button class="send-btn" (click)="sendMessage()" [disabled]="!userInput.trim()" title="Send (Enter)">
+          <mat-icon>arrow_upward</mat-icon>
+        </button>
+        }
+      </div>
+    </div>
+    <div class="input-hints">
+      <span><kbd>Enter</kbd> send · <kbd>Shift+Enter</kbd> newline</span>
+      @if (isLoading) {
+      <span class="hint-running"><span class="pulse-dot"></span> generating…</span>
+      }
+    </div>
   </div>
   <div class="resize-handle resize-handle-se" (mousedown)="onResizeMouseDown($event, 'se')"></div>
   <div class="resize-handle resize-handle-nw" (mousedown)="onResizeMouseDown($event, 'nw')"></div>
