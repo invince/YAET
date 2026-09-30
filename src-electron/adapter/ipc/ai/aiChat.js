@@ -1,5 +1,5 @@
 const { ipcMain } = require('electron');
-const { fetchModels, callChat } = require('../../ai/aiClient');
+const { fetchModels, callChat, callChatStream } = require('../../ai/aiClient');
 const { getToolDefinitions } = require('../../ai/toolDefinitions');
 const { functionCallLoop } = require('../../ai/functionLoop');
 
@@ -38,6 +38,27 @@ function initAiChatIpcHandler(log, getSettings) {
     aiControllers.set(aiKey(chatSessionId), controller);
     try {
       return await callChat(log, apiUrl, token, model, messages.slice(), { signal: controller.signal, timeoutMs });
+    } finally {
+      if (aiControllers.get(aiKey(chatSessionId)) === controller) aiControllers.delete(aiKey(chatSessionId));
+    }
+  });
+
+  // Streaming chat: chunks ride `ai.web-chunk` ({chunk}/{full}/{done}),
+  // the invoke promise settles when the stream ends. Same cancellation map
+  // as ai.send-chat, so stop()/switch/new-chat aborts the HTTP stream too.
+  ipcMain.handle('ai.send-chat-stream', async (event, { apiUrl, token, model, messages, chatSessionId }) => {
+    const settings = getSettings ? getSettings() : null;
+    const timeoutMs = Math.max(10000, Number(settings?.ai?.requestTimeoutMs) || 120000);
+    abortAiRun(chatSessionId);
+    const controller = new AbortController();
+    aiControllers.set(aiKey(chatSessionId), controller);
+    const sender = event.sender;
+    try {
+      return await callChatStream(log, apiUrl, token, model, messages.slice(), {
+        signal: controller.signal,
+        timeoutMs,
+        onEvent: (data) => { try { sender.send('ai.web-chunk', data); } catch (_) {} },
+      });
     } finally {
       if (aiControllers.get(aiKey(chatSessionId)) === controller) aiControllers.delete(aiKey(chatSessionId));
     }

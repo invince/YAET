@@ -67,6 +67,12 @@ export class AiService {
     });
   }
 
+  // Streaming chat (pure web mode): resolves with {content} when the stream
+  // ends; incremental text arrives via ElectronService.onWebChunk.
+  async sendWebMessageStream(apiUrl: string, token: string, model: string, messages: any[], chatSessionId?: string | null): Promise<any> {
+    return this.electronService.sendAiChatStream(apiUrl, token, model, messages, chatSessionId);
+  }
+
   async sendAcpMessage(command: string, args: string, model: string, messages: any[]): Promise<string> {
     return this.electronService.sendAcpChat(command, args, model, messages);
   }

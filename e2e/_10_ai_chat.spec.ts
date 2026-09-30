@@ -115,6 +115,10 @@ test.describe('10.1 AI Chat panel', () => {
     await aiBtn.click();
     await mainWindow.waitForTimeout(500);
 
+    // Wait for the panel itself first (same as sibling tests) — asserting
+    // content before the open transition settles is racy on slow boots.
+    await expect(mainWindow.locator('.chat-container')).toHaveClass(/open/);
+
     // Greeting-only chats render the hero empty state (title + quick
     // prompts) instead of a lone assistant bubble.
     const emptyState = mainWindow.locator('.chat-container .empty-state');

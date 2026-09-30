@@ -92,4 +92,151 @@ async function callChatWithTools(log, apiUrl, token, model, messages, tools, opt
   return _httpRequest(log, url, 'POST', headers, body, opts);
 }
 
-module.exports = { fetchModels, callChat, callChatWithTools };
+// Streaming chat (OpenAI-compatible `stream: true` SSE).
+// onEvent receives `{ chunk }` deltas as text arrives, then a terminal
+// `{ done: true, full }`. Resolves with `{ content: full }`.
+// Servers that ignore `stream: true` and return buffered JSON are handled:
+// the body is parsed once and emitted as a single `{ full }` + `{ done }`.
+async function callChatStream(log, apiUrl, token, model, messages, opts = {}) {
+  const { timeoutMs = 120000, signal, onEvent } = opts;
+  // Streams stay open a long time — the timeout is an IDLE guard (no bytes
+  // for this long), plus an absolute ceiling against runaway streams.
+  const idleMs = Math.max(15000, Number(timeoutMs) || 120000);
+  const maxTotalMs = Math.max(idleMs * 4, 300000);
+  const url = `${apiUrl.replace(/\/+$/, '')}/chat/completions`;
+  const body = JSON.stringify({ model, messages, stream: true });
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+    'Content-Length': Buffer.byteLength(body),
+    'Accept': 'text/event-stream',
+  };
+  const urlObj = new URL(url);
+  const lib = urlObj.protocol === 'https:' ? https : http;
+
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    let full = '';
+    let sseBuf = '';
+    let rawBody = '';
+    let sseMode = false;
+    let modeDecided = false;
+    let idleTimer = null;
+    let totalTimer = null;
+    const emit = (e) => { try { onEvent && onEvent(e); } catch (_) {} };
+    const cleanup = () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      if (totalTimer) clearTimeout(totalTimer);
+      if (signal && onAbort) signal.removeEventListener('abort', onAbort);
+    };
+    const ok = (v) => { if (!settled) { settled = true; cleanup(); resolve(v); } };
+    const fail = (e) => { if (!settled) { settled = true; cleanup(); reject(e); } };
+    if (signal?.aborted) { fail(new Error('Cancelled by user')); return; }
+
+    const pokeIdle = () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        fail(new Error(`AI stream stalled (no data for ${Math.round(idleMs / 1000)}s)`));
+        try { req.destroy(); } catch (_) {}
+      }, idleMs);
+    };
+
+    const handleSseText = (text) => {
+      sseBuf += text;
+      const parts = sseBuf.split('\n');
+      sseBuf = parts.pop();
+      for (const line of parts) {
+        const t = line.trim();
+        if (!t || t.startsWith(':')) continue;
+        if (!t.startsWith('data:')) continue;
+        const payload = t.slice(5).trim();
+        if (payload === '[DONE]') continue;
+        let j = null;
+        try { j = JSON.parse(payload); } catch (_) { continue; }
+        if (j && j.error) {
+          const msg = j.error.message || j.error.code || JSON.stringify(j.error);
+          fail(new Error(`AI API error: ${msg}`));
+          try { req.destroy(); } catch (_) {}
+          return;
+        }
+        const delta = j?.choices?.[0]?.delta?.content;
+        if (typeof delta === 'string' && delta) {
+          full += delta;
+          emit({ chunk: delta });
+        }
+      }
+    };
+
+    const req = lib.request({
+      hostname: urlObj.hostname,
+      port: urlObj.port || (urlObj.protocol === 'https:' ? 443 : 80),
+      path: urlObj.pathname + urlObj.search,
+      method: 'POST',
+      headers,
+    }, (res) => {
+      pokeIdle();
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        let errBody = '';
+        res.on('data', (c) => { errBody += c; });
+        res.on('end', () => {
+          let msg = `HTTP ${res.statusCode}`;
+          try {
+            const parsed = JSON.parse(errBody);
+            msg = parsed.error?.message || parsed.error || msg;
+          } catch (_) { if (errBody.trim()) msg = errBody.trim().slice(0, 300); }
+          fail(new Error(`AI API error (${res.statusCode}): ${msg}`));
+        });
+        return;
+      }
+      const ct = String(res.headers['content-type'] || '');
+      if (/text\/event-stream/.test(ct)) { sseMode = true; modeDecided = true; }
+      res.on('data', (c) => {
+        pokeIdle();
+        const text = c.toString('utf8');
+        if (!modeDecided) {
+          // No (or unhelpful) content-type — sniff the first bytes.
+          const head = (rawBody + text).trimStart();
+          if (/^(data:|:)/.test(head)) { sseMode = true; }
+          modeDecided = true;
+        }
+        if (sseMode) handleSseText(text);
+        else rawBody += text;
+      });
+      res.on('end', () => {
+        if (settled) return;
+        if (!sseMode) {
+          try {
+            const parsed = JSON.parse(rawBody);
+            full = parsed.choices?.[0]?.message?.content || '';
+            if (full) emit({ full });
+          } catch (e) {
+            fail(new Error(`Failed to parse AI response: ${e.message}. Raw: ${String(rawBody).substring(0, 200)}`));
+            return;
+          }
+        } else if (sseBuf.trim()) {
+          // Trailing line without a final newline.
+          handleSseText('\n');
+        }
+        emit({ done: true, full });
+        ok({ content: full });
+      });
+    });
+    req.on('error', (err) => {
+      log.error('AI stream error: ' + err.message);
+      fail(err);
+    });
+    const onAbort = () => {
+      try { req.destroy(); } catch (_) {}
+      fail(new Error('Cancelled by user'));
+    };
+    if (signal) signal.addEventListener('abort', onAbort, { once: true });
+    totalTimer = setTimeout(() => {
+      fail(new Error(`AI stream exceeded maximum duration (${Math.round(maxTotalMs / 1000)}s)`));
+      try { req.destroy(); } catch (_) {}
+    }, maxTotalMs);
+    pokeIdle();
+    req.write(body);
+    req.end();
+  });
+}
+
+module.exports = { fetchModels, callChat, callChatWithTools, callChatStream };

@@ -586,34 +586,93 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   private sendWebMessage(aiSettings: any, payload: any[], activeTab: any) {
     const gen = this._requestGeneration;
     this.currentSubscription?.unsubscribe();
-    this.currentSubscription = this.aiService.sendWebMessage(
+    this.currentSubscription = null;
+    // Streaming placeholder: chunks append here live, so the answer renders
+    // word-by-word instead of popping in whole at the end.
+    const assistantMessage: ChatMessage = { role: 'assistant', content: '', ts: Date.now() };
+    this.messages.push(assistantMessage);
+    this.cdr.detectChanges();
+    this.scrollToBottom();
+
+    // Re-parsing full markdown on every token is O(n^2) on long answers —
+    // flush DOM updates at most every ~80ms (final flush on done).
+    let lastFlush = 0;
+    const flush = () => {
+      lastFlush = Date.now();
+      this.cdr.detectChanges();
+      this.scrollToBottom();
+    };
+    const appendChunk = (text: string) => {
+      if (!text) return;
+      assistantMessage.content += text;
+      if (Date.now() - lastFlush >= 80) flush();
+    };
+
+    this.electronService.removeWebChunkListeners();
+    this.electronService.onWebChunk((data: any) => {
+      if (gen !== this._requestGeneration) return;
+      if (data.done) {
+        if (typeof data.full === 'string') assistantMessage.content = data.full;
+        this.electronService.removeWebChunkListeners();
+        flush();
+        if (!assistantMessage.content) {
+          // Empty stream = same as empty reply before: no bubble at all.
+          this.messages = this.messages.filter(m => m !== assistantMessage);
+          this.cdr.detectChanges();
+          this.isLoading = false;
+          return;
+        }
+        this.handleResponse(assistantMessage.content, activeTab);
+        return;
+      }
+      if (typeof data.full === 'string') {
+        assistantMessage.content = data.full;
+        if (Date.now() - lastFlush >= 80) flush();
+      } else if (typeof data.chunk === 'string') {
+        appendChunk(data.chunk);
+      }
+    });
+
+    this.aiService.sendWebMessageStream(
       aiSettings.apiUrl,
       aiSettings.token,
       aiSettings.model,
       payload,
       this.currentSessionId
-    ).subscribe({
-      next: (resp) => {
-        this.currentSubscription = null;
-        if (gen !== this._requestGeneration) return;
-        let aiResponse = this.aiService.extractWebContent(resp);
-        this.handleResponse(aiResponse, activeTab);
+    ).then(
+      () => {
+        // Normal path finalizes via the {done} chunk event above; this is
+        // only a backstop in case the event was missed.
+        if (gen !== this._requestGeneration || !this.isLoading) return;
+        this.electronService.removeWebChunkListeners();
+        flush();
+        this.handleResponse(assistantMessage.content, activeTab);
       },
-      error: (err) => {
-        this.currentSubscription = null;
+      (err) => {
         if (gen !== this._requestGeneration) return;
+        this.electronService.removeWebChunkListeners();
         // P1-1: user-cancelled runs are silent — no error bubble.
         const msg = (err as any)?.message || String(err || '');
         if (/cancelled by user/i.test(msg)) {
           this.isLoading = false;
+          this.saveMessages();
           this.cdr.detectChanges();
           return;
         }
         console.error(err);
+        if (assistantMessage.content) {
+          // Mid-stream failure: keep what arrived, finalize as the answer.
+          flush();
+          this.handleResponse(assistantMessage.content, activeTab);
+          return;
+        }
+        // Failed before any content: drop the empty placeholder, same UX as
+        // the old non-streaming error path.
+        this.messages = this.messages.filter(m => m !== assistantMessage);
         this.pushMessage({ role: 'assistant', content: 'Error communicating with AI. Please check your configuration.' });
         this.isLoading = false;
       }
-    });
+    );
   }
 
   private sendWebMessageWithTools(aiSettings: any, payload: any[], activeTab: any) {
@@ -826,6 +885,8 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
       this.electronService.rejectCommand(this.pendingCommand.requestId);
     }
     this.pendingCommand = null;
+    // Persist partial streamed content so stopping mid-answer doesn't lose it.
+    this.saveMessages();
     this.cdr.detectChanges();
   }
 

@@ -14,8 +14,10 @@ import {
   AI_CANCEL_CHAT,
   AI_FETCH_MODELS,
   AI_SEND_CHAT,
+  AI_SEND_CHAT_STREAM,
   AI_SEND_WITH_TOOLS,
   AI_TOOL_PROGRESS,
+  AI_WEB_CHUNK,
   CHECK_FOR_UPDATES,
   CLOUD_DOWNLOAD,
   CLOUD_RELOAD,
@@ -189,6 +191,28 @@ export class ElectronService extends AbstractElectronService {
     }
     throw new Error('Electron IPC not available');
   }
+  //#region "AI Streaming"
+  // Streaming chat: chunks arrive on AI_WEB_CHUNK ({chunk}/{full}/{done}),
+  // the promise settles with {content} when the stream ends (or rejects).
+  async sendAiChatStream(apiUrl: string, token: string, model: string, messages: any[], chatSessionId?: string | null): Promise<any> {
+    if (this.ipc) {
+      return await this.ipc.invoke(AI_SEND_CHAT_STREAM, { apiUrl, token, model, messages, chatSessionId: chatSessionId || null });
+    }
+    throw new Error('Electron IPC not available');
+  }
+
+  onWebChunk(callback: (data: { chunk?: string; full?: string; done?: boolean }) => void) {
+    if (this.ipc) {
+      this.ipc.on(AI_WEB_CHUNK, (event: any, data: any) => callback(data));
+    }
+  }
+
+  removeWebChunkListeners() {
+    if (this.ipc) {
+      this.ipc.removeAllListeners(AI_WEB_CHUNK);
+    }
+  }
+  //#endregion "AI Streaming"
   //#endregion "Settings"
 
 

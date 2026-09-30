@@ -56,6 +56,7 @@ const CORE_INVOKE_CHANNELS = [
   'ai.fetch-models',
   'ai.send-chat',
   'ai.send-with-tools',
+  'ai.send-chat-stream',
   'session.open.rd.vnc',
   'session.open.rd.spice',
   'session.fe.scp.register',
@@ -100,6 +101,7 @@ const CORE_ON_CHANNELS = [
   'acp.chunk',
   'ai.tool-progress',
   'ai.command-pending',
+  'ai.web-chunk',
 ];
 
 // ── Plugin IPC channels (loaded from merged manifest) ───────────────────────
