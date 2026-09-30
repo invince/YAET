@@ -23,7 +23,7 @@ function getToolDefinitions() {
       type: 'function',
       function: {
         name: 'local_execute',
-        description: 'Execute a command on the local machine directly (no profile needed)',
+        description: 'Execute a command on the local machine directly (no profile needed). Runs in the user\'s active terminal directory when available (same cwd as the terminal the user is looking at); otherwise in the app home directory. The returned `cwd` field tells you where it ran — trust it over guesses.',
         parameters: {
           type: 'object',
           properties: {
@@ -707,6 +707,19 @@ async function executeTool(runtime, toolName, args, sessionContext = {}) {
     case 'profile_list':
       return runtime.listProfiles(args.keyword);
     case 'local_execute': {
+      // No profileId = local machine. Inherit the user's ACTIVE terminal cwd
+      // (follows `cd`) so `pwd`/relative paths answer for the directory the
+      // user is actually in — otherwise exec() runs in the app home dir.
+      if (!args.profileId && sessionContext?.activeTabId && runtime?.sessionRegistry) {
+        try {
+          const entry = runtime.sessionRegistry.get(sessionContext.activeTabId);
+          const cwd = entry?.session?.getShellCwd?.();
+          if (cwd) {
+            const t = await runtime.getConnector(args.profileId, opts);
+            if (typeof t.exec === 'function') return t.exec(args.command, { cwd });
+          }
+        } catch { /* fall through to default exec */ }
+      }
       const t = await runtime.getConnector(args.profileId, opts);
       return t.exec(args.command);
     }

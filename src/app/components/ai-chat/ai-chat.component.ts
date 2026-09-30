@@ -190,8 +190,18 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
       let rawHtml = marked.parse(content) as string;
       rawHtml = rawHtml.replace(/<pre>/g, '<div class="code-block"><button class="code-copy-btn" type="button" aria-label="Copy code">copy</button><pre>');
       rawHtml = rawHtml.replace(/<\/pre>/g, '</pre></div>');
-      const cleanHtml = DOMPurify.sanitize(rawHtml);
+      // Forbid javascript:/data: links even though clicks are intercepted —
+      // innerHTML still exposes them to context-menu / drag-out.
+      const cleanHtml = DOMPurify.sanitize(rawHtml, {
+        ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel|ftp):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
+      });
       const safe = this.sanitizer.bypassSecurityTrustHtml(cleanHtml);
+      // Cap cache: keys are full message bodies, unbounded growth = leak
+      // on long sessions. Evict oldest (Map preserves insertion order).
+      if (this.markdownCache.size >= 200) {
+        const oldest = this.markdownCache.keys().next().value;
+        if (oldest !== undefined) this.markdownCache.delete(oldest);
+      }
       this.markdownCache.set(content, safe);
       return safe;
     } catch (e) {
@@ -476,7 +486,13 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     //   (aiChat.js injectSessionContext) — push nothing here.
     // - pure-chat/ACP: backend injects nothing — push a BOUNDED tail here.
     const isAgent = this.agentMode && mode === 'web';
-    const payload = [...this.messages];
+    // Cap outbound history: full unbounded history blows token budget and
+    // latency on long chats. Keep the opening exchange (index 0 greeting)
+    // for rename continuity + last 20 messages.
+    const historySlice = this.messages.length > 22
+      ? [this.messages[0], ...this.messages.slice(-20)]
+      : [...this.messages];
+    const payload = historySlice;
     if (context && !isAgent) {
         payload.push({ role: 'user', content: `Current terminal context (tail):\n${truncateTail(context)}` });
     }

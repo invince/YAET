@@ -52,7 +52,9 @@ function initAiToolsIpcHandler(log, runtime, getSettings) {
     if (useContextSetting) {
       injectSessionContext(runtime, messages, getSettings, crossSessionAccess, chatSessionId, activeTabId);
     }
-    const sessionContext = { crossSessionAccess, useContext: useContextSetting, chatSessionId, downloadDir: settings?.ai?.downloadDir || null };
+    // activeTabId rides along so local_execute can inherit the user's shell cwd
+    // (see toolDefinitions.js) instead of running in the app's home directory.
+    const sessionContext = { crossSessionAccess, useContext: useContextSetting, chatSessionId, activeTabId, downloadDir: settings?.ai?.downloadDir || null };
     const sendEvent = (data) => {
       try { event.sender.send('ai.tool-progress', data); } catch (_) {}
     };
@@ -79,6 +81,19 @@ function initAiToolsIpcHandler(log, runtime, getSettings) {
 // plus the user's ACTIVE tab (incremental, same mechanism). The renderer no
 // longer pushes full xterm text in agent mode; pure-chat/ACP modes push a
 // bounded tail themselves (see ai-chat.component.ts :: sendMessage()).
+//
+// Raw pty bytes carry ANSI color/OSC sequences (e.g. `\x1b[01;34m/ai\x1b[00m$`).
+// They are stripped before injection: otherwise the prompt preview slice(-40)
+// yields escape soup instead of the path, and the model answers from stale
+// conversation history.
+function stripAnsi(s) {
+  return String(s || '')
+    .replace(/\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)/g, '') // OSC (window title etc.)
+    .replace(/\x1b\[[0-9;?]*[A-Za-z]/g, '')           // CSI (colors, ?2004h, …)
+    .replace(/\x1b[()][0-9A-B]/g, '')                 // charset selection
+    .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, ''); // leftover controls
+}
+
 function injectSessionContext(runtime, messages, getSettings, crossSessionAccess, chatSessionId, activeTabId) {
   const registry = runtime?.sessionRegistry;
   if (!registry) return;
@@ -120,16 +135,32 @@ function injectSessionContext(runtime, messages, getSettings, crossSessionAccess
 
   const lines = [];
   const now = Date.now();
+  // Authoritative cwd of the user's active shell (follows `cd`). Kept aside
+  // so it is ALWAYS injected — even when no new terminal output exists and
+  // the incremental branches below produce zero lines.
+  let userCwd = '';
 
   for (const s of sessions) {
     const data = registry.read(s.id);
     if (!data) continue;
     // P1-2: user terminal is labeled distinctly from AI-owned sessions.
     const tag = s.owner === 'user' ? 'user-terminal' : s.type;
+    // The user's shell cwd (follows `cd`): without it the model runs
+    // local_execute (app home dir) and reports the WRONG directory.
+    let cwdSuffix = '';
+    if (s.owner === 'user') {
+      try {
+        const cwd = registry.get(s.id)?.session?.getShellCwd?.();
+        if (cwd) {
+          cwdSuffix = ` cwd=${cwd}`;
+          if (!userCwd) userCwd = cwd;
+        }
+      } catch { /* ignore — line works without cwd too */ }
+    }
 
     if (enabled) {
       if (!data.running) {
-        lines.push(`[${tag}] id=${s.id} — disconnected`);
+        lines.push(`[${tag}] id=${s.id}${cwdSuffix} — disconnected`);
         if (level >= 2) lastSentTimestamps.set(s.id, now);
         continue;
       }
@@ -137,16 +168,18 @@ function injectSessionContext(runtime, messages, getSettings, crossSessionAccess
       const hasOutput = data.output && data.output.length > 0;
 
       if (idleSummary && !hasOutput) {
-        lines.push(`[${tag}] id=${s.id} — IDLE, ready for input`);
+        lines.push(`[${tag}] id=${s.id}${cwdSuffix} — IDLE, ready for input`);
         if (level >= 2) lastSentTimestamps.set(s.id, now);
         continue;
       }
 
       if (idleSummary && hasOutput) {
-        const lastOut = data.output[data.output.length - 1].data;
+        // Match + preview on STRIPPED text: raw pty bytes end with color
+        // resets, so the raw slice would be escape soup, not the path.
+        const lastOut = stripAnsi(data.output[data.output.length - 1].data);
         if (/[$#>%:]\s*$/.test(lastOut)) {
-          const preview = lastOut.trim().slice(-40);
-          lines.push(`[${tag}] id=${s.id} — state: INPUT_REQUIRED, prompt: "${preview}"`);
+          const preview = lastOut.trim().slice(-60);
+          lines.push(`[${tag}] id=${s.id}${cwdSuffix} — state: INPUT_REQUIRED, prompt: "${preview}"`);
           if (level >= 2) lastSentTimestamps.set(s.id, now);
           continue;
         }
@@ -159,27 +192,41 @@ function injectSessionContext(runtime, messages, getSettings, crossSessionAccess
         // read never matched, so incremental injection was silently dead.)
         const newOutput = data.output.filter(o => ((o.ts ?? o.timestamp) || 0) > lastSent);
         if (newOutput.length === 0) continue;
-        const output = newOutput.map(o => o.data).join('');
-        lines.push(`[${tag}] id=${s.id} output="${output}"`);
+        // Cap + strip: a full `ls`/log dump must not flood the context.
+        const output = stripAnsi(newOutput.map(o => o.data).join('')).slice(-6000);
+        lines.push(`[${tag}] id=${s.id}${cwdSuffix} output="${output}"`);
         lastSentTimestamps.set(s.id, now);
         continue;
       }
     }
 
-    const output = data.output.map(o => o.data).join('');
-    lines.push(`[${tag}] id=${s.id} running=${data.running} output="${output}"`);
+    const output = stripAnsi(data.output.map(o => o.data).join('')).slice(-6000);
+    lines.push(`[${tag}] id=${s.id}${cwdSuffix} running=${data.running} output="${output}"`);
   }
 
-  if (lines.length === 0) return;
+  // No fresh lines (e.g. nothing new since the last question) — still ground
+  // the model in the CURRENT directory, otherwise it answers from stale chat
+  // history (e.g. repeats the previous `/ai` after the user cd'd to /ai/tools).
+  if (lines.length === 0) {
+    if (!userCwd) return;
+    messages.unshift({
+      role: 'system',
+      content: `User's active terminal cwd: ${userCwd} — "current folder" questions refer to this directory.`,
+    });
+    return;
+  }
 
-  let context = `Active terminal sessions:\n${lines.join('\n')}`;
+  const cwdNote = userCwd
+    ? `\nUser's active terminal cwd: ${userCwd} — "current folder" questions refer to this directory; local_execute already runs there.`
+    : '';
+  let context = `Active terminal sessions:\n${lines.join('\n')}${cwdNote}`;
 
   if (enabled) {
     const estimatedTokens = Math.ceil(context.length / 4);
     if (estimatedTokens > maxTokens) {
       while (lines.length > 0 && Math.ceil(context.length / 4) > maxTokens) {
         lines.pop();
-        context = `Active terminal sessions:\n${lines.join('\n')}`;
+        context = `Active terminal sessions:\n${lines.join('\n')}${cwdNote}`;
       }
       if (lines.length === 0) return;
     }
@@ -188,4 +235,4 @@ function injectSessionContext(runtime, messages, getSettings, crossSessionAccess
   messages.unshift({ role: 'system', content: context });
 }
 
-module.exports = { initAiIpcHandler, initAiChatIpcHandler, initAiToolsIpcHandler };
+module.exports = { initAiIpcHandler, initAiChatIpcHandler, initAiToolsIpcHandler, injectSessionContext, stripAnsi };

@@ -62,7 +62,7 @@
       </div>
     </div>
     }
-    @for (msg of messages; track msg) {
+    @for (msg of messages; track $index) {
     <div class="message" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'" [class.system]="msg.role === 'system'">
       <div class="message-avatar">{{ msg.role === 'user' ? '你' : 'AI' }}</div>
       <div class="message-body">
@@ -80,7 +80,7 @@
     @if (toolProgress.length > 0) {
     <div class="tool-progress">
       <div class="tool-progress-title">Agent activity ({{ toolProgress.length }})</div>
-      @for (entry of toolProgress; track entry.ts) {
+      @for (entry of toolProgress; track $index) {
       <div class="tool-entry" [class.expanded]="entry.expanded" [class.error]="!!entry.error" (click)="toggleToolEntry(entry)">
         <div class="tool-entry-header">
           <mat-icon class="tool-status-icon">{{ entry.error ? 'error' : entry.result ? 'check_circle' : 'hourglass_empty' }}</mat-icon>

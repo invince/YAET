@@ -63,8 +63,8 @@ class LocalTerminalSession extends TerminalRuntimeApi {
     }
 
     const isWindows = process.platform === 'win32';
-    const isDebuggerAttached = typeof v8debug === 'object' || 
-                               /--debug|--inspect/.test(process.execArgv.join(' ')) || 
+    const isDebuggerAttached = typeof v8debug === 'object' ||
+                               /--debug|--inspect/.test(process.execArgv.join(' ')) ||
                                (process.env.VSCODE_INSPECTOR_OPTIONS !== undefined) ||
                                (require('inspector').url() !== undefined);
 
@@ -137,16 +137,35 @@ class LocalTerminalSession extends TerminalRuntimeApi {
     }
   }
 
-  async exec(command) {
+  /**
+   * Best-effort cwd of the live pty shell (follows `cd` inside the terminal).
+   * Linux: /proc/<pid>/cwd. macOS/Windows: not supported → null.
+   * Returns null when it cannot be determined (never throws).
+   */
+  getShellCwd() {
+    try {
+      const pid = this.process?.pid;
+      if (!pid) return null;
+      if (process.platform === 'linux') {
+        const link = fs.readlinkSync(`/proc/${pid}/cwd`);
+        if (link && fs.existsSync(link)) return link;
+      }
+    } catch { /* ignore — caller falls back */ }
+    return null;
+  }
+
+  async exec(command, opts = {}) {
     const shell = process.platform === 'win32' ? { shell: 'cmd.exe' } : {};
     return new Promise((resolve) => {
       const child = exec(command, {
         ...shell,
+        ...(opts.cwd ? { cwd: opts.cwd } : {}),
         timeout: 30000,
         maxBuffer: 10 * 1024 * 1024,
         windowsHide: true,
       }, (error, stdout, stderr) => {
         resolve({
+          ...(opts.cwd ? { cwd: opts.cwd } : {}),
           stdout: stdout || '',
           stderr: stderr || '',
           exitCode: error ? (error.code || 1) : 0,
