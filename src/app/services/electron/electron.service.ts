@@ -13,6 +13,7 @@ import {
   AI_COMMAND_REJECTED,
   AI_CANCEL_CHAT,
   AI_FETCH_MODELS,
+  AI_READ_CONTEXT_FILE,
   AI_SEND_CHAT,
   AI_SEND_CHAT_STREAM,
   AI_SEND_WITH_TOOLS,
@@ -181,6 +182,14 @@ export class ElectronService extends AbstractElectronService {
   async sendAiChat(apiUrl: string, token: string, model: string, messages: any[], chatSessionId?: string | null): Promise<any> {
     if (this.ipc) {
       return await this.ipc.invoke(AI_SEND_CHAT, { apiUrl, token, model, messages, chatSessionId: chatSessionId || null });
+    }
+    throw new Error('Electron IPC not available');
+  }
+
+  // Read a user-attached local file for @file chat context.
+  async readContextFile(filePath: string): Promise<{ success: boolean; content?: string; truncated?: boolean; bytes?: number; error?: string }> {
+    if (this.ipc) {
+      return await this.ipc.invoke(AI_READ_CONTEXT_FILE, { filePath });
     }
     throw new Error('Electron IPC not available');
   }

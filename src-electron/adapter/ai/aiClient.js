@@ -98,13 +98,32 @@ async function callChatWithTools(log, apiUrl, token, model, messages, tools, opt
 // Servers that ignore `stream: true` and return buffered JSON are handled:
 // the body is parsed once and emitted as a single `{ full }` + `{ done }`.
 async function callChatStream(log, apiUrl, token, model, messages, opts = {}) {
+  // Some OpenAI-compatible servers 400 on the stream_options field — retry
+  // once without it (usage reporting is lost, streaming still works).
+  try {
+    return await callChatStreamAttempt(log, apiUrl, token, model, messages, opts, true);
+  } catch (e) {
+    if (!opts.signal?.aborted && /stream_options/i.test((e && e.message) || '')) {
+      try { log.warn('stream_options rejected, retrying without usage reporting'); } catch (_) {}
+      return await callChatStreamAttempt(log, apiUrl, token, model, messages, opts, false);
+    }
+    throw e;
+  }
+}
+
+async function callChatStreamAttempt(log, apiUrl, token, model, messages, opts = {}, withStreamOpts = true) {
   const { timeoutMs = 120000, signal, onEvent } = opts;
   // Streams stay open a long time — the timeout is an IDLE guard (no bytes
   // for this long), plus an absolute ceiling against runaway streams.
   const idleMs = Math.max(15000, Number(timeoutMs) || 120000);
   const maxTotalMs = Math.max(idleMs * 4, 300000);
   const url = `${apiUrl.replace(/\/+$/, '')}/chat/completions`;
-  const body = JSON.stringify({ model, messages, stream: true });
+  const body = JSON.stringify({
+    model,
+    messages,
+    stream: true,
+    ...(withStreamOpts ? { stream_options: { include_usage: true } } : {}),
+  });
   const headers = {
     'Authorization': `Bearer ${token}`,
     'Content-Length': Buffer.byteLength(body),
@@ -158,6 +177,14 @@ async function callChatStream(log, apiUrl, token, model, messages, opts = {}) {
           try { req.destroy(); } catch (_) {}
           return;
         }
+        // Final chunk on usage-reporting streams carries no choices.
+        if (j && j.usage) {
+          emit({ usage: {
+            prompt_tokens: j.usage.prompt_tokens || 0,
+            completion_tokens: j.usage.completion_tokens || 0,
+            total_tokens: j.usage.total_tokens || ((j.usage.prompt_tokens || 0) + (j.usage.completion_tokens || 0)),
+          } });
+        }
         const delta = j?.choices?.[0]?.delta?.content;
         if (typeof delta === 'string' && delta) {
           full += delta;
@@ -208,6 +235,11 @@ async function callChatStream(log, apiUrl, token, model, messages, opts = {}) {
             const parsed = JSON.parse(rawBody);
             full = parsed.choices?.[0]?.message?.content || '';
             if (full) emit({ full });
+            if (parsed.usage) emit({ usage: {
+              prompt_tokens: parsed.usage.prompt_tokens || 0,
+              completion_tokens: parsed.usage.completion_tokens || 0,
+              total_tokens: parsed.usage.total_tokens || 0,
+            } });
           } catch (e) {
             fail(new Error(`Failed to parse AI response: ${e.message}. Raw: ${String(rawBody).substring(0, 200)}`));
             return;

@@ -57,6 +57,7 @@ const CORE_INVOKE_CHANNELS = [
   'ai.send-chat',
   'ai.send-with-tools',
   'ai.send-chat-stream',
+  'ai.read-context-file',
   'session.open.rd.vnc',
   'session.open.rd.spice',
   'session.fe.scp.register',

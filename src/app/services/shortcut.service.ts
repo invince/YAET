@@ -118,7 +118,17 @@ export class ShortcutService {
 
     if (ctrl && shift && key === 'i') {
       event.preventDefault();
-      this.ngZone.run(() => this.aiChatService.toggle());
+      // Smart single shortcut: closed → open + focus; open but input not
+      // focused → focus; input focused → close. One key cycles everything.
+      this.ngZone.run(() => {
+        const ae = document.activeElement;
+        const inChatInput = ae instanceof HTMLElement && !!ae.closest('.chat-textarea');
+        if (!this.aiChatService.isOpen || !inChatInput) {
+          this.aiChatService.requestFocus();
+        } else {
+          this.aiChatService.toggle();
+        }
+      });
       return;
     }
 

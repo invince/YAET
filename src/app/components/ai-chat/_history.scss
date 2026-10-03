@@ -97,6 +97,25 @@
   }
   &:hover .history-item-delete { opacity: 1; }
 
+  .history-item-pin {
+    opacity: 0;
+    transition: opacity t.$transition-fast;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    mat-icon { font-size: 14px; width: 14px; height: 14px; color: var(--app-text-color); opacity: 0.5; }
+    &:hover mat-icon { color: t.$color-accent-light; opacity: 1; }
+
+    &.pinned {
+      opacity: 1;
+      mat-icon { color: t.$color-accent-light; opacity: 1; transform: rotate(45deg); }
+    }
+  }
+  &:hover .history-item-pin { opacity: 1; }
+
   &.new-chat-item {
     color: t.$color-accent-light;
     mat-icon { font-size: 18px; width: 18px; height: 18px; }
@@ -122,4 +141,58 @@
   height: 1px;
   background: var(--app-border-color);
   margin: t.$spacing-xs 0;
+}
+
+.history-search-row {
+  display: flex;
+  align-items: center;
+  gap: t.$spacing-xs;
+  margin: t.$spacing-xs t.$spacing-md;
+  padding: 4px 8px;
+  background: var(--app-bg-color);
+  border: 1px solid var(--app-border-color);
+  border-radius: t.$radius-md;
+
+  &:focus-within { border-color: t.$color-accent; }
+
+  mat-icon {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    color: var(--app-text-muted);
+    flex-shrink: 0;
+  }
+
+  .history-search {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--app-text-color);
+    font-size: t.$font-size-sm;
+    font-family: inherit;
+    padding: 0;
+
+    &::placeholder { color: var(--app-text-muted); opacity: 0.8; }
+  }
+
+  .history-search-clear {
+    width: 20px !important;
+    height: 20px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    mat-icon { font-size: 13px !important; width: 13px !important; height: 13px !important; margin: 0; }
+  }
+}
+
+.history-empty {
+  padding: t.$spacing-md;
+  text-align: center;
+  font-size: t.$font-size-sm;
+  color: var(--app-text-muted);
 }

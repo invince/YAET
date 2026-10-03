@@ -10,6 +10,80 @@
   gap: t.$spacing-xs;
 }
 
+// @file attachment chips above the input box.
+.attachment-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: t.$spacing-xs;
+  padding: 0 t.$spacing-xs;
+}
+
+.attachment-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  background: var(--app-surface-elevated);
+  border: 1px solid var(--app-border-color);
+  border-radius: 999px;
+  padding: 2px 4px 2px 8px;
+  font-size: t.$font-size-xs;
+  color: var(--app-text-color);
+
+  mat-icon {
+    font-size: 13px;
+    width: 13px;
+    height: 13px;
+    color: var(--app-text-muted);
+    flex-shrink: 0;
+  }
+
+  .attachment-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 160px;
+  }
+
+  .attachment-remove {
+    border: none;
+    background: transparent;
+    color: var(--app-text-muted);
+    cursor: pointer;
+    padding: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    mat-icon { font-size: 12px; width: 12px; height: 12px; }
+
+    &:hover { color: t.$color-error; background: var(--app-hover-bg-color); }
+  }
+}
+
+// Leading attach button inside the input box (ghost style, unlike send).
+.attach-btn {
+  flex-shrink: 0;
+  width: 30px !important;
+  height: 30px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  color: var(--app-text-muted) !important;
+
+  mat-icon {
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+    margin: 0;
+    line-height: 1;
+  }
+
+  &:hover { color: t.$color-accent-light !important; }
+}
+
 .chat-input-box {
   display: flex;
   align-items: flex-end;
@@ -112,6 +186,28 @@
     align-items: center;
     gap: 6px;
     color: var(--mat-sys-primary);
+  }
+
+  .hint-queued {
+    cursor: pointer;
+    color: t.$color-accent-light;
+    border: 1px solid rgba(79, 195, 247, 0.45);
+    border-radius: 999px;
+    padding: 0 8px;
+    line-height: 1.6;
+    user-select: none;
+
+    &:hover {
+      background: rgba(79, 195, 247, 0.12);
+    }
+  }
+
+  .token-usage {
+    color: var(--app-text-muted);
+    cursor: help;
+    white-space: nowrap;
+
+    &:hover { color: t.$color-accent-light; }
   }
 
   .pulse-dot {

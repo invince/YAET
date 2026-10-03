@@ -94,6 +94,7 @@ export const AI_SEND_CHAT = 'ai.send-chat';
 export const AI_SEND_WITH_TOOLS = 'ai.send-with-tools';
 export const AI_SEND_CHAT_STREAM = 'ai.send-chat-stream';
 export const AI_WEB_CHUNK = 'ai.web-chunk';
+export const AI_READ_CONTEXT_FILE = 'ai.read-context-file';
 export const AI_TOOL_PROGRESS = 'ai.tool-progress';
 export const AI_COMMAND_PENDING = 'ai.command-pending';
 export const AI_COMMAND_APPROVED = 'ai.command-approved';

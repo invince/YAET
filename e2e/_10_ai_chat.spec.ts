@@ -121,6 +121,14 @@ test.describe('10.1 AI Chat panel', () => {
 
     // Greeting-only chats render the hero empty state (title + quick
     // prompts) instead of a lone assistant bubble.
+    // NOTE: Chromium userData is shared across e2e tests (fixtures only
+    // isolate YAET_HOME), so start from a guaranteed-fresh chat instead of
+    // assuming an empty profile.
+    await mainWindow.locator('.chat-container .header-left').click();
+    await mainWindow.waitForTimeout(300);
+    await mainWindow.locator('.chat-container .history-dropdown .new-chat-item').click();
+    await mainWindow.waitForTimeout(500);
+
     const emptyState = mainWindow.locator('.chat-container .empty-state');
     await expect(emptyState).toBeVisible({timeout: 5000});
     const text = await emptyState.textContent();
@@ -288,7 +296,8 @@ test.describe('10.4 Approval flow UI', () => {
     await aiBtn.click();
     await mainWindow.waitForTimeout(500);
 
-    const sendBtn = mainWindow.locator('.chat-container .chat-input-area button[mat-icon-button]');
+    // .send-btn specifically — the input area also holds the attach button now.
+    const sendBtn = mainWindow.locator('.chat-container .chat-input-area .send-btn');
     await expect(sendBtn).toBeDisabled();
   });
 });

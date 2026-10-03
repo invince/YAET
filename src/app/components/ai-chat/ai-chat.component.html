@@ -36,7 +36,16 @@
         <span>New Chat</span>
       </div>
       <div class="history-divider"></div>
-      @for (session of sessions; track session.id) {
+      <div class="history-search-row">
+        <mat-icon>search</mat-icon>
+        <input class="history-search" placeholder="Search chats…" [(ngModel)]="historyFilter" />
+        @if (historyFilter) {
+        <button class="history-search-clear" (click)="historyFilter = ''" mat-icon-button title="Clear search">
+          <mat-icon>close</mat-icon>
+        </button>
+        }
+      </div>
+      @for (session of filteredSessions; track session.id) {
       <div class="history-item" [class.active]="session.id === currentSessionId" (click)="switchSession(session.id)">
         <div class="history-item-info">
           @if (renamingId === session.id) {
@@ -46,10 +55,16 @@
           }
           <div class="history-item-time">{{ session.updatedAt | date:'short' }}</div>
         </div>
+        <button class="history-item-pin" [class.pinned]="session.pinned" (click)="togglePin(session.id, $event)" mat-icon-button [title]="session.pinned ? 'Unpin chat' : 'Pin chat to top'">
+          <mat-icon>push_pin</mat-icon>
+        </button>
         <button class="history-item-delete" (click)="deleteSession(session.id)" mat-icon-button title="Delete chat">
           <mat-icon>close</mat-icon>
         </button>
       </div>
+      }
+      @if (historyFilter.trim() && filteredSessions.length === 0) {
+      <div class="history-empty">No chats match “{{ historyFilter.trim() }}”</div>
       }
       @if (sessions.length > 0) {
       <div class="history-divider"></div>
@@ -101,6 +116,11 @@
             @if (msg.role === 'user' && !isLoading) {
             <button class="msg-action-btn" (click)="retryFrom(i); $event.stopPropagation()" title="Re-send this message (drops the answers after it)">
               <mat-icon>replay</mat-icon>
+            </button>
+            }
+            @if (msg.role === 'assistant' && canRegenerate(i)) {
+            <button class="msg-action-btn" (click)="regenerateFrom(i); $event.stopPropagation()" title="Regenerate this answer">
+              <mat-icon>refresh</mat-icon>
             </button>
             }
           </span>
@@ -186,23 +206,47 @@
   }
 
   <div class="chat-input-area">
+    @if (attachments.length > 0) {
+    <div class="attachment-row">
+      @for (a of attachments; track a.path; let ai = $index) {
+      <span class="attachment-chip" [title]="a.path">
+        <mat-icon>description</mat-icon>
+        <span class="attachment-name">{{ basename(a.path) }}</span>
+        <button class="attachment-remove" (click)="removeAttachment(ai)" title="Remove file">
+          <mat-icon>close</mat-icon>
+        </button>
+      </span>
+      }
+    </div>
+    }
     <div class="chat-input-box">
+      <button mat-icon-button class="attach-btn" (click)="filePicker.click()" title="Attach local files">
+        <mat-icon>attach_file</mat-icon>
+      </button>
+      <input #filePicker type="file" hidden multiple (change)="onAttachFiles(filePicker)" />
       <textarea #chatBox rows="1" class="chat-textarea" placeholder="Ask AI anything…"
         [(ngModel)]="userInput" (keydown)="onInputKeydown($event)" (input)="autoGrow(chatBox)"></textarea>
       <div class="input-actions">
-        @if (isLoading) {
+        @if (isLoading && !userInput.trim()) {
         <button mat-icon-button class="send-btn stop" (click)="stop()" title="Stop generation">
           <mat-icon>stop_circle</mat-icon>
         </button>
         } @else {
-        <button mat-icon-button class="send-btn" (click)="sendMessage()" [disabled]="!userInput.trim()" title="Send (Enter)">
+        <button mat-icon-button class="send-btn" (click)="sendMessage()" [disabled]="!userInput.trim()" [title]="isLoading ? 'Queue behind the running answer (Enter)' : 'Send (Enter)'">
           <mat-icon>arrow_upward</mat-icon>
         </button>
         }
       </div>
     </div>
     <div class="input-hints">
-      <span><kbd>Enter</kbd> send · <kbd>Shift+Enter</kbd> newline</span>
+      <span><kbd>Enter</kbd> send · <kbd>Shift+Enter</kbd> newline
+        @if (sessionTokens.total > 0) {
+        · <span class="token-usage" [title]="tokenTooltip">{{ formatTokens(sessionTokens.total) }} tok</span>
+        }
+      </span>
+      @if (pendingQueue.length > 0) {
+      <span class="hint-queued" (click)="clearQueue()" [title]="'Next: ' + (pendingQueue[0] || '')">queued ({{ pendingQueue.length }}) · click to clear</span>
+      }
       @if (isLoading) {
       <span class="hint-running"><span class="pulse-dot"></span> generating…</span>
       }

@@ -4,15 +4,25 @@ async function functionCallLoop(log, runtime, apiUrl, token, model, messages, to
   // P1-1: never mutate the caller's payload — retries would resend tool results.
   messages = messages.slice();
   if (signal?.aborted) throw new Error('Cancelled by user');
+  // Token-usage accumulator shared across recursive iterations (same opts).
+  opts.usageAcc = opts.usageAcc || { prompt: 0, completion: 0, total: 0 };
+  const attachUsage = (resp) => {
+    resp.usage = {
+      prompt_tokens: opts.usageAcc.prompt,
+      completion_tokens: opts.usageAcc.completion,
+      total_tokens: opts.usageAcc.total,
+    };
+    return resp;
+  };
   // P1-1C: context-budget guard (same len/4 convention as aiChat.js).
   // Depth cap stops long runs; this stops FAT runs (huge tool outputs).
   if (opts.maxLoopTokens && estimateTokens(messages) > opts.maxLoopTokens) {
     const note = 'Context budget exceeded. Please start a new chat or narrow the request.';
-    return { choices: [{ message: { role: 'assistant', content: note } }] };
+    return attachUsage({ choices: [{ message: { role: 'assistant', content: note } }] });
   }
   if (depth > 10) {
     messages.push({ role: 'assistant', content: 'Tool call limit reached. Please refine your request.' });
-    return { choices: [{ message: { role: 'assistant', content: 'Tool call limit reached. Please refine your request.' } }] };
+    return attachUsage({ choices: [{ message: { role: 'assistant', content: 'Tool call limit reached. Please refine your request.' } }] });
   }
 
   const { callChatWithTools } = require('./aiClient');
@@ -22,9 +32,17 @@ async function functionCallLoop(log, runtime, apiUrl, token, model, messages, to
   const choice = response.choices?.[0];
   if (!choice) throw new Error('No response from AI');
 
+  // Aggregate token usage across loop iterations so the UI can report the
+  // whole agent run (the final response alone only carries its own call).
+  if (response.usage) {
+    opts.usageAcc.prompt += response.usage.prompt_tokens || 0;
+    opts.usageAcc.completion += response.usage.completion_tokens || 0;
+    opts.usageAcc.total += response.usage.total_tokens
+      || ((response.usage.prompt_tokens || 0) + (response.usage.completion_tokens || 0));
+  }
   const message = choice.message;
   if (!message.tool_calls || message.tool_calls.length === 0) {
-    return response;
+    return attachUsage(response);
   }
 
   messages.push({

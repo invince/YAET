@@ -9,7 +9,12 @@
         <mat-icon>horizontal_split</mat-icon>
     </button>
     <button [disabled]="!isAiConfigured" mat-icon-button (click)="toggleAi()" aria-label="Toggle AI Assistant"
-        [color]="(aiChatService.isOpen$ | async) ? 'accent' : ''">
+        [color]="(aiChatService.isOpen$ | async) ? 'accent' : ''"
+        [class.ai-running]="(aiChatService.running$ | async)"
+        [title]="(aiChatService.running$ | async) ? 'AI is working — open to view' : 'Toggle AI Assistant'">
         <mat-icon>chat</mat-icon>
+        @if (aiChatService.running$ | async) {
+        <span class="ai-running-dot"></span>
+        }
     </button>
 </mat-toolbar>

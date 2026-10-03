@@ -9,3 +9,26 @@
 .spacer {
   flex: 1 1 auto;
 }
+
+// "AI working in the background" indicator on the chat toggle.
+.bottom-toolbar button.ai-running {
+  position: relative;
+
+  .ai-running-dot {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: t.$color-accent-light;
+    box-shadow: 0 0 0 2px var(--mat-toolbar-container-background-color, transparent);
+    animation: ai-running-pulse 1.4s ease-in-out infinite;
+    pointer-events: none;
+  }
+}
+
+@keyframes ai-running-pulse {
+  0%, 100% { opacity: 0.45; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.1); }
+}

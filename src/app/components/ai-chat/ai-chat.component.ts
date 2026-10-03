@@ -1,6 +1,6 @@
 import {CommonModule} from '@angular/common';
 import {
-  AfterViewChecked,
+  AfterViewInit,
   ChangeDetectorRef,
   Component,
   ElementRef,
@@ -64,6 +64,14 @@ export function progressKey(t: { toolName: string; args: any }): string {
   return `${t.toolName}|${a}`;
 }
 
+// Code-block languages that get "insert/run in terminal" buttons.
+// Everything else keeps copy-only.
+const SHELL_LANGS = new Set([
+  'bash', 'sh', 'shell', 'zsh', 'fish', 'dash', 'ksh',
+  'powershell', 'ps1', 'pwsh', 'cmd', 'bat', 'batch',
+  'console', 'terminal',
+]);
+
 @Component({
   selector: 'app-ai-chat',
   templateUrl: './ai-chat.component.html',
@@ -79,13 +87,17 @@ export function progressKey(t: { toolName: string; args: any }): string {
     RedactPipe
   ]
 })
-export class AiChatComponent implements OnInit, AfterViewChecked {
+export class AiChatComponent implements OnInit, AfterViewInit {
   @ViewChild('scrollMe') private myScrollContainer!: ElementRef;
   @ViewChild('chatBox') private chatBox?: ElementRef<HTMLTextAreaElement>;
   isOpen = false;
   userInput = '';
   messages: ChatMessage[] = [];
   isLoading = false;
+  private setLoading(v: boolean) {
+    this.isLoading = v;
+    this.aiChatService.setRunning(v);
+  }
   toolProgress: ToolProgressEntry[] = [];
   pendingCommand: { requestId: string; toolName: string; args: any; preview: string } | null = null;
   private currentSubscription: Subscription | null = null;
@@ -99,6 +111,13 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   /** index of the message whose copy feedback ("done") is showing */
   copiedIndex: number | null = null;
   private copyResetTimer: any = null;
+  /** messages typed while a run is in flight — auto-sent when it settles */
+  pendingQueue: string[] = [];
+  /** cumulative API token usage for the current session */
+  sessionTokens = { prompt: 0, completion: 0, total: 0 };
+  /** local files picked via the attach button — read fresh at send time */
+  attachments: { path: string }[] = [];
+  readonly maxAttachments = 3;
   /** show the floating "jump to latest" button when scrolled up */
   showScrollButton = false;
 
@@ -137,6 +156,18 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     return this.historyService.list;
   }
 
+  /** history-dropdown filter text (session name + message content) */
+  historyFilter = '';
+
+  get filteredSessions() {
+    const q = this.historyFilter.trim().toLowerCase();
+    if (!q) return this.sessions;
+    return this.sessions.filter(s =>
+      s.name.toLowerCase().includes(q) ||
+      s.messages.some(m => (m.content || '').toLowerCase().includes(q))
+    );
+  }
+
   get currentSessionId() {
     return this.historyService.currentSessionId;
   }
@@ -163,6 +194,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   private pushMessage(msg: ChatMessage) {
     if (msg.ts == null) msg.ts = Date.now();
     this.messages.push(msg);
+    this.scrollToBottom();
   }
 
   formatTime(ts?: number): string {
@@ -199,10 +231,28 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     if (current) {
       this.messages = [...current.messages];
     }
+    this.loadSessionTokens();
+    this.loadSessionTools();
+    // Autofocus the input whenever the panel opens (toggle, shortcut…).
+    // No-steal: only fires on closed→open transitions, never while open.
+    this.aiChatService.isOpen$.subscribe(open => {
+      if (open) setTimeout(() => this.focusInput(), 50);
+    });
+    this.aiChatService.focusRequested$.subscribe(() => setTimeout(() => this.focusInput(), 50));
   }
 
-  ngAfterViewChecked() {
-    this.scrollToBottom();
+  /** Focus the chat textarea (public: used by template + focus shortcut). */
+  focusInput() {
+    try {
+      this.chatBox?.nativeElement.focus();
+    } catch (_) {}
+  }
+
+  // First paint scrolls to the newest message. Afterwards scrolling is
+  // event-driven (push/chunk/tool events call scrollToBottom explicitly) —
+  // running it on every change-detection cycle was pure overhead.
+  ngAfterViewInit() {
+    this.jumpToLatest();
   }
 
   private isNearBottom(): boolean {
@@ -248,7 +298,22 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     if (cached) return cached;
     try {
       let rawHtml = marked.parse(content) as string;
-      rawHtml = rawHtml.replace(/<pre>/g, '<div class="code-block"><button class="code-copy-btn" type="button" aria-label="Copy code">copy</button><pre>');
+      // Wrap code blocks with action buttons. Shell-language blocks additionally
+      // get insert/run-to-terminal buttons (clicks handled in onMessageClick).
+      // The info-string lang is model-controlled — strip anything that isn't
+      // safe for re-emitting into class/data attributes.
+      // Single pass: a second <pre> replace would re-match the <pre> this
+      // replacement itself emits and double-wrap the block (nested .code-block).
+      rawHtml = rawHtml.replace(/<pre>(<code class="language-([^"]*)">)?/g, (_m, codeOpen, lang) => {
+        const safe = String(lang || '').replace(/[^a-zA-Z0-9+-]/g, '');
+        const send = SHELL_LANGS.has(safe.toLowerCase())
+          ? '<button class="code-send-btn" type="button" data-act="insert" aria-label="Insert into terminal">insert</button>'
+            + '<button class="code-send-btn run" type="button" data-act="run" aria-label="Run in terminal">run</button>'
+          : '';
+        return `<div class="code-block"${safe ? ` data-lang="${safe.toLowerCase()}"` : ''}>`
+          + '<span class="code-actions"><button class="code-copy-btn" type="button" aria-label="Copy code">copy</button>'
+          + `${send}</span><pre>${codeOpen || ''}`;
+      });
       rawHtml = rawHtml.replace(/<\/pre>/g, '</pre></div>');
       // Forbid javascript:/data: links even though clicks are intercepted —
       // innerHTML still exposes them to context-menu / drag-out.
@@ -270,8 +335,15 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   }
 
   toggleChat() {
-    if (this.aiChatService.isOpen) {
-      this.clearToolProgress();
+    // Close = hide only. A run keeps going in the background (same as the
+    // toolbar button / Ctrl+Shift+I) — reopen to see its progress. Stop is
+    // the only thing that aborts a run.
+    if (this.aiChatService.isOpen && this.pendingCommand) {
+      // A pending approval can't be answered while hidden — deny it rather
+      // than leave the agent loop hanging forever.
+      this.electronService.rejectCommand(this.pendingCommand.requestId);
+      this.pendingCommand = null;
+      this.notificationService.info('Command rejected (panel closed)');
     }
     this.aiChatService.toggle();
   }
@@ -279,6 +351,14 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
   toggleHistoryDropdown(event: MouseEvent) {
     event.stopPropagation();
     this.showHistoryDropdown = !this.showHistoryDropdown;
+    if (this.showHistoryDropdown) {
+      // Fresh filter each time the dropdown opens.
+      this.historyFilter = '';
+      setTimeout(() => {
+        const input = document.querySelector('.history-search') as HTMLInputElement;
+        if (input) input.focus();
+      });
+    }
   }
 
   stopProp(event: MouseEvent) {
@@ -289,8 +369,16 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     this.historyService.saveCurrentMessages(this.messages);
   }
 
-  newChat() {
+  /** New/switch/delete while a run is in flight: say so, then tear down. */
+  private abandonRunForNav() {
+    if (this.isLoading) {
+      this.notificationService.info('Stopped the running answer');
+    }
     this.clearToolProgress();
+  }
+
+  newChat() {
+    this.abandonRunForNav();
     this.saveMessages();
     this.historyService.createNew();
     // P2-2: trimming used to silently discard old chats — say so.
@@ -300,24 +388,36 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
       this.notificationService.info(`Removed ${dropped} oldest chat(s) — history keeps 10`);
     }
     this.messages = [...(this.historyService.current?.messages ?? [])];
+    this.loadSessionTokens();
+    this.loadSessionTools();
     this.showHistoryDropdown = false;
     this.cdr.detectChanges();
+    this.jumpToLatest();
   }
 
   switchSession(id: string) {
-    this.clearToolProgress();
+    this.abandonRunForNav();
     this.saveMessages();
     this.historyService.switchTo(id);
     this.messages = [...(this.historyService.current?.messages ?? [])];
+    this.loadSessionTokens();
+    this.loadSessionTools();
     this.showHistoryDropdown = false;
     this.cdr.detectChanges();
+    this.jumpToLatest();
   }
 
   deleteSession(id: string) {
+    // Deleting the open chat mid-run must not let late chunks bleed into
+    // whatever session becomes current — bump the generation via teardown.
+    if (id === this.currentSessionId) this.abandonRunForNav();
     this.historyService.remove(id);
     this.messages = [...(this.historyService.current?.messages ?? [])];
+    this.loadSessionTokens();
+    this.loadSessionTools();
     this.showHistoryDropdown = false;
     this.cdr.detectChanges();
+    this.jumpToLatest();
   }
 
   startRename(id: string, currentName: string) {
@@ -413,21 +513,50 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
 
   @HostListener('click', ['$event'])
   onMessageClick(event: MouseEvent) {
-    const btn = (event.target as HTMLElement).closest('.code-copy-btn');
-    if (btn) {
-      const pre = btn.parentElement?.querySelector('pre');
+    const el = event.target as HTMLElement;
+    const copyBtn = el.closest('.code-copy-btn');
+    if (copyBtn) {
+      const pre = copyBtn.closest('.code-block')?.querySelector('pre');
       if (!pre) return;
       navigator.clipboard.writeText(pre.textContent || '').catch(() => {});
-      btn.textContent = 'done';
-      setTimeout(() => { btn.textContent = 'copy'; }, 2000);
+      copyBtn.textContent = 'done';
+      setTimeout(() => { copyBtn.textContent = 'copy'; }, 2000);
       return;
     }
 
-    const anchor = (event.target as HTMLElement).closest('a');
+    const sendBtn = el.closest('.code-send-btn') as HTMLElement | null;
+    if (sendBtn) {
+      const pre = sendBtn.closest('.code-block')?.querySelector('pre');
+      if (!pre) return;
+      this.sendToTerminal(pre.textContent || '', sendBtn.dataset['act'] === 'run', sendBtn);
+      return;
+    }
+
+    const anchor = el.closest('a');
     if (anchor?.href) {
       event.preventDefault();
       this.electronService.openUrl(anchor.href);
     }
+  }
+
+  // Paste a shell code block into the ACTIVE terminal tab (insert = staged,
+  // run = staged + Enter). User-initiated, so no approval prompt — the click
+  // itself is the consent, same as copy/paste + Enter by hand.
+  sendToTerminal(code: string, run: boolean, btn?: HTMLElement) {
+    const tab = this.tabService.getSelectedTab();
+    if (!tab || tab.category !== 'TERMINAL') {
+      this.notificationService.info('No active terminal — open a terminal tab first');
+      return;
+    }
+    const clean = code.replace(/\n+$/, '');
+    if (!clean.trim()) return;
+    this.electronTerminalService.sendTerminalInput(tab.id, clean + (run ? '\r' : ''));
+    if (btn) {
+      const orig = btn.textContent;
+      btn.textContent = run ? 'ran' : 'sent';
+      setTimeout(() => { btn.textContent = orig; }, 1500);
+    }
+    if (run) this.notificationService.info('Command sent to terminal');
   }
 
   @HostListener('window:resize')
@@ -508,8 +637,18 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     }
   }
 
-  sendMessage() {
-    if (!this.userInput.trim() || this.isLoading) return;
+  async sendMessage() {
+    const text = this.userInput.trim();
+    if (!text) return;
+    if (this.isLoading) {
+      // A run is in flight — queue behind it instead of swallowing the
+      // keystroke. flushQueue() picks it up when the run settles.
+      this.pendingQueue.push(text);
+      this.userInput = '';
+      this.resetChatBoxHeight();
+      this.cdr.detectChanges();
+      return;
+    }
 
     const aiSettings = this.settingStorage.settings.ai;
     if (!aiSettings) {
@@ -546,9 +685,15 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     // after made the loading state vanish instantly (no typing dots, no
     // Stop button, input stayed editable mid-run).
     this.clearToolProgress();
-    this.isLoading = true;
+    this.setLoading(true);
     // Sending always snaps to the newest message (user may be scrolled up).
     this.jumpToLatest();
+
+    // Attachments are read AFTER the synchronous commit above: isLoading is
+    // already true, so a re-entrant send during the file reads safely queues
+    // (userInput is cleared, so a double-click can't duplicate either).
+    const attachedBlock = await this.resolveAttachments();
+    this.attachments = [];
 
     const activeTab = this.tabService.getSelectedTab();
     let context = '';
@@ -573,6 +718,11 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     if (context && !isAgent) {
         payload.push({ role: 'user', content: `Current terminal context (tail):\n${truncateTail(context)}` });
     }
+    // @file attachments ride the same payload in every mode (agent backend
+    // forwards the full message list to the model).
+    if (attachedBlock) {
+      payload.push({ role: 'user', content: attachedBlock });
+    }
 
     if (isAgent) {
       this.sendWebMessageWithTools(aiSettings, payload, activeTab);
@@ -581,6 +731,52 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     } else {
       this.sendWebMessage(aiSettings, payload, activeTab);
     }
+  }
+
+  /** Read @file attachments fresh at send time; failures toast + skip. */
+  private async resolveAttachments(): Promise<string | null> {
+    if (this.attachments.length === 0) return null;
+    const parts: string[] = [];
+    for (const a of this.attachments) {
+      try {
+        const r = await this.electronService.readContextFile(a.path);
+        if (r?.success && typeof r.content === 'string') {
+          parts.push(`### ${a.path}${r.truncated ? ' (truncated to 32KB)' : ''}\n\`\`\`\`\n${r.content}\n\`\`\`\``);
+        } else {
+          this.notificationService.info(`Skipped ${a.path}: ${r?.error || 'cannot read'}`);
+        }
+      } catch (e) {
+        this.notificationService.info(`Skipped ${a.path}: cannot read`);
+      }
+    }
+    if (parts.length === 0) return null;
+    return `Attached file contents:\n\n${parts.join('\n\n')}`;
+  }
+
+  /** 📎 button: stage local files as @file attachments (paths deduped). */
+  onAttachFiles(input: HTMLInputElement) {
+    const files = Array.from(input.files || []);
+    input.value = '';
+    for (const f of files) {
+      const p = (f as any).path;
+      if (!p || this.attachments.some(a => a.path === p)) continue;
+      if (this.attachments.length >= this.maxAttachments) {
+        this.notificationService.info(`At most ${this.maxAttachments} attached files`);
+        break;
+      }
+      this.attachments.push({ path: p });
+    }
+    this.cdr.detectChanges();
+  }
+
+  removeAttachment(index: number) {
+    this.attachments.splice(index, 1);
+    this.cdr.detectChanges();
+  }
+
+  basename(p: string): string {
+    const parts = String(p || '').split(/[/\\]/);
+    return parts[parts.length - 1] || p;
   }
 
   private sendWebMessage(aiSettings: any, payload: any[], activeTab: any) {
@@ -611,6 +807,10 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     this.electronService.removeWebChunkListeners();
     this.electronService.onWebChunk((data: any) => {
       if (gen !== this._requestGeneration) return;
+      if (data.usage) {
+        this.addUsage(data.usage);
+        return;
+      }
       if (data.done) {
         if (typeof data.full === 'string') assistantMessage.content = data.full;
         this.electronService.removeWebChunkListeners();
@@ -619,7 +819,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
           // Empty stream = same as empty reply before: no bubble at all.
           this.messages = this.messages.filter(m => m !== assistantMessage);
           this.cdr.detectChanges();
-          this.isLoading = false;
+          this.setLoading(false);
           return;
         }
         this.handleResponse(assistantMessage.content, activeTab);
@@ -654,7 +854,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
         // P1-1: user-cancelled runs are silent — no error bubble.
         const msg = (err as any)?.message || String(err || '');
         if (/cancelled by user/i.test(msg)) {
-          this.isLoading = false;
+          this.setLoading(false);
           this.saveMessages();
           this.cdr.detectChanges();
           return;
@@ -670,13 +870,16 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
         // the old non-streaming error path.
         this.messages = this.messages.filter(m => m !== assistantMessage);
         this.pushMessage({ role: 'assistant', content: 'Error communicating with AI. Please check your configuration.' });
-        this.isLoading = false;
+        this.setLoading(false);
+        this.flushQueue();
       }
     );
   }
 
   private sendWebMessageWithTools(aiSettings: any, payload: any[], activeTab: any) {
     this.toolProgress = [];
+    // Fresh run — reset the stored activity too (settle handlers re-save).
+    this.historyService.saveSessionTools(this.currentSessionId, []);
     this.pendingCommand = null;
     this.electronService.removeToolProgressListeners();
     this.electronService.removeCommandPendingListeners();
@@ -723,6 +926,8 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
         this.electronService.removeCommandPendingListeners();
         this.pendingCommand = null;
         let aiResponse = this.aiService.extractWebContent(resp);
+        this.addUsage((resp as any)?.usage);
+        this.historyService.saveSessionTools(this.currentSessionId, this.toolProgress);
         this.handleResponse(aiResponse, activeTab);
       },
       error: (err) => {
@@ -731,16 +936,19 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
         this.electronService.removeToolProgressListeners();
         this.electronService.removeCommandPendingListeners();
         this.pendingCommand = null;
+        // Keep partial tool activity for review even on failure.
+        this.historyService.saveSessionTools(this.currentSessionId, this.toolProgress);
         // P1-1: user-cancelled runs are silent — no error bubble.
         const msg = (err as any)?.message || String(err || '');
         if (/cancelled by user/i.test(msg)) {
-          this.isLoading = false;
+          this.setLoading(false);
           this.cdr.detectChanges();
           return;
         }
         console.error(err);
         this.pushMessage({ role: 'assistant', content: 'Error communicating with AI. Please check your configuration.' });
-        this.isLoading = false;
+        this.setLoading(false);
+        this.flushQueue();
       }
     });
   }
@@ -770,7 +978,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     this.electronService.onAcpChunk((data: any) => {
       if (gen !== this._requestGeneration) return;
       if (data.done) {
-          this.isLoading = false;
+          this.setLoading(false);
           this.cdr.detectChanges();
           return;
       }
@@ -799,7 +1007,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
 
       this.electronService.removeAcpChunkListeners();
 
-      this.isLoading = false;
+      this.setLoading(false);
       this.cdr.detectChanges();
 
       if (!assistantMessage.content && resp) {
@@ -812,17 +1020,21 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
       this.electronService.removeAcpChunkListeners();
       console.error(err);
       assistantMessage.content = 'Error communicating with AI. Please check your configuration.';
-      this.isLoading = false;
+      this.setLoading(false);
       this.cdr.detectChanges();
+      this.flushQueue();
     }
   }
 
   private handleResponse(aiResponse: string, activeTab: any) {
-    this.isLoading = false;
+    this.setLoading(false);
     this.cdr.detectChanges();
     this.scrollToBottom();
 
-    if (!aiResponse) return;
+    if (!aiResponse) {
+      this.flushQueue();
+      return;
+    }
 
     const lastMsg = this.messages[this.messages.length - 1];
     if (!lastMsg || lastMsg.role !== 'assistant') {
@@ -831,9 +1043,10 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     this.saveMessages();
     this.autoRenameSession();
 
-    this.isLoading = false;
+    this.setLoading(false);
     this.cdr.detectChanges();
     this.scrollToBottom();
+    this.flushQueue();
   }
 
   // UI: empty-state quick prompts (i18n-free, ops-oriented for a terminal app).
@@ -848,6 +1061,67 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     this.userInput = text;
     this.resetChatBoxHeight();
     this.sendMessage();
+  }
+
+  /** Send the next queued message, if any (only when idle). */
+  private flushQueue() {
+    if (this.isLoading || this.pendingQueue.length === 0) return;
+    const next = this.pendingQueue.shift()!;
+    this.userInput = next;
+    this.cdr.detectChanges();
+    this.sendMessage();
+  }
+
+  /** Discard queued (not yet sent) messages. */
+  clearQueue() {
+    if (this.pendingQueue.length === 0) return;
+    this.pendingQueue = [];
+    this.cdr.detectChanges();
+  }
+
+  /** Reload token counters from the current session (switch/new/delete). */
+  private loadSessionTokens() {
+    const t = this.historyService.current?.tokens;
+    this.sessionTokens = { prompt: t?.prompt || 0, completion: t?.completion || 0, total: t?.total || 0 };
+  }
+
+  /** Reload persisted agent-run tool activity (switch/new/delete/reload). */
+  private loadSessionTools() {
+    const stored = this.historyService.current?.tools ?? [];
+    this.toolProgress = stored.map(t => ({
+      toolName: t.toolName,
+      args: t.args,
+      result: t.result,
+      error: t.error,
+      ts: t.ts,
+      expanded: !!t.expanded,
+    }));
+  }
+
+  /** Add one API usage report (stream or agent run) to the session totals. */
+  addUsage(usage: any) {
+    if (!usage) return;
+    const p = usage.prompt_tokens || 0;
+    const c = usage.completion_tokens || 0;
+    const t = usage.total_tokens || (p + c);
+    if (!p && !c && !t) return;
+    this.sessionTokens.prompt += p;
+    this.sessionTokens.completion += c;
+    this.sessionTokens.total += t;
+    this.historyService.addSessionTokens(this.currentSessionId, usage);
+    this.cdr.detectChanges();
+  }
+
+  formatTokens(n: number): string {
+    n = Math.round(n || 0);
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+    return String(n);
+  }
+
+  get tokenTooltip(): string {
+    const t = this.sessionTokens;
+    return `This session — prompt ${t.prompt.toLocaleString()}, completion ${t.completion.toLocaleString()}, total ${t.total.toLocaleString()} tokens (summed from API usage reports)`;
   }
 
   // Enter 发送, Shift+Enter 换行.
@@ -875,7 +1149,7 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     // P1-1: abort the backend run too (loop + HTTP + pending tools).
     // Opened ai_* sessions are kept. Also reject a pending approval prompt.
     this.electronService.cancelAiChat(this.currentSessionId);
-    this.isLoading = false;
+    this.setLoading(false);
     this.currentSubscription?.unsubscribe();
     this.currentSubscription = null;
     this.electronService.removeAcpChunkListeners();
@@ -885,8 +1159,18 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
       this.electronService.rejectCommand(this.pendingCommand.requestId);
     }
     this.pendingCommand = null;
+    // Stop means halt everything: drop messages queued behind this run.
+    if (this.pendingQueue.length > 0) {
+      this.pendingQueue = [];
+      this.notificationService.info('Queued message discarded');
+    }
     // Persist partial streamed content so stopping mid-answer doesn't lose it.
     this.saveMessages();
+    // Persist agent-run tools so far (no-op when empty — never wipes a
+    // previous agent run's stored activity with a blank slate).
+    if (this.toolProgress.length > 0) {
+      this.historyService.saveSessionTools(this.currentSessionId, this.toolProgress);
+    }
     this.cdr.detectChanges();
   }
 
@@ -895,12 +1179,16 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     // P1-1: switching/new chat also aborts the previous backend run.
     this.electronService.cancelAiChat(this.currentSessionId);
     this.toolProgress = [];
+    // A queued message belongs to the run being torn down — never let it
+    // leak into the next session/chat (sendMessage queues only while loading,
+    // i.e. after this call, so the fresh send path is unaffected).
+    this.pendingQueue = [];
     if (this.pendingCommand) {
       this.electronService.rejectCommand(this.pendingCommand.requestId);
       this.notificationService.info('Command rejected');
     }
     this.pendingCommand = null;
-    this.isLoading = false;
+    this.setLoading(false);
     this.currentSubscription?.unsubscribe();
     this.currentSubscription = null;
     this.electronService.removeToolProgressListeners();
@@ -954,13 +1242,57 @@ export class AiChatComponent implements OnInit, AfterViewChecked {
     this.sendMessage();
   }
 
+  /** Whether an assistant message can be regenerated (needs a user msg above). */
+  canRegenerate(index: number): boolean {
+    const msg = this.messages[index];
+    if (this.isLoading || !msg || msg.role !== 'assistant') return false;
+    for (let j = index - 1; j >= 0; j--) {
+      if (this.messages[j].role === 'user') return true;
+    }
+    return false;
+  }
+
+  /** Regenerate an assistant answer: drop it + everything after the question that prompted it, resend. */
+  regenerateFrom(index: number) {
+    if (this.isLoading) return;
+    const msg = this.messages[index];
+    if (!msg || msg.role !== 'assistant') return;
+    let userIdx = -1;
+    for (let i = index - 1; i >= 0; i--) {
+      if (this.messages[i].role === 'user') { userIdx = i; break; }
+    }
+    if (userIdx === -1) {
+      this.notificationService.info('Nothing to regenerate from');
+      return;
+    }
+    const text = (this.messages[userIdx].content || '').trim();
+    if (!text) return;
+    this.messages = this.messages.slice(0, userIdx);
+    this.userInput = text;
+    this.saveMessages();
+    this.cdr.detectChanges();
+    this.sendMessage();
+  }
+
   /** Wipe the current conversation back to the greeting. */
   clearChat() {
     this.clearToolProgress();
     this.messages = [this.greeting()];
+    this.historyService.resetSessionTokens(this.currentSessionId);
+    this.loadSessionTokens();
+    // Tool activity belongs to the wiped conversation — drop it too.
+    this.toolProgress = [];
+    this.historyService.saveSessionTools(this.currentSessionId, []);
     this.saveMessages();
     this.showHistoryDropdown = false;
     this.notificationService.info('Conversation cleared');
+    this.cdr.detectChanges();
+    this.jumpToLatest();
+  }
+
+  togglePin(id: string, event?: Event) {
+    event?.stopPropagation();
+    this.historyService.togglePin(id);
     this.cdr.detectChanges();
   }
 

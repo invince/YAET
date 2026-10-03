@@ -28,18 +28,24 @@
       position: relative;
       margin: t.$spacing-sm 0;
 
-      &:hover .code-copy-btn {
-        opacity: 0.8;
+      &:hover .code-actions {
+        opacity: 1;
       }
     }
 
-    .code-copy-btn {
+    .code-actions {
       position: absolute;
       top: 4px;
       right: 4px;
       z-index: 1;
+      display: flex;
+      gap: 4px;
       opacity: 0;
-      transition: opacity 0.15s;
+      transition: opacity t.$transition-fast;
+    }
+
+    .code-copy-btn,
+    .code-send-btn {
       background: var(--app-bg-color);
       border: 1px solid var(--app-border-color);
       color: var(--app-text-color);
@@ -53,7 +59,13 @@
       &:hover {
         opacity: 1;
         background: var(--app-hover-bg-color);
+        border-color: var(--app-text-muted);
       }
+    }
+
+    .code-send-btn.run {
+      color: t.$color-accent-light;
+      border-color: rgba(79, 195, 247, 0.45);
     }
 
     pre {

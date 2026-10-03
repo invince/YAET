@@ -1,9 +1,17 @@
 const { ipcMain } = require('electron');
+const fs = require('fs');
+const fsp = require('fs/promises');
+const path = require('path');
 const { fetchModels, callChat, callChatStream } = require('../../ai/aiClient');
 const { getToolDefinitions } = require('../../ai/toolDefinitions');
 const { functionCallLoop } = require('../../ai/functionLoop');
 
 const lastSentTimestamps = new Map();
+
+// @file attachments: per-file + per-request caps so a log dump can't nuke
+// the context window. Binary files (null byte in the head) are refused.
+const MAX_CONTEXT_FILE_BYTES = 32 * 1024;
+const MAX_CONTEXT_FILES = 3;
 
 // P1-1: one in-flight agent run per chat. stop()/switch/new-chat aborts the
 // controller; the loop, the HTTP call and pending tools all observe it.
@@ -25,6 +33,34 @@ function abortAiRun(chatSessionId) {
 function initAiIpcHandler(log) {
   ipcMain.handle('ai.fetch-models', async (event, { apiUrl, token }) => {
     return fetchModels(log, apiUrl, token);
+  });
+
+  // Read a user-attached local file for chat context. Returns
+  // { success, content?, truncated?, bytes?, error? }.
+  ipcMain.handle('ai.read-context-file', async (event, { filePath } = {}) => {
+    try {
+      const resolved = path.resolve(String(filePath || ''));
+      const stat = await fsp.stat(resolved);
+      if (!stat.isFile()) return { success: false, error: 'Not a file' };
+      const readLen = Math.min(stat.size, MAX_CONTEXT_FILE_BYTES);
+      const buf = Buffer.alloc(Math.max(readLen, 1));
+      const fh = await fsp.open(resolved, 'r');
+      try {
+        if (readLen > 0) await fh.read(buf, 0, readLen, 0);
+      } finally {
+        await fh.close().catch(() => {});
+      }
+      const head = buf.subarray(0, Math.min(readLen, 8192));
+      if (head.includes(0)) return { success: false, error: 'Binary file — skipped' };
+      return {
+        success: true,
+        content: buf.subarray(0, readLen).toString('utf-8'),
+        truncated: stat.size > MAX_CONTEXT_FILE_BYTES,
+        bytes: stat.size,
+      }
+    } catch (e) {
+      return { success: false, error: e.message || 'Cannot read file' };
+    }
   });
 }
 
