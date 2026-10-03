@@ -50,6 +50,10 @@ function initBackend(log) {
   // IPC handler so renderer can retrieve the token
   ipcMain.handle('get-api-token', () => API_TOKEN);
 
+  // Health probe (behind the token gate above): lets e2e/tests distinguish
+  // "server up" (200) from "not listening yet" (connection refused).
+  expressApp.get('/api/health', (req, res) => res.json({ ok: true }));
+
   log.info("Backend started");
   expressApp.authToken = API_TOKEN;
   return expressApp;

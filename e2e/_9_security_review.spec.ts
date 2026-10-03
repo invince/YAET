@@ -217,11 +217,25 @@ test.describe('9.5 P0-S1 — Express /api requires a valid per-launch token', ()
     });
   }
 
+  async function httpGetReady(url: string, headers: Record<string, string>): Promise<number> {
+    // The Express server binds asynchronously during main-process startup;
+    // a single-shot request can hit ECONNREFUSED (-1) before listen() lands.
+    // Poll until the server answers (or time out) so a refused connection
+    // is never mistaken for a 403/200 verdict.
+    let last = -1;
+    for (let i = 0; i < 40; i++) {
+      last = await httpGet(url, headers).catch(() => -1);
+      if (last !== -1) return last;
+      await new Promise(r => setTimeout(r, 500));
+    }
+    return last;
+  }
+
   test('request without token returns 403', async ({ mainWindow }) => {
     const token = await getToken(mainWindow);
     if (!token) { test.skip(); return; }
 
-    const status = await httpGet('http://127.0.0.1:13012/api/health', {}).catch(() => -1);
+    const status = await httpGetReady('http://127.0.0.1:13012/api/health', {});
     expect(status).toBe(403);
   });
 
@@ -229,9 +243,9 @@ test.describe('9.5 P0-S1 — Express /api requires a valid per-launch token', ()
     const token = await getToken(mainWindow);
     if (!token) { test.skip(); return; }
 
-    const status = await httpGet('http://127.0.0.1:13012/api/health', {
+    const status = await httpGetReady('http://127.0.0.1:13012/api/health', {
       'x-api-token': 'definitely-wrong-token',
-    }).catch(() => -1);
+    });
     expect(status).toBe(403);
   });
 
@@ -239,10 +253,10 @@ test.describe('9.5 P0-S1 — Express /api requires a valid per-launch token', ()
     const token = await getToken(mainWindow);
     if (!token) { test.skip(); return; }
 
-    const status = await httpGet('http://127.0.0.1:13012/api/health', {
+    const status = await httpGetReady('http://127.0.0.1:13012/api/health', {
       'x-api-token': token,
-    }).catch(() => -1);
-    // 404 = no /api/health route but auth passed; anything but 403 is correct.
-    expect(status).not.toBe(403);
+    });
+    // /api/health exists behind the gate: 200 proves auth passed.
+    expect(status).toBe(200);
   });
 });
