@@ -1,37 +1,9 @@
 const path = require("path");
 const fs = require("fs");
-const { app, globalShortcut, BrowserWindow, Tray, ipcMain, dialog, nativeImage } = require('electron');
-
-const { createMenu } = require('./ui/menu');
-const { ConfigService, APP_CONFIG_PATH, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, PROXIES_JSON } = require("./services/configService");
-const { initConfigFilesIpcHandler } = require('./adapter/ipc/configFiles');
-const { initTerminalIpcHandler } = require('./adapter/ipc/terminal/terminalHandler');
-const { initCloudIpcHandler } = require('./adapter/ipc/cloud');
-const { initSettingBackupIpcHandler } = require('./adapter/ipc/settingBackup');
-const { initSecurityIpcHandler, decrypt } = require('./adapter/ipc/security');
-const { initClipboard } = require('./adapter/ipc/clipboard');
-const { initCustomSessionHandler } = require("./adapter/ipc/customSession");
-
-const { initAutoUpdater } = require("./adapter/ipc/autoUpdater");
-const { initBackend } = require("./adapter/ipc/backend");
-const { initLocalFileHandler } = require("./adapter/ipc/localFile");
-const { initPluginHandler } = require("./adapter/ipc/pluginHandler");
-
-
-let tray;
-let expressApp;
-let mainWindow;
-let terminalMap = new Map();
-
-let initialized = false;
-let lastSettings = null;
-let allProxies = null;
-let allSecrets = null;
-let runtime = null;
-let sessionRegistry = null;
-let pluginManager = null;
 
 // ── CLI mode: headless commands without Electron GUI ───────────────────
+// Must run before any Electron/GUI requires: Windows --mcp/--cli never
+// needs them, and a missing optional dep must not block headless entry.
 // Packaged app entry point (src-protocol/ ships inside the asar):
 //   YetAnotherElectronTerm.AppImage --cli doctor
 //   YetAnotherElectronTerm.AppImage --cli cloud download
@@ -58,7 +30,33 @@ if (process.argv.includes('--cli')) {
 // Packaged app entry point (src-protocol/ ships inside the asar, so the
 // installed binary handles this directly — no wrapper script needed):
 //   YetAnotherElectronTerm.AppImage --mcp   (or: electron . --mcp in dev)
+//
+// Windows: the packaged .exe is a GUI-subsystem process — process.stdin
+// never delivers data (readline sits forever, 0 responses). Re-exec the
+// same binary as pure Node (ELECTRON_RUN_AS_NODE=1) with stdio inherited;
+// the child has a working stdin and loads src-protocol/ from the asar.
 if (process.argv.includes('--mcp') || process.argv.slice(1).includes('mcp')) {
+  if (process.platform === 'win32' && process.env.ELECTRON_RUN_AS_NODE !== '1') {
+    const { spawn } = require('child_process');
+    const cli = path.join(__dirname, '..', 'src-protocol', 'cli.js');
+    const child = spawn(process.execPath, [cli, 'mcp'], {
+      env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
+      stdio: 'inherit',
+      windowsHide: true,
+    });
+    for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
+      process.on(sig, () => { if (!child.killed) child.kill(sig); });
+    }
+    child.on('error', (err) => {
+      console.error('MCP re-exec failed: ' + err.message);
+      process.exit(1);
+    });
+    child.on('exit', (code, signal) => {
+      process.exit(code != null ? code : (signal ? 1 : 0));
+    });
+    return; // parent only proxies until the child exits
+  }
+
   const { MCPServer } = require('../src-protocol/mcp/server');
   const { createSSHTools } = require('../src-protocol/mcp/tools/ssh');
   const { createSCPTools } = require('../src-protocol/mcp/tools/scp');
@@ -74,13 +72,43 @@ if (process.argv.includes('--mcp') || process.argv.slice(1).includes('mcp')) {
   }
 
   log.info('Starting MCP server (stdio transport)...');
-  server.runStdio().catch((err) => {
+  server.runStdio().then(() => process.exit(0)).catch((err) => {
     log.error('MCP server error: ' + err.message);
     process.exit(1);
   });
   return; // skip all Electron GUI initialization
 }
 // ── End MCP mode ───────────────────────────────────────────────────────
+
+const { app, globalShortcut, BrowserWindow, Tray, ipcMain, dialog, nativeImage } = require('electron');
+
+const { createMenu } = require('./ui/menu');
+const { ConfigService, APP_CONFIG_PATH, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, PROXIES_JSON } = require("./services/configService");
+const { initConfigFilesIpcHandler } = require('./adapter/ipc/configFiles');
+const { initTerminalIpcHandler } = require('./adapter/ipc/terminal/terminalHandler');
+const { initCloudIpcHandler } = require('./adapter/ipc/cloud');
+const { initSettingBackupIpcHandler } = require('./adapter/ipc/settingBackup');
+const { initSecurityIpcHandler, decrypt } = require('./adapter/ipc/security');
+const { initClipboard } = require('./adapter/ipc/clipboard');
+const { initCustomSessionHandler } = require("./adapter/ipc/customSession");
+
+const { initAutoUpdater } = require("./adapter/ipc/autoUpdater");
+const { initBackend } = require("./adapter/ipc/backend");
+const { initLocalFileHandler } = require("./adapter/ipc/localFile");
+const { initPluginHandler } = require("./adapter/ipc/pluginHandler");
+
+let tray;
+let expressApp;
+let mainWindow;
+let terminalMap = new Map();
+
+let initialized = false;
+let lastSettings = null;
+let allProxies = null;
+let allSecrets = null;
+let runtime = null;
+let sessionRegistry = null;
+let pluginManager = null;
 
 const log = require("electron-log")
 const configService = new ConfigService(log);

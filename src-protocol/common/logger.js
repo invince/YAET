@@ -9,12 +9,8 @@ class Logger {
   _log(level, msg) {
     if (levels[level] < this.level) return;
     const ts = new Date().toISOString();
-    const args = [ts, `[${level.toUpperCase()}]`, `[${this.name}]`, msg];
-    if (level === 'error') {
-      console.error(...args);
-    } else {
-      console.log(...args);
-    }
+    // Always stderr: MCP/ACP stdio transport owns stdout for JSON-RPC only.
+    console.error(ts, `[${level.toUpperCase()}]`, `[${this.name}]`, msg);
   }
 
   debug(msg) { this._log('debug', msg); }

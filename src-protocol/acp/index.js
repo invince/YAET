@@ -86,7 +86,7 @@ function main() {
   );
 
   log.info('Starting ACP server (stdio)...');
-  server.runStdio().catch(err => {
+  server.runStdio().then(() => process.exit(0)).catch(err => {
     log.error('ACP server error: ' + err.message);
     process.exit(1);
   });
