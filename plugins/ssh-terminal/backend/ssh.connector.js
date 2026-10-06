@@ -189,7 +189,9 @@ class SshTerminalSession extends TerminalRuntimeApi {
 
     const merged = { ...config };
     const { proxy, secretRepo, ...sshConfig } = merged;
-    const sudoCmd = sudoPassword ? `echo "${sudoPassword.replace(/"/g, '\\"')}" | sudo -S -p '' ${command}` : `sudo ${command}`;
+    const sq = (s) => `'${String(s).replace(/'/g, `'\\''`)}'`;
+    const inner = `sh -c ${sq(command)}`;
+    const sudoCmd = sudoPassword ? `printf '%s\\n' ${sq(sudoPassword)} | sudo -S -p '' ${inner}` : `sudo ${inner}`;
     const ms = Math.max(1, Number(timeoutSeconds) || 30) * 1000;
 
     return new Promise((resolve, reject) => {
