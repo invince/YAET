@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased] - A5 Command Palette & Terminal Search
+### Added
+- **In-terminal search (Ctrl+Shift+F)**: `@xterm/addon-search` integration — live incremental search, Enter/Shift+Enter next/previous, match counter (`1/2`), no-results hint, case/whole-word/regex toggles, Esc to close; SSH terminals get a toolbar button, others a floating search button; Ctrl+Shift+F only opens search on the active tab (`TerminalInstanceService.searchRequest$`)
+- **Command palette (Ctrl+K)**: fuzzy subsequence search dialog with Profiles (connect), Open Tabs (switch) and Actions (new terminal, menus, AI chat, splits, tab cycling) groups; `↑↓↵Esc/Home/End` + `Ctrl+N/P` navigation, `<mark>` match highlight
+- **i18n**: `COMMAND_PALETTE` + two `SHORTCUTS` keys in en/zh/de/es/fr
+### Fixed
+- n/a
+
+
 ## [7.3.0] - 2026-09-05 Sept review
 ### Security
 - **Express `/api` auth hardening**: Missing/wrong token returns 403 (`timingSafeEqual`); loopback assertion; CORS whitelist (P0-S1)

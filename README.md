@@ -71,6 +71,8 @@ On servers without a display, prefer the `.deb` release (AppImage needs FUSE) an
 - Tabbed interface for multiple concurrent connections
 - Split-screen view (vertical & horizontal) for side-by-side sessions
 - Connection profiles with custom groups and tags
+- In-terminal search (Ctrl+Shift+F): regex/whole-word/case-sensitive matches with highlight and match counter
+- Command palette (Ctrl+K): fuzzy search to connect profiles, switch tabs, trigger common actions
 - Session reconnection after network interruptions
 - Customizable themes and color schemes
 - Flat and tree view modes for profile navigation
@@ -322,7 +324,7 @@ npx playwright test -g "add Password Only"
 - Tests run **headless** by default. Set `YAET_SHOW_WINDOW=1` for a visible window
 - CI runs the e2e suite on every version tag (`v*`) before release ([`.github/workflows/build.yml`](.github/workflows/build.yml)); the suite also runs under the sandboxed renderer, so it covers the production security posture
 
-**Current coverage (139 E2E tests):**
+**Current coverage (145 E2E tests):**
 | Section | Tests | Status |
 |---------|-------|--------|
 | 1. Application Startup | 7 | ✅ |
@@ -338,6 +340,7 @@ npx playwright test -g "add Password Only"
 | 9. Security Review (P0) | 9 | ✅ |
 | 10. AI Chat Panel | 22 | ✅ |
 | 11. AI Settings | 18 | ✅ |
+| 12. Command Palette & Search | 6 | ✅ |
 
 See [TestPlanE2E.md](./TestPlanE2E.md) for the full test plan.
 

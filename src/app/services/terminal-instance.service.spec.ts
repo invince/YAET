@@ -52,6 +52,22 @@ describe('TerminalInstanceService', () => {
     expect(service['instances'].size).toBe(3);
   });
 
+  describe('requestSearch', () => {
+    it('should emit on searchRequest$ when requestSearch is called', (done) => {
+      service.searchRequest$.subscribe(() => done());
+      service.requestSearch();
+    });
+
+    it('should emit once per requestSearch call', () => {
+      let count = 0;
+      const sub = service.searchRequest$.subscribe(() => count++);
+      service.requestSearch();
+      service.requestSearch();
+      sub.unsubscribe();
+      expect(count).toBe(2);
+    });
+  });
+
   describe('getTerminalContent', () => {
     function createMockLine(text: string): any {
       return { translateToString: () => text };

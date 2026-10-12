@@ -237,6 +237,18 @@
     "TOGGLE_PROFILES": "Toggle Profiles",
     "TOGGLE_SECRETS": "Toggle Secrets",
     "TOGGLE_SETTINGS": "Toggle Settings",
-    "TOGGLE_AI_CHAT": "Toggle AI Chat"
+    "TOGGLE_AI_CHAT": "Toggle AI Chat",
+    "COMMAND_PALETTE": "Command Palette",
+    "FIND_IN_TERMINAL": "Find in Terminal"
+  },
+  "COMMAND_PALETTE": {
+    "PLACEHOLDER": "Type a command or profile name...",
+    "NO_RESULTS": "No matching commands",
+    "NAVIGATE": "to navigate",
+    "SELECT": "to select",
+    "CLOSE": "to close",
+    "GROUP_PROFILE": "Profiles",
+    "GROUP_TAB": "Open Tabs",
+    "GROUP_ACTION": "Actions"
   }
 }

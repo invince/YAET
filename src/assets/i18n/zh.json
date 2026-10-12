@@ -237,6 +237,18 @@
     "TOGGLE_PROFILES": "切换配置文件",
     "TOGGLE_SECRETS": "切换密钥",
     "TOGGLE_SETTINGS": "切换设置",
-    "TOGGLE_AI_CHAT": "切换 AI 聊天"
+    "TOGGLE_AI_CHAT": "切换 AI 聊天",
+    "COMMAND_PALETTE": "命令面板",
+    "FIND_IN_TERMINAL": "终端内查找"
+  },
+  "COMMAND_PALETTE": {
+    "PLACEHOLDER": "输入命令或配置名称...",
+    "NO_RESULTS": "没有匹配的命令",
+    "NAVIGATE": "切换",
+    "SELECT": "选择",
+    "CLOSE": "关闭",
+    "GROUP_PROFILE": "配置文件",
+    "GROUP_TAB": "已打开的标签页",
+    "GROUP_ACTION": "操作"
   }
 }

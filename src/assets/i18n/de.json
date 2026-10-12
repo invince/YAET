@@ -235,6 +235,18 @@
     "TOGGLE_PROFILES": "Profile umschalten",
     "TOGGLE_SECRETS": "Geheimnisse umschalten",
     "TOGGLE_SETTINGS": "Einstellungen umschalten",
-    "TOGGLE_AI_CHAT": "AI Chat umschalten"
+    "TOGGLE_AI_CHAT": "AI Chat umschalten",
+    "COMMAND_PALETTE": "Befehlspalette",
+    "FIND_IN_TERMINAL": "Im Terminal suchen"
+  },
+  "COMMAND_PALETTE": {
+    "PLACEHOLDER": "Befehl oder Profilnamen eingeben...",
+    "NO_RESULTS": "Keine passenden Befehle",
+    "NAVIGATE": "navigieren",
+    "SELECT": "auswaehlen",
+    "CLOSE": "schliessen",
+    "GROUP_PROFILE": "Profile",
+    "GROUP_TAB": "Offene Tabs",
+    "GROUP_ACTION": "Aktionen"
   }
 }

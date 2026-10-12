@@ -1,0 +1,36 @@
+<div class="command-palette">
+  <div class="command-palette-header">
+    <mat-icon class="command-palette-search-icon">search</mat-icon>
+    <input #filterInput class="command-palette-input" type="text"
+      [placeholder]="'COMMAND_PALETTE.PLACEHOLDER' | translate"
+      [ngModel]="query" (ngModelChange)="query = $event; applyFilter()"
+      (keydown)="onKeydown($event)" autocomplete="off" spellcheck="false" />
+    <kbd class="command-palette-esc">esc</kbd>
+  </div>
+
+  <div class="command-palette-body">
+    @if (filtered.length === 0) {
+    <div class="command-palette-empty">
+      <mat-icon>search_off</mat-icon>
+      <span>{{ 'COMMAND_PALETTE.NO_RESULTS' | translate }}</span>
+    </div>
+    }
+    @for (entry of grouped(); track entry.item.id) {
+      @if (entry.index === 0 || filtered[entry.index - 1].group !== entry.item.group) {
+      <div class="command-palette-group">{{ groupLabelKey(entry.item.group) | translate }}</div>
+      }
+      <button type="button" class="command-palette-item" [class.selected]="entry.index === selectedIndex"
+        (click)="select(entry.item, entry.index)" (mouseenter)="selectedIndex = entry.index">
+        <mat-icon class="command-palette-item-icon">{{ entry.item.icon }}</mat-icon>
+        <span class="command-palette-item-label" [innerHTML]="highlight(entry.item.label)"></span>
+        <span class="command-palette-item-hint">{{ entry.item.hint }}</span>
+      </button>
+    }
+  </div>
+
+  <div class="command-palette-footer">
+    <span><kbd>&uarr;</kbd><kbd>&darr;</kbd> {{ 'COMMAND_PALETTE.NAVIGATE' | translate }}</span>
+    <span><kbd>&#8629;</kbd> {{ 'COMMAND_PALETTE.SELECT' | translate }}</span>
+    <span><kbd>esc</kbd> {{ 'COMMAND_PALETTE.CLOSE' | translate }}</span>
+  </div>
+</div>

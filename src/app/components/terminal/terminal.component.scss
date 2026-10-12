@@ -66,6 +66,115 @@
     // }
   }
 
+  .terminal-search-fab {
+    position: absolute;
+    top: t.$spacing-sm;
+    right: 18px;
+    z-index: 20;
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+    color: var(--app-text-color, t.$color-text-dark);
+    background: rgba(0, 0, 0, 0.45);
+    opacity: 0.35;
+    transition: opacity 0.15s ease;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      line-height: 18px;
+    }
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  .terminal-search {
+    position: absolute;
+    top: t.$spacing-sm;
+    right: 18px;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px 4px 2px 8px;
+    background: var(--app-surface-elevated, t.$color-surface-elevated-dark);
+    border: 1px solid var(--app-border-color, t.$color-border-dark);
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+    max-width: calc(100% - 24px);
+
+    .terminal-search-icon {
+      color: var(--app-text-secondary, t.$color-text-muted-dark);
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      line-height: 16px;
+      flex-shrink: 0;
+    }
+
+    .terminal-search-input {
+      width: 190px;
+      min-width: 90px;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--app-text-color, t.$color-text-dark);
+      font-family: inherit;
+      font-size: 13px;
+      padding: 2px 4px;
+    }
+
+    .terminal-search-input::placeholder {
+      color: var(--app-text-secondary, t.$color-text-muted-dark);
+    }
+
+    .terminal-search-count {
+      font-size: 11px;
+      color: var(--app-text-secondary, t.$color-text-muted-dark);
+      min-width: 44px;
+      text-align: center;
+      flex-shrink: 0;
+      user-select: none;
+
+      &.terminal-search-count-empty {
+        color: #e57373;
+      }
+    }
+
+    .terminal-search-button {
+      width: 26px;
+      height: 26px;
+      line-height: 26px;
+      padding: 0;
+      color: var(--app-text-secondary, t.$color-text-muted-dark);
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        line-height: 16px;
+      }
+
+      .terminal-search-glyph {
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      &:hover {
+        color: var(--app-text-color, t.$color-text-dark);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      &.active {
+        color: t.$color-accent-light;
+        background: rgba(79, 195, 247, 0.15);
+      }
+    }
+  }
+
   .terminal-scrollbar {
     position: absolute;
     top: 0;

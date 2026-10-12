@@ -235,6 +235,18 @@
     "TOGGLE_PROFILES": "Alternar perfiles",
     "TOGGLE_SECRETS": "Alternar secretos",
     "TOGGLE_SETTINGS": "Alternar configuración",
-    "TOGGLE_AI_CHAT": "Alternar chat IA"
+    "TOGGLE_AI_CHAT": "Alternar chat IA",
+    "COMMAND_PALETTE": "Paleta de comandos",
+    "FIND_IN_TERMINAL": "Buscar en la terminal"
+  },
+  "COMMAND_PALETTE": {
+    "PLACEHOLDER": "Escribe un comando o nombre de perfil...",
+    "NO_RESULTS": "No hay comandos coincidentes",
+    "NAVIGATE": "navegar",
+    "SELECT": "seleccionar",
+    "CLOSE": "cerrar",
+    "GROUP_PROFILE": "Perfiles",
+    "GROUP_TAB": "Pestañas abiertas",
+    "GROUP_ACTION": "Acciones"
   }
 }

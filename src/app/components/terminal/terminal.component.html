@@ -4,6 +4,47 @@
     <button mat-icon-button (click)="openScpExplorer($event)" title="Open File Explorer" class="toolbar-button">
       <mat-icon>folder_open</mat-icon>
     </button>
+    <button mat-icon-button (click)="openSearch()" title="Find (Ctrl+Shift+F)" class="toolbar-button">
+      <mat-icon>search</mat-icon>
+    </button>
+  </div>
+  }
+  @if (!isSsh) {
+  <button mat-icon-button (click)="openSearch()" title="Find (Ctrl+Shift+F)" class="terminal-search-fab">
+    <mat-icon>search</mat-icon>
+  </button>
+  }
+  @if (searchVisible) {
+  <div class="terminal-search" (keydown)="onSearchKeydown($event)">
+    <mat-icon class="terminal-search-icon">search</mat-icon>
+    <input #searchInput class="terminal-search-input" type="text" placeholder="Find in terminal"
+      [value]="searchQuery" (input)="onSearchInput($any($event.target).value)"
+      autocomplete="off" spellcheck="false" />
+    <span class="terminal-search-count" [class.terminal-search-count-empty]="searchQuery && searchResultCount === 0">
+      {{ searchResultLabel }}
+    </span>
+    <button mat-icon-button class="terminal-search-button" [class.active]="searchCaseSensitive"
+      title="Match case" (click)="toggleSearchOption('case')">
+      <span class="terminal-search-glyph">Aa</span>
+    </button>
+    <button mat-icon-button class="terminal-search-button" [class.active]="searchWholeWord"
+      title="Match whole word" (click)="toggleSearchOption('word')">
+      <span class="terminal-search-glyph">ab</span>
+    </button>
+    <button mat-icon-button class="terminal-search-button" [class.active]="searchRegex"
+      title="Use regular expression" (click)="toggleSearchOption('regex')">
+      <span class="terminal-search-glyph">.*</span>
+    </button>
+    <button mat-icon-button class="terminal-search-button" title="Previous match (Shift+Enter)"
+      (click)="findPrevious()">
+      <mat-icon>keyboard_arrow_up</mat-icon>
+    </button>
+    <button mat-icon-button class="terminal-search-button" title="Next match (Enter)" (click)="findNext()">
+      <mat-icon>keyboard_arrow_down</mat-icon>
+    </button>
+    <button mat-icon-button class="terminal-search-button" title="Close (Esc)" (click)="closeSearch()">
+      <mat-icon>close</mat-icon>
+    </button>
   </div>
   }
   <div #term id="term">

@@ -7,7 +7,9 @@ import {NotificationService} from './notification.service';
 import {SessionService} from './session.service';
 import {SettingService} from './setting.service';
 import {TabService} from './tab.service';
+import {TerminalInstanceService} from './terminal-instance.service';
 import {ShortcutHelpComponent} from '../components/dialog/shortcut-help/shortcut-help.component';
+import {CommandPaletteComponent} from '../components/dialog/command-palette/command-palette.component';
 import {MenuConsts} from '../domain/MenuConsts';
 import {TabInstance} from '../domain/TabInstance';
 import {LOCAL_TERMINAL, ProfileCategory} from '../domain/profile/Profile';
@@ -19,6 +21,7 @@ export class ShortcutService {
 
   private initialized = false;
   private shortcutHelpRef: MatDialogRef<ShortcutHelpComponent> | null = null;
+  private commandPaletteRef: MatDialogRef<CommandPaletteComponent> | null = null;
   private openStack: ('menu' | 'help')[] = [];
 
   constructor(
@@ -31,6 +34,7 @@ export class ShortcutService {
     private aiChatService: AiChatService,
     private ngZone: NgZone,
     private dialog: MatDialog,
+    private terminalInstanceService: TerminalInstanceService,
   ) {}
 
   init() {
@@ -132,6 +136,18 @@ export class ShortcutService {
       return;
     }
 
+    if (ctrl && key === 'k') {
+      event.preventDefault();
+      this.ngZone.run(() => this.toggleCommandPalette());
+      return;
+    }
+
+    if (ctrl && shift && key === 'f') {
+      event.preventDefault();
+      this.ngZone.run(() => this.terminalInstanceService.requestSearch());
+      return;
+    }
+
     if (ctrl && shift && key === 'h') {
       event.preventDefault();
       this.ngZone.run(() => this.showShortcutHelp());
@@ -206,6 +222,27 @@ export class ShortcutService {
     this.shortcutHelpRef.afterClosed().subscribe(() => {
       this.shortcutHelpRef = null;
       const idx = this.openStack.lastIndexOf('help');
+      if (idx >= 0) this.openStack.splice(idx, 1);
+    });
+  }
+
+  toggleCommandPalette() {
+    if (this.commandPaletteRef) {
+      this.commandPaletteRef.close();
+      return;
+    }
+    // Close the side menus first: the palette is modal and would otherwise
+    // open on top of them with no way to tell which one has focus.
+    this.modalControl.closeModal();
+    this.openStack.push('menu');
+    this.commandPaletteRef = this.dialog.open(CommandPaletteComponent, {
+      width: '560px',
+      panelClass: 'command-palette-dialog',
+      autoFocus: false,
+    });
+    this.commandPaletteRef.afterClosed().subscribe(() => {
+      this.commandPaletteRef = null;
+      const idx = this.openStack.lastIndexOf('menu');
       if (idx >= 0) this.openStack.splice(idx, 1);
     });
   }

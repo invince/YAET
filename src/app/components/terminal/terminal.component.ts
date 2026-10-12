@@ -13,6 +13,7 @@ import {
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {FitAddon} from '@xterm/addon-fit';
+import {SearchAddon} from '@xterm/addon-search';
 import {WebLinksAddon} from '@xterm/addon-web-links';
 import {Terminal} from '@xterm/xterm';
 import {Profile, ProfileCategory} from '../../domain/profile/Profile';
@@ -35,6 +36,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() session!: Session;
   @ViewChild('term', { static: false }) terminalDiv!: ElementRef;
   @ViewChild('termContainer', { static: false }) termContainer!: ElementRef;
+  @ViewChild('searchInput', { static: false }) searchInput!: ElementRef;
 
   // xterm's scrollbar is too hard to manipulate we create our own custom to override it
   @ViewChild('scrollbar', { static: false }) scrollbarRef!: ElementRef;
@@ -44,6 +46,21 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   private xtermUnderlying: Terminal;
   private fitAddon = new FitAddon();
+  private searchAddon = new SearchAddon({ highlightLimit: 5000 });
+  // Decorations are per-search options in xterm's SearchAddon — they must be
+  // passed on every find*() call, and onDidChangeResults only fires while they
+  // are enabled. Colors are #RRGGBB (addon requirement), tuned for the dark
+  // terminal background.
+  private static readonly SEARCH_DECORATIONS = {
+    matchBackground: '#5c4a00',
+    matchBorder: '#8a7300',
+    matchOverviewRuler: '#b39400',
+    activeMatchBackground: '#9a7b00',
+    activeMatchBorder: '#e0b800',
+    activeMatchColorOverviewRuler: '#e0b800',
+  };
+  private searchResultsDisposable: { dispose: () => void } | null = null;
+  private searchRequestSubscription: { unsubscribe: () => void } | null = null;
   private resizeObserver: ResizeObserver | undefined;
   private contextMenuHandler: ((event: MouseEvent) => void) | null = null;
   private terminalOutputCleanup: (() => void) | null = null;
@@ -107,6 +124,11 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
       }
     }));
     this.xtermUnderlying.loadAddon(this.fitAddon);
+    this.xtermUnderlying.loadAddon(this.searchAddon);
+    this.searchResultsDisposable = this.searchAddon.onDidChangeResults(event => {
+      this.searchResultIndex = event.resultIndex;
+      this.searchResultCount = event.resultCount;
+    });
 
     this.scrollResizeDisposable = this.xtermUnderlying.onResize(() => {
       this.updateScrollbarThumb();
@@ -160,6 +182,13 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     };
     this.termContainer.nativeElement.addEventListener('contextmenu', this.contextMenuHandler);
 
+    // Global Ctrl+Shift+F — only the terminal of the active tab reacts.
+    this.searchRequestSubscription = this.terminalInstanceService.searchRequest$.subscribe(() => {
+      const selected = this.tabService.getSelectedTab();
+      if (!selected || selected.id === this.session.id) {
+        this.openSearch();
+      }
+    });
 
     this.initTab();
 
@@ -290,10 +319,129 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     this.fitAddon?.dispose();
     this.resizeObserver?.disconnect();
+    this.searchResultsDisposable?.dispose();
+    this.searchResultsDisposable = null;
+    this.searchRequestSubscription?.unsubscribe();
+    this.searchRequestSubscription = null;
+    try {
+      this.searchAddon.dispose();
+    } catch (_) { }
   }
 
   get isSsh(): boolean {
     return this.session?.profileType === 'SSH_TERMINAL';
+  }
+
+  // ---- Terminal search (Ctrl+Shift+F) ----
+
+  searchVisible = false;
+  searchQuery = '';
+  searchCaseSensitive = false;
+  searchRegex = false;
+  searchWholeWord = false;
+  searchResultIndex = -1;
+  searchResultCount = 0;
+
+  openSearch() {
+    if (this.searchVisible) {
+      requestAnimationFrame(() => this.searchInput?.nativeElement?.select());
+      return;
+    }
+    this.searchVisible = true;
+    requestAnimationFrame(() => this.searchInput?.nativeElement?.focus());
+  }
+
+  closeSearch() {
+    this.searchVisible = false;
+    this.searchResultIndex = -1;
+    this.searchResultCount = 0;
+    try {
+      this.searchAddon.clearDecorations();
+    } catch (_) { /* terminal torn down */ }
+  }
+
+  onSearchInputChange() {
+    this.runSearch('next', false);
+  }
+
+  onSearchInput(value: string) {
+    this.searchQuery = value;
+    this.onSearchInputChange();
+  }
+
+  onSearchKeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      if (event.shiftKey) {
+        this.findPrevious();
+      } else {
+        this.findNext();
+      }
+      return;
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.closeSearch();
+    }
+  }
+
+  findNext() {
+    this.runSearch('next', true);
+  }
+
+  findPrevious() {
+    this.runSearch('previous', true);
+  }
+
+  toggleSearchOption(option: 'case' | 'regex' | 'word') {
+    if (option === 'case') this.searchCaseSensitive = !this.searchCaseSensitive;
+    if (option === 'regex') this.searchRegex = !this.searchRegex;
+    if (option === 'word') this.searchWholeWord = !this.searchWholeWord;
+    if (this.searchQuery) {
+      this.runSearch('next', true);
+    }
+  }
+
+  private runSearch(direction: 'next' | 'previous', fromCurrentPosition: boolean) {
+    const term = this.searchQuery;
+    if (!term) {
+      this.searchResultIndex = -1;
+      this.searchResultCount = 0;
+      try { this.searchAddon.clearDecorations(); } catch (_) { }
+      return;
+    }
+    const options = {
+      caseSensitive: this.searchCaseSensitive,
+      regex: this.searchRegex,
+      wholeWord: this.searchWholeWord,
+      decorations: TerminalComponent.SEARCH_DECORATIONS,
+      // Typing keeps the caret and re-anchors from it; buttons / option flips
+      // restart from the beginning so "next" always finds something.
+      incremental: !fromCurrentPosition,
+    };
+    try {
+      const found = direction === 'next'
+        ? this.searchAddon.findNext(term, options)
+        : this.searchAddon.findPrevious(term, options);
+      if (!found && !this.searchRegex) {
+        // Plain text search from the very start wraps around
+        const wrapOptions = { ...options, incremental: false };
+        if (direction === 'next') {
+          this.searchAddon.findNext(term, wrapOptions);
+        } else {
+          this.searchAddon.findPrevious(term, wrapOptions);
+        }
+      }
+    } catch (_) {
+      // invalid regex typed by the user — ignore until it becomes valid
+    }
+  }
+
+  get searchResultLabel(): string {
+    if (!this.searchQuery) return '';
+    if (this.searchResultCount === 0) return 'no results';
+    return `${this.searchResultIndex + 1}/${this.searchResultCount}`;
   }
 
   openScpExplorer(event?: MouseEvent) {

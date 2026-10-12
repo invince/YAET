@@ -129,6 +129,15 @@
 
 - [x] Real PTY (no mocks): terminal opens, typed `echo <marker>` executes, marker found in the xterm buffer (read via shadow DOM — `app-terminal` uses `ViewEncapsulation.ShadowDom`)
 
+## 12. Command Palette & Terminal Search (`_12_command_palette_search.spec.ts`)
+
+- [x] Ctrl+K opens the palette; Escape closes it
+- [x] Typing `settings` filters to one action; Enter runs it (settings container visible)
+- [x] Palette lists open tabs; picking one activates that tab (`_1` suffix from `TabService` dedup)
+- [x] No-match query shows the empty message, zero items
+- [x] Ctrl+Shift+F opens the terminal search bar; unknown term shows "no results"; case toggle lights up; Escape closes
+- [x] Real PTY (no mocks): `echo <marker>` output is found by search (count `1/2`), results render `.xterm-find-*-decoration` in the shadow DOM
+
 ## 6. UI/UX
 
 - [x] Tab management:

@@ -25,5 +25,7 @@ export class ShortcutHelpComponent {
     { keys: `${mod}+Shift+S`, action: 'SHORTCUTS.TOGGLE_SECRETS' },
     { keys: `${mod}+Shift+,`, action: 'SHORTCUTS.TOGGLE_SETTINGS' },
     { keys: `${mod}+Shift+I`, action: 'SHORTCUTS.TOGGLE_AI_CHAT' },
+    { keys: `${mod}+K`, action: 'SHORTCUTS.COMMAND_PALETTE' },
+    { keys: `${mod}+Shift+F`, action: 'SHORTCUTS.FIND_IN_TERMINAL' },
   ];
 }
