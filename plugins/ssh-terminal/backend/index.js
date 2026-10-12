@@ -52,8 +52,8 @@ function register(context) {
         id: data.id,
         initPath: data.initPath,
         initCmd: data.initCmd,
-        rows: data.rows,
-        cols: data.cols,
+        rows: data.rows ?? terminalMap?.get(data.id)?.rows,
+        cols: data.cols ?? terminalMap?.get(data.id)?.cols,
       });
 
       const registry = typeof sessionRegistry === 'function' ? sessionRegistry() : sessionRegistry;
@@ -61,6 +61,17 @@ function register(context) {
 
       // Also register in terminalMap for shared terminalHandler.js (resize/input)
       if (terminalMap) {
+        // terminalHandler.js queues a resize that arrives before the session
+        // exists as a bare {cols, rows} placeholder. It has no resize()
+        // function, so it would be silently dropped when we overwrite the
+        // entry here — and since xterm only fires onResize when its geometry
+        // CHANGES, the pty would stay stuck at 80x24 forever.
+        const queued = terminalMap.get(data.id);
+        const pendingCols = queued && typeof queued === 'object' && typeof queued.resize !== 'function'
+          ? queued.cols : undefined;
+        const pendingRows = queued && typeof queued === 'object' && typeof queued.resize !== 'function'
+          ? queued.rows : undefined;
+
         terminalMap.set(data.id, {
           type: 'ssh',
           process: session.conn,
@@ -69,6 +80,11 @@ function register(context) {
           resize: (cols, rows) => session.stream?.setWindow(rows, cols, null, null),
           close: () => { try { session.close(); } catch { /* ignore */ } },
         });
+
+        if (pendingCols > 0 && pendingRows > 0 && pendingCols !== data.cols) {
+          logger.info(`[ssh-terminal] applying queued resize for ${data.id}: cols=${pendingCols} rows=${pendingRows}`);
+          session.resize(pendingCols, pendingRows);
+        }
       }
     } catch (error) {
       event.sender.send('error', {

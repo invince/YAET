@@ -52,6 +52,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
   private terminalOnDataDisposable: { dispose: () => void } | null = null;
 
   private scrollDisposable: { dispose: () => void } | null = null;
+  private resizeRetryTimer: ReturnType<typeof setInterval> | null = null;
   private scrollResizeDisposable: { dispose: () => void } | null = null;
   private isDraggingScrollbar = false;
   private dragStartY = 0;
@@ -112,6 +113,7 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     });
 
     this.xtermUnderlying.onResize(size => {
+      console.log(`[terminal] resize ${this.session.id}: cols=${size.cols} rows=${size.rows}`);
       this.electron.sendTerminalResize(this.session.id, size.cols, size.rows);
     });
 
@@ -177,6 +179,20 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     this.xtermUnderlying?.clear();
 
+    // Fit BEFORE opening the session so the geometry captured below (and
+    // the onResize event fit() emits) reflects the real container size.
+    // Otherwise the backend starts the pty at the 80x24 default and every
+    // wrapped line desyncs until a later refit.
+    try { this.fitAddon.fit(); } catch (_) { }
+    try {
+      if (this.xtermUnderlying.cols > 0 && this.xtermUnderlying.rows > 0) {
+        this.session.pendingTerminalSize = {
+          cols: this.xtermUnderlying.cols,
+          rows: this.xtermUnderlying.rows,
+        };
+      }
+    } catch (_) { }
+
     // Set up data listeners and communication with the Electron main process
     this.session.open();
 
@@ -190,9 +206,44 @@ export class TerminalComponent implements AfterViewInit, OnChanges, OnDestroy {
     // initTab runs on every session switch, onData would stack otherwise).
     this.terminalOnDataDisposable?.dispose();
     this.terminalOnDataDisposable = this.xtermUnderlying.onData(data => this.electron.sendTerminalInput(this.session.id, data));
+
+    // Push current pty size immediately: the SSH backend defaults to 80x24
+    // when cols/rows are absent, which desyncs wrapping (long lines overwrite
+    // the line start and the cursor lands mid-text).
+    //
+    // A single send is NOT enough: the backend registers its session
+    // asynchronously, so this (and xterm's onResize) can land in the
+    // "session not created yet" placeholder and be dropped for good —
+    // xterm only emits onResize when its geometry CHANGES, so nothing
+    // would ever correct it afterwards. Retry briefly and idempotently.
+    this.stopResizeRetry();
+    let resizeAttempts = 0;
+    const sendResize = () => {
+      try {
+        const cols = this.xtermUnderlying?.cols;
+        const rows = this.xtermUnderlying?.rows;
+        if (cols > 0 && rows > 0) {
+          this.electron.sendTerminalResize(this.session.id, cols, rows);
+        }
+      } catch (_) { /* terminal torn down */ }
+    };
+    sendResize();
+    this.resizeRetryTimer = setInterval(() => {
+      // stop if the tab switched away underneath us
+      if (resizeAttempts++ >= 8) { this.stopResizeRetry(); return; }
+      sendResize();
+    }, 250);
+  }
+
+  private stopResizeRetry() {
+    if (this.resizeRetryTimer !== null) {
+      clearInterval(this.resizeRetryTimer);
+      this.resizeRetryTimer = null;
+    }
   }
 
   ngOnDestroy() {
+    this.stopResizeRetry();
     // Cleanup contextmenu listener
     if (this.contextMenuHandler && this.termContainer?.nativeElement) {
       this.termContainer.nativeElement.removeEventListener('contextmenu', this.contextMenuHandler);

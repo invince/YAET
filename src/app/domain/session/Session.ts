@@ -4,6 +4,12 @@ import {TabService} from '../../services/tab.service';
 
 export class Session {
   readonly id: string = uuidv4(); // uuid
+  /**
+   * Terminal geometry captured by the UI right before open().
+   * Plugin sessions forward it in the open payload so the backend can
+   * size the pty correctly from the start (no resize race).
+   */
+  pendingTerminalSize?: { cols: number; rows: number };
   constructor(public profile: Profile, public profileType: string, protected tabService: TabService) {
   }
 

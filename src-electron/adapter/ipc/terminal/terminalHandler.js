@@ -20,8 +20,10 @@ function initTerminalIpcHandler(log, terminalMap) {
     const terminal = terminalMap.get(id);
     if (!terminal) {
       terminalMap.set(id, {cols, rows}); // resize may arrive before we create the terminal
+      log.info(`TerminalHandler resize queued for ${id}: cols=${cols} rows=${rows} (terminal not created yet)`);
       return;
     }
+    log.info(`TerminalHandler resize for ${id}: cols=${cols} rows=${rows} (hasResizeFn=${typeof terminal.resize === 'function'})`);
     if (typeof terminal.resize === 'function') {
       terminal.resize(cols, rows);
     }

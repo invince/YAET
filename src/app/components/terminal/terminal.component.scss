@@ -21,12 +21,21 @@
     margin-left: t.$spacing-sm;
 
     // xterm root
+    // NOTE: .terminal-scrollbar is an absolute overlay (10px + 1px border)
+    // inside #term covering the rightmost cells. The native xterm scrollbar
+    // is hidden (scrollBarWidth=0), so FitAddon.proposeDimensions() does NOT
+    // subtract anything and overestimates cols by ~1-2. That desyncs the pty
+    // size (server wraps later than xterm) and wrapped lines overwrite the
+    // line start. Reserve the overlay width as padding so the fit math
+    // (parentWidth - elementPaddingHor - scrollbarWidth) accounts for it.
     ::ng-deep .xterm {
       position: absolute !important;
       inset: 0 !important;
       width: 100% !important;
       height: 100% !important;
       background: transparent !important;
+      padding-right: 11px !important;
+      box-sizing: border-box !important;
     }
 
     // viewport (scroll container)

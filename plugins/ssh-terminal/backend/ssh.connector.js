@@ -54,7 +54,10 @@ class SshTerminalSession extends TerminalRuntimeApi {
 
       conn.on('ready', () => {
         this.log.info('SSH session ready');
-        conn.shell({ term: 'xterm-256color' }, (err, stream) => {
+        const ptyCols = Number(cols) > 0 ? Number(cols) : 80;
+        const ptyRows = Number(rows) > 0 ? Number(rows) : 24;
+        this.log.info(`SSH pty open requested: cols=${ptyCols} rows=${ptyRows} (raw cols=${cols} rows=${rows})`);
+        conn.shell({ term: 'xterm-256color', cols: ptyCols, rows: ptyRows }, (err, stream) => {
           if (err) {
             this.log.error('Error starting shell:', err);
             reject(err);
@@ -112,6 +115,7 @@ class SshTerminalSession extends TerminalRuntimeApi {
   }
 
   async resize(cols, rows) {
+    this.log.info(`SSH pty resize: cols=${cols} rows=${rows} (streamReady=${!!this.stream})`);
     if (this.stream) {
       this.stream.setWindow(rows, cols, null, null);
     }

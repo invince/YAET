@@ -50,6 +50,13 @@ export class PluginSession extends Session {
         id: this.id,
         config,
       };
+      // Forward the UI-captured pty size so the backend shell starts
+      // with the real geometry instead of the 80x24 default.
+      const pending = this.pendingTerminalSize;
+      if (pending && pending.cols > 0 && pending.rows > 0) {
+        data.cols = pending.cols;
+        data.rows = pending.rows;
+      }
       if (this.profile?.proxyId) {
         data.proxyId = this.profile.proxyId;
       }
