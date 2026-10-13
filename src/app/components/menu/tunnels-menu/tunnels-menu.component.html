@@ -1,0 +1,80 @@
+<div class="modal-container modal-container--panel">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>{{ 'TUNNELS.TITLE' | translate }}</h3>
+      <span class="modal-header-actions">
+        <button mat-icon-button (click)="addTunnel()" [matTooltip]="'TUNNELS.ADD_TITLE' | translate" aria-label="Add tunnel">
+          <mat-icon>add</mat-icon>
+        </button>
+        <button mat-icon-button (click)="refresh()" [matTooltip]="'TUNNELS.REFRESH' | translate" aria-label="Refresh tunnels">
+          <mat-icon>refresh</mat-icon>
+        </button>
+        <button mat-icon-button (click)="stopAll()" [disabled]="!hasActive"
+          [matTooltip]="'TUNNELS.STOP_ALL' | translate" aria-label="Stop all tunnels">
+          <mat-icon>stop</mat-icon>
+        </button>
+        <button mat-icon-button class="modal-close-btn" (click)="close()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </span>
+    </div>
+
+    <div class="modal-content tunnels-content">
+      @if (rows.length === 0) {
+      <app-empty-state icon="swap_horiz" [message]="'TUNNELS.EMPTY' | translate"></app-empty-state>
+      } @else {
+      <div class="tunnel-list-hint">{{ 'TUNNELS.LIST_HINT' | translate }}</div>
+      <div class="tunnel-list">
+        @for (row of rows; track row.tunnel.id) {
+        <div class="tunnel-row" [attr.data-status]="statusOf(row)">
+          <span class="tunnel-dot" [class]=" 'tunnel-dot-' + statusOf(row) "></span>
+          <div class="tunnel-main">
+            <div class="tunnel-name">
+              {{ row.tunnel.name || row.tunnel.id }}
+              <span class="tunnel-type">{{ ('TUNNELS.TYPE_' + row.tunnel.type.toUpperCase()) | translate }}</span>
+              @if (isPublic(row)) {
+              <span class="tunnel-public" [matTooltip]="'TUNNELS.PUBLIC_HINT' | translate">LAN</span>
+              }
+              <span class="tunnel-profile">{{ connectionSummary(row) }}</span>
+            </div>
+            <div class="tunnel-endpoint">{{ endpointSummary(row) }}</div>
+            @if (row.snapshot?.status === 'active') {
+            <div class="tunnel-stats">
+              <span>↑ {{ formatBytes(row.snapshot!.bytesUp) }}</span>
+              <span>↓ {{ formatBytes(row.snapshot!.bytesDown) }}</span>
+              @if (uptime(row)) {
+              <span>{{ uptime(row) }}</span>
+              }
+            </div>
+            }
+            @if (row.snapshot?.error) {
+            <div class="tunnel-error">{{ row.snapshot!.error }}</div>
+            }
+            @if (statusOf(row) === 'reconnecting') {
+            <div class="tunnel-reconnecting">{{ 'TUNNELS.RECONNECTING' | translate }}</div>
+            }
+          </div>
+          <span class="tunnel-row-actions">
+            <button mat-icon-button (click)="toggle(row)"
+              [matTooltip]="(isRunning(row) ? 'TUNNELS.STOP' : 'TUNNELS.START') | translate"
+              [attr.aria-label]="(isRunning(row) ? 'Stop tunnel ' : 'Start tunnel ') + (row.tunnel.name || row.tunnel.id)">
+              <mat-icon>{{ isRunning(row) ? 'stop' : 'play_arrow' }}</mat-icon>
+            </button>
+            <button mat-icon-button (click)="editTunnel(row)"
+              [matTooltip]="'TUNNELS.EDIT' | translate"
+              [attr.aria-label]="'Edit tunnel ' + (row.tunnel.name || row.tunnel.id)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button (click)="deleteTunnel(row)"
+              [matTooltip]="'TUNNELS.DELETE' | translate"
+              [attr.aria-label]="'Delete tunnel ' + (row.tunnel.name || row.tunnel.id)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </span>
+        </div>
+        }
+      </div>
+      }
+    </div>
+  </div>
+</div>

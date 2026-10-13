@@ -1,0 +1,137 @@
+@use 'tokens' as t;
+
+.tunnels-content {
+  padding: t.$spacing-sm t.$spacing-md;
+  overflow-y: auto;
+}
+
+.tunnel-list {
+  display: flex;
+  flex-direction: column;
+  gap: t.$spacing-sm;
+}
+
+.tunnel-list-hint {
+  font-size: t.$font-size-xs;
+  color: var(--app-text-secondary);
+  margin-bottom: t.$spacing-xs;
+}
+
+.tunnel-row {
+  display: flex;
+  align-items: flex-start;
+  gap: t.$spacing-sm;
+  padding: t.$spacing-sm;
+  border: 1px solid var(--app-border-color);
+  border-radius: t.$radius-sm;
+}
+
+.tunnel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  margin-top: 4px;
+  flex-shrink: 0;
+  background: var(--app-text-secondary);
+}
+
+.tunnel-dot-active {
+  background: #66bb6a;
+}
+
+.tunnel-dot-starting,
+.tunnel-dot-reconnecting {
+  background: #ffb74d;
+  animation: tunnel-pulse 1.2s ease-in-out infinite;
+}
+
+.tunnel-dot-error {
+  background: #e57373;
+}
+
+@keyframes tunnel-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.tunnel-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tunnel-row-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.tunnel-name {
+  font-size: t.$font-size-sm;
+  font-weight: 600;
+  color: var(--app-text-color);
+  display: flex;
+  align-items: center;
+  gap: t.$spacing-sm;
+  flex-wrap: wrap;
+}
+
+.tunnel-type {
+  font-size: t.$font-size-xs;
+  font-weight: 400;
+  color: var(--app-text-secondary);
+  border: 1px solid var(--app-border-color);
+  border-radius: t.$radius-sm;
+  padding: 0 5px;
+}
+
+.tunnel-public {
+  font-size: t.$font-size-xs;
+  font-weight: 600;
+  color: #ffb74d;
+  border: 1px solid #ffb74d;
+  border-radius: t.$radius-sm;
+  padding: 0 5px;
+}
+
+.tunnel-profile {
+  font-size: t.$font-size-xs;
+  font-weight: 400;
+  color: var(--app-text-secondary);
+}
+
+.tunnel-endpoint {
+  font-size: t.$font-size-xs;
+  font-family: t.$font-family-mono;
+  color: var(--app-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tunnel-stats {
+  display: flex;
+  gap: t.$spacing-sm;
+  font-size: t.$font-size-xs;
+  font-family: t.$font-family-mono;
+  color: var(--app-text-secondary);
+}
+
+.tunnel-error {
+  font-size: t.$font-size-xs;
+  color: #e57373;
+  overflow-wrap: anywhere;
+}
+
+.tunnel-reconnecting {
+  font-size: t.$font-size-xs;
+  color: #ffb74d;
+}
+
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}

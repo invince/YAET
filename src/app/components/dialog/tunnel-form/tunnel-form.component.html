@@ -1,0 +1,183 @@
+<h2 mat-dialog-title>
+  <mat-icon>swap_horiz</mat-icon>
+  {{ (isNew ? 'TUNNELS.NEW_TITLE' : 'TUNNELS.EDIT_TITLE') | translate }}
+</h2>
+
+<mat-dialog-content>
+  <div class="tunnel-form">
+    <div class="tunnel-form-row">
+      <mat-form-field class="tunnel-field">
+        <mat-label>{{ 'TUNNELS.NAME_OPTIONAL' | translate }}</mat-label>
+        <input matInput type="text" data-testid="tf-name" [(ngModel)]="tunnel.name" />
+      </mat-form-field>
+
+      <mat-form-field class="tunnel-field tunnel-field-type">
+        <mat-label>{{ 'TUNNELS.TYPE' | translate }}</mat-label>
+        <mat-select data-testid="tf-type" [value]="tunnel.type" (selectionChange)="setType($event.value)">
+          @for (t of TUNNEL_TYPES; track t) {
+          <mat-option [value]="t">{{ typeLabel(t) | translate }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="tunnel-form-row">
+      <mat-form-field class="tunnel-field">
+        <mat-label>{{ 'TUNNELS.BIND_HOST' | translate }}</mat-label>
+        <input matInput type="text" data-testid="tf-bind" [(ngModel)]="tunnel.bindHost" [placeholder]="DEFAULT_BIND_HOST" />
+      </mat-form-field>
+
+      @if (tunnel.type === 'remote') {
+      <mat-form-field class="tunnel-field">
+        <mat-label>{{ 'TUNNELS.REMOTE_BIND' | translate }}</mat-label>
+        <mat-select data-testid="tf-remote-bind" [(ngModel)]="tunnel.remoteBind"
+          [matTooltip]="'TUNNELS.REMOTE_BIND_HINT' | translate">
+          @for (b of REMOTE_BIND_OPTIONS; track b) {
+          <mat-option [value]="b">{{ b === '0.0.0.0' ? ('TUNNELS.REMOTE_BIND_PUBLIC' | translate) : b }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      }
+
+      <mat-form-field class="tunnel-field">
+        <mat-label>
+          {{ tunnel.type === 'remote' ? ('TUNNELS.LOCAL_TARGET_PORT' | translate) : ('TUNNELS.LOCAL_PORT' | translate) }}
+        </mat-label>
+        <input matInput type="number" data-testid="tf-local-port" min="0" max="65535" [ngModel]="tunnel.localPort"
+          [placeholder]="tunnel.type === 'remote' ? '' : '0'"
+          [matTooltip]="tunnel.type === 'remote' ? '' : ('TUNNELS.LOCAL_PORT_HINT' | translate)"
+          (ngModelChange)="onPortInput('localPort', $event)" />
+      </mat-form-field>
+
+      @if (tunnel.type === 'local') {
+      <mat-form-field class="tunnel-field">
+        <mat-label>{{ 'TUNNELS.REMOTE_HOST' | translate }}</mat-label>
+        <input matInput type="text" data-testid="tf-remote-host" [(ngModel)]="tunnel.remoteHost" placeholder="127.0.0.1"
+          [matTooltip]="'TUNNELS.REMOTE_HOST_HINT' | translate" />
+        @if (!tunnel.remoteHost) {
+        <button matSuffix mat-icon-button type="button" data-testid="tf-remote-host-self"
+          [matTooltip]="'TUNNELS.REMOTE_HOST_SELF' | translate" aria-label="Fill server itself"
+          (click)="tunnel.remoteHost = '127.0.0.1'">
+          <mat-icon>computer</mat-icon>
+        </button>
+        }
+      </mat-form-field>
+      }
+
+      @if (tunnel.type !== 'dynamic') {
+      <mat-form-field class="tunnel-field">
+        <mat-label>
+          {{ tunnel.type === 'remote' ? ('TUNNELS.REMOTE_LISTEN_PORT' | translate) : ('TUNNELS.REMOTE_PORT' | translate) }}
+        </mat-label>
+        <input matInput type="number" data-testid="tf-remote-port" min="1" max="65535" [ngModel]="tunnel.remotePort || ''"
+          (ngModelChange)="onPortInput('remotePort', $event)" />
+      </mat-form-field>
+      }
+    </div>
+
+    @if (forwardError(); as errKey) {
+    <div class="tunnel-form-error">{{ errKey | translate }}</div>
+    }
+    @if (direction(); as dir) {
+    <div class="tunnel-form-direction">
+      <mat-icon>swap_horiz</mat-icon>
+      <span>{{ dir.key | translate:dir.params }}</span>
+    </div>
+    }
+    @if (needsApproval()) {
+    <div class="tunnel-form-approval-note">
+      <mat-icon>shield</mat-icon>
+      <span>{{ 'TUNNELS.DIR_REMOTE_APPROVAL' | translate }}</span>
+    </div>
+    }
+
+    <div class="tunnel-form-section">{{ 'TUNNELS.CONNECTION_TITLE' | translate }}</div>
+
+    <mat-radio-group class="tunnel-form-row" [ngModel]="tunnel.connection.mode" (ngModelChange)="setConnectionMode($event)">
+      <mat-radio-button value="profile">{{ 'TUNNELS.CONN_PROFILE' | translate }}</mat-radio-button>
+      <mat-radio-button value="adhoc">{{ 'TUNNELS.CONN_ADHOC' | translate }}</mat-radio-button>
+    </mat-radio-group>
+
+    @if (tunnel.connection.mode === 'profile') {
+    <div class="tunnel-form-row">
+      <mat-form-field class="tunnel-field-wide">
+        <mat-label>{{ 'TUNNELS.SSH_PROFILE' | translate }}</mat-label>
+        <mat-select [(ngModel)]="tunnel.connection.profileId">
+          @for (p of sshProfiles; track p.id) {
+          <mat-option [value]="p.id">{{ p.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+    } @else {
+    <div class="tunnel-form-row">
+      <mat-form-field class="tunnel-field">
+        <mat-label>{{ 'COMMON.HOST_NAME' | translate }}</mat-label>
+        <input matInput type="text" data-testid="tf-host" [(ngModel)]="tunnel.connection.host" />
+      </mat-form-field>
+      <mat-form-field class="tunnel-field-port">
+        <mat-label>{{ 'COMMON.PORT' | translate }}</mat-label>
+        <input matInput type="number" data-testid="tf-port" min="1" max="65535" [ngModel]="tunnel.connection.port || 22"
+          (ngModelChange)="onPortInput('port', $event)" />
+      </mat-form-field>
+    </div>
+
+    <mat-radio-group class="tunnel-form-row" [ngModel]="tunnel.connection.authType || 'login'"
+      (ngModelChange)="setAuthType($event)">
+      <mat-radio-button value="login">{{ 'COMMON.LOGIN' | translate }}</mat-radio-button>
+      <mat-radio-button value="secret">{{ 'COMMON.SECRET' | translate }}</mat-radio-button>
+    </mat-radio-group>
+
+    @if ((tunnel.connection.authType || 'login') === 'login') {
+    <div class="tunnel-form-row">
+      <mat-form-field class="tunnel-field">
+        <mat-label>{{ 'COMMON.LOGIN' | translate }}</mat-label>
+        <input matInput type="text" data-testid="tf-login" [(ngModel)]="tunnel.connection.login" autocomplete="off" />
+      </mat-form-field>
+      <mat-form-field class="tunnel-field">
+        <mat-label>{{ 'COMMON.PASSWORD' | translate }}</mat-label>
+        <input matInput type="password" data-testid="tf-password" [(ngModel)]="tunnel.connection.password" autocomplete="new-password" />
+      </mat-form-field>
+    </div>
+    } @else {
+    <div class="tunnel-form-row">
+      <mat-form-field class="tunnel-field-wide">
+        <mat-label>{{ 'COMMON.SECRET' | translate }}</mat-label>
+        <mat-select [(ngModel)]="tunnel.connection.secretId">
+          <mat-option (click)="quickCreateSecret()">
+            <mat-icon>add</mat-icon>
+            {{ 'COMMON.ADD_NEW' | translate }}
+          </mat-option>
+          @for (s of secrets; track s.id) {
+          <mat-option [value]="s.id">{{ secretService.displaySecretOptionName(s) }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+    }
+
+    <div class="tunnel-form-row">
+      <mat-form-field class="tunnel-field-wide">
+        <mat-label>{{ 'TUNNELS.PROXY_OPTIONAL' | translate }}</mat-label>
+        <mat-select [(ngModel)]="tunnel.connection.proxyId">
+          <mat-option [value]="undefined">{{ 'COMMON.NONE' | translate }}</mat-option>
+          @for (px of proxies; track px.id) {
+          <mat-option [value]="px.id">{{ px.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+    }
+
+    @if (connectionError(); as connErr) {
+    <div class="tunnel-form-error">{{ connErr | translate }}</div>
+    }
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+  <button mat-raised-button color="primary" (click)="onSave()" [disabled]="!valid">
+    {{ 'COMMON.SAVE' | translate }}
+  </button>
+</mat-dialog-actions>

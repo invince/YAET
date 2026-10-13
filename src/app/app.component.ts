@@ -18,6 +18,7 @@ import {ProxyMenuComponent} from './components/menu/proxy-menu/proxy-menu.compon
 import {QuickconnectMenuComponent} from "./components/menu/quickconnect-menu/quickconnect-menu.component";
 import {SecretsMenuComponent} from './components/menu/secrets-menu/secrets-menu.component';
 import {SettingMenuComponent} from './components/menu/setting-menu/setting-menu.component';
+import {TunnelsMenuComponent} from './components/menu/tunnels-menu/tunnels-menu.component';
 import {RemoteDesktopComponent} from './components/remote-desktop/remote-desktop.component';
 import {SidebarComponent} from './components/sidebar/sidebar.component';
 import {TerminalComponent} from './components/terminal/terminal.component';
@@ -27,6 +28,7 @@ import {TabInstance} from './domain/TabInstance';
 import {CloudService} from './services/cloud.service';
 import {LogService} from './services/log.service';
 import {ShortcutService} from './services/shortcut.service';
+import {TunnelApprovalService} from './services/tunnel-approval.service';
 import {MasterKeyService} from './services/master-key.service';
 import {ModalControllerService} from './services/modal-controller.service';
 import {NotificationService} from './services/notification.service';
@@ -55,6 +57,7 @@ import {PluginRegistryService} from './plugin/services/plugin-registry.service';
     FileExplorerComponent,
     SecretsMenuComponent,
     ProxyMenuComponent,
+    TunnelsMenuComponent,
     ProfilesMenuComponent,
     QuickconnectMenuComponent,
     SidebarComponent,
@@ -78,6 +81,7 @@ export class AppComponent implements OnInit, OnDestroy {
   MENU_PROXY: string = MenuConsts.MENU_PROXY;
   MENU_CLOUD: string = MenuConsts.MENU_CLOUD;
   MENU_SETTING: string = MenuConsts.MENU_SETTING;
+  MENU_TUNNELS: string = MenuConsts.MENU_TUNNELS;
 
   title = 'yetAnotherElectronTerm';
 
@@ -112,6 +116,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private renderer: Renderer2,
     private ngZone: NgZone,
     private shortcut: ShortcutService,
+    private tunnelApproval: TunnelApprovalService,
     private pluginLoader: PluginLoaderService,
     private pluginRegistry: PluginRegistryService,
   ) { }
@@ -123,6 +128,9 @@ export class AppComponent implements OnInit, OnDestroy {
       // Plugin factories ready
     });
     this.shortcut.init();
+    // Incoming-connection approvals for publicly-bound tunnels must work
+    // even when the tunnel manager is closed.
+    this.tunnelApproval.ensureListening();
     this.subscriptions.push(
       this.profileService.connectionEvent$.subscribe(
         profile => {

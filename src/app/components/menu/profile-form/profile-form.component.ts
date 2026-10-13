@@ -153,8 +153,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     const meta = this.registry.getFormMetadata(profile.profileType);
     if (meta) {
       formValue[meta.formControlName] = profile.getProfile(meta.profileField) || null;
-    } else if (profile.category === ProfileCategory.CUSTOM) {
-      formValue.customProfileForm = profile.getProfile('CUSTOM') || null;
+    } else if (profile.category === ProfileCategory.CUSTOM) {      formValue.customProfileForm = profile.getProfile('CUSTOM') || null;
     } else if (this.registry.hasExternalPlugin(profile.profileType)) {
       const raw = profile.getProfile(profile.profileType) || {};
       const { authType, login, password, secretId, username, ...rest } = raw;

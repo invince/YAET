@@ -45,6 +45,16 @@ import {
   SETTINGS_RELOAD,
   SETTINGS_SAVE,
   SETTING_BACKUP,
+  TUNNELS_LIST,
+  TUNNELS_START,
+  TUNNELS_STATUS_CHANGED,
+  TUNNELS_STOP,
+  TUNNELS_STOP_ALL,
+  TUNNELS_LOADED,
+  TUNNELS_RELOAD,
+  TUNNELS_SAVE,
+  TUNNELS_APPROVAL_REQUEST,
+  TUNNELS_APPROVAL_RESOLVE,
 } from './ElectronConstant';
 import {resolveLoginPassword} from '../../utils/SecretResolver';
 import {NotificationService} from '../notification.service';
@@ -452,4 +462,79 @@ export class ElectronService extends AbstractElectronService {
     }
   }
   //#endregion "Command Approval"
+
+  //#region "Tunnels"
+  async listTunnels(): Promise<any[]> {
+    if (this.ipc) {
+      const list = await this.ipc.invoke(TUNNELS_LIST);
+      return Array.isArray(list) ? list : [];
+    }
+    return [];
+  }
+
+  async startTunnel(tunnelId: string): Promise<any> {
+    if (this.ipc) {
+      return await this.ipc.invoke(TUNNELS_START, { tunnelId });
+    }
+    return undefined;
+  }
+
+  async stopTunnel(tunnelId: string): Promise<boolean> {
+    if (this.ipc) {
+      return !!(await this.ipc.invoke(TUNNELS_STOP, { tunnelId }));
+    }
+    return false;
+  }
+
+  async stopAllTunnels(): Promise<void> {
+    if (this.ipc) {
+      await this.ipc.invoke(TUNNELS_STOP_ALL);
+    }
+  }
+
+  onTunnelStatusChanged(callback: (list: any[]) => void) {
+    if (this.ipc) {
+      this.ipc.on(TUNNELS_STATUS_CHANGED, (event: any, data: any) => callback(data));
+    }
+  }
+
+  removeTunnelStatusChangedListeners() {
+    if (this.ipc) {
+      this.ipc.removeAllListeners(TUNNELS_STATUS_CHANGED);
+    }
+  }
+
+  onTunnelApprovalRequest(callback: (request: {
+    requestId: string; tunnelId: string; tunnelName: string;
+    srcIP: string; srcPort: number; dstPort: number;
+  }) => void) {
+    if (this.ipc) {
+      this.ipc.on(TUNNELS_APPROVAL_REQUEST, (event: any, data: any) => callback(data));
+    }
+  }
+
+  removeTunnelApprovalRequestListeners() {
+    if (this.ipc) {
+      this.ipc.removeAllListeners(TUNNELS_APPROVAL_REQUEST);
+    }
+  }
+
+  resolveTunnelApproval(requestId: string, approved: boolean, trustSource = false) {
+    if (this.ipc) {
+      this.ipc.send(TUNNELS_APPROVAL_RESOLVE, { requestId, approved, trustSource });
+    }
+  }
+
+  async saveTunnels(encrypted: string) {
+    if (this.ipc) {
+      await this.ipc.send(TUNNELS_SAVE, { data: encrypted });
+    }
+  }
+
+  reloadTunnels() {
+    if (this.ipc) {
+      this.ipc.send(TUNNELS_RELOAD, {});
+    }
+  }
+  //#endregion "Tunnels"
 }

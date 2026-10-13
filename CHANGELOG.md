@@ -15,6 +15,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - n/a
 
+## [Unreleased] - A1 SSH Port Forwarding / Tunnel Manager
+### Added
+- **SSH tunnels (local/remote/dynamic SOCKS5) as first-class citizens**: stored in encrypted `tunnels.json` (own save/reload IPC + manifest + `Tunnel` cloud-sync checkbox); each tunnel binds forwarding params with a connection — either an existing SSH profile or an adhoc host with secret ref / inline login+password / optional proxy; legacy profile-embedded rules auto-migrate on load (id-preserving, source cleared)
+- **Tunnel manager CRUD**: add/edit dialog with live direction hints, per-tunnel start/stop, stop-all, traffic/uptime/error display; command palette TUNNEL group reads the tunnel store
+- **Public server bind for -R with per-connection approval**: `remoteBind` option per remote tunnel (loopback default, `0.0.0.0` for server-LAN exposure); every inbound connection on a public tunnel pops an approval dialog (tunnel, source IP:port, allow-once/deny plus trust-this-IP-10-min), fail-closed on deny/timeout (60s)/tunnel stop; trust is per tunnel+source in main-process memory, cleared on stop; LAN badge in the manager
+- Per-tunnel dedicated ssh2 connection with auto-reconnect (backoff, 10 attempts), byte counters, `will-quit` cleanup
+- **Security posture**: loopback-only local listeners (non-loopback bind rejected server-side); renderer sends only `{tunnelId}`, tunnel re-read + re-validated in main (`RuntimeAPI.resolveTunnel`); adhoc passwords encrypted at rest like profile login auth
+- **`npm run test:main`**: Node built-in test runner for main-process units (48 tests: rule validation, SOCKS5 handshake on real loopback sockets, tunnel lifecycle with fake ssh2 connection, `resolveTunnel` profile/adhoc/secret/proxy paths incl. a fake HTTP-CONNECT proxy)
+- **i18n**: `TUNNELS.*` + `SHORTCUTS.TOGGLE_TUNNELS` + `COMMAND_PALETTE.GROUP_TUNNEL` in en/zh/de/es/fr
+### Fixed
+- e2e main-process `decrypt` mock now performs real AES (was a `'{}'` stub that blinded all main-side profile reads in tests)
+- `Compatibility` moved from `main.ts` to `app/compatibility.ts` (breaks the service→main→app.component→cloud.service evaluation cycle that crashed karma bundles with `ProfileService` TDZ errors)
+
 
 ## [7.3.0] - 2026-09-05 Sept review
 ### Security

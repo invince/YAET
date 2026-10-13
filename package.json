@@ -18,6 +18,7 @@
     "build:angular": "npm run prebuild:angular && npm run clean && patch-package && ng build --base-href ./",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:main": "node --test src-electron/services/tunnelRules.spec.js src-electron/services/socksServer.spec.js src-electron/services/tunnelService.spec.js src-electron/runtime/runtimeAPI.spec.js src-electron/adapter/ipc/tunnels.spec.js",
     "start": "npm run generate-plugin-barrel && concurrently \"npm run ng:serve\" \"npm run electron:dev\"",
     "test:e2e": "node scripts/generate-plugin-barrel.js && ng build --base-href ./ && playwright test",
     "test:e2e:headed": "node scripts/generate-plugin-barrel.js && ng build --base-href ./ && cross-env YAET_SHOW_WINDOW=1 playwright test",

@@ -5,5 +5,6 @@ export class MenuConsts {
   public static MENU_CLOUD: string = 'cloud';
   public static MENU_PROXY: string = 'proxy';
   public static MENU_SETTING: string = 'setting';
+  public static MENU_TUNNELS: string = 'tunnels';
 }
 

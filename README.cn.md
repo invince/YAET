@@ -10,6 +10,7 @@ YAET 是一款基于 Angular 和 Electron 构建的全能远程连接管理工�
 
 ### 🖥️ 终端连接
 - **SSH**：安全的 Shell 连接，支持密钥和密码认证
+- **SSH 端口转发**：local / remote / dynamic（SOCKS5）隧道，在侧栏隧道管理器里增删改、查看状态流量、一键启停，断线自动重连；连接可选已有 SSH 配置或臨時填主机+凭据；规则独立加密存储并可随云同步
 - **Telnet**：传统 Telnet 协议支持
 - **WinRM**：Windows Remote Management，用于 PowerShell 会话
 - **串口终端**：串口终端连接，用于连接硬件设备（路由器、交换机、嵌入式开发板等），支持配置波特率、数据位、停止位、校验位和流控制
@@ -309,7 +310,7 @@ npx playwright test -g "add Password Only"
 - 测试默认**无头**运行。设置 `YAET_SHOW_WINDOW=1` 可显示窗口
 - CI 在每次版本标签（`v*`）推送时先跑全量 E2E（绿了才发布，[`.github/workflows/build.yml`](.github/workflows/build.yml)）；该套件同样跑在沙盒渲染器下，覆盖生产安全姿态
 
-**当前覆盖（145 个 E2E 测试）：**
+**当前覆盖（164 个 E2E 测试）：**
 
 | 模块 | 测试数 | 状态 |
 |---------|-------|--------|
@@ -327,6 +328,7 @@ npx playwright test -g "add Password Only"
 | 10. AI 聊天面板 | 22 | ✅ |
 | 11. AI 设置 | 18 | ✅ |
 | 12. 命令面板与终端搜索 | 6 | ✅ |
+| 13. SSH 隧道 | 12 | ✅ |
 
 完整测试计划参见 [TestPlanE2E.md](./TestPlanE2E.md)。
 

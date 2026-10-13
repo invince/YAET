@@ -8,7 +8,7 @@ import {SettingStorageService} from './setting-storage.service';
 import packageJson from '../../../package.json';
 import {Subscription} from 'rxjs';
 import {LogService} from './log.service';
-import {Compatibility} from '../../main';
+import {Compatibility} from '../compatibility';
 import {compareVersions} from '../utils/VersionUtils';
 import {NotificationService} from './notification.service';
 

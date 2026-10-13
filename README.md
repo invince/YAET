@@ -20,6 +20,7 @@ On servers without a display, prefer the `.deb` release (AppImage needs FUSE) an
 
 ### 🖥️ Terminal Connections
 - **SSH**: Secure shell connections with key-based and password authentication
+- **SSH port forwarding**: local / remote / dynamic (SOCKS5) tunnels created and managed in the sidebar tunnel manager (status, traffic, uptime, one-click start/stop, auto-reconnect); each tunnel binds to an existing SSH profile or an adhoc host with credentials; independently encrypted storage with optional cloud sync
 - **Telnet**: Legacy telnet protocol support
 - **WinRM**: Windows Remote Management for PowerShell sessions
 - **Serial**: Serial port terminal for connecting to hardware devices (routers, switches, embedded boards, etc.) with configurable baud rate, data bits, stop bits, parity, and flow control
@@ -324,7 +325,7 @@ npx playwright test -g "add Password Only"
 - Tests run **headless** by default. Set `YAET_SHOW_WINDOW=1` for a visible window
 - CI runs the e2e suite on every version tag (`v*`) before release ([`.github/workflows/build.yml`](.github/workflows/build.yml)); the suite also runs under the sandboxed renderer, so it covers the production security posture
 
-**Current coverage (145 E2E tests):**
+**Current coverage (164 E2E tests):**
 | Section | Tests | Status |
 |---------|-------|--------|
 | 1. Application Startup | 7 | ✅ |
@@ -341,6 +342,7 @@ npx playwright test -g "add Password Only"
 | 10. AI Chat Panel | 22 | ✅ |
 | 11. AI Settings | 18 | ✅ |
 | 12. Command Palette & Search | 6 | ✅ |
+| 13. SSH Tunnels | 12 | ✅ |
 
 See [TestPlanE2E.md](./TestPlanE2E.md) for the full test plan.
 

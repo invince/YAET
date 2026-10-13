@@ -23,6 +23,7 @@ export class ShortcutHelpComponent {
     { keys: `${mod}+Shift+Q`, action: 'SHORTCUTS.QUICK_CONNECT' },
     { keys: `${mod}+Shift+P`, action: 'SHORTCUTS.TOGGLE_PROFILES' },
     { keys: `${mod}+Shift+S`, action: 'SHORTCUTS.TOGGLE_SECRETS' },
+    { keys: `${mod}+Shift+T`, action: 'SHORTCUTS.TOGGLE_TUNNELS' },
     { keys: `${mod}+Shift+,`, action: 'SHORTCUTS.TOGGLE_SETTINGS' },
     { keys: `${mod}+Shift+I`, action: 'SHORTCUTS.TOGGLE_AI_CHAT' },
     { keys: `${mod}+K`, action: 'SHORTCUTS.COMMAND_PALETTE' },

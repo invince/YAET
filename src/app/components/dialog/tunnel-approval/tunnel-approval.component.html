@@ -1,0 +1,29 @@
+<h2 mat-dialog-title class="tunnel-approval-title">
+  <mat-icon class="tunnel-approval-warn">warning</mat-icon>
+  <span>{{ 'TUNNELS.APPROVAL_TITLE' | translate }}</span>
+</h2>
+
+<mat-dialog-content>
+  <div class="tunnel-approval-lan">{{ 'TUNNELS.APPROVAL_LAN' | translate }}</div>
+  <div class="tunnel-approval-detail">
+    <div class="tunnel-approval-row">
+      <span class="tunnel-approval-key">{{ 'TUNNELS.APPROVAL_TUNNEL' | translate }}</span>
+      <span>{{ data.tunnelName || data.tunnelId }}</span>
+    </div>
+    <div class="tunnel-approval-row">
+      <span class="tunnel-approval-key">{{ 'TUNNELS.APPROVAL_FROM' | translate }}</span>
+      <span class="tunnel-approval-source">{{ data.srcIP || '?' }}:{{ data.srcPort || '?' }}</span>
+    </div>
+    <div class="tunnel-approval-row">
+      <span class="tunnel-approval-key">{{ 'TUNNELS.APPROVAL_TO' | translate }}</span>
+      <span>{{ 'TUNNELS.APPROVAL_SERVER_PORT' | translate:{ port: data.dstPort } }}</span>
+    </div>
+  </div>
+  <div class="tunnel-approval-timeout">{{ 'TUNNELS.APPROVAL_TIMEOUT' | translate }}</div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="deny()">{{ 'TUNNELS.APPROVAL_DENY' | translate }}</button>
+  <button mat-button (click)="allowOnce()">{{ 'TUNNELS.APPROVAL_ALLOW' | translate }}</button>
+  <button mat-raised-button color="warn" (click)="trustSource()">{{ 'TUNNELS.APPROVAL_TRUST' | translate }}</button>
+</mat-dialog-actions>

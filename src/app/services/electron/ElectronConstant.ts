@@ -100,3 +100,16 @@ export const AI_COMMAND_PENDING = 'ai.command-pending';
 export const AI_COMMAND_APPROVED = 'ai.command-approved';
 export const AI_COMMAND_REJECTED = 'ai.command-rejected';
 export const AI_CANCEL_CHAT = 'ai.cancel-chat';
+
+//#region "Tunnels"
+export const TUNNELS_LIST = 'tunnels.list';
+export const TUNNELS_START = 'tunnels.start';
+export const TUNNELS_STOP = 'tunnels.stop';
+export const TUNNELS_STOP_ALL = 'tunnels.stop-all';
+export const TUNNELS_STATUS_CHANGED = 'tunnels.status-changed';
+export const TUNNELS_LOADED = 'tunnels.loaded';
+export const TUNNELS_SAVE = 'tunnels.save';
+export const TUNNELS_RELOAD = 'tunnels.reload';
+export const TUNNELS_APPROVAL_REQUEST = 'tunnels.approval-request';
+export const TUNNELS_APPROVAL_RESOLVE = 'tunnels.approval-resolve';
+//#endregion "Tunnels"

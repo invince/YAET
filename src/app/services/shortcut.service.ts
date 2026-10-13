@@ -108,6 +108,12 @@ export class ShortcutService {
       return;
     }
 
+    if (ctrl && shift && key === 't') {
+      event.preventDefault();
+      this.ngZone.run(() => this.toggleMenu(MenuConsts.MENU_TUNNELS));
+      return;
+    }
+
     if (ctrl && shift && event.code === 'Comma') {
       event.preventDefault();
       this.ngZone.run(() => this.toggleMenu(MenuConsts.MENU_SETTING));

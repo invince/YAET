@@ -26,6 +26,11 @@
             matTooltip="Proxies" matTooltipPosition="right" aria-label="Proxies">
             <mat-icon>dns</mat-icon>
         </button>
+        <button mat-icon-button color="primary" (click)="tunnelsMenu()"
+            [class.active]="modalControl.currentOpenedMenu === MENU_TUNNELS"
+            matTooltip="Tunnels" matTooltipPosition="right" aria-label="Tunnels">
+            <mat-icon>swap_horiz</mat-icon>
+        </button>
         <button mat-icon-button color="primary" (click)="cloudMenu()"
             matTooltip="Setting Sync" matTooltipPosition="right" aria-label="Setting Sync">
             <mat-icon>cloud</mat-icon>

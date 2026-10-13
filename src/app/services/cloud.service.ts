@@ -1,7 +1,7 @@
 import {Injectable, OnDestroy} from '@angular/core';
 import {Subscription} from 'rxjs';
 import packageJson from '../../../package.json';
-import {Compatibility} from '../../main';
+import {Compatibility} from '../compatibility';
 import {CloudResponse} from '../domain/setting/CloudResponse';
 import {CloudSettings} from '../domain/setting/CloudSettings';
 import {compareVersions} from '../utils/VersionUtils';
@@ -15,6 +15,7 @@ import {ProxyStorageService} from './proxy-storage.service';
 import {ProxyService} from './proxy.service';
 import {SecretService} from './secret.service';
 import {SettingService} from './setting.service';
+import {TunnelService} from './tunnel.service';
 
 
 @Injectable({
@@ -26,7 +27,8 @@ export class CloudService implements OnDestroy {
     SettingService.CLOUD_OPTION,
     ProfileService.CLOUD_OPTION,
     SecretService.CLOUD_OPTION,
-    ProxyService.CLOUD_OPTION
+    ProxyService.CLOUD_OPTION,
+    TunnelService.CLOUD_OPTION
   ];
 
   private _cloud!: CloudSettings;

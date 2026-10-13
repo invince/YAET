@@ -1,0 +1,46 @@
+@use 'tokens' as t;
+
+.tunnel-approval-title {
+  display: flex;
+  align-items: center;
+  gap: t.$spacing-sm;
+
+  .tunnel-approval-warn {
+    color: #ffb74d;
+  }
+}
+
+.tunnel-approval-lan {
+  font-size: t.$font-size-sm;
+  color: #ffb74d;
+  margin-bottom: t.$spacing-sm;
+}
+
+.tunnel-approval-detail {
+  display: flex;
+  flex-direction: column;
+  gap: t.$spacing-xs;
+  margin-bottom: t.$spacing-sm;
+}
+
+.tunnel-approval-row {
+  display: flex;
+  gap: t.$spacing-sm;
+  font-size: t.$font-size-sm;
+  color: var(--app-text-color);
+}
+
+.tunnel-approval-key {
+  min-width: 90px;
+  color: var(--app-text-secondary);
+}
+
+.tunnel-approval-source {
+  font-family: t.$font-family-mono;
+  overflow-wrap: anywhere;
+}
+
+.tunnel-approval-timeout {
+  font-size: t.$font-size-xs;
+  color: var(--app-text-secondary);
+}

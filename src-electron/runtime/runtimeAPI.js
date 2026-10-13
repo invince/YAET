@@ -133,36 +133,126 @@ class RuntimeAPI {
     return this._profileService.listSSHProfiles();
   }
 
-  async getConnector(profileId, options = {}) {
-    if (!profileId) {
-      return new LocalTerminalSession(this.log);
-    }
-
-    const encrypted = await this.configService.getProfiles();
-    if (!encrypted) throw new Error('No profiles found');
+  /**
+   * Resolve a first-class tunnel (tunnels.json) by ID.
+   * Reads the tunnel server-side and re-validates it — renderer-supplied
+   * tunnel parameters are never trusted (same P0-1 principle as
+   * secretId/proxyId).
+   * @returns {Promise<{tunnelName: string, profileId: string, profileName: string, rule: object, sshConfig: object}>}
+   */
+  async resolveTunnel(tunnelId) {
+    const { normalizeTunnelRule } = require('../services/tunnelRules');
+    const encrypted = await this.configService.getTunnels();
+    if (!encrypted) throw new Error('No tunnels found');
 
     const decrypted = await decrypt(encrypted);
     const data = JSON.parse(decrypted);
-    const profile = data.profiles?.find(p => p.id === profileId);
-    if (!profile) throw new Error(`Profile not found: ${profileId}`);
+    const tunnel = data.tunnels?.find(t => t && t.id === tunnelId);
+    if (!tunnel) throw new Error(`Tunnel not found: ${tunnelId}`);
 
-    const profileType = profile.profileType || '';
+    const normalized = normalizeTunnelRule(tunnel);
+    if (normalized.error) throw new Error(`Invalid tunnel '${tunnel.name || tunnelId}': ${normalized.error}`);
 
-    if (profileType === 'LOCAL_TERMINAL') {
-      return new LocalTerminalSession(this.log);
+    const sshConfig = await this._resolveTunnelSsh(tunnel);
+    return {
+      tunnelName: tunnel.name || '',
+      profileId: sshConfig.profileId || '',
+      profileName: sshConfig.profileName || '',
+      rule: normalized.rule,
+      sshConfig: sshConfig.config,
+    };
+  }
+
+  /**
+   * Build an ssh2-ready config for a tunnel's connection: either by
+   * delegating to a referenced SSH profile, or from adhoc host + credentials.
+   * @returns {Promise<{config: object, profileId: string, profileName: string}>}
+   */
+  async _resolveTunnelSsh(tunnel) {
+    const conn = tunnel.connection || {};
+    const label = `Tunnel '${tunnel.name || tunnel.id}'`;
+
+    if (!conn.mode || conn.mode === 'profile') {
+      if (!conn.profileId) throw new Error(`${label} has no SSH profile selected`);
+      const encrypted = await this.configService.getProfiles();
+      if (!encrypted) throw new Error('No profiles found');
+      const data = JSON.parse(await decrypt(encrypted));
+      const profile = data.profiles?.find(p => p.id === conn.profileId);
+      if (!profile) throw new Error(`Profile not found: ${conn.profileId}`);
+      if (profile.profileType !== 'SSH_TERMINAL') {
+        throw new Error(`${label} needs an SSH profile (got ${profile.profileType || 'unknown type'})`);
+      }
+      return {
+        config: await this._resolveRemoteConfig(conn.profileId),
+        profileId: conn.profileId,
+        profileName: profile.name || '',
+      };
     }
 
-    if (profileType === 'RDP_REMOTE_DESKTOP') {
-      throw new Error(`Connector ${profileType} not supported for runtime operations`);
+    if (conn.mode !== 'adhoc') throw new Error(`${label} has unknown connection mode '${conn.mode}'`);
+
+    if (!conn.host) throw new Error(`${label} has no host configured`);
+    const config = { host: conn.host, port: conn.port || 22 };
+
+    if (conn.authType === 'secret') {
+      if (!conn.secretId) throw new Error(`${label} has no secret selected`);
+      const secrets = this.secretRepo ? this.secretRepo() : null;
+      if (!secrets || !secrets.secrets) throw new Error('No secrets loaded');
+      const secret = secrets.secrets.find(s => s.id === conn.secretId);
+      if (!secret) throw new Error(`Secret not found: ${conn.secretId}`);
+      this._applySecretToConfig(config, secret, label);
+    } else {
+      // 'login' (or unset): inline username/password, encrypted at rest.
+      if (conn.login) config.username = conn.login;
+      if (conn.password) config.password = conn.password;
     }
 
-    const config = await this._resolveRemoteConfig(profileId, options);
-
-    if (this._connectors[profileType]) {
-      return this._connectors[profileType](this.log, config);
+    if (conn.proxyId) {
+      await this._applyProxyToConfig(config, conn.proxyId);
     }
 
-    throw new Error(`Unsupported profile type for connector: ${profileType}`);
+    return { config, profileId: '', profileName: '' };
+  }
+
+  /** Shared secret → ssh2 config mapping (LOGIN_PASSWORD / SSH_KEY / PASSWORD_ONLY). */
+  _applySecretToConfig(config, secret, label) {
+    const secretType = secret.secretType || '';
+    if (secretType === 'LOGIN_PASSWORD' || secretType === 'login_password') {
+      config.username = secret.login;
+      config.password = secret.password;
+    } else if (secretType === 'SSH_KEY' || secretType === 'ssh_key') {
+      config.username = secret.login;
+      config.privateKey = (secret.key || '').replace(/\\n/g, '\n');
+      if (secret.passphrase) {
+        config.passphrase = secret.passphrase;
+      }
+    } else if (secretType === 'PASSWORD_ONLY' || secretType === 'password_only') {
+      config.password = secret.password;
+      if (secret.login) {
+        config.username = secret.login;
+      }
+    } else {
+      throw new Error(`${label}: unsupported secret type '${secretType}'`);
+    }
+  }
+
+  /** Shared proxy → ssh2 sock mapping (HTTP CONNECT / SOCKS via ProxyService). */
+  async _applyProxyToConfig(config, proxyId) {
+    const proxies = this.proxyRepo ? this.proxyRepo() : null;
+    if (!proxies || !proxies.proxies) throw new Error('No proxies loaded');
+
+    const proxy = proxies.proxies.find(p => p.id === proxyId);
+    if (!proxy) throw new Error(`Proxy not found: ${proxyId}`);
+
+    const proxyService = new ProxyService(this.log);
+    const secrets = this.secretRepo ? this.secretRepo() : null;
+    const sock = await proxyService.createProxyConnection(
+      proxy,
+      config.host,
+      config.port,
+      () => secrets || {secrets: []}
+    );
+    config.sock = sock;
   }
 
   async _resolveRemoteConfig(profileId, options = {}) {
@@ -220,22 +310,7 @@ class RuntimeAPI {
       const secret = secrets.secrets.find(s => s.id === secretId);
       if (!secret) throw new Error(`Secret not found: ${secretId}`);
 
-      const secretType = secret.secretType || '';
-      if (secretType === 'LOGIN_PASSWORD' || secretType === 'login_password') {
-        config.username = secret.login;
-        config.password = secret.password;
-      } else if (secretType === 'SSH_KEY' || secretType === 'ssh_key') {
-        config.username = secret.login;
-        config.privateKey = (secret.key || '').replace(/\\n/g, '\n');
-        if (secret.passphrase) {
-          config.passphrase = secret.passphrase;
-        }
-      } else if (secretType === 'PASSWORD_ONLY' || secretType === 'password_only') {
-        config.password = secret.password;
-        if (secret.login) {
-          config.username = secret.login;
-        }
-      }
+      this._applySecretToConfig(config, secret, `Profile ${profile.id || ''}`);
     } else {
       if (connProfile.login) {
         config.username = connProfile.login;
@@ -243,21 +318,7 @@ class RuntimeAPI {
     }
 
     if (boundProxyId) {
-      const proxies = this.proxyRepo ? this.proxyRepo() : null;
-      if (!proxies || !proxies.proxies) throw new Error('No proxies loaded');
-
-      const proxy = proxies.proxies.find(p => p.id === boundProxyId);
-      if (!proxy) throw new Error(`Proxy not found: ${boundProxyId}`);
-
-      const proxyService = new ProxyService(this.log);
-      const secrets = this.secretRepo ? this.secretRepo() : null;
-      const sock = await proxyService.createProxyConnection(
-        proxy,
-        config.host,
-        config.port,
-        () => secrets || {secrets: []}
-      );
-      config.sock = sock;
+      await this._applyProxyToConfig(config, boundProxyId);
     }
 
     return config;

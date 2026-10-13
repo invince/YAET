@@ -31,6 +31,9 @@ const CORE_SEND_CHANNELS = [
   'cloud.reload',
   'proxies.save',
   'proxies.reload',
+  'tunnels.save',
+  'tunnels.reload',
+  'tunnels.approval-resolve',
   'trigger-native-clipboard-paste',
   'check-for-updates',
   'ai.command-approved',
@@ -86,6 +89,10 @@ const CORE_INVOKE_CHANNELS = [
   'local-file.watch',
   'local-file.unwatch',
   'get-api-token',
+  'tunnels.list',
+  'tunnels.start',
+  'tunnels.stop',
+  'tunnels.stop-all',
 ];
 
 const CORE_ON_CHANNELS = [
@@ -98,11 +105,14 @@ const CORE_ON_CHANNELS = [
   'secrets.loaded',
   'cloud.loaded',
   'proxies.loaded',
+  'tunnels.loaded',
   'masterkey-changed',
   'acp.chunk',
   'ai.tool-progress',
   'ai.command-pending',
   'ai.web-chunk',
+  'tunnels.status-changed',
+  'tunnels.approval-request',
 ];
 
 // ── Plugin IPC channels (loaded from merged manifest) ───────────────────────

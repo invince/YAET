@@ -1,5 +1,5 @@
 const { ipcMain } = require('electron');
-const { ConfigService, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, PROXIES_JSON } = require("../../services/configService");
+const { ConfigService, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, PROXIES_JSON, TUNNELS_JSON } = require("../../services/configService");
 
 function initConfigFilesIpcHandler(log, mainWindow, reloadProxies, reloadSecrets, onSettingsSaved) {
   const configService = new ConfigService(log);
@@ -117,6 +117,26 @@ function initConfigFilesIpcHandler(log, mainWindow, reloadProxies, reloadSecrets
         if (reloadProxies) {
           reloadProxies();
         }
+      })
+      .catch((error) => log.error('Error saving file:', error));
+  });
+
+  ipcMain.on('tunnels.reload', async () => {
+    log.info("reload " + TUNNELS_JSON);
+    try {
+      const data = await configService.load(TUNNELS_JSON, true);
+      mainWindow.webContents.send("tunnels.loaded", data);
+      log.info(TUNNELS_JSON + " reloaded");
+    } catch (err) {
+      log.error(err);
+    }
+  });
+
+  ipcMain.on('tunnels.save', (event, obj) => {
+    configService.save(TUNNELS_JSON, obj.data, true)
+      .then(() => {
+        log.info('Tunnels saved successfully!');
+        configService.updateManifest('tunnels.json');
       })
       .catch((error) => log.error('Error saving file:', error));
   });

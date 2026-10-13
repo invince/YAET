@@ -10,6 +10,7 @@ const PROFILES_JSON = 'profiles.json';
 const SECRETS_JSON = 'secrets.json';
 const CLOUD_JSON = 'cloud.json';
 const PROXIES_JSON = 'proxies.json';
+const TUNNELS_JSON = 'tunnels.json';
 const MANIFEST_JSON = 'manifest.json';
 
 class ConfigService {
@@ -137,6 +138,9 @@ class ConfigService {
 
   getProxies() { return this.load(PROXIES_JSON, true); }
   saveProxies(data) { return this.save(PROXIES_JSON, data, true); }
+
+  getTunnels() { return this.load(TUNNELS_JSON, true); }
+  saveTunnels(data) { return this.save(TUNNELS_JSON, data, true); }
 }
 
-module.exports = { ConfigService, APP_CONFIG_PATH, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, PROXIES_JSON };
+module.exports = { ConfigService, APP_CONFIG_PATH, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, PROXIES_JSON, TUNNELS_JSON };

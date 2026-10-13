@@ -16,6 +16,7 @@ import {SessionService} from '../../../services/session.service';
 import {SettingService} from '../../../services/setting.service';
 import {ShortcutService} from '../../../services/shortcut.service';
 import {TabService} from '../../../services/tab.service';
+import {TunnelService} from '../../../services/tunnel.service';
 
 export interface CommandPaletteItem {
   id: string;
@@ -46,6 +47,7 @@ export class CommandPaletteComponent {
   private groups: { key: string, label: string }[] = [
     { key: 'PROFILE', label: 'Profiles' },
     { key: 'TAB', label: 'Open Tabs' },
+    { key: 'TUNNEL', label: 'Tunnels' },
     { key: 'ACTION', label: 'Actions' },
   ];
 
@@ -59,6 +61,7 @@ export class CommandPaletteComponent {
     private masterKeyService: MasterKeyService,
     private notification: NotificationService,
     private aiChatService: AiChatService,
+    private tunnelService: TunnelService,
     private ngZone: NgZone,
   ) {
     this.items = this.buildItems();
@@ -98,6 +101,21 @@ export class CommandPaletteComponent {
         run: () => {
           this.ngZone.run(() => this.profileService.onProfileConnect(profile));
         }
+      });
+
+    }
+
+    for (const tunnel of this.tunnelService.tunnels) {
+      if (!tunnel || !tunnel.id) continue;
+      const running = this.isTunnelRunning(tunnel.id);
+      items.push({
+        id: `tunnel-${tunnel.id}`,
+        label: `${running ? 'Stop' : 'Start'} tunnel ${tunnel.name || tunnel.id}`,
+        hint: `${tunnel.type}`,
+        group: 'TUNNEL',
+        icon: running ? 'stop' : 'play_arrow',
+        keywords: `tunnel port forwarding ssh ${tunnel.type} ${tunnel.name ?? ''}`,
+        run: () => this.ngZone.run(() => this.toggleTunnel(tunnel.id))
       });
     }
 
@@ -167,6 +185,15 @@ export class CommandPaletteComponent {
         icon: 'vpn_lock',
         keywords: 'proxy socks http',
         run: () => this.ngZone.run(() => this.shortcutService.toggleMenu(MenuConsts.MENU_PROXY))
+      },
+      {
+        id: 'action-tunnels',
+        label: 'Show Tunnels',
+        hint: 'Ctrl+Shift+T',
+        group: 'ACTION',
+        icon: 'swap_horiz',
+        keywords: 'tunnels port forwarding ssh -L -R -D',
+        run: () => this.ngZone.run(() => this.shortcutService.toggleMenu(MenuConsts.MENU_TUNNELS))
       },
       {
         id: 'action-settings',
@@ -251,6 +278,25 @@ export class CommandPaletteComponent {
       : profile.category === ProfileCategory.FILE_EXPLORER ? 'Files'
         : profile.category === ProfileCategory.REMOTE_DESKTOP ? 'Desktop' : 'Custom';
     return `${category} · ${profile.profileType}`;
+  }
+
+  private isTunnelRunning(tunnelId: string): boolean {
+    const status = this.tunnelService.statusOf(tunnelId)?.status;
+    return status === 'active' || status === 'starting' || status === 'reconnecting';
+  }
+
+  private toggleTunnel(tunnelId: string): void {
+    (async () => {
+      try {
+        if (this.isTunnelRunning(tunnelId)) {
+          await this.tunnelService.stop(tunnelId);
+        } else {
+          await this.tunnelService.start(tunnelId);
+        }
+      } catch (err) {
+        this.notification.error(err instanceof Error ? err.message : String(err));
+      }
+    })();
   }
 
   private newLocalTerminal() {

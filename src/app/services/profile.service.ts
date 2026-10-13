@@ -1,7 +1,7 @@
 import {Injectable, OnDestroy} from '@angular/core';
 import {Subject, Subscription} from 'rxjs';
 import packageJson from '../../../package.json';
-import {Compatibility} from '../../main';
+import {Compatibility} from '../compatibility';
 import {Group} from '../domain/Group';
 import {Profile, Profiles} from '../domain/profile/Profile';
 import {PluginRegistryService} from '../plugin/services/plugin-registry.service';

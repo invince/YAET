@@ -15,7 +15,7 @@ import {AiSettings} from '../domain/setting/AiSettings';
 import {FileExplorerSettings} from '../domain/setting/FileExplorerSettings';
 import {TerminalSettings} from '../domain/setting/TerminalSettings';
 import {LogService} from './log.service';
-import {Compatibility} from '../../main';
+import {Compatibility} from '../compatibility';
 import {compareVersions} from '../utils/VersionUtils';
 import {NotificationService} from './notification.service';
 

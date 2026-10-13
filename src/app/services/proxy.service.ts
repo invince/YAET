@@ -1,7 +1,7 @@
 import {Injectable, OnDestroy} from '@angular/core';
 import {Subscription} from 'rxjs';
 import packageJson from '../../../package.json';
-import {Compatibility} from '../../main';
+import {Compatibility} from '../compatibility';
 import {Proxies, Proxy} from '../domain/Proxy';
 import {compareVersions} from '../utils/VersionUtils';
 import {ElectronService} from './electron/electron.service';

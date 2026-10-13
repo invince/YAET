@@ -83,7 +83,7 @@ if (process.argv.includes('--mcp') || process.argv.slice(1).includes('mcp')) {
 const { app, globalShortcut, BrowserWindow, Tray, ipcMain, dialog, nativeImage } = require('electron');
 
 const { createMenu } = require('./ui/menu');
-const { ConfigService, APP_CONFIG_PATH, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, PROXIES_JSON } = require("./services/configService");
+const { ConfigService, APP_CONFIG_PATH, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, CLOUD_JSON, PROXIES_JSON, TUNNELS_JSON } = require("./services/configService");
 const { initConfigFilesIpcHandler } = require('./adapter/ipc/configFiles');
 const { initTerminalIpcHandler } = require('./adapter/ipc/terminal/terminalHandler');
 const { initCloudIpcHandler } = require('./adapter/ipc/cloud');
@@ -95,6 +95,7 @@ const { initCustomSessionHandler } = require("./adapter/ipc/customSession");
 const { initAutoUpdater } = require("./adapter/ipc/autoUpdater");
 const { initBackend } = require("./adapter/ipc/backend");
 const { initLocalFileHandler } = require("./adapter/ipc/localFile");
+const { initTunnelsIpcHandler } = require("./adapter/ipc/tunnels");
 const { initPluginHandler } = require("./adapter/ipc/pluginHandler");
 
 let tray;
@@ -239,6 +240,10 @@ app.on('ready', () => {
 
     reloadProxies();
 
+    configService.load(TUNNELS_JSON, true)
+      .then(r => { mainWindow.webContents.send("tunnels.loaded", r); log.info(TUNNELS_JSON + " loaded, event sent"); })
+      .catch(log.error);
+
     configService.load(SETTINGS_JSON, false)
       .then(settings => {
         mainWindow.webContents.send("settings.loaded", settings);
@@ -291,6 +296,8 @@ function initHandlerBeforeSettingLoad() {
   });
 
   initAiToolsIpcHandler(log, runtime, () => lastSettings);
+
+  initTunnelsIpcHandler(log, runtime, mainWindow);
 
   initLocalFileHandler(log, mainWindow);
 

@@ -59,8 +59,6 @@ plugins/generated-plugin-manifest.json
 ext-plugins-example/*/node_modules/
 plugins/generated-plugin-registry.ts
 
-docs/ai/
-
 # Playwright e2e
 /e2e-report
 /e2e-results
@@ -70,4 +68,4 @@ docs/ai/
 /.deepseek
 /.qwen
 /.reasonix
-
+docs/ignore/**

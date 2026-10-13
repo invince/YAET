@@ -133,6 +133,10 @@
             <app-proxy-menu [@slideInOut]="'in'"
                 (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-proxy-menu>
             }
+            @case(MENU_TUNNELS) {
+            <app-tunnels-menu [@slideInOut]="'in'"
+                (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-tunnels-menu>
+            }
             @case(MENU_SETTING) {
             <app-setting-menu [@slideInOut]="'in'"
                 (closeEvent)="modalControl.closeModal(modalControl.currentOpenedMenu)"></app-setting-menu>

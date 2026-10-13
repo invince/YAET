@@ -38,6 +38,7 @@ export class SidebarComponent implements OnDestroy {
     MENU_CLOUD: string = MenuConsts.MENU_CLOUD;
     MENU_PROXY: string = MenuConsts.MENU_PROXY;
     MENU_SETTING: string = MenuConsts.MENU_SETTING;
+    MENU_TUNNELS: string = MenuConsts.MENU_TUNNELS;
 
     subscriptions: Subscription[] = [];
 
@@ -87,6 +88,10 @@ export class SidebarComponent implements OnDestroy {
 
     proxyMenu() {
         this.requireMasterKey(() => this.toggleMenu(this.MENU_PROXY));
+    }
+
+    tunnelsMenu() {
+        this.requireMasterKey(() => this.toggleMenu(this.MENU_TUNNELS));
     }
 
     settingMenu() {

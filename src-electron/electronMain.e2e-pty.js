@@ -15,7 +15,11 @@ require.cache[secSvcPath] = {
       async get() { return this._store.get('key') || null; }
       async delete() { this._store.delete('key'); }
     },
-    decrypt: () => Promise.resolve('{}'),
+    // NOTE: real AES decrypt (same mockStore key that crypto.encrypt used),
+    // so main-process decrypt paths (RuntimeAPI, TunnelService, AI tools)
+    // behave like production. A '{}' stub would make them silently see
+    // empty profiles even after the UI saved real ones.
+    decrypt: (...args) => mock.decrypt(...args),
   },
   loaded: true,
 };

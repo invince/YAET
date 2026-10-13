@@ -138,6 +138,19 @@
 - [x] Ctrl+Shift+F opens the terminal search bar; unknown term shows "no results"; case toggle lights up; Escape closes
 - [x] Real PTY (no mocks): `echo <marker>` output is found by search (count `1/2`), results render `.xterm-find-*-decoration` in the shadow DOM
 
+## 13. SSH Tunnels (`_13_tunnels.spec.ts`)
+
+- [x] Manager opens from the sidebar with an empty state; Ctrl+Shift+T toggles it
+- [x] Add tunnel via dialog (adhoc local rule): live direction hint shows concrete ports; persists across manager reopen (fresh read from `tunnels.json`)
+- [x] Incomplete form (no host) shows inline error and disables Save
+- [x] Remote tunnel offers a public server bind (0.0.0.0) with per-connection approval note; persists with bind shown and LAN badge
+- [x] Edit tunnel renames it; delete tunnel asks confirmation and removes it
+- [x] `tunnels.list` returns an array over IPC; `tunnels.start` with unknown ids rejects cleanly
+- [x] Starting a tunnel to a dead endpoint (127.0.0.1 closed port, no real sshd needed) surfaces an error status in the manager, no JS crash
+- [x] Palette lists the per-tunnel Start toggle + Show Tunnels action
+- [x] Cloud sync offers a Tunnels checkbox
+- NOTE: main-process `decrypt` in e2e mocks now performs real AES (`electronMain.e2e*.js` Mock 2 delegates to `security.mock.decrypt`) — without this, `resolveTunnel` in main always saw `{}` and the error-path test could never reach the SSH layer
+
 ## 6. UI/UX
 
 - [x] Tab management:

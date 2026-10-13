@@ -1,0 +1,88 @@
+@use 'tokens' as t;
+
+.tunnel-form {
+  display: flex;
+  flex-direction: column;
+  gap: t.$spacing-sm;
+  min-width: 460px;
+  padding-top: t.$spacing-xs;
+}
+
+.tunnel-form-row {
+  display: flex;
+  align-items: center;
+  gap: t.$spacing-sm;
+  flex-wrap: wrap;
+}
+
+.tunnel-field {
+  flex: 1 1 140px;
+  min-width: 130px;
+}
+
+.tunnel-field-wide {
+  flex: 1 1 100%;
+}
+
+.tunnel-field-type,
+.tunnel-field-port {
+  flex: 0 1 150px;
+}
+
+.tunnel-form-section {
+  font-size: t.$font-size-sm;
+  font-weight: 600;
+  color: var(--app-text-color);
+  margin-top: t.$spacing-xs;
+}
+
+.tunnel-form-error {
+  font-size: t.$font-size-xs;
+  color: #e57373;
+}
+
+.tunnel-form-direction {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  font-size: t.$font-size-xs;
+  color: var(--app-text-secondary);
+  background: rgba(79, 195, 247, 0.08);
+  border-radius: t.$radius-sm;
+  padding: 4px 6px;
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 14px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+}
+
+.tunnel-form-approval-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  font-size: t.$font-size-xs;
+  color: #ffb74d;
+  background: rgba(255, 183, 77, 0.08);
+  border-radius: t.$radius-sm;
+  padding: 4px 6px;
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 14px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+}
+
+h2[mat-dialog-title] {
+  display: flex;
+  align-items: center;
+  gap: t.$spacing-sm;
+}

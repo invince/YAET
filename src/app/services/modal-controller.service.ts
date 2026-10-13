@@ -40,7 +40,7 @@ export class ModalControllerService {
     if (this._currentOpenedMenu == menu) {
 
       if (this._isMenuModalOpen &&
-        [MenuConsts.MENU_PROFILE, MenuConsts.MENU_SECURE, MenuConsts.MENU_PROXY].includes(menu)) {
+        [MenuConsts.MENU_PROFILE, MenuConsts.MENU_SECURE, MenuConsts.MENU_PROXY, MenuConsts.MENU_TUNNELS].includes(menu)) {
         this.closeModal(menu, true);
         return;
       }

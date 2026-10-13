@@ -3,7 +3,7 @@ const { promises: fsPromise } = require('fs');
 const { tmpdir } = require('os');
 const simpleGit = require('simple-git');
 const { ProxyService } = require('./proxyService');
-const { APP_CONFIG_PATH, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, PROXIES_JSON } = require('./configService');
+const { APP_CONFIG_PATH, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, PROXIES_JSON, TUNNELS_JSON } = require('./configService');
 
 const GIT_FOLDER = 'git';
 const BACKUP_FOLDER = 'backup';
@@ -53,6 +53,9 @@ class CloudService {
       }
       if (item.toLowerCase() === 'Proxy'.toLowerCase()) {
         result.push(path.join(APP_CONFIG_PATH, PROXIES_JSON));
+      }
+      if (item.toLowerCase() === 'Tunnel'.toLowerCase()) {
+        result.push(path.join(APP_CONFIG_PATH, TUNNELS_JSON));
       }
     }
     return result;
