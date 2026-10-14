@@ -97,6 +97,7 @@ const { initPluginHandler } = require("./adapter/ipc/pluginHandler");
 
 let tray;
 let expressApp;
+let apiServer;
 let mainWindow;
 let terminalMap = new Map();
 
@@ -305,10 +306,26 @@ function initHandlerBeforeSettingLoad() {
 
   // Start API — P0-S2: loopback only. LAN neighbors must never reach it
   // (middleware asserts this too, but don't even listen publicly).
-  const apiServer = expressApp.listen(13012, '127.0.0.1', () => log.info('API listening on 127.0.0.1:13012'));
-  apiServer.on('error', (err) => {
-    log.error('Failed to start API server:', err.message);
-  });
+  // Retry on EADDRINUSE: e2e (and dev restarts) relaunch the app in quick
+  // succession; the predecessor's socket may still be draining. Without a
+  // retry the new app would run serverless while the dying predecessor
+  // still answers with its own per-launch token (flaky 403s).
+  const API_PORT = 13012;
+  const API_HOST = '127.0.0.1';
+  function listenApi(attempt = 1) {
+    apiServer = expressApp.listen(API_PORT, API_HOST, () => log.info(`API listening on ${API_HOST}:${API_PORT}`));
+    // Don't let the loopback socket keep the process alive on quit.
+    if (typeof apiServer.unref === 'function') apiServer.unref();
+    apiServer.on('error', (err) => {
+      if (err && err.code === 'EADDRINUSE' && attempt < 20) {
+        log.warn(`API port busy, retrying (${attempt}/20)...`);
+        setTimeout(() => listenApi(attempt + 1), 500);
+      } else {
+        log.error('Failed to start API server:', err && err.message);
+      }
+    });
+  }
+  listenApi();
 }
 
 
@@ -341,6 +358,10 @@ app.on('window-all-closed', () => {
 
 app.on('will-quit', () => {
   globalShortcut.unregisterAll(); // Clean up on app exit
+  try {
+    if (apiServer && typeof apiServer.close === 'function') apiServer.close();
+  } catch (_) { /* already closed */ }
+  apiServer = undefined;
 });
 
 process.on('uncaughtException', (error) => {

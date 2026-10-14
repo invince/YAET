@@ -253,9 +253,17 @@ test.describe('9.5 P0-S1 — Express /api requires a valid per-launch token', ()
     const token = await getToken(mainWindow);
     if (!token) { test.skip(); return; }
 
-    const status = await httpGetReady('http://127.0.0.1:13012/api/health', {
-      'x-api-token': token,
-    });
+    // Poll until 200: a predecessor app instance from the previous test may
+    // still hold the port with its own per-launch token while it shuts down
+    // (transient 403), until this instance's server binds.
+    let status = -1;
+    for (let i = 0; i < 40; i++) {
+      status = await httpGet('http://127.0.0.1:13012/api/health', {
+        'x-api-token': token,
+      }).catch(() => -1);
+      if (status === 200) break;
+      await new Promise(r => setTimeout(r, 500));
+    }
     // /api/health exists behind the gate: 200 proves auth passed.
     expect(status).toBe(200);
   });
