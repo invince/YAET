@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 const { MCPServer } = require('./server');
-const { createSSHTools } = require('./tools/ssh');
-const { createSCPTools } = require('./tools/scp');
-const { createLocalTools } = require('./tools/local');
+const { registerAll } = require('./setup');
+const { resolveMasterKey } = require('../common/masterKey');
 const { Logger } = require('../common/logger');
 
 const log = new Logger('mcp-server');
+
+function getMasterKey() {
+  return resolveMasterKey();
+}
 
 function main() {
   const args = process.argv.slice(2);
@@ -18,23 +21,7 @@ function main() {
     version: '5.0.0',
   });
 
-  const sshTools = createSSHTools();
-  for (const tool of sshTools) {
-    server.registerTool(tool.name, tool.description, tool.inputSchema, tool.handler);
-    log.info(`Registered tool: ${tool.name}`);
-  }
-
-  const scpTools = createSCPTools();
-  for (const tool of scpTools) {
-    server.registerTool(tool.name, tool.description, tool.inputSchema, tool.handler);
-    log.info(`Registered tool: ${tool.name}`);
-  }
-
-  const localTools = createLocalTools();
-  for (const tool of localTools) {
-    server.registerTool(tool.name, tool.description, tool.inputSchema, tool.handler);
-    log.info(`Registered tool: ${tool.name}`);
-  }
+  registerAll(server, getMasterKey, log);
 
   if (transport === 'stdio') {
     log.info('Starting MCP server (stdio transport)...');

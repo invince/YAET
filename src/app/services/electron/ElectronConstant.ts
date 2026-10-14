@@ -113,3 +113,11 @@ export const TUNNELS_RELOAD = 'tunnels.reload';
 export const TUNNELS_APPROVAL_REQUEST = 'tunnels.approval-request';
 export const TUNNELS_APPROVAL_RESOLVE = 'tunnels.approval-resolve';
 //#endregion "Tunnels"
+
+//#region "KnownHosts (A3 host-key verification)"
+export const KNOWN_HOSTS_LIST = 'known-hosts.list';
+export const KNOWN_HOSTS_ADD = 'known-hosts.add';
+export const KNOWN_HOSTS_REMOVE = 'known-hosts.remove';
+export const KNOWN_HOSTS_IMPORT = 'known-hosts.import';
+export const SSH_HOSTKEY_PROMPT = 'ssh.hostkey.prompt';
+//#endregion "KnownHosts (A3 host-key verification)"

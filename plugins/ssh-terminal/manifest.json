@@ -13,7 +13,7 @@
   "ipc": {
     "send": ["session.open.terminal.ssh", "session.close.terminal.ssh"],
     "invoke": [],
-    "on": ["session.disconnect.terminal.ssh"]
+    "on": ["session.disconnect.terminal.ssh", "ssh.hostkey.prompt"]
   },
   "backend": "./backend/index.js",
   "frontend": {

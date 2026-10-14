@@ -7,6 +7,7 @@ class MCPServer {
     this.serverInfo = serverInfo;
     this.tools = new Map();
     this.resources = new Map();
+    this.prompts = new Map();
     this._requestId = 0;
     this._initialized = false;
     this.transport = null;
@@ -22,6 +23,11 @@ class MCPServer {
 
   registerResource(uri, name, description, handler) {
     this.resources.set(uri, { uri, name, description, handler });
+  }
+
+  registerPrompt(name, description, args, handler) {
+    // args: [{ name, description, required }] (MCP prompt arguments).
+    this.prompts.set(name, { name, description, arguments: args || [], handler });
   }
 
   async handleRequest(request) {
@@ -46,6 +52,12 @@ class MCPServer {
       case 'resources/read':
         return this._handleResourceRead(params, id);
 
+      case 'prompts/list':
+        return this._handlePromptsList(id);
+
+      case 'prompts/get':
+        return this._handlePromptGet(params, id);
+
       default:
         return this._createError(id, -32601, `Method not found: ${method}`);
     }
@@ -61,6 +73,7 @@ class MCPServer {
       capabilities: {
         tools: {},
         resources: this.resources.size > 0 ? {} : undefined,
+        prompts: this.prompts.size > 0 ? {} : undefined,
       },
       serverInfo: this.serverInfo,
     });
@@ -134,6 +147,37 @@ class MCPServer {
         isError: true,
         error: error.message,
       });
+    }
+  }
+
+  _handlePromptsList(id) {
+    const prompts = Array.from(this.prompts.values()).map(p => ({
+      name: p.name,
+      description: p.description,
+      arguments: p.arguments,
+    }));
+    return this._createResult(id, { prompts });
+  }
+
+  async _handlePromptGet(params, id) {
+    const name = params?.name;
+    const args = params?.arguments || {};
+    if (!name || !this.prompts.has(name)) {
+      return this._createError(id, -32602, `Unknown prompt: ${name}`);
+    }
+    const prompt = this.prompts.get(name);
+    const missing = (prompt.arguments || []).filter(a => a.required && args[a.name] == null);
+    if (missing.length > 0) {
+      return this._createError(id, -32602, `Missing required prompt arguments: ${missing.map(a => a.name).join(', ')}`);
+    }
+    try {
+      const result = await prompt.handler(args);
+      return this._createResult(id, {
+        description: result.description || prompt.description,
+        messages: result.messages || [],
+      });
+    } catch (error) {
+      return this._createError(id, -32603, `Prompt failed: ${error.message}`);
     }
   }
 

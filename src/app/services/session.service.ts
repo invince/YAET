@@ -11,6 +11,7 @@ import '../../../plugins/generated-plugin-registry';
 import {SecretStorageService} from './secret-storage.service';
 import {TabService} from './tab.service';
 import {ProfileService} from './profile.service';
+import {HostKeyApprovalService} from './host-key-approval.service';
 import {resolveSecretToConfig} from '../utils/SecretResolver';
 
 @Injectable({
@@ -25,6 +26,7 @@ export class SessionService {
     private registry: PluginRegistryService,
     private secretStorage: SecretStorageService,
     private profileService: ProfileService,
+    private hostKeyApproval: HostKeyApprovalService,
     private injector: Injector,
   ) { }
 
@@ -62,7 +64,7 @@ export class SessionService {
       if (pluginInfo.sessionFactory) {
         return pluginInfo.sessionFactory(profile, profileType);
       }
-      return this.createPluginSession(profile, profileType, pluginInfo);
+      return this.hookPluginSession(this.createPluginSession(profile, profileType, pluginInfo));
     }
 
     // 3. External plugins — use generic PluginSession (or simple Session if it provides its own session component)
@@ -71,7 +73,7 @@ export class SessionService {
       if (externalPlugin.sessionElement) {
         return new Session(profile, profileType, this.tabService);
       }
-      return this.createPluginSession(profile, profileType, externalPlugin);
+      return this.hookPluginSession(this.createPluginSession(profile, profileType, externalPlugin));
     }
 
     // 4. Unknown type — fallback
@@ -104,6 +106,27 @@ export class SessionService {
     };
 
     return new PluginSession(profile, profileType, this.tabService, channels, profileData, this.secretStorage);
+  }
+
+  private hookPluginSession(session: PluginSession): PluginSession {
+    this.registerHostKeyHooks(session);
+    return session;
+  }
+
+  /**
+   * Wire a PluginSession into the host-key approval flow (A3): the service
+   * shows the fingerprint modal on `ssh.hostkey.prompt` and drives these
+   * hooks (retry the open / close the waiting tab).
+   */
+  registerHostKeyHooks(session: PluginSession): void {
+    const sessionId = session.id;
+    this.hostKeyApproval.registerSession(sessionId, {
+      retry: (extra) => session.reopen(extra),
+      abort: () => {
+        this.hostKeyApproval.unregisterSession(sessionId);
+        this.tabService.removeById(sessionId);
+      },
+    });
   }
 
   private resolveJumperConfig(jumperProfileId: string, selfId?: string): any | null {

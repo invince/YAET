@@ -26,8 +26,8 @@ function register(context) {
       event.sender.send('terminal.output', { id: data.id, data: output });
     });
 
-    session.on('error', ({ error }) => {
-      event.sender.send('error', { category: 'ssh', id: data.id, error });
+    session.on('error', ({ error, code }) => {
+      event.sender.send('error', { category: 'ssh', id: data.id, error, code });
     });
 
     session.on('disconnect', ({ error }) => {
@@ -53,6 +53,7 @@ function register(context) {
         initPath: data.initPath,
         initCmd: data.initCmd,
         jumper: data.jumper,
+        trustOnce: data.trustOnce,
         rows: data.rows ?? terminalMap?.get(data.id)?.rows,
         cols: data.cols ?? terminalMap?.get(data.id)?.cols,
       });
@@ -88,10 +89,17 @@ function register(context) {
         }
       }
     } catch (error) {
+      // A3: host-key failures don't close the tab — the renderer shows the
+      // fingerprint approval modal and retries (save / once) or aborts.
+      if (error && (error.code === 'HOST_KEY_UNKNOWN' || error.code === 'HOST_KEY_CHANGED') && error.details) {
+        event.sender.send('ssh.hostkey.prompt', { id: data.id, ...error.details });
+        return;
+      }
       event.sender.send('error', {
         category: 'ssh',
         id: data.id,
         error: error.message,
+        code: error.code,
       });
     }
   });

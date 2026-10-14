@@ -321,5 +321,35 @@
     "APPROVAL_DENY": "Ablehnen",
     "APPROVAL_TRUST": "Dieser IP 10 Min. vertrauen",
     "REMOTE_HOST_SELF": "Server selbst eintragen (127.0.0.1)"
+  },
+  "KNOWN_HOSTS": {
+    "TITLE": "Bekannte Hosts",
+    "DESCRIPTION": "Vertraute SSH-Server-Hostschlüssel. Unbekannte Schlüssel werden bei der ersten Verbindung abgefragt; geänderte Schlüssel werden bis zur erneuten Bestätigung abgelehnt.",
+    "IMPORT": "OpenSSH-Datei importieren",
+    "EMPTY": "Noch keine Hostschlüssel gespeichert. Sie werden bei der ersten bestätigten Verbindung hinzugefügt.",
+    "LOADING": "Wird geladen…",
+    "LOAD_FAIL": "Bekannte Hosts konnten nicht geladen werden",
+    "DELETE": "Löschen",
+    "DELETE_CONFIRM": "Gespeicherten Schlüssel für {{host}}:{{port}} löschen? Bei der nächsten Verbindung wird erneut gefragt.",
+    "DELETED": "Hostschlüssel gelöscht",
+    "DELETE_FAIL": "Löschen fehlgeschlagen",
+    "IMPORTED": "{{added}} Schlüssel importiert, {{skipped}} übersprungen",
+    "IMPORT_FAIL": "Import fehlgeschlagen"
+  },
+  "HOSTKEY": {
+    "UNKNOWN_TITLE": "Unbekannter Hostschlüssel",
+    "UNKNOWN_DESC": "Erste Verbindung zu {{host}}:{{port}}. Prüfen Sie den Fingerabdruck über einen anderen Kanal, bevor Sie vertrauen.",
+    "CHANGED_TITLE": "Hostschlüssel geändert!",
+    "CHANGED_DESC": "{{host}}:{{port}} zeigt einen ANDEREN Schlüssel als gespeichert. Möglich ist eine Neuinstallation — oder ein Man-in-the-Middle-Angriff. Nur nach Prüfung bestätigen.",
+    "JUMPER_LEG": "Dieser Schlüssel stammt vom Bastion-Host {{host}}, nicht vom Ziel.",
+    "HOST": "Host",
+    "FINGERPRINT_SHA256": "Fingerabdruck (SHA256)",
+    "FINGERPRINT_MD5": "Fingerabdruck (MD5)",
+    "RANDOMART": "Randomart-Bild",
+    "VERIFY_HINT": "Mit dem veröffentlichten Fingerabdruck des Administrators vergleichen (ssh-keygen -l -f /etc/ssh/ssh_host_ed25519_key.pub).",
+    "CANCEL": "Abbrechen",
+    "CONNECT_ONCE": "Einmal verbinden",
+    "SAVE_AND_CONNECT": "Speichern & verbinden",
+    "REPLACE_AND_CONNECT": "Ersetzen & verbinden"
   }
 }

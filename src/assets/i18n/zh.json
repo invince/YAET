@@ -323,5 +323,35 @@
     "APPROVAL_DENY": "拒绝",
     "APPROVAL_TRUST": "信任此 IP 10 分钟",
     "REMOTE_HOST_SELF": "填服务器本机 (127.0.0.1)"
+  },
+  "KNOWN_HOSTS": {
+    "TITLE": "已知主机",
+    "DESCRIPTION": "已信任的 SSH 服务器主机密钥。首次连接会询问；密钥变更会被拒绝，直到你重新确认。",
+    "IMPORT": "导入 OpenSSH 文件",
+    "EMPTY": "还没有信任的主机密钥。首次连接确认后会自动添加。",
+    "LOADING": "加载中…",
+    "LOAD_FAIL": "加载已知主机失败",
+    "DELETE": "删除",
+    "DELETE_CONFIRM": "删除 {{host}}:{{port}} 的信任密钥？下次连接会重新询问。",
+    "DELETED": "主机密钥已删除",
+    "DELETE_FAIL": "删除主机密钥失败",
+    "IMPORTED": "已导入 {{added}} 个密钥，跳过 {{skipped}} 个",
+    "IMPORT_FAIL": "导入失败"
+  },
+  "HOSTKEY": {
+    "UNKNOWN_TITLE": "未知的主机密钥",
+    "UNKNOWN_DESC": "首次连接 {{host}}:{{port}}。信任前请通过其他渠道核对指纹。",
+    "CHANGED_TITLE": "主机密钥已变更！",
+    "CHANGED_DESC": "{{host}}:{{port}} 出示的密钥与已信任的不一致。可能是服务器重装——也可能是中间人攻击。如未核实新密钥，请勿批准。",
+    "JUMPER_LEG": "该密钥由跳板机 {{host}} 出示，而非最终目标。",
+    "HOST": "主机",
+    "FINGERPRINT_SHA256": "指纹 (SHA256)",
+    "FINGERPRINT_MD5": "指纹 (MD5)",
+    "RANDOMART": "随机图",
+    "VERIFY_HINT": "请与服务器管理员公布的指纹核对（ssh-keygen -l -f /etc/ssh/ssh_host_ed25519_key.pub）。",
+    "CANCEL": "取消",
+    "CONNECT_ONCE": "仅本次连接",
+    "SAVE_AND_CONNECT": "保存并连接",
+    "REPLACE_AND_CONNECT": "替换并连接"
   }
 }

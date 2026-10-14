@@ -1,0 +1,38 @@
+<h2 mat-dialog-title class="hostkey-title">
+  <mat-icon class="hostkey-warn" [class.changed]="changed">{{ changed ? 'error' : 'help' }}</mat-icon>
+  <span>{{ (changed ? 'HOSTKEY.CHANGED_TITLE' : 'HOSTKEY.UNKNOWN_TITLE') | translate }}</span>
+</h2>
+
+<mat-dialog-content>
+  <div class="hostkey-desc">
+    {{ (changed ? 'HOSTKEY.CHANGED_DESC' : 'HOSTKEY.UNKNOWN_DESC') | translate:{ host: data.host, port: data.port } }}
+  </div>
+  @if (data.leg === 'jumper') {
+  <div class="hostkey-leg">{{ 'HOSTKEY.JUMPER_LEG' | translate:{ host: data.host } }}</div>
+  }
+  <div class="hostkey-detail">
+    <div class="hostkey-row">
+      <span class="hostkey-key">{{ 'HOSTKEY.HOST' | translate }}</span>
+      <span>{{ data.host }}:{{ data.port }} ({{ data.keyType }})</span>
+    </div>
+    <div class="hostkey-row">
+      <span class="hostkey-key">{{ 'HOSTKEY.FINGERPRINT_SHA256' | translate }}</span>
+      <span class="hostkey-mono">{{ data.sha256 }}</span>
+    </div>
+    <div class="hostkey-row">
+      <span class="hostkey-key">{{ 'HOSTKEY.FINGERPRINT_MD5' | translate }}</span>
+      <span class="hostkey-mono">{{ data.md5 }}</span>
+    </div>
+  </div>
+  <div class="hostkey-art-label">{{ 'HOSTKEY.RANDOMART' | translate }}</div>
+  <pre class="hostkey-art">{{ data.randomart }}</pre>
+  <div class="hostkey-hint">{{ 'HOSTKEY.VERIFY_HINT' | translate }}</div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">{{ 'HOSTKEY.CANCEL' | translate }}</button>
+  <button mat-button (click)="connectOnce()">{{ 'HOSTKEY.CONNECT_ONCE' | translate }}</button>
+  <button mat-raised-button [color]="changed ? 'warn' : 'primary'" (click)="saveAndConnect()">
+    {{ (changed ? 'HOSTKEY.REPLACE_AND_CONNECT' : 'HOSTKEY.SAVE_AND_CONNECT') | translate }}
+  </button>
+</mat-dialog-actions>

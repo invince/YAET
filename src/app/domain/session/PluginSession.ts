@@ -16,6 +16,7 @@ export class PluginSession extends Session {
   private channels: { open: string; close: string; disconnect: string; errorCategory: string; openIsInvoke?: boolean };
   private profileData: any;
   private cleanupFns: (() => void)[] = [];
+  private lastOpenData: any = null;
 
   constructor(
     profile: Profile,
@@ -69,6 +70,7 @@ export class PluginSession extends Session {
       if (this.profileData.jumper) {
         data.jumper = this.profileData.jumper;
       }
+      this.lastOpenData = data;
 
       if (this.channels.openIsInvoke) {
         try {
@@ -91,9 +93,12 @@ export class PluginSession extends Session {
       ipc.on(this.channels.disconnect, disconnectHandler);
       this.cleanupFns.push(() => ipc.removeAllListeners(this.channels.disconnect));
 
-      // Listen for error events from the backend
+      // Listen for error events from the backend.
+      // A3: host-key failures are owned by the HostKeyApprovalService modal
+      // flow (approve → retry, deny → abort) — never tear down the tab here.
       const errorHandler = (_event: any, resp: any) => {
         if (resp?.category === this.channels.errorCategory && resp?.id === this.id) {
+          if (resp?.code === 'HOST_KEY_UNKNOWN' || resp?.code === 'HOST_KEY_CHANGED') return;
           this.tabService.removeById(this.id);
         }
       };
@@ -101,6 +106,17 @@ export class PluginSession extends Session {
       this.cleanupFns.push(() => ipc.removeAllListeners('error'));
     }
     super.open();
+  }
+
+  /**
+   * Re-send the last open request (host-key approval retry), optionally
+   * merged with extra fields such as a one-shot `trustOnce` key.
+   */
+  reopen(extra?: Record<string, unknown>): void {
+    const ipc = (window as any).electronAPI;
+    if (ipc && this.lastOpenData) {
+      ipc.send(this.channels.open, { ...this.lastOpenData, ...(extra || {}) });
+    }
   }
 
   override close(): void {

@@ -321,5 +321,35 @@
     "APPROVAL_DENY": "Refuser",
     "APPROVAL_TRUST": "Faire confiance 10 min",
     "REMOTE_HOST_SELF": "Le serveur lui-même (127.0.0.1)"
+  },
+  "KNOWN_HOSTS": {
+    "TITLE": "Hôtes connus",
+    "DESCRIPTION": "Clés d’hôte SSH approuvées. Les clés inconnues sont demandées à la première connexion ; les clés modifiées sont rejetées jusqu’à réapprobation.",
+    "IMPORT": "Importer un fichier OpenSSH",
+    "EMPTY": "Aucune clé d’hôte enregistrée. Elles sont ajoutées lors de la première connexion approuvée.",
+    "LOADING": "Chargement…",
+    "LOAD_FAIL": "Échec du chargement des hôtes connus",
+    "DELETE": "Supprimer",
+    "DELETE_CONFIRM": "Supprimer la clé enregistrée pour {{host}}:{{port}} ? La prochaine connexion redemandera.",
+    "DELETED": "Clé d’hôte supprimée",
+    "DELETE_FAIL": "Échec de la suppression",
+    "IMPORTED": "{{added}} clé(s) importée(s), {{skipped}} ignorée(s)",
+    "IMPORT_FAIL": "Échec de l’import"
+  },
+  "HOSTKEY": {
+    "UNKNOWN_TITLE": "Clé d’hôte inconnue",
+    "UNKNOWN_DESC": "Première connexion à {{host}}:{{port}}. Vérifiez cette empreinte par un autre canal avant de l’approuver.",
+    "CHANGED_TITLE": "Clé d’hôte modifiée !",
+    "CHANGED_DESC": "{{host}}:{{port}} présente une clé DIFFÉRENTE de celle enregistrée. Réinstallation possible — ou attaque de l’homme du milieu. N’approuvez que après vérification.",
+    "JUMPER_LEG": "Cette clé a été présentée par le bastion {{host}}, pas par la cible finale.",
+    "HOST": "Hôte",
+    "FINGERPRINT_SHA256": "Empreinte (SHA256)",
+    "FINGERPRINT_MD5": "Empreinte (MD5)",
+    "RANDOMART": "Image randomart",
+    "VERIFY_HINT": "Comparez avec l’empreinte publiée par l’administrateur (ssh-keygen -l -f /etc/ssh/ssh_host_ed25519_key.pub).",
+    "CANCEL": "Annuler",
+    "CONNECT_ONCE": "Connecter une fois",
+    "SAVE_AND_CONNECT": "Enregistrer et connecter",
+    "REPLACE_AND_CONNECT": "Remplacer et connecter"
   }
 }

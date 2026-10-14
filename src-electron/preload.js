@@ -93,6 +93,10 @@ const CORE_INVOKE_CHANNELS = [
   'tunnels.start',
   'tunnels.stop',
   'tunnels.stop-all',
+  'known-hosts.list',
+  'known-hosts.add',
+  'known-hosts.remove',
+  'known-hosts.import',
 ];
 
 const CORE_ON_CHANNELS = [

@@ -323,5 +323,35 @@
     "APPROVAL_DENY": "Deny",
     "APPROVAL_TRUST": "Trust this IP for 10 min",
     "REMOTE_HOST_SELF": "Fill in the SSH server itself (127.0.0.1)"
+  },
+  "KNOWN_HOSTS": {
+    "TITLE": "Known Hosts",
+    "DESCRIPTION": "Pinned SSH server host keys. Unknown keys are asked on first connect; changed keys are rejected until you re-approve them.",
+    "IMPORT": "Import OpenSSH file",
+    "EMPTY": "No host keys pinned yet. They are added when you approve a first connection.",
+    "LOADING": "Loading…",
+    "LOAD_FAIL": "Failed to load known hosts",
+    "DELETE": "Delete",
+    "DELETE_CONFIRM": "Delete the pinned key for {{host}}:{{port}}? The next connection will ask again.",
+    "DELETED": "Host key deleted",
+    "DELETE_FAIL": "Failed to delete host key",
+    "IMPORTED": "Imported {{added}} key(s), skipped {{skipped}}",
+    "IMPORT_FAIL": "Import failed"
+  },
+  "HOSTKEY": {
+    "UNKNOWN_TITLE": "Unknown host key",
+    "UNKNOWN_DESC": "First connection to {{host}}:{{port}}. Verify this fingerprint out-of-band before trusting it.",
+    "CHANGED_TITLE": "Host key changed!",
+    "CHANGED_DESC": "{{host}}:{{port}} presents a DIFFERENT key than pinned. This may be a server reinstall — or a man-in-the-middle attack. Do not approve unless you verified the new key.",
+    "JUMPER_LEG": "This key was presented by the bastion host {{host}}, not the final target.",
+    "HOST": "Host",
+    "FINGERPRINT_SHA256": "Fingerprint (SHA256)",
+    "FINGERPRINT_MD5": "Fingerprint (MD5)",
+    "RANDOMART": "Randomart image",
+    "VERIFY_HINT": "Compare with the server administrator’s published fingerprint (ssh-keygen -l -f /etc/ssh/ssh_host_ed25519_key.pub).",
+    "CANCEL": "Cancel",
+    "CONNECT_ONCE": "Connect once",
+    "SAVE_AND_CONNECT": "Save & connect",
+    "REPLACE_AND_CONNECT": "Replace & connect"
   }
 }

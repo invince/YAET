@@ -29,6 +29,9 @@
       <div class="sidebar-item" [class.active]="currentTabIndex === 8" (click)="currentTabIndex = 8">
         <mat-icon>extension</mat-icon> {{ 'SETTINGS.PLUGINS' | translate }}
       </div>
+      <div class="sidebar-item" [class.active]="currentTabIndex === 9" (click)="currentTabIndex = 9">
+        <mat-icon>verified_user</mat-icon> {{ 'KNOWN_HOSTS.TITLE' | translate }}
+      </div>
     </div>
 
     <!-- Main Content Area -->
@@ -402,6 +405,10 @@
           </div>
         </div>
         }
+
+@if (currentTabIndex === 9) {
+<app-known-hosts></app-known-hosts>
+}
 
       </div>
 

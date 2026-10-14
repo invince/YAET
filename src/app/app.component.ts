@@ -29,6 +29,7 @@ import {CloudService} from './services/cloud.service';
 import {LogService} from './services/log.service';
 import {ShortcutService} from './services/shortcut.service';
 import {TunnelApprovalService} from './services/tunnel-approval.service';
+import {HostKeyApprovalService} from './services/host-key-approval.service';
 import {MasterKeyService} from './services/master-key.service';
 import {ModalControllerService} from './services/modal-controller.service';
 import {NotificationService} from './services/notification.service';
@@ -117,6 +118,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private ngZone: NgZone,
     private shortcut: ShortcutService,
     private tunnelApproval: TunnelApprovalService,
+    private hostKeyApproval: HostKeyApprovalService,
     private pluginLoader: PluginLoaderService,
     private pluginRegistry: PluginRegistryService,
   ) { }
@@ -131,6 +133,8 @@ export class AppComponent implements OnInit, OnDestroy {
     // Incoming-connection approvals for publicly-bound tunnels must work
     // even when the tunnel manager is closed.
     this.tunnelApproval.ensureListening();
+    // SSH host-key approvals must work for any tab, at any time.
+    this.hostKeyApproval.ensureListening();
     this.subscriptions.push(
       this.profileService.connectionEvent$.subscribe(
         profile => {

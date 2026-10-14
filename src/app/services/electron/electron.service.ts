@@ -55,6 +55,11 @@ import {
   TUNNELS_SAVE,
   TUNNELS_APPROVAL_REQUEST,
   TUNNELS_APPROVAL_RESOLVE,
+  KNOWN_HOSTS_LIST,
+  KNOWN_HOSTS_ADD,
+  KNOWN_HOSTS_REMOVE,
+  KNOWN_HOSTS_IMPORT,
+  SSH_HOSTKEY_PROMPT,
 } from './ElectronConstant';
 import {resolveLoginPassword} from '../../utils/SecretResolver';
 import {NotificationService} from '../notification.service';
@@ -537,4 +542,50 @@ export class ElectronService extends AbstractElectronService {
     }
   }
   //#endregion "Tunnels"
+
+  //#region "KnownHosts (A3)"
+  async listKnownHosts(): Promise<any[]> {
+    if (this.ipc) {
+      const list = await this.ipc.invoke(KNOWN_HOSTS_LIST);
+      return Array.isArray(list) ? list : [];
+    }
+    return [];
+  }
+
+  async addKnownHost(entry: { host: string; port: number; keyType: string; base64: string }): Promise<any> {
+    if (this.ipc) {
+      return await this.ipc.invoke(KNOWN_HOSTS_ADD, entry);
+    }
+    return undefined;
+  }
+
+  async removeKnownHost(entry: { host?: string; port?: number; keyType?: string }): Promise<any> {
+    if (this.ipc) {
+      return await this.ipc.invoke(KNOWN_HOSTS_REMOVE, entry);
+    }
+    return undefined;
+  }
+
+  async importKnownHosts(): Promise<{ added: number; skipped: number; file: string | null }> {
+    if (this.ipc) {
+      return await this.ipc.invoke(KNOWN_HOSTS_IMPORT);
+    }
+    return { added: 0, skipped: 0, file: null };
+  }
+
+  onHostKeyPrompt(callback: (prompt: {
+    id: string; status: string; leg: string; host: string; port: number;
+    keyType: string; base64: string; sha256: string; md5: string; randomart: string;
+  }) => void) {
+    if (this.ipc) {
+      this.ipc.on(SSH_HOSTKEY_PROMPT, (event: any, data: any) => callback(data));
+    }
+  }
+
+  removeHostKeyPromptListeners() {
+    if (this.ipc) {
+      this.ipc.removeAllListeners(SSH_HOSTKEY_PROMPT);
+    }
+  }
+  //#endregion "KnownHosts (A3)"
 }

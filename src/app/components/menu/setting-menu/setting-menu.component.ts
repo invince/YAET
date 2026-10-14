@@ -45,6 +45,7 @@ import {ExamplePluginInstallComponent} from '../../dialog/example-plugin-install
 import {MenuComponent} from '../menu.component';
 import {GroupsFormComponent} from './groups-form/groups-form.component';
 import {TagsFormComponent} from './tags-form/tags-form.component';
+import {KnownHostsComponent} from './known-hosts/known-hosts.component';
 import {PluginLoaderService} from '../../../plugin/services/plugin-loader.service';
 
 
@@ -53,6 +54,7 @@ import {PluginLoaderService} from '../../../plugin/services/plugin-loader.servic
   imports: [
     TagsFormComponent,
     GroupsFormComponent,
+    KnownHostsComponent,
     MatDialogModule,
     FormsModule,
     ReactiveFormsModule,
@@ -127,6 +129,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   FILE_EXPLORER_FORM_TAB_INDEX = 6;
   AI_FORM_TAB_INDEX = 7;
   PLUGINS_FORM_TAB_INDEX = 8;
+  KNOWN_HOSTS_TAB_INDEX = 9;
 
   version = '';
 
@@ -579,7 +582,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
   shouldDisableSave() {
-    return [this.GROUP_FORM_TAB_INDEX, this.TAG_FORM_TAB_INDEX, this.PLUGINS_FORM_TAB_INDEX].includes(this.currentTabIndex);
+    return [this.GROUP_FORM_TAB_INDEX, this.TAG_FORM_TAB_INDEX, this.PLUGINS_FORM_TAB_INDEX, this.KNOWN_HOSTS_TAB_INDEX].includes(this.currentTabIndex);
   }
 
 

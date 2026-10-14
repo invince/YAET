@@ -321,5 +321,35 @@
     "APPROVAL_DENY": "Denegar",
     "APPROVAL_TRUST": "Confiar en esta IP 10 min",
     "REMOTE_HOST_SELF": "El propio servidor (127.0.0.1)"
+  },
+  "KNOWN_HOSTS": {
+    "TITLE": "Hosts conocidos",
+    "DESCRIPTION": "Claves de host SSH aprobadas. Las desconocidas se preguntan en la primera conexión; las cambiadas se rechazan hasta su reaprobación.",
+    "IMPORT": "Importar archivo OpenSSH",
+    "EMPTY": "Sin claves de host guardadas. Se añaden al aprobar la primera conexión.",
+    "LOADING": "Cargando…",
+    "LOAD_FAIL": "No se pudieron cargar los hosts conocidos",
+    "DELETE": "Eliminar",
+    "DELETE_CONFIRM": "¿Eliminar la clave guardada para {{host}}:{{port}}? La próxima conexión volverá a preguntar.",
+    "DELETED": "Clave de host eliminada",
+    "DELETE_FAIL": "No se pudo eliminar",
+    "IMPORTED": "{{added}} clave(s) importada(s), {{skipped}} omitida(s)",
+    "IMPORT_FAIL": "Importación fallida"
+  },
+  "HOSTKEY": {
+    "UNKNOWN_TITLE": "Clave de host desconocida",
+    "UNKNOWN_DESC": "Primera conexión a {{host}}:{{port}}. Verifique esta huella por otro medio antes de confiar.",
+    "CHANGED_TITLE": "¡Clave de host cambiada!",
+    "CHANGED_DESC": "{{host}}:{{port}} presenta una clave DISTINTA a la guardada. Puede ser una reinstalación — o un ataque de intermediario. No apruebe sin verificar.",
+    "JUMPER_LEG": "Esta clave la presentó el bastión {{host}}, no el destino final.",
+    "HOST": "Host",
+    "FINGERPRINT_SHA256": "Huella (SHA256)",
+    "FINGERPRINT_MD5": "Huella (MD5)",
+    "RANDOMART": "Imagen randomart",
+    "VERIFY_HINT": "Compare con la huella publicada por el administrador (ssh-keygen -l -f /etc/ssh/ssh_host_ed25519_key.pub).",
+    "CANCEL": "Cancelar",
+    "CONNECT_ONCE": "Conectar una vez",
+    "SAVE_AND_CONNECT": "Guardar y conectar",
+    "REPLACE_AND_CONNECT": "Reemplazar y conectar"
   }
 }

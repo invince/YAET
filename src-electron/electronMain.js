@@ -58,18 +58,14 @@ if (process.argv.includes('--mcp') || process.argv.slice(1).includes('mcp')) {
   }
 
   const { MCPServer } = require('../src-protocol/mcp/server');
-  const { createSSHTools } = require('../src-protocol/mcp/tools/ssh');
-  const { createSCPTools } = require('../src-protocol/mcp/tools/scp');
-  const { createLocalTools } = require('../src-protocol/mcp/tools/local');
+  const { registerAll } = require('../src-protocol/mcp/setup');
+  const { resolveMasterKey } = require('../src-protocol/common/masterKey');
   const { Logger } = require('../src-protocol/common/logger');
 
   const log = new Logger('mcp-server');
   const server = new MCPServer({ name: 'YAET MCP Server', version: '5.0.0' });
 
-  for (const tool of [...createSSHTools(), ...createSCPTools(), ...createLocalTools()]) {
-    server.registerTool(tool.name, tool.description, tool.inputSchema, tool.handler);
-    log.info(`Registered tool: ${tool.name}`);
-  }
+  registerAll(server, () => resolveMasterKey(), log);
 
   log.info('Starting MCP server (stdio transport)...');
   server.runStdio().then(() => process.exit(0)).catch((err) => {
@@ -96,6 +92,7 @@ const { initAutoUpdater } = require("./adapter/ipc/autoUpdater");
 const { initBackend } = require("./adapter/ipc/backend");
 const { initLocalFileHandler } = require("./adapter/ipc/localFile");
 const { initTunnelsIpcHandler } = require("./adapter/ipc/tunnels");
+const { initKnownHostsIpcHandler } = require("./adapter/ipc/knownHosts");
 const { initPluginHandler } = require("./adapter/ipc/pluginHandler");
 
 let tray;
@@ -298,6 +295,8 @@ function initHandlerBeforeSettingLoad() {
   initAiToolsIpcHandler(log, runtime, () => lastSettings);
 
   initTunnelsIpcHandler(log, runtime, mainWindow);
+
+  initKnownHostsIpcHandler(log, mainWindow);
 
   initLocalFileHandler(log, mainWindow);
 

@@ -7,6 +7,34 @@
 const { Client } = require('ssh2');
 const { ProxyService } = require('../../../src-electron/services/proxyService');
 const { TerminalRuntimeApi } = require('../../../src-electron/runtime/interfaces/terminalRuntimeApi');
+const { KnownHostsService, keyInfo } = require('../../../src-electron/services/knownHostsService');
+
+/**
+ * Parse the key-type string from a raw SSH public-key blob (wire format:
+ * string key-type, ...). ssh2's hostVerifier only hands us the buffer.
+ */
+function sshKeyType(raw) {
+  try {
+    if (!Buffer.isBuffer(raw) || raw.length < 4) return 'unknown';
+    const len = raw.readUInt32BE(0);
+    if (len <= 0 || len > 64 || raw.length < 4 + len) return 'unknown';
+    return raw.slice(4, 4 + len).toString('utf8');
+  } catch {
+    return 'unknown';
+  }
+}
+
+function hostKeyError(status, leg, host, port, keyType, base64, cause) {
+  const err = new Error(
+    status === 'CHANGED'
+      ? `SSH host key for ${host} has changed — possible man-in-the-middle attack`
+      : `Unknown SSH host key for ${host} (not in known_hosts)`,
+  );
+  err.code = status === 'CHANGED' ? 'HOST_KEY_CHANGED' : 'HOST_KEY_UNKNOWN';
+  err.details = { status, leg, host, port, ...keyInfo(keyType, base64) };
+  if (cause) err.cause = cause;
+  return err;
+}
 
 class SshTerminalSession extends TerminalRuntimeApi {
   constructor(log, sshConfig) {
@@ -16,11 +44,43 @@ class SshTerminalSession extends TerminalRuntimeApi {
     this.conn = null;
     this.stream = null;
     this._connected = false;
+    this._knownHosts = null;
+  }
+
+  _knownHostsSvc() {
+    if (!this._knownHosts) this._knownHosts = new KnownHostsService(this.log);
+    return this._knownHosts;
+  }
+
+  /**
+   * Build an ssh2 hostVerifier for one leg (target or jumper). Fail-closed:
+   * any key that is not pinned in known_hosts (and not the one-shot
+   * modal-approved key) records a classified failure and rejects the
+   * handshake. The caller turns `collector.failure` into a coded error.
+   */
+  _buildVerifier(host, port, leg, collector, trustOnce) {
+    const svc = this._knownHostsSvc();
+    return (key) => {
+      const keyType = sshKeyType(key);
+      const base64 = Buffer.from(key).toString('base64');
+      if (trustOnce && trustOnce.keyType === keyType && trustOnce.base64 === base64) return true;
+      let status = 'UNKNOWN';
+      try {
+        status = svc.verify(host, port, keyType, base64);
+      } catch (err) {
+        this.log.error(`SSH host-key lookup failed for ${host}, failing closed:`, err);
+      }
+      if (status === 'MATCH') return true;
+      collector.failure = { status, leg, host, port: Number(port) || 22, keyType, base64 };
+      return false;
+    };
   }
 
   async connect(options = {}) {
     const merged = { ...(this._initialConfig || {}), ...options };
-    const { proxy, secretRepo, initPath, initCmd, rows, cols, id, jumper, ...sshConfig } = merged;
+    const { proxy, secretRepo, initPath, initCmd, rows, cols, id, jumper, trustOnce, knownHostsSvc, ...sshConfig } = merged;
+    if (knownHostsSvc) this._knownHosts = knownHostsSvc;
+    const hostKey = {}; // collector for hostVerifier failures (fail-closed)
 
     // P2: SSH wire-protocol debug is chatty — only attach it when explicitly
     // enabled via SSH_DEBUG=1, and log at debug level (off by default).
@@ -51,18 +111,32 @@ class SshTerminalSession extends TerminalRuntimeApi {
 
     // Bastion/jumper host: connect to the jump host first, then open a
     // direct-tcpip channel (forwardOut) to the final target and dial through it.
+    // The jumper leg is host-key verified against known_hosts like any other.
     if (jumper && jumper.host && !sshConfig.sock) {
       try {
         this.log.info(`SSH session: Using jumper ${jumper.host}:${jumper.port || 22}`);
-        const sock = await this._openJumperChannel(jumper, sshConfig.host, sshConfig.port || 22);
+        const sock = await this._openJumperChannel(jumper, sshConfig.host, sshConfig.port || 22, hostKey);
         sshConfig.sock = sock;
         this.log.info('SSH session: Jumper channel established');
       } catch (error) {
+        if (error && (error.code === 'HOST_KEY_UNKNOWN' || error.code === 'HOST_KEY_CHANGED')) throw error;
         this.log.error('SSH session: Jumper connection failed:', error);
         this.emit('error', { error: `Jumper connection failed: ${error.message}` });
         throw error;
       }
     }
+
+    if (!sshConfig.hostVerifier) {
+      sshConfig.hostVerifier = this._buildVerifier(sshConfig.host, sshConfig.port || 22, 'target', hostKey, trustOnce);
+    }
+
+    const failHostKey = (err) => {
+      if (hostKey.failure) {
+        const f = hostKey.failure;
+        return hostKeyError(f.status, f.leg, f.host, f.port, f.keyType, f.base64, err);
+      }
+      return err;
+    };
 
     return new Promise((resolve, reject) => {
       const conn = new Client();
@@ -104,8 +178,9 @@ class SshTerminalSession extends TerminalRuntimeApi {
 
       conn.on('error', (err) => {
         this.log.error('SSH session connection error:', err);
-        this.emit('error', { error: `SSH connection error: ${err.message}` });
-        if (!this._connected) reject(err);
+        const coded = failHostKey(err);
+        this.emit('error', { error: `SSH connection error: ${coded.message}`, code: coded.code });
+        if (!this._connected) reject(coded);
       });
 
       conn.on('close', (hadError) => {
@@ -150,18 +225,29 @@ class SshTerminalSession extends TerminalRuntimeApi {
     }
   }
 
-  _connectRaw(config) {
+  _connectRaw(config, verifier) {
     return new Promise((resolve, reject) => {
       const conn = new Client();
-      conn.on('ready', () => resolve(conn));
-      conn.on('error', (err) => reject(err));
-      conn.connect(config);
+      let settled = false;
+      conn.on('ready', () => { settled = true; resolve(conn); });
+      conn.on('error', (err) => { if (!settled) { settled = true; reject(err); } });
+      conn.connect(verifier && !config.hostVerifier ? { ...config, hostVerifier: verifier } : config);
     });
   }
 
-  async _openJumperChannel(jumperConfig, targetHost, targetPort) {
-    const { proxy, secretRepo, initPath, initCmd, rows, cols, id, jumper, ...clean } = jumperConfig;
-    const jumperConn = await this._connectRaw(clean);
+  async _openJumperChannel(jumperConfig, targetHost, targetPort, collector = {}) {
+    const { proxy, secretRepo, initPath, initCmd, rows, cols, id, jumper, trustOnce, knownHostsSvc, ...clean } = jumperConfig;
+    const verifier = this._buildVerifier(clean.host, clean.port || 22, 'jumper', collector, null);
+    let jumperConn;
+    try {
+      jumperConn = await this._connectRaw(clean, verifier);
+    } catch (err) {
+      if (collector.failure) {
+        const f = collector.failure;
+        throw hostKeyError(f.status, f.leg, f.host, f.port, f.keyType, f.base64, err);
+      }
+      throw err;
+    }
     this._jumperConn = jumperConn;
     return new Promise((resolve, reject) => {
       jumperConn.forwardOut('127.0.0.1', 0, targetHost, targetPort, (err, stream) => {
@@ -181,10 +267,23 @@ class SshTerminalSession extends TerminalRuntimeApi {
     if (!config) throw new Error('No SSH config available for exec');
 
     const merged = { ...config };
-    const { proxy, secretRepo, jumper, ...sshConfig } = merged;
+    const { proxy, secretRepo, jumper, trustOnce, knownHostsSvc, ...sshConfig } = merged;
+    if (knownHostsSvc) this._knownHosts = knownHostsSvc;
+    // Non-interactive: no approval modal is possible here, so unknown/changed
+    // keys fail closed — the user approves them once via a terminal session.
+    const hostKey = {};
     if (jumper && jumper.host && !sshConfig.sock) {
-      const { proxy: _p, secretRepo: _s, initPath: _a, initCmd: _b, rows: _c, cols: _d, id: _e, jumper: _f, ...clean } = jumper;
-      const jumperConn = await this._connectRaw(clean);
+      const { proxy: _p, secretRepo: _s, initPath: _a, initCmd: _b, rows: _c, cols: _d, id: _e, jumper: _f, trustOnce: _t, knownHostsSvc: _k, ...clean } = jumper;
+      let jumperConn;
+      try {
+        jumperConn = await this._connectRaw(clean, this._buildVerifier(clean.host, clean.port || 22, 'jumper', hostKey, null));
+      } catch (err) {
+        if (hostKey.failure) {
+          const f = hostKey.failure;
+          throw hostKeyError(f.status, f.leg, f.host, f.port, f.keyType, f.base64, err);
+        }
+        throw err;
+      }
       try {
         sshConfig.sock = await new Promise((resolve, reject) => {
           jumperConn.forwardOut('127.0.0.1', 0, sshConfig.host, sshConfig.port || 22, (err, stream) => {
@@ -198,6 +297,9 @@ class SshTerminalSession extends TerminalRuntimeApi {
       }
       // keep jumperConn alive until command finishes; closed in cleanup below
       sshConfig._jumperConn = jumperConn;
+    }
+    if (!sshConfig.hostVerifier) {
+      sshConfig.hostVerifier = this._buildVerifier(sshConfig.host, sshConfig.port || 22, 'target', hostKey, trustOnce);
     }
     const ms = Math.max(1, Number(timeoutSeconds) || 30) * 1000;
 
@@ -241,6 +343,12 @@ class SshTerminalSession extends TerminalRuntimeApi {
 
       conn.on('error', (err) => {
         if (!resolved) {
+          if (hostKey.failure) {
+            const f = hostKey.failure;
+            cleanup();
+            reject(hostKeyError(f.status, f.leg, f.host, f.port, f.keyType, f.base64, err));
+            return;
+          }
           cleanup();
           reject(err);
         }
@@ -256,22 +364,36 @@ class SshTerminalSession extends TerminalRuntimeApi {
     if (!config) throw new Error('No SSH config available for execWithSudo');
 
     const merged = { ...config };
-    const { proxy, secretRepo, jumper, ...sshConfig } = merged;
+    const { proxy, secretRepo, jumper, trustOnce, knownHostsSvc, ...sshConfig } = merged;
+    if (knownHostsSvc) this._knownHosts = knownHostsSvc;
+    const hostKey = {};
     if (jumper && jumper.host && !sshConfig.sock) {
-      const { proxy: _p2, secretRepo: _s2, initPath: _a2, initCmd: _b2, rows: _c2, cols: _d2, id: _e2, jumper: _f2, ...clean2 } = jumper;
-      const jumperConn = await this._connectRaw(clean2);
+      const { proxy: _p2, secretRepo: _s2, initPath: _a2, initCmd: _b2, rows: _c2, cols: _d2, id: _e2, jumper: _f2, trustOnce: _t2, knownHostsSvc: _k2, ...clean2 } = jumper;
+      let jumperConn2;
+      try {
+        jumperConn2 = await this._connectRaw(clean2, this._buildVerifier(clean2.host, clean2.port || 22, 'jumper', hostKey, null));
+      } catch (err) {
+        if (hostKey.failure) {
+          const f = hostKey.failure;
+          throw hostKeyError(f.status, f.leg, f.host, f.port, f.keyType, f.base64, err);
+        }
+        throw err;
+      }
       try {
         sshConfig.sock = await new Promise((resolve, reject) => {
-          jumperConn.forwardOut('127.0.0.1', 0, sshConfig.host, sshConfig.port || 22, (err, stream) => {
+          jumperConn2.forwardOut('127.0.0.1', 0, sshConfig.host, sshConfig.port || 22, (err, stream) => {
             if (err) reject(err);
             else resolve(stream);
           });
         });
       } catch (err) {
-        try { jumperConn.end(); } catch { /* ignore */ }
+        try { jumperConn2.end(); } catch { /* ignore */ }
         throw err;
       }
-      sshConfig._jumperConn = jumperConn;
+      sshConfig._jumperConn = jumperConn2;
+    }
+    if (!sshConfig.hostVerifier) {
+      sshConfig.hostVerifier = this._buildVerifier(sshConfig.host, sshConfig.port || 22, 'target', hostKey, trustOnce);
     }
     const sq = (s) => `'${String(s).replace(/'/g, `'\\''`)}'`;
     const inner = `sh -c ${sq(command)}`;
@@ -314,6 +436,12 @@ class SshTerminalSession extends TerminalRuntimeApi {
 
       conn.on('error', (err) => {
         if (!resolved) {
+          if (hostKey.failure) {
+            const f = hostKey.failure;
+            cleanup();
+            reject(hostKeyError(f.status, f.leg, f.host, f.port, f.keyType, f.base64, err));
+            return;
+          }
           cleanup();
           reject(err);
         }
