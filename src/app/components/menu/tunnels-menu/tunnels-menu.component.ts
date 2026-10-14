@@ -53,9 +53,18 @@ export class TunnelsMenuComponent extends MenuComponent implements OnInit, OnDes
 
   ngOnInit(): void {
     this.tunnelService.ensureListening();
+    // TunnelService is instantiated lazily on first menu open — the one-shot
+    // tunnels.loaded from did-finish-load is long gone by then. Re-request
+    // the storage from main so apply() runs and loaded$ fires.
+    if (!this.tunnelService.isLoaded) {
+      this.tunnelService.reload();
+    }
     this.rebuildRows();
     this.subscriptions.push(
-      this.tunnelService.statuses$.subscribe(() => this.ngZone.run(() => this.rebuildRows()))
+      this.tunnelService.statuses$.subscribe(() => this.ngZone.run(() => this.rebuildRows())),
+      // Storage list loads async from disk (TUNNELS_LOADED → apply) — rebuild
+      // when it lands, not just on live-status changes.
+      this.tunnelService.loaded$.subscribe(() => this.ngZone.run(() => this.rebuildRows()))
     );
     this.clock = setInterval(() => {
       this.now = Date.now();
@@ -194,6 +203,9 @@ export class TunnelsMenuComponent extends MenuComponent implements OnInit, OnDes
   }
 
   async refresh(): Promise<void> {
+    // Re-read the saved tunnels from disk (loaded$ → rebuildRows) AND refresh
+    // live status (statuses$ → rebuildRows) — a full refresh, not just live.
+    this.tunnelService.reload();
     try {
       await this.tunnelService.refresh();
     } catch (err) {

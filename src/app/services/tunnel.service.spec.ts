@@ -2,6 +2,7 @@ import {TunnelSnapshot} from '../domain/profile/TunnelRule';
 import {Tunnels} from '../domain/profile/TunnelRule';
 import {TunnelStorageService} from './tunnel-storage.service';
 import {TunnelService} from './tunnel.service';
+import {TUNNELS_LOADED} from './electron/ElectronConstant';
 
 function makeSnapshot(partial: Partial<TunnelSnapshot> = {}): TunnelSnapshot {
   return {
@@ -52,9 +53,36 @@ describe('TunnelService (renderer facade)', () => {
       { updateEvent$, encrypt: masterKey.encrypt, decrypt2String: async () => null } as never,
       { info: (_msg: string) => {}, error: (_msg: string) => {} } as never,
       storage as never,
-      { isLoaded: true, profilesCopy: { profiles: [] }, save: async () => {} } as never,
+      { isLoaded: true, loaded$: { subscribe: () => ({ unsubscribe: () => {} }) }, profilesCopy: { profiles: [] }, save: async () => {} } as never,
     );
   });
+
+  function buildService(decryptResult: string | null): TunnelService {
+    return new TunnelService(
+      electron as never,
+      { warn: (_msg: string) => {}, error: (_msg: string) => {} } as never,
+      { run: (fn: () => void) => fn() } as never,
+      {
+        updateEvent$: { subscribe: () => ({ unsubscribe: () => {} }) },
+        encrypt: masterKey.encrypt,
+        decrypt2String: async () => decryptResult,
+      } as never,
+      { info: (_msg: string) => {}, error: (_msg: string) => {} } as never,
+      new TunnelStorageService() as never,
+      {
+        isLoaded: true,
+        loaded$: { subscribe: (fn: () => void) => { fn(); return { unsubscribe: () => {} }; } },
+        profilesCopy: { profiles: [] },
+        save: async () => {},
+      } as never,
+    );
+  }
+
+  function loadedCallback(): (data: unknown) => void {
+    const call = electron.onLoadedEvent.calls.mostRecent();
+    expect(call.args[0]).toBe(TUNNELS_LOADED);
+    return call.args[1] as (data: unknown) => void;
+  }
 
   it('ensureListening subscribes once and applies pushes', async () => {
     service.ensureListening();
@@ -126,5 +154,48 @@ describe('TunnelService (renderer facade)', () => {
   it('reload resets loaded state and asks main to reload', () => {
     service.reload();
     expect(electron.reloadTunnels).toHaveBeenCalled();
+  });
+
+  it('applies the tunnels.loaded payload and emits loaded$', async () => {
+    const svc = buildService(JSON.stringify({ tunnels: [{ id: 'a', name: 'n' }] }));
+    expect(svc.isLoaded).toBeFalse();
+
+    loadedCallback()(JSON.stringify({ tunnels: [{ id: 'a', name: 'n' }] }));
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(svc.isLoaded).toBeTrue();
+    expect(svc.tunnels.length).toBe(1);
+    expect(svc.getTunnel('a')?.name).toBe('n');
+    let loaded = false;
+    svc.loaded$.subscribe(v => { loaded = v; });
+    expect(loaded).toBeTrue();
+  });
+
+  it('reload emits loaded$ false and a later payload recovers', async () => {
+    const svc = buildService(JSON.stringify({ tunnels: [{ id: 'a', name: 'n' }] }));
+    const seen: boolean[] = [];
+    svc.loaded$.subscribe(v => seen.push(v));
+
+    loadedCallback()(JSON.stringify({ tunnels: [{ id: 'a', name: 'n' }] }));
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(svc.isLoaded).toBeTrue();
+
+    svc.reload();
+    expect(svc.isLoaded).toBeFalse();
+    expect(seen[seen.length - 1]).toBeFalse();
+
+    loadedCallback()(JSON.stringify({ tunnels: [{ id: 'a', name: 'n' }] }));
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(svc.isLoaded).toBeTrue();
+    expect(svc.tunnels.length).toBe(1);
+    expect(seen[seen.length - 1]).toBeTrue();
+  });
+
+  it('empty decrypt payload stays not-loaded so a later reload retries', async () => {
+    const svc = buildService(null);
+    loadedCallback()('encrypted-payload');
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(svc.isLoaded).toBeFalse();
+    expect(svc.tunnels.length).toBe(0);
   });
 });

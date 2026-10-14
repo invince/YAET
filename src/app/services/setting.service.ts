@@ -18,42 +18,35 @@ import {LogService} from './log.service';
 import {Compatibility} from '../compatibility';
 import {compareVersions} from '../utils/VersionUtils';
 import {NotificationService} from './notification.service';
+import {ConfigStoreService} from './config-store.service';
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class SettingService {
+export class SettingService extends ConfigStoreService<MySettings> {
 
   static CLOUD_OPTION = 'Setting';
   private settingLoadedSubject = new ReplaySubject<any>(1);
   settingLoadedEvent = this.settingLoadedSubject.asObservable(); // Expose as Observable
 
-
-  private _loaded: boolean = false;
-
   constructor(
-    private log: LogService,
-    private electron: ElectronService,
+    log: LogService,
+    electron: ElectronService,
     private settingStorage: SettingStorageService,
     private profileService: ProfileService,
-    private notification: NotificationService,
+    notification: NotificationService,
     ) {
-    electron.onLoadedEvent(SETTINGS_LOADED, data => this.apply(data));
-    // Fallback: settings may have been loaded before our IPC listener was registered
-    electron.getSettings().then(data => {
-      if (data) this.apply(data);
-    }).catch(err => {
-      const msg = 'Failed to load settings during startup fallback: ' + (err?.message || err);
-      this.log.warn(msg);
-      this.notification.error(msg);
-      if (!this._loaded) {
-        this.apply(null);
-      }
+    super(electron, log, notification, {
+      loadedEvent: SETTINGS_LOADED,
+      storeLabel: 'settings',
+      reload: () => electron.reloadSettings(),
+      // Fallback: settings may have been loaded before our IPC listener was registered
+      snapshotProvider: () => electron.getSettings(),
     });
   }
 
-  private apply(data: any) {
+  protected override apply(data: any) {
     if (this._loaded) return;
     if (data) {
       let dataObj: any;
@@ -81,12 +74,8 @@ export class SettingService {
 
       this.validate(this.settingStorage.settings);
     }
-    this._loaded = true;
+    this.markLoaded();
     this.settingLoadedSubject.next({})
-  }
-
-  get isLoaded() {
-    return this._loaded;
   }
 
   createLocalTerminalProfile() : Profile {
@@ -188,11 +177,6 @@ export class SettingService {
         // CUSTOM: keep user-entered execPath untouched
       }
     }
-  }
-
-  reload() {
-    this._loaded = false;
-    this.electron.reloadSettings();
   }
 
   findGroupById(id: string): Group | undefined {

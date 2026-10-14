@@ -1,120 +1,72 @@
-import {Injectable, OnDestroy} from '@angular/core';
-import {Subscription} from 'rxjs';
-import packageJson from '../../../package.json';
+import {Injectable} from '@angular/core';
 import {Compatibility} from '../compatibility';
 import {Proxies, Proxy} from '../domain/Proxy';
-import {compareVersions} from '../utils/VersionUtils';
 import {ElectronService} from './electron/electron.service';
 import {PROXIES_LOADED} from './electron/ElectronConstant';
 import {LogService} from './log.service';
 import {MasterKeyService} from './master-key.service';
 import {NotificationService} from './notification.service';
 import {ProxyStorageService} from './proxy-storage.service';
+import {EncryptedConfigStoreService} from './config-store.service';
 
 @Injectable({
     providedIn: 'root'
 })
-export class ProxyService implements OnDestroy {
+export class ProxyService extends EncryptedConfigStoreService<Proxies> {
 
     static CLOUD_OPTION = 'Proxy';
-    private _loaded = false;
-    private subscriptions: Subscription[] = [];
 
     constructor(
-        private log: LogService,
-        private electron: ElectronService,
+        log: LogService,
+        electron: ElectronService,
         private proxyStorage: ProxyStorageService,
-        private masterKeyService: MasterKeyService,
-        private notification: NotificationService,
+        masterKeyService: MasterKeyService,
+        notification: NotificationService,
     ) {
-        console.log('ProxyService initialized, subscribing to', PROXIES_LOADED);
-        electron.onLoadedEvent(PROXIES_LOADED, data => {
-            this.apply(data);
+        super(electron, log, notification, masterKeyService, {
+            loadedEvent: PROXIES_LOADED,
+            storeLabel: 'proxies',
+            reload: () => electron.reloadProxies(),
         });
-
-        this.subscriptions.push(masterKeyService.updateEvent$.subscribe({
-            next: event => {
-                // 'invalid' fires only on force-continue. Re-encryption in main.
-                if (event === 'invalid') {
-                    this.proxyStorage.data = new Proxies();
-                    this.saveAll();
-                    this.notification.info('Proxies cleared');
-                }
-            },
-            error: err => this.log.error('Proxy service update event error: ' + err)
-        }));
     }
 
-    ngOnDestroy(): void {
-        if (this.subscriptions) {
-            this.subscriptions.forEach(one => one.unsubscribe());
+    // ---- EncryptedConfigStoreService contract ----
+
+    protected override blank(): Proxies {
+        return new Proxies();
+    }
+
+    protected override read(): Proxies {
+        return this.proxyStorage.data;
+    }
+
+    protected override write(data: Proxies): void {
+        this.proxyStorage.data = data;
+    }
+
+    protected override readonly compatVersion = Compatibility.proxies;
+    protected override readonly incompatibleMessage =
+        "Your application is not compatible with saved settings, please update your app. For instance, empty proxies applied";
+    protected override readonly clearedMessage = 'Proxies cleared';
+
+    protected override saveToMain(encrypted: string): unknown {
+        return this.electron.saveProxies(encrypted);
+    }
+
+    protected override preSave(proxies: Proxies): void {
+        for (const one of proxies.proxies) {
+            one.isNew = false;
         }
     }
 
-    private apply(data: any) {
-        if (!data) {
-            this._loaded = true;
-            return;
-        }
-        this.masterKeyService.decrypt2String(data).then(
-            decrypted => {
-                if (decrypted) {
-                    try {
-                        let dataObj = JSON.parse(decrypted);
-                        if (dataObj) {
-                            if (dataObj.compatibleVersion) {
-                                if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
-                                    let msg = "Your application is not compatible with saved settings, please update your app. For instance, empty proxies applied";
-                                    this.log.warn(msg);
-                                    this.notification.info(msg);
-                                    dataObj = new Proxies();
-                                }
-                            }
-                        }
-                        this.proxyStorage.data = dataObj;
-                    } catch (e) {
-                        this.log.error('Failed to parse proxies data: ' + e);
-                        this.notification.error('Failed to load proxies: corrupted data');
-                        this.proxyStorage.data = new Proxies();
-                    }
-                    this._loaded = true;
-                }
-            }
-        )
-    }
-
-    get isLoaded() {
-        return this._loaded;
-    }
+    // ---- Domain API (unchanged) ----
 
     get proxies() {
         return this.proxyStorage.data?.proxies || [];
     }
 
-    reload() {
-        console.log('ProxyService reloading...');
-        this._loaded = false;
-        this.electron.reloadProxies();
-    }
-
     async saveAll(proxies: Proxies = this.proxyStorage.data) {
-        if (!proxies) {
-            proxies = new Proxies();
-        }
-        proxies.version = packageJson.version;
-        proxies.compatibleVersion = Compatibility.proxies;
-        proxies.revision = Date.now();
-        for (let one of proxies.proxies) {
-            one.isNew = false;
-        }
-        this.proxyStorage.data = proxies;
-        this.masterKeyService.encrypt(this.proxyStorage.data).then(
-            encrypted => {
-                if (encrypted) {
-                    this.electron.saveProxies(encrypted);
-                }
-            }
-        )
+        await this.persist(proxies);
     }
 
     deleteOne(proxy: Proxy) {
@@ -151,5 +103,4 @@ export class ProxyService implements OnDestroy {
     findById(id: string): Proxy | undefined {
         return this.proxyStorage.data.proxies.find(p => p.id === id);
     }
-
 }

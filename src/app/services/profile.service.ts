@@ -1,98 +1,81 @@
-import {Injectable, OnDestroy} from '@angular/core';
-import {Subject, Subscription} from 'rxjs';
-import packageJson from '../../../package.json';
+import {Injectable} from '@angular/core';
+import {Subject} from 'rxjs';
 import {Compatibility} from '../compatibility';
 import {Group} from '../domain/Group';
 import {Profile, Profiles} from '../domain/profile/Profile';
 import {PluginRegistryService} from '../plugin/services/plugin-registry.service';
 import {Secret} from '../domain/Secret';
 import {Tag} from '../domain/Tag';
-import {compareVersions} from '../utils/VersionUtils';
 import {ElectronService} from './electron/electron.service';
 import {PROFILES_LOADED} from './electron/ElectronConstant';
 import {LogService} from './log.service';
 import {MasterKeyService} from './master-key.service';
 import {NotificationService} from './notification.service';
+import {EncryptedConfigStoreService} from './config-store.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class ProfileService implements OnDestroy{
+export class ProfileService extends EncryptedConfigStoreService<Profiles> {
 
   static CLOUD_OPTION = 'Profile';
   private _profiles!: Profiles;
 
-  private _loaded: boolean = false;
-  private subscriptions: Subscription[] =[];
-
   private connectionEventSubject = new Subject<Profile>();
   connectionEvent$ = this.connectionEventSubject.asObservable();
 
-
-
   constructor(
-    private log: LogService,
-    private electron: ElectronService,
-    private masterKeyService: MasterKeyService,
-    private notification: NotificationService,
+    log: LogService,
+    electron: ElectronService,
+    masterKeyService: MasterKeyService,
+    notification: NotificationService,
     private registry: PluginRegistryService,
   ) {
-    electron.onLoadedEvent(PROFILES_LOADED, data => this.apply(data));
-
-    this.subscriptions.push(masterKeyService.updateEvent$.subscribe({
-      next: event => {
-        // 'invalid' fires only on force-continue (user accepted losing old data).
-        // Master-key re-encryption now happens atomically in the main process,
-        // so there is no per-service re-encrypt to run here.
-        if (event === 'invalid') {
-          this._profiles = new Profiles();
-          this.save();
-          this.notification.info('Profiles cleared');
-        }
-      },
-      error: err => this.log.error('Profile service update event error: ' + err)
-    }));
+    super(electron, log, notification, masterKeyService, {
+      loadedEvent: PROFILES_LOADED,
+      storeLabel: 'profiles',
+      reload: () => electron.reloadProfiles(),
+    });
   }
 
-  private apply(data: any) {
-    if (!data) {
-      this._loaded = true; // this means you don't have profile yet
-      return;
+  // ---- EncryptedConfigStoreService contract ----
+
+  protected override blank(): Profiles {
+    return new Profiles();
+  }
+
+  protected override read(): Profiles {
+    return this._profiles;
+  }
+
+  protected override write(data: Profiles): void {
+    this._profiles = data;
+  }
+
+  protected override readonly compatVersion = Compatibility.profiles;
+  protected override readonly incompatibleMessage =
+    "Your application is not compatible with saved settings, please update your app. For instance, empty profiles applied";
+  protected override readonly clearedMessage = 'Profiles cleared';
+
+  protected override saveToMain(encrypted: string): unknown {
+    return this.electron.saveProfiles(encrypted);
+  }
+
+  protected override postLoad(): void {
+    // Deserialize plain objects back to Profile instances
+    if (this._profiles?.profiles) {
+      this._profiles.profiles = this._profiles.profiles.map((p: any) => Profile.deserialize(p));
     }
-    this.masterKeyService.decrypt2String(data).then(
-      decrypted => {
-        if (decrypted) {
-          try {
-            let dataObj = JSON.parse(decrypted);
-            if (dataObj) {
-              if (dataObj.compatibleVersion) {
-                if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
-                  let msg = "Your application is not compatible with saved settings, please update your app. For instance, empty profiles applied";
-                  this.log.warn(msg);
-                  this.notification.info(msg);
-                  dataObj = new Profiles();
-                }
-              }
-            }
-            this._profiles = dataObj;
-            // Deserialize plain objects back to Profile instances
-            if (this._profiles?.profiles) {
-              this._profiles.profiles = this._profiles.profiles.map((p: any) => Profile.deserialize(p));
-            }
-          } catch (e) {
-            this.log.error('Failed to parse profiles data: ' + e);
-            this.notification.error('Failed to load profiles: corrupted data');
-            this._profiles = new Profiles();
-          }
-          this._loaded = true;
-        }
-      }
-    )
   }
 
-  get isLoaded() {
-    return this._loaded;
+  protected override preSave(profiles: Profiles): void {
+    for (const one of profiles.profiles) {
+      one.isNew = false;
+      one.icon = this.registry.getProfileIcon(one.profileType);
+    }
   }
+
+  // ---- Domain API (unchanged) ----
 
   // NOTE: if you add any field on Profiles, you need copy it here
   get profilesCopy(): Profiles {
@@ -111,29 +94,7 @@ export class ProfileService implements OnDestroy{
   }
 
   async save(profiles: Profiles = this._profiles) {
-    if (!profiles) {
-      profiles = new Profiles();
-    }
-    this._profiles = profiles;
-    this._profiles.version = packageJson.version;
-    this._profiles.compatibleVersion = Compatibility.profiles;
-    for (let one of this._profiles.profiles) {
-      one.isNew = false;
-      one.icon = this.registry.getProfileIcon(one.profileType);
-    }
-    this._profiles.revision = Date.now();
-    this.masterKeyService.encrypt(this._profiles).then(
-      encrypted => {
-        if (encrypted) {
-          this.electron.saveProfiles(encrypted);
-        }
-      }
-    )
-  }
-
-  reload() {
-    this._loaded = false;
-    this.electron.reloadProfiles();
+    await this.persist(profiles);
   }
 
   onProfileConnect(data: Profile) {
@@ -154,12 +115,6 @@ export class ProfileService implements OnDestroy{
       }
     }
     await this.save();
-  }
-
-  ngOnDestroy(): void {
-    if (this.subscriptions) {
-      this.subscriptions.forEach(one => one.unsubscribe());
-    }
   }
 
   isSecretUsed(secret: Secret) {

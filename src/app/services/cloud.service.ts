@@ -1,10 +1,7 @@
-import {Injectable, OnDestroy} from '@angular/core';
-import {Subscription} from 'rxjs';
-import packageJson from '../../../package.json';
+import {Injectable} from '@angular/core';
 import {Compatibility} from '../compatibility';
 import {CloudResponse} from '../domain/setting/CloudResponse';
 import {CloudSettings} from '../domain/setting/CloudSettings';
-import {compareVersions} from '../utils/VersionUtils';
 import {ElectronService} from './electron/electron.service';
 import {CLOUD_LOADED} from './electron/ElectronConstant';
 import {LogService} from './log.service';
@@ -16,12 +13,12 @@ import {ProxyService} from './proxy.service';
 import {SecretService} from './secret.service';
 import {SettingService} from './setting.service';
 import {TunnelService} from './tunnel.service';
-
+import {EncryptedConfigStoreService} from './config-store.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class CloudService implements OnDestroy {
+export class CloudService extends EncryptedConfigStoreService<CloudSettings> {
 
   static OPTIONS = [
     SettingService.CLOUD_OPTION,
@@ -32,72 +29,49 @@ export class CloudService implements OnDestroy {
   ];
 
   private _cloud!: CloudSettings;
-  private _loaded: boolean = false;
-  subscriptions: Subscription[] = []
 
   constructor(
     private proxyStorage: ProxyStorageService,
-    private log: LogService,
-    private electron: ElectronService,
-    private masterKeyService: MasterKeyService,
-    private notification: NotificationService,
+    log: LogService,
+    electron: ElectronService,
+    masterKeyService: MasterKeyService,
+    notification: NotificationService,
   ) {
-    electron.onLoadedEvent(CLOUD_LOADED, data => this.apply(data));
-    this.subscriptions.push(masterKeyService.updateEvent$.subscribe({
-      next: event => {
-        // 'invalid' fires only on force-continue. Re-encryption happens in main.
-        if (event === 'invalid') {
-          this._cloud = new CloudSettings();
-          this.save();
-          this.notification.info('Cloud Settings cleared');
-        }
-      },
-      error: err => this.log.error('Cloud service update event error: ' + err)
-    }));
+    super(electron, log, notification, masterKeyService, {
+      loadedEvent: CLOUD_LOADED,
+      storeLabel: 'cloud',
+      reload: () => electron.reloadCloud(),
+    });
   }
 
-  ngOnDestroy(): void {
-    if (this.subscriptions) {
-      this.subscriptions.forEach(one => one.unsubscribe());
-    }
+  // ---- EncryptedConfigStoreService contract ----
+
+  protected override blank(): CloudSettings {
+    return new CloudSettings();
   }
 
-
-  private apply(data: any) {
-    if (!data) {
-      this._loaded = true; // this means you don't have cloud yet
-      return;
-    }
-    this.masterKeyService.decrypt2String(data).then(
-      decrypted => {
-        if (decrypted) {
-          try {
-            let dataObj = JSON.parse(decrypted);
-            if (dataObj) {
-              if (dataObj.compatibleVersion) {
-                if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
-                  let msg = "Your application is not compatible with saved settings, please update your app. For instance, we'll use default cloud settings";
-                  this.log.warn(msg);
-                  this.notification.info(msg);
-                  dataObj = new CloudSettings();
-                }
-              }
-            }
-            this._cloud = dataObj;
-          } catch (e) {
-            this.log.error('Failed to parse cloud data: ' + e);
-            this.notification.error('Failed to load cloud settings: corrupted data');
-            this._cloud = new CloudSettings();
-          }
-          this._loaded = true;
-        }
-      }
-    )
+  protected override read(): CloudSettings {
+    return this._cloud;
   }
 
-  get isLoaded() {
-    return this._loaded;
+  protected override write(data: CloudSettings): void {
+    this._cloud = data;
   }
+
+  protected override readonly compatVersion = Compatibility.cloud;
+  protected override readonly incompatibleMessage =
+    "Your application is not compatible with saved settings, please update your app. For instance, we'll use default cloud settings";
+  protected override readonly clearedMessage = 'Cloud Settings cleared';
+
+  protected override saveToMain(encrypted: string): unknown {
+    return this.electron.saveCloud(encrypted);
+  }
+
+  /** Cloud settings carry no revision and empty saves are skipped. */
+  protected override stampRevision = false;
+  protected override createBlankOnSave = false;
+
+  // ---- Domain API (unchanged) ----
 
   get cloud(): CloudSettings {
     if (!this._cloud) {
@@ -106,26 +80,8 @@ export class CloudService implements OnDestroy {
     return this._cloud;
   }
 
-
   async save(cloud: CloudSettings = this._cloud) {
-    if (!cloud) {
-      return;
-    }
-    this._cloud = cloud;
-    this._cloud.version = packageJson.version;
-    this._cloud.compatibleVersion = Compatibility.cloud;
-    this.masterKeyService.encrypt(this._cloud).then(
-      encrypted => {
-        if (encrypted) {
-          this.electron.saveCloud(encrypted);
-        }
-      }
-    )
-  }
-
-  reload() {
-    this._loaded = false;
-    this.electron.reloadCloud();
+    await this.persist(cloud);
   }
 
   async upload(cloudSettings: CloudSettings): Promise<CloudResponse> {

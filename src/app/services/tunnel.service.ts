@@ -1,9 +1,7 @@
-import {Injectable, NgZone, OnDestroy} from '@angular/core';
-import {BehaviorSubject, Subscription} from 'rxjs';
-import packageJson from '../../../package.json';
+import {Injectable, NgZone} from '@angular/core';
+import {BehaviorSubject} from 'rxjs';
 import {Compatibility} from '../compatibility';
 import {migrateLegacyTunnels, Tunnel, Tunnels, TunnelSnapshot} from '../domain/profile/TunnelRule';
-import {compareVersions} from '../utils/VersionUtils';
 import {ElectronService} from './electron/electron.service';
 import {TUNNELS_LOADED} from './electron/ElectronConstant';
 import {LogService} from './log.service';
@@ -11,62 +9,79 @@ import {MasterKeyService} from './master-key.service';
 import {NotificationService} from './notification.service';
 import {ProfileService} from './profile.service';
 import {TunnelStorageService} from './tunnel-storage.service';
+import {EncryptedConfigStoreService} from './config-store.service';
 
 /**
  * Renderer facade for SSH tunnels (A1 rework: first-class tunnels).
  *
- * Two halves, mirroring ProxyService + live status:
- * - Storage: decrypted tunnels.json (load/decrypt/save/reload + one-way
- *   migration of legacy profile-embedded rules).
+ * Two halves:
+ * - Storage: decrypted tunnels.json (base class owns load/decrypt/save/reload;
+ *   this class adds the one-way migration of legacy profile-embedded rules).
  * - Live: main-process TunnelService status snapshots (start/stop/statuses$).
  */
 @Injectable({
   providedIn: 'root'
 })
-export class TunnelService implements OnDestroy {
+export class TunnelService extends EncryptedConfigStoreService<Tunnels> {
 
   static CLOUD_OPTION = 'Tunnel';
 
   private statusesSubject = new BehaviorSubject<TunnelSnapshot[]>([]);
   readonly statuses$ = this.statusesSubject.asObservable();
 
-  private subscriptions: Subscription[] = [];
   private listening = false;
-  private _loaded = false;
   private migrationAttempted = false;
 
   constructor(
-    private electron: ElectronService,
-    private log: LogService,
+    electron: ElectronService,
+    log: LogService,
     private ngZone: NgZone,
-    private masterKeyService: MasterKeyService,
-    private notification: NotificationService,
+    masterKeyService: MasterKeyService,
+    notification: NotificationService,
     private tunnelStorage: TunnelStorageService,
     private profileService: ProfileService,
   ) {
-    electron.onLoadedEvent(TUNNELS_LOADED, data => this.apply(data));
-    this.subscriptions.push(masterKeyService.updateEvent$.subscribe({
-      next: event => {
-        // 'invalid' fires only on force-continue (user accepted losing old data).
-        if (event === 'invalid') {
-          this.tunnelStorage.data = new Tunnels();
-          this.saveAll();
-          this.notification.info('Tunnels cleared');
-        }
-      },
-      error: err => this.log.error('Tunnel service update event error: ' + err)
-    }));
+    super(electron, log, notification, masterKeyService, {
+      loadedEvent: TUNNELS_LOADED,
+      storeLabel: 'tunnels',
+      reload: () => electron.reloadTunnels(),
+    });
+    // Migration needs BOTH stores loaded; either load order is possible, so
+    // retry whenever profiles land (maybeMigrate is idempotent and guarded).
+    this.subscriptions.push(profileService.loaded$.subscribe(() => this.postLoad()));
   }
 
-  ngOnDestroy(): void {
-    this.subscriptions.forEach(one => one.unsubscribe());
+  // ---- EncryptedConfigStoreService contract ----
+
+  protected override blank(): Tunnels {
+    return new Tunnels();
+  }
+
+  protected override read(): Tunnels {
+    return this.tunnelStorage.data;
+  }
+
+  protected override write(data: Tunnels): void {
+    if (!Array.isArray(data.tunnels)) {
+      data.tunnels = [];
+    }
+    this.tunnelStorage.data = data;
+  }
+
+  protected override readonly compatVersion = Compatibility.tunnels;
+  protected override readonly incompatibleMessage =
+    'Your application is not compatible with saved tunnels, please update your app. For instance, empty tunnels applied';
+  protected override readonly clearedMessage = 'Tunnels cleared';
+
+  protected override saveToMain(encrypted: string): unknown {
+    return this.electron.saveTunnels(encrypted);
+  }
+
+  protected override postLoad(): void {
+    this.maybeMigrate();
   }
 
   // ---- Storage (tunnels.json) ----
-
-  get isLoaded(): boolean {
-    return this._loaded;
-  }
 
   get tunnels(): Tunnel[] {
     return this.tunnelStorage.tunnels;
@@ -76,56 +91,8 @@ export class TunnelService implements OnDestroy {
     return this.tunnelStorage.tunnels.find(t => t.id === id);
   }
 
-  private apply(data: unknown): void {
-    if (!data) {
-      this._loaded = true;
-      this.maybeMigrate();
-      return;
-    }
-    this.masterKeyService.decrypt2String(data as string).then(
-      decrypted => {
-        if (decrypted) {
-          try {
-            const dataObj = JSON.parse(decrypted);
-            if (dataObj?.compatibleVersion) {
-              if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
-                const msg = 'Your application is not compatible with saved tunnels, please update your app. For instance, empty tunnels applied';
-                this.log.warn(msg);
-                this.notification.info(msg);
-                this.tunnelStorage.data = new Tunnels();
-              } else {
-                this.tunnelStorage.data = dataObj;
-              }
-            } else {
-              this.tunnelStorage.data = dataObj;
-            }
-            if (!Array.isArray(this.tunnelStorage.data.tunnels)) {
-              this.tunnelStorage.data.tunnels = [];
-            }
-          } catch (e) {
-            this.log.error('Failed to parse tunnels data: ' + e);
-            this.notification.error('Failed to load tunnels: corrupted data');
-            this.tunnelStorage.data = new Tunnels();
-          }
-          this._loaded = true;
-          this.maybeMigrate();
-        }
-      }
-    );
-  }
-
   async saveAll(tunnels: Tunnels = this.tunnelStorage.data): Promise<void> {
-    if (!tunnels) {
-      tunnels = new Tunnels();
-    }
-    tunnels.version = packageJson.version;
-    tunnels.compatibleVersion = Compatibility.tunnels;
-    tunnels.revision = Date.now();
-    this.tunnelStorage.data = tunnels;
-    const encrypted = await this.masterKeyService.encrypt(tunnels);
-    if (encrypted) {
-      await this.electron.saveTunnels(encrypted);
-    }
+    await this.persist(tunnels);
   }
 
   async saveOne(tunnel: Tunnel): Promise<void> {
@@ -150,10 +117,9 @@ export class TunnelService implements OnDestroy {
     } catch (_) { /* already stopped or never started */ }
   }
 
-  reload(): void {
-    this._loaded = false;
+  override reload(): void {
     this.migrationAttempted = false;
-    this.electron.reloadTunnels();
+    super.reload();
   }
 
   /**

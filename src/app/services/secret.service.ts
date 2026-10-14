@@ -1,88 +1,76 @@
-import {Injectable, OnDestroy} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {Secret, Secrets, SecretType} from '../domain/Secret';
 import {ElectronService} from './electron/electron.service';
 import {SECRETS_LOADED} from './electron/ElectronConstant';
 import {MasterKeyService} from './master-key.service';
 import {SecretStorageService} from './secret-storage.service';
 import {SettingStorageService} from './setting-storage.service';
-import packageJson from '../../../package.json';
-import {Subscription} from 'rxjs';
-import {LogService} from './log.service';
 import {Compatibility} from '../compatibility';
-import {compareVersions} from '../utils/VersionUtils';
+import {LogService} from './log.service';
 import {NotificationService} from './notification.service';
+import {EncryptedConfigStoreService} from './config-store.service';
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class SecretService implements OnDestroy{
+export class SecretService extends EncryptedConfigStoreService<Secrets> {
 
   static CLOUD_OPTION = 'Secret';
-  private _loaded: boolean = false;
-  private subscriptions: Subscription[] =[];
 
   constructor(
-    private log: LogService,
-    private electron: ElectronService,
-
+    log: LogService,
+    electron: ElectronService,
     private secretStorage: SecretStorageService,
     private settingStorage: SettingStorageService,
-    private masterKeyService: MasterKeyService,
-    private notification: NotificationService,
+    masterKeyService: MasterKeyService,
+    notification: NotificationService,
   ) {
-    electron.onLoadedEvent(SECRETS_LOADED, data => {
-      this.apply(data);
+    super(electron, log, notification, masterKeyService, {
+      loadedEvent: SECRETS_LOADED,
+      storeLabel: 'secrets',
+      reload: () => electron.reloadSecrets(),
     });
-
-    this.subscriptions.push(masterKeyService.updateEvent$.subscribe({
-      next: event => {
-        // 'invalid' fires only on force-continue. Re-encryption happens in main.
-        if (event === 'invalid') {
-          this.secretStorage.data = new Secrets();
-          this.saveAll();
-          this.notification.info('Secrets cleared');
-        }
-      },
-      error: err => this.log.error('Secret service update event error: ' + err)
-    }));
   }
 
-  apply(data: any) {
-    if (!data) {
-      this._loaded = true; // this means you don't have secret yet
-      return;
-    }
-    this.masterKeyService.decrypt2String(data).then(
-      decrypted => {
-        if (decrypted) {
-          try {
-            let dataObj = JSON.parse(decrypted);
-            if (dataObj) {
-              if (dataObj.compatibleVersion) {
-                if (compareVersions(dataObj.compatibleVersion, packageJson.version) > 0) {
-                  let msg = "Your application is not compatible with saved settings, please update your app. For instance, empty secrets applied";
-                  this.log.warn(msg);
-                  this.notification.info(msg);
-                  dataObj = new Secrets();
-                }
-              }
-            }
-            this.secretStorage.data = dataObj;
-          } catch (e) {
-            this.log.error('Failed to parse secrets data: ' + e);
-            this.notification.error('Failed to load secrets: corrupted data');
-            this.secretStorage.data = new Secrets();
-          }
-          this._loaded = true;
-        }
+  // ---- EncryptedConfigStoreService contract ----
+
+  protected override blank(): Secrets {
+    return new Secrets();
+  }
+
+  protected override read(): Secrets {
+    return this.secretStorage.data;
+  }
+
+  protected override write(data: Secrets): void {
+    this.secretStorage.data = data;
+  }
+
+  protected override readonly compatVersion = Compatibility.secrets;
+  protected override readonly incompatibleMessage =
+    "Your application is not compatible with saved settings, please update your app. For instance, empty secrets applied";
+  protected override readonly clearedMessage = 'Secrets cleared';
+
+  protected override saveToMain(encrypted: string): unknown {
+    return this.electron.saveSecrets(encrypted);
+  }
+
+  protected override preSave(secrets: Secrets): void {
+    for (const one of secrets.secrets) {
+      one.isNew = false;
+      switch (one.secretType) {
+        case SecretType.PASSWORD_ONLY:
+          one.icon = 'password'; break;
+        case SecretType.LOGIN_PASSWORD:
+          one.icon = 'face'; break;
+        case SecretType.SSH_KEY:
+          one.icon = 'key'; break;
       }
-    )
+    }
   }
 
-  get isLoaded() {
-    return this._loaded;
-  }
+  // ---- Domain API (unchanged) ----
 
   deleteOne(secretToDelete: Secret) {
     if (!secretToDelete) {
@@ -116,38 +104,7 @@ export class SecretService implements OnDestroy{
   }
 
   async saveAll(secrets: Secrets = this.secretStorage.data) {
-    if (!secrets) {
-      secrets = new Secrets();
-    }
-    secrets.version = packageJson.version;
-    secrets.compatibleVersion = Compatibility.secrets;
-    this.secretStorage.data = secrets;
-    for (let one of this.secretStorage.data.secrets) {
-      one.isNew = false;
-      switch (one.secretType) {
-        case SecretType.PASSWORD_ONLY:
-          one.icon = 'password'; break;
-        case SecretType.LOGIN_PASSWORD:
-          one.icon = 'face'; break;
-        case SecretType.SSH_KEY:
-          one.icon = 'key'; break;
-      }
-    }
-
-    this.secretStorage.data.revision = Date.now();
-
-    this.masterKeyService.encrypt(this.secretStorage.data).then(
-      encrypted => {
-        if (encrypted) {
-          this.electron.saveSecrets(encrypted);
-        }
-      }
-    )
-  }
-
-  reload() {
-    this._loaded = false;
-    this.electron.reloadSecrets();
+    await this.persist(secrets);
   }
 
   displaySecretOptionName(secret: Secret) {
@@ -168,13 +125,5 @@ export class SecretService implements OnDestroy{
     }
     return label;
   }
-
-  ngOnDestroy(): void {
-    if (this.subscriptions) {
-      this.subscriptions.forEach(one => one.unsubscribe());
-    }
-  }
-
-
 
 }
