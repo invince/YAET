@@ -23,6 +23,8 @@ import {MatRadioModule} from '@angular/material/radio';
 import {SecretStorageService} from '../../../../services/secret-storage.service';
 import {SettingStorageService} from '../../../../services/setting-storage.service';
 import {SecretService} from '../../../../services/secret.service';
+import {ProfileService} from '../../../../services/profile.service';
+import {Profile} from '../../../../domain/profile/Profile';
 import {CdkTextareaAutosize} from '@angular/cdk/text-field';
 import {
   FormFieldWithPrecondition,
@@ -76,6 +78,7 @@ export class RemoteTerminalProfileFormComponent extends ChildFormAsFormControl(M
 
     public secretService: SecretService, // in html
     public settingStorage: SettingStorageService,
+    public profileService: ProfileService, // in html (jumper list)
 
     public dialog: MatDialog,
   ) {
@@ -90,6 +93,7 @@ export class RemoteTerminalProfileFormComponent extends ChildFormAsFormControl(M
     mappings.set({name: 'login', precondition: form => this.form.get('authType')?.value  == 'login'} , 'login');
     mappings.set({name: 'password', precondition: form => this.form.get('authType')?.value  == 'login'} , 'password');
     mappings.set({name: 'secretId', precondition: form => this.form.get('authType')?.value  == 'secret' } , 'secretId');
+    mappings.set('jumperProfileId' , 'jumperProfileId');
 
     this.modelFormController = new ModelFormController<RemoteTerminalProfile>(mappings);
   }
@@ -140,5 +144,10 @@ export class RemoteTerminalProfileFormComponent extends ChildFormAsFormControl(M
 
   filterSecret(): Secret[] {
     return this.secretStorageService.dataCopy.secrets.filter(one => this.supportedSecretType.includes(one.secretType));
+  }
+
+  filterJumperProfiles(): Profile[] {
+    const all = this.profileService?.profilesCopy?.profiles || [];
+    return all.filter(one => one.profileType === 'SSH_TERMINAL');
   }
 }

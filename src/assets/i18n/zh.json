@@ -171,7 +171,8 @@
     "SFTP_FILE_EXPLORER": "SFTP 文件浏览器",
     "CUSTOM": "自定义",
     "SERIAL_TERMINAL": "串口终端",
-    "SERIAL_PORT": "串口设备 (如 COM1, /dev/ttyUSB0)"
+    "SERIAL_PORT": "串口设备 (如 COM1, /dev/ttyUSB0)",
+    "JUMPER": "跳板机"
   },
   "QUICKCONNECT": {
     "TITLE": "快速连接"

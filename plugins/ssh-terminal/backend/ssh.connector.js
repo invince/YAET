@@ -20,7 +20,7 @@ class SshTerminalSession extends TerminalRuntimeApi {
 
   async connect(options = {}) {
     const merged = { ...(this._initialConfig || {}), ...options };
-    const { proxy, secretRepo, initPath, initCmd, rows, cols, id, ...sshConfig } = merged;
+    const { proxy, secretRepo, initPath, initCmd, rows, cols, id, jumper, ...sshConfig } = merged;
 
     // P2: SSH wire-protocol debug is chatty — only attach it when explicitly
     // enabled via SSH_DEBUG=1, and log at debug level (off by default).
@@ -45,6 +45,21 @@ class SshTerminalSession extends TerminalRuntimeApi {
       } catch (error) {
         this.log.error('SSH session: Proxy connection failed:', error);
         this.emit('error', { error: `Proxy connection failed: ${error.message}` });
+        throw error;
+      }
+    }
+
+    // Bastion/jumper host: connect to the jump host first, then open a
+    // direct-tcpip channel (forwardOut) to the final target and dial through it.
+    if (jumper && jumper.host && !sshConfig.sock) {
+      try {
+        this.log.info(`SSH session: Using jumper ${jumper.host}:${jumper.port || 22}`);
+        const sock = await this._openJumperChannel(jumper, sshConfig.host, sshConfig.port || 22);
+        sshConfig.sock = sock;
+        this.log.info('SSH session: Jumper channel established');
+      } catch (error) {
+        this.log.error('SSH session: Jumper connection failed:', error);
+        this.emit('error', { error: `Jumper connection failed: ${error.message}` });
         throw error;
       }
     }
@@ -129,6 +144,36 @@ class SshTerminalSession extends TerminalRuntimeApi {
       this.stream = null;
       this._connected = false;
     }
+    if (this._jumperConn) {
+      try { this._jumperConn.end(); } catch { /* ignore */ }
+      this._jumperConn = null;
+    }
+  }
+
+  _connectRaw(config) {
+    return new Promise((resolve, reject) => {
+      const conn = new Client();
+      conn.on('ready', () => resolve(conn));
+      conn.on('error', (err) => reject(err));
+      conn.connect(config);
+    });
+  }
+
+  async _openJumperChannel(jumperConfig, targetHost, targetPort) {
+    const { proxy, secretRepo, initPath, initCmd, rows, cols, id, jumper, ...clean } = jumperConfig;
+    const jumperConn = await this._connectRaw(clean);
+    this._jumperConn = jumperConn;
+    return new Promise((resolve, reject) => {
+      jumperConn.forwardOut('127.0.0.1', 0, targetHost, targetPort, (err, stream) => {
+        if (err) {
+          try { jumperConn.end(); } catch { /* ignore */ }
+          this._jumperConn = null;
+          reject(err);
+          return;
+        }
+        resolve(stream);
+      });
+    });
   }
 
   async exec(command, timeoutSeconds = 30) {
@@ -136,7 +181,24 @@ class SshTerminalSession extends TerminalRuntimeApi {
     if (!config) throw new Error('No SSH config available for exec');
 
     const merged = { ...config };
-    const { proxy, secretRepo, ...sshConfig } = merged;
+    const { proxy, secretRepo, jumper, ...sshConfig } = merged;
+    if (jumper && jumper.host && !sshConfig.sock) {
+      const { proxy: _p, secretRepo: _s, initPath: _a, initCmd: _b, rows: _c, cols: _d, id: _e, jumper: _f, ...clean } = jumper;
+      const jumperConn = await this._connectRaw(clean);
+      try {
+        sshConfig.sock = await new Promise((resolve, reject) => {
+          jumperConn.forwardOut('127.0.0.1', 0, sshConfig.host, sshConfig.port || 22, (err, stream) => {
+            if (err) reject(err);
+            else resolve(stream);
+          });
+        });
+      } catch (err) {
+        try { jumperConn.end(); } catch { /* ignore */ }
+        throw err;
+      }
+      // keep jumperConn alive until command finishes; closed in cleanup below
+      sshConfig._jumperConn = jumperConn;
+    }
     const ms = Math.max(1, Number(timeoutSeconds) || 30) * 1000;
 
     return new Promise((resolve, reject) => {
@@ -155,6 +217,7 @@ class SshTerminalSession extends TerminalRuntimeApi {
           resolved = true;
           clearTimeout(timeout);
           conn.end();
+          if (sshConfig._jumperConn) { try { sshConfig._jumperConn.end(); } catch { /* ignore */ } }
         }
       };
 
@@ -183,7 +246,8 @@ class SshTerminalSession extends TerminalRuntimeApi {
         }
       });
 
-      conn.connect(sshConfig);
+      const { _jumperConn, ...connectConfig } = sshConfig;
+      conn.connect(connectConfig);
     });
   }
 
@@ -192,7 +256,23 @@ class SshTerminalSession extends TerminalRuntimeApi {
     if (!config) throw new Error('No SSH config available for execWithSudo');
 
     const merged = { ...config };
-    const { proxy, secretRepo, ...sshConfig } = merged;
+    const { proxy, secretRepo, jumper, ...sshConfig } = merged;
+    if (jumper && jumper.host && !sshConfig.sock) {
+      const { proxy: _p2, secretRepo: _s2, initPath: _a2, initCmd: _b2, rows: _c2, cols: _d2, id: _e2, jumper: _f2, ...clean2 } = jumper;
+      const jumperConn = await this._connectRaw(clean2);
+      try {
+        sshConfig.sock = await new Promise((resolve, reject) => {
+          jumperConn.forwardOut('127.0.0.1', 0, sshConfig.host, sshConfig.port || 22, (err, stream) => {
+            if (err) reject(err);
+            else resolve(stream);
+          });
+        });
+      } catch (err) {
+        try { jumperConn.end(); } catch { /* ignore */ }
+        throw err;
+      }
+      sshConfig._jumperConn = jumperConn;
+    }
     const sq = (s) => `'${String(s).replace(/'/g, `'\\''`)}'`;
     const inner = `sh -c ${sq(command)}`;
     const sudoCmd = sudoPassword ? `printf '%s\\n' ${sq(sudoPassword)} | sudo -S -p '' ${inner}` : `sudo ${inner}`;
@@ -214,6 +294,7 @@ class SshTerminalSession extends TerminalRuntimeApi {
           resolved = true;
           clearTimeout(timeout);
           conn.end();
+          if (sshConfig._jumperConn) { try { sshConfig._jumperConn.end(); } catch { /* ignore */ } }
         }
       };
 
@@ -238,7 +319,8 @@ class SshTerminalSession extends TerminalRuntimeApi {
         }
       });
 
-      conn.connect(sshConfig);
+      const { _jumperConn: _jc2, ...connectConfig2 } = sshConfig;
+      conn.connect(connectConfig2);
     });
   }
 }

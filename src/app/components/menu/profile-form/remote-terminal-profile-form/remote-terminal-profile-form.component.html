@@ -51,6 +51,28 @@
       }
     </mat-form-field>
   }
+  @if (type !== 'telnet' && type !== 'scp' && type !== 'winrm') {
+    <mat-form-field class="field">
+      <mat-label>{{ 'PROFILES.JUMPER' | translate }}</mat-label>
+      <mat-select formControlName="jumperProfileId">
+        <mat-option [value]="''">{{ 'COMMON.NONE' | translate }}</mat-option>
+        @for (oneProfile of filterJumperProfiles(); track oneProfile.id) {
+        <mat-option [value]="oneProfile.id">
+          {{ oneProfile.name }}
+        </mat-option>
+        }
+      </mat-select>
+      @if (form.get('jumperProfileId')?.value) {
+      <button
+        matSuffix
+        mat-icon-button
+        aria-label="Clear"
+        (click)="clear(form,'jumperProfileId')">
+        <mat-icon>close</mat-icon>
+      </button>
+      }
+    </mat-form-field>
+  }
   <mat-radio-group aria-label="Auth Type" formControlName="authType" required>
     @for (oneType of AUTH_OPTIONS | keyvalue : unordered; track oneType.value) {
     <mat-radio-button [value]="oneType.value">{{ oneType.value === 'N/A' ? ('COMMON.NONE' | translate) : oneType.value === 'login' ? ('COMMON.LOGIN' | translate) : ('COMMON.SECRET' | translate) }}</mat-radio-button>

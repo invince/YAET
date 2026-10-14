@@ -169,7 +169,8 @@
     "FTP_FILE_EXPLORER": "Explorador de archivos FTP",
     "SAMBA_FILE_EXPLORER": "Explorador de archivos Samba",
     "SFTP_FILE_EXPLORER": "Explorador de archivos SFTP",
-    "CUSTOM": "Personalizado"
+    "CUSTOM": "Personalizado",
+    "JUMPER": "Host bastión"
   },
   "QUICKCONNECT": {
     "TITLE": "Conexión rápida"

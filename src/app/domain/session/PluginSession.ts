@@ -66,6 +66,9 @@ export class PluginSession extends Session {
       if (this.profileData.initCmd) {
         data.initCmd = this.profileData.initCmd;
       }
+      if (this.profileData.jumper) {
+        data.jumper = this.profileData.jumper;
+      }
 
       if (this.channels.openIsInvoke) {
         try {

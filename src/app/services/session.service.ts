@@ -10,6 +10,8 @@ import {getRegisteredPluginIds, loadBundledPluginModule} from '../plugin/service
 import '../../../plugins/generated-plugin-registry';
 import {SecretStorageService} from './secret-storage.service';
 import {TabService} from './tab.service';
+import {ProfileService} from './profile.service';
+import {resolveSecretToConfig} from '../utils/SecretResolver';
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +24,7 @@ export class SessionService {
 
     private registry: PluginRegistryService,
     private secretStorage: SecretStorageService,
+    private profileService: ProfileService,
     private injector: Injector,
   ) { }
 
@@ -78,6 +81,15 @@ export class SessionService {
   private createPluginSession(profile: Profile, profileType: string, plugin: any): PluginSession {
     const profileData = profile.getProfile(profileType) || {};
 
+    // Resolve bastion/jumper host (SSH): look up the referenced SSH profile
+    // and flatten its connection + secret into a plain jumper config.
+    if (profileData.jumperProfileId) {
+      const jumper = this.resolveJumperConfig(profileData.jumperProfileId, profile.id);
+      if (jumper) {
+        profileData.jumper = jumper;
+      }
+    }
+
     const ipcChannels = plugin.ipcChannels || {};
     const sendOpen = ipcChannels.send?.[0];
     const invokeOpen = ipcChannels.invoke?.[0];
@@ -92,6 +104,27 @@ export class SessionService {
     };
 
     return new PluginSession(profile, profileType, this.tabService, channels, profileData, this.secretStorage);
+  }
+
+  private resolveJumperConfig(jumperProfileId: string, selfId?: string): any | null {
+    if (!jumperProfileId || jumperProfileId === selfId) return null;
+    const all = this.profileService?.profilesCopy?.profiles || [];
+    const found = all.find(p => p.id === jumperProfileId && p.profileType === 'SSH_TERMINAL');
+    if (!found) return null;
+    const jd: any = found.getProfile('SSH_TERMINAL') || {};
+    // Prevent chained jumpers (single hop only)
+    const jumperConfig: any = {
+      host: jd.host,
+      port: jd.port || 22,
+      readyTimeout: 30000,
+      keepaliveInterval: 15000,
+      keepaliveCountMax: 5,
+    };
+    if (!jumperConfig.host) return null;
+    if (!resolveSecretToConfig(jumperConfig, jd, this.secretStorage, (m) => console.log('[SessionService][jumper]', m))) {
+      return null;
+    }
+    return jumperConfig;
   }
 
   openSessionWithoutTab(profile: Profile) {

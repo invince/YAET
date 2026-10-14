@@ -171,7 +171,8 @@
     "SFTP_FILE_EXPLORER": "SFTP File Explorer",
     "CUSTOM": "Custom",
     "SERIAL_TERMINAL": "Serial Port Terminal",
-    "SERIAL_PORT": "Serial Port (e.g. COM1, /dev/ttyUSB0)"
+    "SERIAL_PORT": "Serial Port (e.g. COM1, /dev/ttyUSB0)",
+    "JUMPER": "Bastion Host"
   },
   "QUICKCONNECT": {
     "TITLE": "Connection"

@@ -169,7 +169,8 @@
     "FTP_FILE_EXPLORER": "FTP Datei-Explorer",
     "SAMBA_FILE_EXPLORER": "Samba Datei-Explorer",
     "SFTP_FILE_EXPLORER": "SFTP Datei-Explorer",
-    "CUSTOM": "Benutzerdefiniert"
+    "CUSTOM": "Benutzerdefiniert",
+    "JUMPER": "Bastion-Host"
   },
   "QUICKCONNECT": {
     "TITLE": "Schnellverbindung"

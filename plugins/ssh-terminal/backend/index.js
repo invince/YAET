@@ -52,6 +52,7 @@ function register(context) {
         id: data.id,
         initPath: data.initPath,
         initCmd: data.initCmd,
+        jumper: data.jumper,
         rows: data.rows ?? terminalMap?.get(data.id)?.rows,
         cols: data.cols ?? terminalMap?.get(data.id)?.cols,
       });
