@@ -133,6 +133,38 @@ class RuntimeAPI {
     return this._profileService.listSSHProfiles();
   }
 
+  async getConnector(profileId, options = {}) {
+    if (!profileId) {
+      return new LocalTerminalSession(this.log);
+    }
+
+    const encrypted = await this.configService.getProfiles();
+    if (!encrypted) throw new Error('No profiles found');
+
+    const decrypted = await decrypt(encrypted);
+    const data = JSON.parse(decrypted);
+    const profile = data.profiles?.find(p => p.id === profileId);
+    if (!profile) throw new Error(`Profile not found: ${profileId}`);
+
+    const profileType = profile.profileType || '';
+
+    if (profileType === 'LOCAL_TERMINAL') {
+      return new LocalTerminalSession(this.log);
+    }
+
+    if (profileType === 'RDP_REMOTE_DESKTOP') {
+      throw new Error(`Connector ${profileType} not supported for runtime operations`);
+    }
+
+    const config = await this._resolveRemoteConfig(profileId, options);
+
+    if (this._connectors[profileType]) {
+      return this._connectors[profileType](this.log, config);
+    }
+
+    throw new Error(`Unsupported profile type for connector: ${profileType}`);
+  }
+
   /**
    * Resolve a first-class tunnel (tunnels.json) by ID.
    * Reads the tunnel server-side and re-validates it — renderer-supplied

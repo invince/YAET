@@ -95,22 +95,46 @@ EOF
 echo "Creating yaet CLI shim..."
 cat > "$HOME/.local/bin/yaet" <<'EOF'
 #!/bin/sh
-# yaet — headless CLI shim. See scripts/yaet in the YAET repo.
+# yaet — headless CLI shim. Keep in sync with scripts/yaet in the YAET repo.
+#
+# Ships inside the package (app.asar/scripts/yaet, read — never unpacked).
+# Install once: sudo yaet doctor --fix-shim
+# (writes /usr/local/bin/yaet; without root: ~/.local/bin/yaet).
+#
+# Forwards all args to the installed YAET binary with the Chromium flags
+# required without a display (otherwise it fails with
+# `Missing X server or $DISPLAY`). CLI commands exit promptly with code 0/1.
+#
+#   yaet doctor
+#   yaet cloud setup --url <git-url> --login <user> --password-stdin
+#   yaet cloud download
+#   yaet --mcp
 set -u
 
 FLAGS="--no-sandbox --ozone-platform=headless --disable-gpu --disable-logging"
 
-# 1. .deb install
-if [ -x /opt/YetAnotherElectronTerm/yet-another-electron-term ]; then
-  # shellcheck disable=SC2086
-  exec /opt/YetAnotherElectronTerm/yet-another-electron-term $FLAGS "$@"
-fi
-
-# 2. user-local AppImage (installed by install.sh)
-if [ -x "$HOME/.local/bin/YetAnotherElectronTerm.AppImage" ]; then
-  # shellcheck disable=SC2086
-  exec "$HOME/.local/bin/YetAnotherElectronTerm.AppImage" $FLAGS "$@"
-fi
+# MCP stdio server runs as pure Node — skips the Chromium boot entirely
+# (zygotes/GPU/network service), saving ~4 processes and more per session.
+# The asar is readable under ELECTRON_RUN_AS_NODE, so pass cli.js directly.
+# AppImage installs fall back to the re-exec in electronMain.js.
+for BIN in /opt/YetAnotherElectronTerm/yet-another-electron-term \
+           "$HOME/.local/bin/YetAnotherElectronTerm.AppImage"; do
+  [ -x "$BIN" ] || continue
+  case " $* " in
+    *" --mcp "*)
+      CLI=/opt/YetAnotherElectronTerm/resources/app.asar/src-protocol/cli.js
+      BUILD_ROOT=/opt/YetAnotherElectronTerm
+      [ "$BIN" = "$BUILD_ROOT/yet-another-electron-term" ] || BUILD_ROOT=""
+      if [ -n "$BUILD_ROOT" ] && [ -r "$BUILD_ROOT/resources/app.asar" ]; then
+        # Translate `--mcp` to the subcommand cli.js expects; drop other args
+        # — MCP clients invoke the bare binary with only --mcp.
+        exec env ELECTRON_RUN_AS_NODE=1 "$BIN" "$CLI" mcp
+      fi
+      # cli.js not resolvable here — fall through to GUI path + re-exec in electronMain.js
+      ;;
+    *) exec "$BIN" $FLAGS "$@" ;;
+  esac
+done
 
 echo "yaet: no installed YAET binary found (looked in /opt/YetAnotherElectronTerm and ~/.local/bin)." >&2
 exit 1
