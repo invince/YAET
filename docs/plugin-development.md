@@ -49,7 +49,9 @@ Electron app starts
 ```
 User creates SSH connection
   → SessionService.create(profile, 'SSH_TERMINAL')
-    → registry.getExternalPlugin('SSH_TERMINAL')  ← found? use PluginSession
+    → registry.getBundledPlugin('SSH_TERMINAL')  ← bundled plugin found
+      (the external map only holds runtime-installed plugins)
+    → no sessionFactory on the plugin entry → createPluginSession()
     → new PluginSession(profile, ..., channels, profileData, secretStorage)
       → PluginSession.open()
         → resolveSecretToConfig()  ← resolve secrets before IPC
@@ -69,7 +71,9 @@ electronMain.js
   │
   ├─ app.on('ready')
   │   │
-  │   ├─ new PluginManager(__dirname, log)
+  │   ├─ initPluginHandler(log)   ← src-electron/adapter/ipc/pluginHandler.js
+  │   │   └─ constructs the manager: new PluginManager(__dirname + '/../../', log)
+  │   │      (electronMain.js only calls initPluginHandler(log); all manager setup happens there)
   │   ├─ pluginManager.discover()
   │   │   └─ for each directory in plugins/:
   │   │       ├─ read manifest.json
@@ -144,10 +148,11 @@ App starts → app.component.ts → ngOnInit()
   │   │
   │   └─ External plugins reuse RemoteTerminalProfileFormComponent for profile forms
   │
-  ├─ pluginRegistry.getExternalPlugin('SSH_TERMINAL')
-  │   └─ returns { id, name, category, profileType, profileFormElement, ipcChannels }
+  ├─ pluginRegistry.getBundledPlugin('SSH_TERMINAL')
+  │   └─ returns { id, name, category, profileType, sessionFactory, ... }
+  │      (the external map only holds runtime-installed plugins)
   │
-  └─ Profile form: @default case in profile-form.component.html
+  └─ Profile form: external-terminal branch in profile-form.component.html
       └─ <app-remote-terminal-profile-form> (shared component for all terminal types)
 ```
 
@@ -263,7 +268,7 @@ Both runtime (`dependencies`) and build-time (`devDependencies`) packages are in
 | `name` | Yes | Display name |
 | `version` | Yes | Semver version |
 | `category` | Yes | `TERMINAL`, `FILE_EXPLORER`, `REMOTE_DESKTOP`, or `CUSTOM` |
-| `profileType` | Yes | Must match a value in `ProfileType` enum |
+| `profileType` | Yes | Free-form string constant (e.g. `'MY_CONNECTION'`) — `ProfileType` is a plain `string` in `src/app/domain/profile/Profile.ts`; bundled constants look like `'SSH_TERMINAL'`, `'SAMBA_FILE_EXPLORER'` |
 | `icon` | Yes | Material icon name |
 | `enabled` | Yes | Whether the plugin loads on startup |
 | `ipc.send` | No | IPC channels the plugin listens on (renderer → main) |
@@ -287,15 +292,15 @@ function register(context) {
 
     // Wire up events
     session.on('output', ({ data: output }) => {
-      event.sender.send('terminal.output', { id: data.terminalId, data: output });
+      event.sender.send('terminal.output', { id: data.id, data: output });
     });
 
     session.on('error', ({ error }) => {
-      event.sender.send('error', { category: 'my-connection', id: data.terminalId, error });
+      event.sender.send('error', { category: 'my-connection', id: data.id, error });
     });
 
     session.on('disconnect', ({ error }) => {
-      event.sender.send('session.disconnect.my-connection', { id: data.terminalId, error: !!error });
+      event.sender.send('session.disconnect.my-connection', { id: data.id, error: !!error });
     });
 
     try {
@@ -317,17 +322,17 @@ function register(context) {
         ...data.config,
         proxy,
         secretRepo,
-        id: data.terminalId,
+        id: data.id,
       });
 
       // Register in session registry (for AI tools)
       const registry = typeof sessionRegistry === 'function'
         ? sessionRegistry() : sessionRegistry;
-      if (registry) registry.register(data.terminalId, 'my-connection', 'user', session);
+      if (registry) registry.register(data.id, 'my-connection', 'user', session);
 
       // Register in terminalMap (for shared terminalHandler.js resize/input)
       if (terminalMap) {
-        terminalMap.set(data.terminalId, {
+        terminalMap.set(data.id, {
           type: 'my-connection',
           process: session.conn,
           stream: session.stream,
@@ -337,7 +342,7 @@ function register(context) {
     } catch (error) {
       event.sender.send('error', {
         category: 'my-connection',
-        id: data.terminalId,
+        id: data.id,
         error: error.message,
       });
     }
@@ -346,9 +351,9 @@ function register(context) {
   ipcMain.on('session.close.my-connection', (event, data) => {
     const registry = typeof sessionRegistry === 'function'
       ? sessionRegistry() : sessionRegistry;
-    const entry = registry?.get(data.terminalId);
+    const entry = registry?.get(data.id);
     if (entry?.session) entry.session.close();
-    registry?.unregister(data.terminalId);
+    registry?.unregister(data.id);
   });
 
   logger.info('[my-connection] Plugin registered');
@@ -481,7 +486,7 @@ window.__MY_CONNECTION_PLUGIN__ = {
 
 **Auth integration**: The core provides a reusable `<app-auth-form>` component for auth type selection (None / Login / Secret). External plugins declare `supportedAuthTypes` and `secretTypes` in their manifest — the app automatically renders the auth component below the Web Component form. The Web Component only needs to handle plugin-specific fields (like URL for WebDAV).
 
-**Alternatively**, for terminal-type plugins, you can skip the custom element and reuse the shared `RemoteTerminalProfileFormComponent` — no frontend code needed at all. The `@default` case in `profile-form.component.html` handles this automatically for external terminal plugins.
+**Alternatively**, for terminal-type plugins, you can skip the custom element and reuse the shared `RemoteTerminalProfileFormComponent` — no frontend code needed at all. The external-terminal branch in `profile-form.component.html` (`@else if (isExternalTerminalPlugin())` → `<app-remote-terminal-profile-form>`) handles this automatically for external terminal plugins.
 
 ### Step 5: Register the Plugin
 
@@ -496,14 +501,17 @@ For **bundled plugins**, create `frontend/my.plugin.ts`:
 ```typescript
 import { inject } from '@angular/core';
 import { PluginRegistryService } from '../../../src/app/plugin/services/plugin-registry.service';
-import { ProfileCategory, ProfileType } from '../../../src/app/domain/profile/Profile';
+import { ProfileCategory } from '../../../src/app/domain/profile/Profile';
+
+// ProfileType is a plain string — plugins define their own constant
+const MY_CONNECTION = 'MY_CONNECTION';
 
 const MY_MANIFEST = {
   id: 'my-connection',
   name: 'My Connection',
   version: '1.0.0',
   category: ProfileCategory.TERMINAL,
-  profileType: ProfileType.MY_CONNECTION,
+  profileType: MY_CONNECTION,
   defaultPort: 22,
   icon: 'terminal',
   enabled: true,
@@ -530,61 +538,31 @@ export function registerMyPlugin() {
 
 For **external plugins**, no core changes are needed — the plugin is discovered automatically.
 
-For **bundled plugins**, you may need:
+For **bundled plugins**, no core edits are needed either. `SessionService.create()` routes by `profileType` with no per-type `switch` to edit (see `src/app/services/session.service.ts`):
 
-**6a. Add ProfileType** (if new type):
+1. `LOCAL_TERMINAL` / `CUSTOM` → core sessions
+2. bundled plugin found via `registry.getBundledPlugin(profileType)` → uses the plugin's `sessionFactory` if set, else generic `PluginSession`
+3. external plugin found via `registry.getExternalPlugin(profileType)` → `Session` (if it provides `sessionElement`) or generic `PluginSession`
+4. unknown type → generic `Session` fallback
 
-In `src/app/domain/profile/Profile.ts`:
+So the only optional core-adjacent step is giving your bundled plugin a dedicated session by setting a **sessionFactory** in your `my.plugin.ts` (the pattern used by scp/ftp/samba/sftp/vnc plugins) — no `session.service.ts` edit, no `ProfileType` enum entry:
+
 ```typescript
-export enum ProfileType {
-  // ... existing types
-  MY_CONNECTION = 'MY_CONNECTION',
-}
+// my.plugin.ts — alongside registry.register(...)
+import { Profile } from '../../../src/app/domain/profile/Profile';
+import { TabService } from '../../../src/app/services/tab.service';
+import { MyElectronService } from './my-electron.service';
+import { MySession } from './my-session'; // thin session wrapper, optional
+
+const bundledPlugin = registry.getBundledPlugin?.(MY_CONNECTION); // if pre-registered elsewhere
+// or simply pass sessionFactory through the register() options of your UI flow, e.g.:
+bundledPlugin.sessionFactory = (profile: Profile, profileType: string) =>
+  new MySession(profile, profileType, inject(TabService), inject(MyElectronService));
+bundledPlugin.formControlName = 'myConnectionProfileForm';
+bundledPlugin.profileField = MY_CONNECTION;
 ```
 
-**6b. Add Session class** (if needed):
-
-In `src/app/domain/session/MySession.ts`:
-```typescript
-import { Profile, ProfileType } from '../profile/Profile';
-import { TabService } from '../../services/tab.service';
-import { Session } from './Session';
-
-export class MySession extends Session {
-  private myService: any;
-
-  constructor(profile: Profile, profileType: ProfileType,
-              tabService: TabService, myService: any) {
-    super(profile, profileType, tabService);
-    this.myService = myService;
-  }
-
-  override open(): void {
-    this.myService.openSession(this);
-    super.open();
-  }
-
-  override close(): void {
-    this.myService.closeSession(this);
-    super.close();
-  }
-}
-```
-
-**6c. Update SessionService**:
-
-In `src/app/services/session.service.ts`:
-```typescript
-import { MyElectronService } from '../../../plugins/my-connection/frontend/my-electron.service';
-import { MySession } from '../domain/session/MySession';
-
-// In constructor:
-private myService: MyElectronService,
-
-// In create() switch:
-case ProfileType.MY_CONNECTION:
-  return new MySession(profile, profileType, this.tabService, this.myService);
-```
+If you don't need a custom session class, skip this — the generic `PluginSession` (with your backend's IPC channels) already covers open/close/output routing.
 
 ## Packaging & Distribution
 
@@ -594,7 +572,7 @@ External plugins are distributed as **directories** that users copy to `~/.yaet/
 
 #### Simple plugin (no build step)
 
-For plugins like [`webdav-file-explorer`](../ext-plugins-example/webdav-file-explorer/) that have no npm dependencies and no frontend build step:
+For plugins like [`webdav-file-explorer`](../ext-plugins-example/webdav-file-explorer/) whose backend lives on Node builtins (its manifest still declares `["multer", "uuid", "yazl"]` for shared helpers) and that have no frontend build step:
 
 ```
 my-plugin/
@@ -747,9 +725,8 @@ The build script `scripts/generate-plugin-barrel.js` scans all `plugins/*/manife
 
 ### Bundled Plugins
 - [ ] All of the above, plus:
-- [ ] `ProfileType` enum entry
-- [ ] Session class (thin wrapper delegating to plugin service)
-- [ ] `SessionService` updated to create the session
+- [ ] Choose a unique `profileType` string constant (no core enum — `ProfileType` is a plain `string`)
+- [ ] Optional: `sessionFactory` on the plugin registration (or a dedicated session class) if the generic `PluginSession` isn't enough — no `SessionService.create()` edit needed (there is no per-type switch)
 - [ ] Build passes (`npx ng build`)
 
 ## Notes
@@ -757,7 +734,7 @@ The build script `scripts/generate-plugin-barrel.js` scans all `plugins/*/manife
 - **External plugin npm deps (option 1 — projectRequire)**: Use `context.projectRequire(moduleName)` in your connector to resolve npm packages from the project's `node_modules`. Direct `require()` will fail for external plugins since they live in `~/.yaet/plugins/`.
 - **External plugin npm deps (option 2 — self-managed)**: Add `package.json` to your plugin directory. `PluginManager` runs `npm install --ignore-scripts` automatically on startup. This is useful for build-time dependencies (e.g. `spice-client`) or when you need packages not available in the core project. Both approaches can be mixed — Node.js resolves from plugin's `node_modules` first, then falls through to `projectRequire`.
 - **Session view sharing**: Terminal plugins (SSH, Telnet, Local, WinRM) all share `TerminalComponent` for the UI. External plugins reuse it automatically via `PluginSession`.
-- **Profile form sharing**: `RemoteTerminalProfileFormComponent` is shared between SSH, Telnet, WinRM. External terminal plugins use it automatically via the `@default` case in `profile-form.component.html`.
+- **Profile form sharing**: `RemoteTerminalProfileFormComponent` is shared between SSH, Telnet, WinRM. External terminal plugins use it automatically via the external-terminal branch in `profile-form.component.html`.
 - **Preload whitelist**: IPC channels are automatically added to the preload whitelist from the plugin manifest. No manual whitelist editing needed.
 - **terminalMap**: If your plugin uses terminal output, register with `terminalMap` so the shared `terminalHandler.js` can route input/resize.
 - **sessionRegistry**: Register sessions here for AI tool integration (`session_write`, `session_read`).

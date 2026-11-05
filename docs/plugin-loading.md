@@ -85,7 +85,8 @@ External plugins live at `~/.yaet/plugins/<id>/` and are loaded entirely at runt
 ```
 electronMain.js → app.on('ready')
   │
-  ├─ new PluginManager(__dirname, log)
+  ├─ initPluginHandler(log)   ← src-electron/adapter/ipc/pluginHandler.js
+  │   └─ constructs the manager: new PluginManager(__dirname + '/../../', log)
   ├─ pluginManager.discover()
   │   └─ Scan plugins/ AND ~/.yaet/plugins/ for manifest.json
   │       └─ External plugins that conflict with bundled ids are SKIPPED (security)
@@ -253,15 +254,15 @@ function register(context) {
     const session = new SshTerminalSession(logger, context.projectRequire);
 
     session.on('output', ({ data: output }) => {
-      event.sender.send('terminal.output', { id: data.terminalId, data: output });
+      event.sender.send('terminal.output', { id: data.id, data: output });
     });
 
     session.on('error', ({ error }) => {
-      event.sender.send('error', { category: 'ssh', id: data.terminalId, error });
+      event.sender.send('error', { category: 'ssh', id: data.id, error });
     });
 
     session.on('disconnect', ({ error }) => {
-      event.sender.send('session.disconnect.terminal.ssh', { id: data.terminalId, error: !!error });
+      event.sender.send('session.disconnect.terminal.ssh', { id: data.id, error: !!error });
     });
 
     try {
@@ -274,30 +275,30 @@ function register(context) {
       const secretRepo = typeof context.secretService === 'function' ? context.secretService() : context.secretService;
 
       await session.connect({
-        ...data.config, proxy, proxyService, secretRepo, id: data.terminalId,
+        ...data.config, proxy, proxyService, secretRepo, id: data.id,
         initPath: data.initPath, initCmd: data.initCmd,
         rows: data.rows, cols: data.cols,
       });
 
       const registry = typeof sessionRegistry === 'function' ? sessionRegistry() : sessionRegistry;
-      if (registry) registry.register(data.terminalId, 'ssh', 'user', session);
+      if (registry) registry.register(data.id, 'ssh', 'user', session);
 
       if (terminalMap) {
-        terminalMap.set(data.terminalId, {
+        terminalMap.set(data.id, {
           type: 'ssh', process: session.conn, stream: session.stream,
           callback: (input) => session.write(input),
         });
       }
     } catch (error) {
-      event.sender.send('error', { category: 'ssh', id: data.terminalId, error: error.message });
+      event.sender.send('error', { category: 'ssh', id: data.id, error: error.message });
     }
   });
 
   ipcMain.on('session.close.terminal.ssh', (event, data) => {
     const registry = typeof sessionRegistry === 'function' ? sessionRegistry() : sessionRegistry;
-    const entry = registry ? registry.get(data.terminalId) : null;
+    const entry = registry ? registry.get(data.id) : null;
     if (entry?.session) entry.session.close();
-    if (registry) registry.unregister(data.terminalId);
+    if (registry) registry.unregister(data.id);
   });
 
   logger.info('[ssh-terminal] Plugin registered');
@@ -422,6 +423,8 @@ The merged manifest includes per-plugin `ipcChannels`:
       "category": "TERMINAL",
       "profileType": "SSH_TERMINAL",
       "source": "external",
+      "openNewTab": true,
+      "frontendEntry": "plugins/ssh-terminal/frontend/index.js",
       "ipcChannels": {
         "send": ["session.open.terminal.ssh", "session.close.terminal.ssh"],
         "invoke": [],
@@ -464,6 +467,6 @@ The `context` passed to `register()` in backend code includes:
 | `terminalMap` | `Map` | Shared terminal session map |
 | `sessionRegistry` | `SessionRegistry` or `() => SessionRegistry` | Session tracking |
 | `proxyService` | object or `() => object` | Proxy configuration |
-| `secretService` | array or `() => array` | Decrypted secrets |
+| `secretService` | `() => {secrets, findSecretById, findSecretByName}` | Decrypted secrets — restricted object getter, filtered to the manifest's declared `secretTypes` |
 | `projectRequire` | Function | `createRequire()` from project root — use for npm deps |
 | `appRoot` | string | Absolute path to the project root |

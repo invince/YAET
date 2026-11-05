@@ -149,6 +149,8 @@ adapter/ipc/
 ├── cloud.js                   ← IPC: cloud upload/download
 ├── clipboard.js               ← IPC: clipboard operations
 ├── customSession.js           ← IPC: custom command sessions
+├── knownHosts.js              ← IPC: known hosts (OpenSSH known_hosts sync/approval)
+├── settingBackup.js           ← IPC: settings backup/restore
 ├── localFile.js               ← IPC: local file operations
 ├── pluginHandler.js           ← IPC: plugin list, manifest, frontend reading
 ├── commonIpc.js               ← IPC: common utilities
@@ -157,6 +159,7 @@ adapter/ipc/
 ├── terminal/
 │   ├── terminalHandler.js     ← IPC: terminal input/resize routing
 │   └── localHandler.js        ← IPC: local terminal open/close
+├── tunnels.js                 ← IPC: SSH tunnel CRUD + start/stop
 └── ai/
     ├── aiChat.js              ← IPC: AI chat, tool execution
     └── acpClient.js           ← IPC: ACP client
@@ -175,12 +178,13 @@ src-protocol/
 ├── cli.js                     -- Unified CLI entry point
 ├── common/
 │   ├── credentialResolver.js  -- Decrypt YAET profiles/secrets from ~/.yaet/
+│   ├── masterKey.js           -- Master key resolution (--master-key > env > file > keyring)
 │   └── logger.js              -- Standalone logger (no Electron)
 ├── mcp/
-│   ├── server.js              -- MCP Server (JSON-RPC 2.0, stdio)
-│   ├── index.js               -- MCP bootstrap
+│   ├── server.js               -- MCP Server (JSON-RPC 2.0, stdio)
+│   ├── index.js                -- MCP bootstrap
 │   └── tools/
-│   ├── ssh.js             -- SSH tools (execute, sudo_execute, profiles)
+│       ├── ssh.js             -- SSH tools (execute, sudo_execute, profiles)
 │       ├── scp.js             -- SCP tools (list, read, write, delete)
 │       └── local.js           -- Local tool (execute)
 └── acp/

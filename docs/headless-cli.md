@@ -17,10 +17,14 @@ From source, the equivalent entry point is `node src-protocol/cli.js`.
 node src-protocol/cli.js doctor
 ```
 
-Below, `yaet` is a small shim that forwards to the installed binary
-**plus the flags Chromium requires without a display** (same as `--mcp`
-headless mode — Electron initializes the Ozone platform before `main()`
-runs, so omitting them fails with `Missing X server or $DISPLAY`).
+Below, `yaet` is a small shim. It forwards CLI commands to the installed
+binary **plus the flags Chromium requires without a display**
+(Electron initializes the Ozone platform before `main()` runs, so
+omitting them fails with `Missing X server or $DISPLAY`). `yaet --mcp`
+is special-cased: on .deb installs it runs the MCP stdio server as pure
+Node (`ELECTRON_RUN_AS_NODE=1` + the asar-embedded `cli.js`) — no
+process is spawned; on AppImage installs the headless flags apply and
+the MCP server runs inside the Electron main process.
 The shim template ships inside the package (`scripts/yaet`, read from
 the asar — never unpacked). Install it once (works for every shell,
 systemd units, and agents — no per-shell alias needed):
@@ -33,9 +37,11 @@ sudo /opt/YetAnotherElectronTerm/yet-another-electron-term doctor --fix-shim
 
 `--disable-gpu --disable-logging` silence the GPU-process and Chromium
 stderr spam. The remaining `dbus` ERROR lines are harmless noise on
-servers without a session bus. Commands exit promptly with code 0/1
-(the CLI calls `process.exit` instead of letting Electron tear down
-windowing code that doesn't exist headless).
+servers without a session bus. CLI commands (`doctor`, `masterkey`,
+`cloud`) exit promptly with code 0/1 — the CLI calls `process.exit`
+instead of letting Electron tear down windowing code that doesn't exist
+headless. The long-running servers (`mcp`, `acp`) of course stay alive
+until their transport closes.
 
 ## 0. Install on a server (no FUSE)
 
@@ -72,7 +78,7 @@ yaet cloud download
 # 5. verify
 yaet doctor
 
-# 6. serve (existing flag, unchanged — headless flags already in the shim)
+# 6. serve (runs as pure Node on .deb installs — no flags needed)
 yaet --mcp
 ```
 

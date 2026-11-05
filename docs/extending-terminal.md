@@ -93,7 +93,7 @@ class MyTerminalSession extends EventEmitter {
     if (this._stream) this._stream.write(data);
   }
 
-  async resize(rows, cols) {
+  async resize(cols, rows) {
     // Resize if supported by the connection type
   }
 
@@ -135,16 +135,16 @@ function register(context) {
     const session = new MyTerminalSession(logger);
 
     session.on('output', ({ data: output }) => {
-      event.sender.send('terminal.output', { id: data.terminalId, data: output });
+      event.sender.send('terminal.output', { id: data.id, data: output });
     });
 
     session.on('error', ({ error }) => {
-      event.sender.send('error', { category: 'my-terminal', id: data.terminalId, error });
+      event.sender.send('error', { category: 'my-terminal', id: data.id, error });
     });
 
     session.on('disconnect', ({ error }) => {
       event.sender.send('session.disconnect.terminal.my-terminal', {
-        id: data.terminalId,
+        id: data.id,
         error: !!error,
       });
     });
@@ -166,7 +166,7 @@ function register(context) {
         ...data.config,
         proxy,
         secretRepo,
-        id: data.terminalId,
+        id: data.id,
         rows: data.rows,
         cols: data.cols,
       });
@@ -174,11 +174,11 @@ function register(context) {
       // Register in session registry
       const registry = typeof sessionRegistry === 'function'
         ? sessionRegistry() : sessionRegistry;
-      if (registry) registry.register(data.terminalId, 'my-terminal', 'user', session);
+      if (registry) registry.register(data.id, 'my-terminal', 'user', session);
 
       // Register in terminalMap for shared resize/input routing
       if (terminalMap) {
-        terminalMap.set(data.terminalId, {
+        terminalMap.set(data.id, {
           type: 'my-terminal',
           process: session._stream,
           callback: (input) => session.write(input),
@@ -187,7 +187,7 @@ function register(context) {
     } catch (error) {
       event.sender.send('error', {
         category: 'my-terminal',
-        id: data.terminalId,
+        id: data.id,
         error: error.message,
       });
     }
@@ -197,9 +197,9 @@ function register(context) {
   ipcMain.on('session.close.terminal.my-terminal', (event, data) => {
     const registry = typeof sessionRegistry === 'function'
       ? sessionRegistry() : sessionRegistry;
-    const entry = registry?.get(data.terminalId);
+    const entry = registry?.get(data.id);
     if (entry?.session) entry.session.close();
-    registry?.unregister(data.terminalId);
+    registry?.unregister(data.id);
   });
 
   logger.info('[my-terminal] Plugin registered');

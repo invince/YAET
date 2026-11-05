@@ -300,6 +300,14 @@ npm test
 
 Unit tests cover domain models, pipes, utility functions, and services. Implemented with Jasmine + Karma.
 
+### Main-Process Unit Tests
+
+Electron main-process units (runtime, tunnels, SOCKS server, MCP server) run on the Node built-in test runner:
+
+```bash
+npm run test:main
+```
+
 ### E2E Tests
 
 E2E tests use **Playwright + Electron** and run a full Electron app instance against the compiled Angular build. Tests verify UI interactions, IPC communication, and CRUD flows.
@@ -343,6 +351,7 @@ npx playwright test -g "add Password Only"
 | 11. AI Settings | 18 | ✅ |
 | 12. Command Palette & Search | 6 | ✅ |
 | 13. SSH Tunnels | 12 | ✅ |
+| 14. Known Hosts (host-key approval) | 3 | ✅ |
 
 See [TestPlanE2E.md](./TestPlanE2E.md) for the full test plan.
 
@@ -387,14 +396,14 @@ Releases are now automated via **GitHub Actions**.
 ## Logs
 
 Application logs can be found at:
-- **Linux**: `~/.config/YetAnotherElectronTerm/logs/main.log`
-- **macOS**: `~/Library/Logs/YetAnotherElectronTerm/main.log`
-- **Windows**: `%USERPROFILE%\AppData\Roaming\YetAnotherElectronTerm\logs\main.log`
+- **Linux**: `~/.config/yet-another-electron-term/logs/main.log`
+- **macOS**: `~/Library/Application Support/yet-another-electron-term/logs/main.log`
+- **Windows**: `%USERPROFILE%\AppData\Roaming\yet-another-electron-term\logs\main.log`
 
 ## Technology Stack
 
 - **Frontend**: Angular 20, Angular Material
-- **Desktop**: Electron 39
+- **Desktop**: Electron 41
 - **Terminal**: xterm.js
 - **File Transfer**: ssh2 (SFTP), basic-ftp (FTP), v9u-smb2 (SMB)
 - **Remote Desktop**: @novnc/novnc (VNC)

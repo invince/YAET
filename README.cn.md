@@ -285,6 +285,14 @@ npm test
 
 单元测试覆盖领域模型、管道、工具函数和服务层。使用 Jasmine + Karma 实现。
 
+### 主进程单元测试
+
+Electron 主进程模块（runtime、隧道、SOCKS 服务、MCP 服务器）使用 Node 内置测试运行器：
+
+```bash
+npm run test:main
+```
+
 ### E2E 测试
 
 E2E 测试使用 **Playwright + Electron**，在编译后的 Angular 构建上运行完整的 Electron 应用实例。测试验证 UI 交互、IPC 通信和 CRUD 流程。
@@ -329,6 +337,7 @@ npx playwright test -g "add Password Only"
 | 11. AI 设置 | 18 | ✅ |
 | 12. 命令面板与终端搜索 | 6 | ✅ |
 | 13. SSH 隧道 | 12 | ✅ |
+| 14. 已知主机（主机密钥审批） | 3 | ✅ |
 
 完整测试计划参见 [TestPlanE2E.md](./TestPlanE2E.md)。
 
@@ -373,14 +382,14 @@ npm run build
 ## 日志
 
 应用日志位于：
-- **Linux**：`~/.config/YetAnotherElectronTerm/logs/main.log`
-- **macOS**：`~/Library/Logs/YetAnotherElectronTerm/main.log`
-- **Windows**：`%USERPROFILE%\AppData\Roaming\YetAnotherElectronTerm\logs\main.log`
+- **Linux**：`~/.config/yet-another-electron-term/logs/main.log`
+- **macOS**：`~/Library/Application Support/yet-another-electron-term/logs/main.log`
+- **Windows**：`%USERPROFILE%\AppData\Roaming\yet-another-electron-term\logs\main.log`
 
 ## 技术栈
 
 - **前端**：Angular 20、Angular Material
-- **桌面**：Electron 39
+- **桌面**：Electron 41
 - **终端**：xterm.js
 - **文件传输**：ssh2 (SFTP)、basic-ftp (FTP)、v9u-smb2 (SMB)
 - **远程桌面**：@novnc/novnc (VNC)
