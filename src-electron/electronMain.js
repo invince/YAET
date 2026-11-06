@@ -137,6 +137,10 @@ app.on('ready', () => {
 
   const isDev = process.env.NODE_ENV === 'development';
 
+  // --headless (e2e via playwright): Chromium's flag does not hide BrowserWindow,
+  // so create the window hidden to keep tests from popping up on the desktop.
+  const isHeadless = process.argv.includes('--headless');
+
   const trayIconPath = __dirname + '/assets/icons/app-icon.png';
   if (process.platform === 'darwin') {
     const icon = nativeImage.createFromPath(trayIconPath);
@@ -149,6 +153,7 @@ app.on('ready', () => {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    show: !isHeadless,
     backgroundColor: '#1e1e1e',
     icon: __dirname + '/assets/icons/app-icon.png',
     webPreferences: {

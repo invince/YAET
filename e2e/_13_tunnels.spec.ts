@@ -177,7 +177,9 @@ test.describe('13. SSH Tunnels', () => {
       // Confirmation dialog
       const confirm = mainWindow.locator('.cdk-overlay-container app-confirmation');
       await expect(confirm).toBeVisible({ timeout: 5000 });
+      await expect(confirm.getByRole('button', { name: /Yes|Confirm|OK/i })).toBeEnabled({ timeout: 5000 });
       await confirm.getByRole('button', { name: /Yes|Confirm|OK/i }).click();
+      await expect(confirm).toBeHidden({ timeout: 5000 });
       await mainWindow.waitForTimeout(500);
 
       await expect(mainWindow.locator('app-tunnels-menu .tunnel-row')).toHaveCount(0);
