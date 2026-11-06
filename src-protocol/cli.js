@@ -15,6 +15,7 @@ Commands:
   masterkey     Manage the master key on headless machines (set|check)
   cloud         Cloud sync on headless machines (status|download|setup)
   doctor        Local self-check for headless machines
+  known-hosts   Host-key management (probe|pin|import|list)
 
 Options:
   --transport <type>   Transport type: stdio (default)
@@ -74,6 +75,14 @@ function runCommand(args) {
       runDoctor(args.slice(1)).then(
         () => process.exit(0),
         (err) => { console.error(`Error: ${err.message}`); process.exit(1); }
+      );
+      break;
+    }
+    case 'known-hosts': {
+      const { runHostkey } = require('./hostkey/command');
+      runHostkey(args.slice(1)).then(
+        (code = 0) => process.exit(code),
+        (err) => { console.error(`Error: ${err.message}`); process.exit(err.exitCode || 1); }
       );
       break;
     }

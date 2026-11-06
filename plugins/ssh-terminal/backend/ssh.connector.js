@@ -25,13 +25,19 @@ function sshKeyType(raw) {
 }
 
 function hostKeyError(status, leg, host, port, keyType, base64, cause) {
+  const info = keyInfo(keyType, base64);
+  // Headless protocol-server (MCP/ACP) callers only ever see err.message, so
+  // carry the fingerprint in it — the key is pinned out of band via
+  // `yaet known-hosts pin --fingerprint <this sha256>`.
+  const hint = `; keyType=${keyType} sha256=${info.sha256}`
+    + ` (approve via GUI modal or 'yaet known-hosts pin --fingerprint <sha256>')`;
   const err = new Error(
-    status === 'CHANGED'
+    (status === 'CHANGED'
       ? `SSH host key for ${host} has changed — possible man-in-the-middle attack`
-      : `Unknown SSH host key for ${host} (not in known_hosts)`,
+      : `Unknown SSH host key for ${host} (not in known_hosts)`) + hint,
   );
   err.code = status === 'CHANGED' ? 'HOST_KEY_CHANGED' : 'HOST_KEY_UNKNOWN';
-  err.details = { status, leg, host, port, ...keyInfo(keyType, base64) };
+  err.details = { status, leg, host, port, ...info };
   if (cause) err.cause = cause;
   return err;
 }

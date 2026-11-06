@@ -38,7 +38,7 @@ sudo /opt/YetAnotherElectronTerm/yet-another-electron-term doctor --fix-shim
 `--disable-gpu --disable-logging` silence the GPU-process and Chromium
 stderr spam. The remaining `dbus` ERROR lines are harmless noise on
 servers without a session bus. CLI commands (`doctor`, `masterkey`,
-`cloud`) exit promptly with code 0/1 — the CLI calls `process.exit`
+`cloud`, `known-hosts`) exit promptly with code 0/1 — the CLI calls `process.exit`
 instead of letting Electron tear down windowing code that doesn't exist
 headless. The long-running servers (`mcp`, `acp`) of course stay alive
 until their transport closes.
@@ -140,6 +140,38 @@ Clones the sync repo and replaces the local JSON files.
 Existing files are backed up to `<configDir>/backup/` first
 (handled inside `CloudService`). Prints per-file `ok:` / `ko:` lines.
 
+### `known-hosts probe|pin|import|list`
+
+Headless counterpart of the GUI host-key approval modal (A3). The SSH
+connector is fail-closed: MCP/ACP `ssh_*` calls reject any host key not
+pinned in `<configDir>/known_hosts`. On a fresh headless machine nothing
+is pinned, so every connection fails with
+`Unknown SSH host key for <host> (not in known_hosts); … sha256=SHA256:…`.
+The error message (and the MCP client's log) carries the fingerprint; agents
+should relay it to the human, who confirms it out of band, then pins it
+with `pin --fingerprint`:
+
+```bash
+# connect once and show what the server presented (nothing is stored)
+yaet known-hosts probe <profileName>
+# or with manual credentials
+yaet known-hosts probe --host 10.0.0.5 --username root
+
+# pin ONLY the exact fingerprint you confirmed
+yaet known-hosts pin <profileName> --fingerprint SHA256:xxxx
+
+# bulk path: import your OpenSSH trust (hashed |1|… lines are skipped)
+yaet known-hosts import            # defaults to ~/.ssh/known_hosts
+yaet known-hosts list
+```
+
+`pin` stores the key only when the fingerprint passed on the command
+line matches the key the server actually presented — a mismatch aborts
+with "NOT stored", so replaced/error-text injected fingerprints cannot
+be persisted silently. Re-running `pin --fingerprint <new>` after a
+verified server replacement is the deliberate way to update a rotated
+key. Exit codes: 0 ok, 1 error, 2 unknown key, 3 changed key.
+
 ### `doctor [--fix-shim]`
 
 Local-only self-check, no network: config dir, key resolution,
@@ -175,3 +207,5 @@ JSONs cannot be decrypted.
 | `dlopen(): error loading libfuse.so.2` | AppImage needs FUSE — use the .deb release instead (see §0) |
 | `Missing X server or $DISPLAY` | Chromium headless flags missing — call through the `yaet` shim, not the raw binary |
 | `Unknown command/subcommand` | bare form needs the full words, e.g. `masterkey set` — not `masterkey se` |
+| `Unknown SSH host key for <host> …` | host not pinned yet — `yaet known-hosts probe` then `pin --fingerprint` (or `import ~/.ssh/known_hosts`) |
+| `SSH host key for <host> has changed` | server was replaced/reinstalled or MITM — verify out of band, then `pin --fingerprint <new>` |
