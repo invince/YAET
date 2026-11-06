@@ -7,7 +7,7 @@
 
 ## Problem
 
-Phase 1 gave the AI 33 function-calling tools, but the AI operates in a stateless bubble:
+Phase 1 gave the AI 36 function-calling tools, but the AI operates in a stateless bubble:
 
 - `terminal_execute` runs a command via `connector.exec()` and returns `{stdout, stderr, exitCode}` as the tool response -- the AI sees the result.
 - However, terminals opened through the **UI** (via IPC handlers) stream output through `event.sender.send()` to the Angular frontend. The AI has no visibility into these sessions or their output.
@@ -18,7 +18,7 @@ Phase 1 gave the AI 33 function-calling tools, but the AI operates in a stateles
 
 ```
 UI opens SSH terminal
-  → sshHandler creates SshTerminalSession
+  → terminalHandler creates SshTerminalSession
   → output → ipcMain → Angular UI
   → AI cannot see this session at all
 
@@ -40,21 +40,16 @@ A unified registry that tracks all sessions regardless of their origin (UI or AI
 ```
 Before:                          After:
 
-sshHandler                        sshHandler
+terminalHandler                   terminalHandler
   sessions Map ────┐               sessions Map ────┐
                    │                                 │
 localHandler        │              localHandler        │
   sessions Map ────┤               sessions Map ────┤
                    ├────►         SessionRegistry ←─┤ ← shared registry
-telnetHandler      │              telnetHandler      │
-  sessions Map ────┤               sessions Map ────┤
                    │                                 │
 AI executeTool     │              AI executeTool ────┘
   always creates   │                session_list/read → query registry
   new connector    │
-                   │
-winRMHandler       │              winRMHandler
-  sessions Map ────┘               sessions Map ────┘
 ```
 
 ---
@@ -204,28 +199,25 @@ Returns: `{ id, type, owner, running: bool, output: [{ts, data}] }`
 
 ## IPC Handler Changes
 
-Each handler that currently manages its own `sessions = new Map()` will receive the shared `SessionRegistry` as a parameter and register/unregister sessions with it.
+Each handler that manages its own `sessions = new Map()` receives the shared `SessionRegistry` as a parameter and registers/unregisters sessions with it.
 
 | File | Current | After |
 |---|---|---|
-| `sshHandler.js` | `const sessions = new Map()` | Parameter: `registry` |
+| `terminalHandler.js` | `const sessions = new Map()` | Parameter: `registry` |
 | `localHandler.js` | `const sessions = new Map()` | Parameter: `registry` |
-| `telnetHandler.js` | `const sessions = new Map()` | Parameter: `registry` |
-| `winRMHandler.js` | `const sessions = new Map()` | Parameter: `registry` |
-| `vncHandler.js` | `const sessions = new Map()` | Parameter: `registry` |
 
 Pattern change:
 
 ```js
 // Before
-sessions.set(data.terminalId, session);
+sessions.set(data.id, session);
 // ...
-sessions.delete(data.terminalId);
+sessions.delete(data.id);
 
 // After
-registry.register(data.terminalId, 'ssh', 'user', session);
+registry.register(data.id, 'ssh', 'user', session);
 // ...
-registry.unregister(data.terminalId);
+registry.unregister(data.id);
 ```
 
 Output buffering is handled automatically by the registry (it hooks the session's `output` event), so existing `session.on('output', ...)` handlers for IPC push remain unchanged.
@@ -266,11 +258,8 @@ No changes needed. `executeTool(runtime, toolName, args)` already receives `runt
 | **Create** | `src-electron/runtime/sessionRegistry.js` |
 | **Modify** | `src-electron/electronMain.js` |
 | **Modify** | `src-electron/adapter/ai/toolDefinitions.js` |
-| **Modify** | `src-electron/adapter/ipc/terminal/sshHandler.js` |
+| **Modify** | `src-electron/adapter/ipc/terminal/terminalHandler.js` |
 | **Modify** | `src-electron/adapter/ipc/terminal/localHandler.js` |
-| **Modify** | `src-electron/adapter/ipc/terminal/telnetHandler.js` |
-| **Modify** | `src-electron/adapter/ipc/terminal/winRMHandler.js` |
-| **Modify** | `src-electron/adapter/ipc/remote-desktop/vncHandler.js` |
 | **Modify** (optional) | `src-electron/runtime/runtimeAPI.js` (facade methods) |
 | **Modify** | `src/app/domain/setting/AiSettings.ts` (add `contextMaxLines`, `crossSessionAccess`) |
 | **Modify** | `src/app/services/setting.service.ts` (validate `contextMaxLines`, `crossSessionAccess`) |
@@ -310,7 +299,7 @@ Both paths gated by `useContext`. First path always injected for the current act
 | Component | Status |
 |---|---|
 | `SessionRegistry` class | ✅ Implemented |
-| Registry wired into all 5 terminal IPC handlers | ✅ Implemented |
+| Registry wired into terminal IPC handlers | ✅ Implemented |
 | `session_list` tool | ✅ Implemented |
 | `session_read` tool | ✅ Implemented |
 | `session_write` tool | ✅ Implemented (AI-owned only) |

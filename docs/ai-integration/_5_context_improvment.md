@@ -1,13 +1,13 @@
 # Phase 5: Context Transmission Optimization
 
 > Reduce token usage and latency by sending only relevant session output to the AI, rather than the full buffer every time.
-> Last updated: 2026-09-05
+> Last updated: 2026-11-06
 
 ---
 
 ## Problem
 
-Currently `injectSessionContext()` sends the complete output of every active session with every user message. This wastes tokens and increases latency:
+Previously `injectSessionContext()` sent the complete output of every active session with every user message. This wastes tokens and increases latency:
 
 | Issue | Impact |
 |---|---|
@@ -15,6 +15,8 @@ Currently `injectSessionContext()` sends the complete output of every active ses
 | IDLE sessions (just a prompt) send full buffer | Unnecessary detail |
 | Long-running sessions accumulate large buffers | Token limit pressure |
 | AI has already seen the same output | No new information |
+
+**Status**: Level 2 (incremental delivery via `lastSentTimestamps`) is implemented in `aiChat.js`. Level 1 (state-aware truncation) and Level 3 (AI-driven relevance) are not yet implemented.
 
 ---
 

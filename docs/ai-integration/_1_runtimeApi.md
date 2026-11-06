@@ -69,6 +69,7 @@ runtimeAPI
   ├── resolveSSHConfigByName(name)      → SSH config by profile name
   ├── resolveSSHConfigById(id)          → SSH config by profile ID
   ├── listSSHProfiles()                 → list all SSH profiles
+  ├── resolveTunnel(tunnelId)            → resolved tunnel config
   └── _resolveRemoteConfig(profileId, opts) → resolved config (host, port, credentials)
 ```
 

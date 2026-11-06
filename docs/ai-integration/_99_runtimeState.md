@@ -199,6 +199,8 @@ No new settings needed. `contextMaxLines` already controls buffer size. The clas
 
 ## File Change Summary
 
+> **Status**: Not yet implemented. `sessionStateClassifier.js` does not exist in the codebase.
+
 | Operation | File |
 |---|---|
 | **Create** | `src-electron/runtime/sessionStateClassifier.js` |
@@ -214,6 +216,5 @@ No new settings needed. `contextMaxLines` already controls buffer size. The clas
 - Multi-line progressive heuristics (top/htop output detection)
 - ANSI strip before classification (avoid false positives on escape sequences)
 - User confirmation flow: AI asks user before writing to `INPUT_REQUIRED` sessions
-- `session_write` tool: allow AI to write to sessions (e.g. submit password/confirmations)
 - State history log for auditing
 - Custom state rules via regex configuration

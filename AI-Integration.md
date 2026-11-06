@@ -84,6 +84,7 @@ runtimeAPI
   │     ├── VNC_REMOTE_DESKTOP        → VncDesktop (via plugin)
   │     └── ...                       → any registered plugin connector
   ├── registerConnector(type, factory)  ← plugins call this at startup
+  ├── resolveTunnel(tunnelId)           → resolved tunnel config
   └── _resolveRemoteConfig(profileId, opts) → resolved config (host, port, credentials)
 ```
 
@@ -141,6 +142,11 @@ Infrastructure services — these are NOT protocol-specific:
 | `ProfileService` | `profileService.js` | SSH config resolution by profile name/ID |
 | `ProxyService` | `proxyService.js` | HTTP CONNECT / SOCKS4/5 proxy tunneling |
 | `CloudService` | `cloudService.js` | Git-based cloud sync |
+| `EnvConfig` | `envConfig.js` | Environment variable / config resolution |
+| `KnownHostsService` | `knownHostsService.js` | SSH known_hosts management |
+| `TunnelService` | `tunnelService.js` | SSH tunnel lifecycle management |
+| `TunnelRules` | `tunnelRules.js` | Tunnel port-forwarding rules |
+| `SocksServer` | `socksServer.js` | Local SOCKS5 proxy server |
 
 ### 4. Interface Layer (Adapters)
 
@@ -158,6 +164,9 @@ adapter/ipc/
 ├── customSession.js           ← IPC: custom command sessions
 ├── localFile.js               ← IPC: local file operations
 ├── pluginHandler.js           ← IPC: plugin list, manifest, frontend reading
+├── knownHosts.js              ← IPC: SSH known_hosts approve/reject
+├── settingBackup.js           ← IPC: settings backup/restore
+├── tunnels.js                 ← IPC: SSH tunnel start/stop
 ├── commonIpc.js               ← IPC: common utilities
 ├── autoUpdater.js             ← IPC: auto-update
 ├── rateLimiter.js             ← API rate limiting
@@ -187,12 +196,13 @@ src-protocol/
 ├── cli.js                     ← Unified CLI entry point
 ├── common/
 │   ├── credentialResolver.js  ← Decrypt YAET profiles/secrets from ~/.yaet/
-│   └── logger.js              ← Standalone logger (no Electron)
+│   ├── logger.js              ← Standalone logger (no Electron)
+│   └── masterKey.js           ← Master key derivation/shared logic
 ├── mcp/
 │   ├── server.js              ← MCP Server (JSON-RPC 2.0, stdio)
 │   ├── index.js               ← MCP bootstrap
 │   └── tools/
-│   ├── ssh.js             ← SSH tools (execute, sudo_execute, profiles)
+│       ├── ssh.js             ← SSH tools (execute, sudo_execute, profiles)
 │       ├── scp.js             ← SCP tools (list, read, write, delete)
 │       └── local.js           ← Local tool (execute)
 └── acp/
@@ -307,7 +317,7 @@ Key guarantees:
 - **Credentials exist only in main process memory** — ToolExecutor decrypts, uses, and discards; never persisted, serialized, or sent back to renderer
 - **Encrypted storage** — `profiles.json` and `secrets.json` use AES encryption + master key (OS keychain via keytar)
 - **AI can't access directly** — even with a malicious prompt, AI can only call 36 tools with limited parameters; it can't enumerate secretId or read files directly
-- **AI privilege escalation blocked** — `executeTool` ignores AI-passed `secretId`/`proxyId`, uses only profile-bound credentials; 16 tool schemas enforce this at the schema level
+- **AI privilege escalation blocked** — `executeTool` ignores AI-passed `secretId`/`proxyId`, uses only profile-bound credentials; 36 tool schemas enforce this at the schema level
 - **AI command approval** — dangerous commands and destructive file operations require user approval; regex rules pre-compiled with ReDoS protection
 - **AI download sandbox** — `localPath` restricted to configurable download directory; base64 inline capped at 512KB
 - **Proxy support** — SSH/SCP connections can route through configured proxies
