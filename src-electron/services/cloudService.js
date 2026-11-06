@@ -118,8 +118,16 @@ class CloudService {
       for (const jsonFilePath of jsonFiles) {
         const fileName = path.basename(jsonFilePath);
         const destinationFilePath = path.join(gitAbsDir, fileName);
-        await fsPromise.copyFile(jsonFilePath, destinationFilePath);
-        response.ok.push('+' + fileName);
+        try {
+          await fsPromise.copyFile(jsonFilePath, destinationFilePath);
+          response.ok.push('+' + fileName);
+        } catch (err) {
+          if (err.code === 'ENOENT') {
+            this.log.warn(`File not found (skipping upload): ${fileName}`);
+          } else {
+            throw err;
+          }
+        }
       }
 
       this.log.info('Committing and pushing changes...');
