@@ -47,6 +47,13 @@ function maskUrl(url) {
 }
 
 function encryptJson(obj, key) {
+  // codeql[js/insufficient-password-hash] lgtm[js/insufficient-password-hash]
+  // Not a password hash: `obj` is *encrypted* (reversible by design — the git
+  // credential must be replayable to authenticate), and `key` is the YAET
+  // master key from the OS keyring / 0600 file, not a user password. The
+  // OpenSSL-compatible CryptoJS envelope is kept as-is because cloud.json /
+  // secrets.json are synced and must stay readable by already-deployed builds;
+  // switching to PBKDF2 + WordArray keys would change the on-disk format.
   return CryptoJS.AES.encrypt(JSON.stringify(obj), key).toString();
 }
 
