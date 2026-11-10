@@ -157,12 +157,14 @@ class LocalTerminalSession extends TerminalRuntimeApi {
   async exec(command, opts = {}) {
     const shell = process.platform === 'win32' ? { shell: 'cmd.exe' } : {};
     return new Promise((resolve) => {
-      // codeql[js/command-line-injection] lgtm[js/command-line-injection]
       // By design: this is the "local terminal" runtime connector, whose whole
       // contract is to run a caller-supplied command line (MCP local_execute /
       // ACP exec, i.e. the user's own agent). Nothing here can sanitise the
       // argument without breaking the feature — the trust boundary is the
       // MCP/ACP client, which already has full shell access to this machine.
+      // Suppression sits directly above the call (CodeQL only honours the
+      // comment on the reported line or the line immediately before it).
+      // codeql[js/command-line-injection] lgtm[js/command-line-injection]
       const child = exec(command, {
         ...shell,
         ...(opts.cwd ? { cwd: opts.cwd } : {}),
