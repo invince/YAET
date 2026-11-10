@@ -19,7 +19,7 @@ if (process.argv.includes('--cli')) {
 {
   const isPathToken = (a) => a === '.' || a.startsWith('/') || a.startsWith('./') || a.startsWith('../');
   const firstPositional = process.argv.slice(1).find((a) => !isPathToken(a) && !a.startsWith('-'));
-  if (['masterkey', 'cloud', 'doctor'].includes(firstPositional)) {
+  if (['masterkey', 'cloud', 'doctor', 'upgrade'].includes(firstPositional)) {
     const { runCommand } = require('../src-protocol/cli');
     runCommand(process.argv.slice(process.argv.indexOf(firstPositional)));
     return; // skip all Electron GUI initialization

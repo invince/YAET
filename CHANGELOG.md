@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - A5 Command Palette & Terminal Search
 ### Added
+- **CLI `upgrade` command**: `yaet upgrade` (and `yaet upgrade --check`) detects the install layout (AppImage in `~/.local/bin` vs /opt system install), compares the current version with the latest release of `invince/YAET-RELEASE`, and for AppImage installs downloads the new AppImage (direct asset link, `latest-linux.yml` fallback — same logic as `install.sh`) and replaces it atomically; system/source installs print upgrade guidance instead
 - **In-terminal search (Ctrl+Shift+F)**: `@xterm/addon-search` integration — live incremental search, Enter/Shift+Enter next/previous, match counter (`1/2`), no-results hint, case/whole-word/regex toggles, Esc to close; SSH terminals get a toolbar button, others a floating search button; Ctrl+Shift+F only opens search on the active tab (`TerminalInstanceService.searchRequest$`)
 - **Command palette (Ctrl+K)**: fuzzy subsequence search dialog with Profiles (connect), Open Tabs (switch) and Actions (new terminal, menus, AI chat, splits, tab cycling) groups; `↑↓↵Esc/Home/End` + `Ctrl+N/P` navigation, `<mark>` match highlight
 - **i18n**: `COMMAND_PALETTE` + two `SHORTCUTS` keys in en/zh/de/es/fr

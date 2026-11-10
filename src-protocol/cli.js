@@ -15,6 +15,7 @@ Commands:
   masterkey     Manage the master key on headless machines (set|check)
   cloud         Cloud sync on headless machines (status|download|setup)
   doctor        Local self-check for headless machines
+  upgrade       Upgrade to the latest release (--check to only compare)
   known-hosts   Host-key management (probe|pin|import|list)
 
 Options:
@@ -73,6 +74,14 @@ function runCommand(args) {
     case 'doctor': {
       const { runDoctor } = require('./doctor/command');
       runDoctor(args.slice(1)).then(
+        () => process.exit(0),
+        (err) => { console.error(`Error: ${err.message}`); process.exit(1); }
+      );
+      break;
+    }
+    case 'upgrade': {
+      const { runUpgrade } = require('./upgrade/command');
+      runUpgrade(args.slice(1)).then(
         () => process.exit(0),
         (err) => { console.error(`Error: ${err.message}`); process.exit(1); }
       );
