@@ -1,7 +1,7 @@
 const path = require('path');
 const { promises: fsPromise } = require('fs');
 const { tmpdir } = require('os');
-const simpleGit = require('simple-git');
+const { simpleGit } = require('simple-git');
 const { ProxyService } = require('./proxyService');
 const { APP_CONFIG_PATH, SETTINGS_JSON, PROFILES_JSON, SECRETS_JSON, PROXIES_JSON, TUNNELS_JSON } = require('./configService');
 
@@ -81,9 +81,13 @@ class CloudService {
       await fsPromise.rm(gitAbsDir, { recursive: true, force: true });
 
       this.log.info('Cloning repository...');
-      // NB: simple-git >=3.28 blocks GIT_ASKPASS env unless explicitly
-      // allowed. The askpass script is ours (0700, tmpdir), so opt in.
-      const git = simpleGit({ unsafe: { allowUnsafeAskPass: true } }).env('GIT_ASKPASS', askpassScript);
+      // NB: simple-git >=4 guards GIT_ASKPASS twice: the environment guard needs
+      // allowEnvironment, and the argv-parser guard needs unsafe.allowUnsafeAskPass.
+      // The askpass script is ours (0700, tmpdir), so opt in to both.
+      const git = simpleGit({
+        unsafe: { allowUnsafeAskPass: true },
+        allowEnvironment: ['GIT_ASKPASS'],
+      }).env('GIT_ASKPASS', askpassScript);
 
       let proxyId = cloudSettings.proxyId;
       let proxy = null;
@@ -188,8 +192,12 @@ class CloudService {
       await fsPromise.rm(gitAbsDir, { recursive: true, force: true });
 
       this.log.info('Cloning repository...');
-      // See upload(): simple-git requires an explicit opt-in for GIT_ASKPASS.
-      const git = simpleGit({ unsafe: { allowUnsafeAskPass: true } }).env('GIT_ASKPASS', askpassScript);
+      // See upload(): simple-git 4 requires both allowEnvironment and
+      // unsafe.allowUnsafeAskPass before it will pass GIT_ASKPASS through.
+      const git = simpleGit({
+        unsafe: { allowUnsafeAskPass: true },
+        allowEnvironment: ['GIT_ASKPASS'],
+      }).env('GIT_ASKPASS', askpassScript);
 
       let proxy = null;
       if (cloudSettings.proxyId && proxyRepo) {
