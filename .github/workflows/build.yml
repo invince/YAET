@@ -125,6 +125,11 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Check develop branch exists
         id: check
         run: |
@@ -136,10 +141,7 @@ jobs:
 
       - name: Checkout develop
         if: steps.check.outputs.exists == 'true'
-        uses: actions/checkout@v4
-        with:
-          ref: develop
-          fetch-depth: 0
+        run: git checkout -f develop
 
       - name: Bump version
         if: steps.check.outputs.exists == 'true'
