@@ -117,3 +117,50 @@ jobs:
         run: npx electron-builder --mac --publish always
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  bump-develop:
+    needs: [release]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check develop branch exists
+        id: check
+        run: |
+          if git ls-remote --exit-code --heads origin develop > /dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout develop
+        if: steps.check.outputs.exists == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+          fetch-depth: 0
+
+      - name: Bump version
+        if: steps.check.outputs.exists == 'true'
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          BASE="${TAG#v}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$BASE"
+          NEW="$MAJOR.$MINOR.$((PATCH + 1))"
+          node -e "
+            const fs = require('fs');
+            const p = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            p.version = '$NEW';
+            fs.writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n');
+          "
+          echo "Bumped develop to $NEW"
+
+      - name: Commit and push
+        if: steps.check.outputs.exists == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json
+          git commit -m "chore: bump version to $(node -p "require('./package.json').version") after release ${GITHUB_REF#refs/tags/}"
+          git push origin develop
