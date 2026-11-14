@@ -58,8 +58,15 @@ async function resolveConfig(args, getMasterKey) {
       const secrets = await loadSecrets(getMasterKey);
       const sec = secrets[sh.secretId];
       if (!sec) throw new Error(`Secret not found for profile '${args.profileName}'`);
-      if (sec.login) config.username = sec.login;
-      if (sec.password) config.password = sec.password;
+      const secretType = sec.secretType || '';
+      if (secretType === 'SSH_KEY' || secretType === 'ssh_key') {
+        if (sec.login) config.username = sec.login;
+        config.privateKey = (sec.key || '').replace(/\\n/g, '\n');
+        if (sec.passphrase) config.passphrase = sec.passphrase;
+      } else {
+        if (sec.login) config.username = sec.login;
+        if (sec.password) config.password = sec.password;
+      }
     } else {
       if (sh.login) config.username = sh.login;
       if (sh.password) config.password = sh.password;
