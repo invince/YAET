@@ -12,7 +12,7 @@
   "dependencies": [],
   "ipc": {
     "send": ["session.open.terminal.ssh", "session.close.terminal.ssh"],
-    "invoke": [],
+    "invoke": ["session.metrics.ssh"],
     "on": ["session.disconnect.terminal.ssh", "ssh.hostkey.prompt"]
   },
   "backend": "./backend/index.js",

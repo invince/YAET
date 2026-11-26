@@ -1,4 +1,19 @@
 <mat-toolbar color="primary" class="bottom-toolbar">
+    @if (metrics$ | async; as metrics) {
+    <span class="ssh-metrics" aria-label="Remote system resource usage">
+        <span class="metric-label">CPU</span>
+        <span class="metric" [class.warn]="metricLevel(metrics.cpu) === 'warn'"
+            [class.crit]="metricLevel(metrics.cpu) === 'crit'">{{ formatMetric(metrics.cpu) }}</span>
+        <span class="metric-sep">·</span>
+        <span class="metric-label">RAM</span>
+        <span class="metric" [class.warn]="metricLevel(metrics.mem) === 'warn'"
+            [class.crit]="metricLevel(metrics.mem) === 'crit'">{{ formatMetric(metrics.mem) }}</span>
+        <span class="metric-sep">·</span>
+        <span class="metric-label">DISK</span>
+        <span class="metric" [class.warn]="metricLevel(metrics.disk) === 'warn'"
+            [class.crit]="metricLevel(metrics.disk) === 'crit'">{{ formatMetric(metrics.disk) }}</span>
+    </span>
+    }
     <span class="spacer"></span>
     <button mat-icon-button (click)="toggleSplit('vertical', 50)" aria-label="Split View 50/50 Vertical"
         [color]="tabService.splitMode && tabService.splitDirection === 'vertical' && tabService.splitRatio === 50 ? 'accent' : ''">

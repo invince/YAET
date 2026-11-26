@@ -177,6 +177,7 @@ export class SettingMenuComponent extends MenuComponent implements OnInit, OnDes
         ['secretLabelLength', { name: 'uiSecretLabelLength', formControlOption: ['', Validators.required] }],
         ['secretLabelLengthInDropDown', { name: 'uiSecretLabelLengthInDropDown', formControlOption: ['', Validators.required] }],
         ['theme', { name: 'theme', formControlOption: ['', Validators.required] }],
+        ['showSshMetrics', 'showSshMetrics'],
       ])
     );
 

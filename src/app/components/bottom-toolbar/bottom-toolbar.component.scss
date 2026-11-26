@@ -10,6 +10,42 @@
   flex: 1 1 auto;
 }
 
+// Live remote metrics for the selected SSH tab.
+.ssh-metrics {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  opacity: 0.95;
+}
+
+.ssh-metrics .metric-label {
+  opacity: 0.72;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.ssh-metrics .metric {
+  min-width: 36px;
+}
+
+.ssh-metrics .metric.warn {
+  color: #ffb020;
+  font-weight: 600;
+}
+
+.ssh-metrics .metric.crit {
+  color: #ff5252;
+  font-weight: 700;
+}
+
+.ssh-metrics .metric-sep {
+  opacity: 0.4;
+  margin: 0 2px;
+}
+
 // "AI working in the background" indicator on the chat toggle.
 .bottom-toolbar button.ai-running {
   position: relative;

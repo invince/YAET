@@ -24,6 +24,69 @@ function sshKeyType(raw) {
   }
 }
 
+// One lightweight, read-only probe per poll. CPU is a cumulative jiffy
+// sample diffed between polls; RAM/disk are instantaneous. `df -P` is
+// POSIX-stable output and is fed a single path so it can't block on
+// unmounted/network filesystems elsewhere.
+const METRICS_COMMAND = [
+  "awk '/^cpu /{print}' /proc/stat",
+  "awk '/^MemTotal:|^MemAvailable:|^MemFree:|^Buffers:|^Cached:/{print}' /proc/meminfo",
+  "df -P / 2>/dev/null | tail -n 1",
+].join('; ');
+
+function parseKb(line) {
+  const m = String(line).match(/(\d+)/);
+  return m ? Number(m[1]) : 0;
+}
+
+/**
+ * Parse the combined METRICS_COMMAND stdout. Returns CPU jiffies (for the
+ * caller to diff), plus used-% for RAM and root disk. Fields that could not
+ * be determined stay null so the UI can hide them individually.
+ */
+function parseSystemMetrics(stdout) {
+  const out = { cpu: null, mem: null, disk: null, cpuRaw: null };
+  if (!stdout) return out;
+  const lines = String(stdout).split(/\r?\n/);
+  let memTotal = 0, memAvail = 0, memFree = 0, memBuffers = 0, memCached = 0;
+
+  for (const line of lines) {
+    if (/^cpu\s/.test(line)) {
+      const nums = line.trim().split(/\s+/).slice(1).map(Number).filter((n) => !Number.isNaN(n));
+      if (nums.length >= 4) {
+        const idle = nums[3] + (nums[4] || 0); // idle + iowait
+        const total = nums.slice(0, 8).reduce((a, b) => a + b, 0);
+        if (total > 0) out.cpuRaw = { idle, total };
+      }
+    } else if (line.startsWith('MemTotal:')) memTotal = parseKb(line);
+    else if (line.startsWith('MemAvailable:')) memAvail = parseKb(line);
+    else if (line.startsWith('MemFree:')) memFree = parseKb(line);
+    else if (line.startsWith('Buffers:')) memBuffers = parseKb(line);
+    else if (line.startsWith('Cached:')) memCached = parseKb(line);
+  }
+
+  if (memTotal > 0) {
+    // MemAvailable is absent on very old kernels — fall back to the classic
+    // free+buffers+cached approximation.
+    const avail = memAvail > 0 ? memAvail : (memFree + memBuffers + memCached);
+    out.mem = Math.max(0, Math.min(100, ((memTotal - avail) / memTotal) * 100));
+  }
+
+  for (const line of lines) {
+    const parts = line.trim().split(/\s+/);
+    if (parts.length >= 6 && /^\d+%$/.test(parts[4])) {
+      const totalKb = Number(parts[1]);
+      const usedKb = Number(parts[2]);
+      if (totalKb > 0) {
+        out.disk = Math.max(0, Math.min(100, (usedKb / totalKb) * 100));
+        break;
+      }
+    }
+  }
+
+  return out;
+}
+
 function hostKeyError(status, leg, host, port, keyType, base64, cause) {
   const info = keyInfo(keyType, base64);
   // Headless protocol-server (MCP/ACP) callers only ever see err.message, so
@@ -51,6 +114,7 @@ class SshTerminalSession extends TerminalRuntimeApi {
     this.stream = null;
     this._connected = false;
     this._knownHosts = null;
+    this._metricsCpuPrev = null;
   }
 
   _knownHostsSvc() {
@@ -191,10 +255,17 @@ class SshTerminalSession extends TerminalRuntimeApi {
 
       conn.on('close', (hadError) => {
         this.log.info(`SSH session closed, hadError: ${hadError}`);
+        // A handshake that fails (e.g. host key not yet approved) also closes
+        // the socket, but the tab is not really a dropped session — emitting
+        // 'disconnect' here flips the tab to "disconnected" and it never
+        // recovers on the host-key approve/retry path.
+        const wasConnected = this._connected;
         this._connected = false;
         this.conn = null;
         this.stream = null;
-        this.emit('disconnect', { error: hadError });
+        if (wasConnected) {
+          this.emit('disconnect', { error: hadError });
+        }
       });
 
       conn.connect(sshConfig);
@@ -456,6 +527,66 @@ class SshTerminalSession extends TerminalRuntimeApi {
       const { _jumperConn: _jc2, ...connectConfig2 } = sshConfig;
       conn.connect(connectConfig2);
     });
+  }
+
+  /**
+   * Run a command on the ALREADY-OPEN connection by opening one more SSH
+   * channel. Unlike exec(), this never dials/authenticates again — the
+   * metrics poll must not pay a full handshake every few seconds.
+   */
+  async execOnLiveSession(command, timeoutMs = 8000) {
+    if (!this.conn || !this._connected) throw new Error('SSH session is not connected');
+    const conn = this.conn;
+
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      const finish = (fn, value) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        fn(value);
+      };
+      const timer = setTimeout(
+        () => finish(reject, new Error('SSH command timed out')),
+        timeoutMs,
+      );
+
+      conn.exec(command, (err, stream) => {
+        if (err) { finish(reject, err); return; }
+        let stdout = '';
+        let stderr = '';
+        stream.on('data', (data) => { stdout += data.toString(); });
+        stream.stderr.on('data', (data) => { stderr += data.toString(); });
+        stream.on('close', (code) => finish(resolve, { stdout, stderr, exitCode: code }));
+        stream.on('error', (e) => finish(reject, e));
+      });
+    });
+  }
+
+  /**
+   * Sample CPU/RAM/root-disk usage over the live connection. CPU is a delta
+   * between consecutive polls, so the first call returns cpu=null.
+   */
+  async getSystemMetrics() {
+    const result = await this.execOnLiveSession(METRICS_COMMAND);
+    const metrics = parseSystemMetrics(result.stdout);
+
+    if (metrics.cpuRaw) {
+      const prev = this._metricsCpuPrev;
+      this._metricsCpuPrev = metrics.cpuRaw;
+      if (prev) {
+        const dTotal = metrics.cpuRaw.total - prev.total;
+        const dIdle = metrics.cpuRaw.idle - prev.idle;
+        if (dTotal > 0) {
+          metrics.cpu = Math.max(0, Math.min(100, (1 - dIdle / dTotal) * 100));
+        }
+      }
+      delete metrics.cpuRaw;
+    } else {
+      this._metricsCpuPrev = null;
+    }
+
+    return metrics;
   }
 }
 

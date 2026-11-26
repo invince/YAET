@@ -131,6 +131,14 @@
             </div>
 
             <div class="form-section">
+              <div class="section-title">{{ 'SETTINGS.BOTTOM_BAR' | translate }}</div>
+              <mat-checkbox formControlName="showSshMetrics">{{ 'SETTINGS.SHOW_SSH_METRICS' | translate }}</mat-checkbox>
+              <div style="margin-top: 8px; font-size: 12px; color: #9ca3af;">
+                {{ 'SETTINGS.SHOW_SSH_METRICS_HINT' | translate }}
+              </div>
+            </div>
+
+            <div class="form-section">
               <div class="section-title">{{ 'SETTINGS.SECRETS_DISPLAY' | translate }}</div>
               <mat-form-field class="field" appearance="outline">
                 <mat-label>{{ 'SETTINGS.SECRET_LABEL_LENGTH_SIDENAV' | translate }}</mat-label>

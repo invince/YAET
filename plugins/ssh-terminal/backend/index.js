@@ -104,6 +104,26 @@ function register(context) {
     }
   });
 
+  // Live resource metrics for the bottom bar. Reuses the tab's existing SSH
+  // connection (see SshTerminalSession.getSystemMetrics) — no reconnect.
+  ipcMain.handle('session.metrics.ssh', async (_event, data) => {
+    const registry = typeof sessionRegistry === 'function' ? sessionRegistry() : sessionRegistry;
+    const entry = registry && data && data.id ? registry.get(data.id) : null;
+    const session = entry ? entry.session : null;
+    if (!session || typeof session.getSystemMetrics !== 'function') {
+      return { ok: false, error: 'session not available' };
+    }
+    try {
+      const metrics = await session.getSystemMetrics();
+      if (!metrics || (metrics.cpu == null && metrics.mem == null && metrics.disk == null)) {
+        return { ok: false, error: 'metrics unavailable' };
+      }
+      return { ok: true, metrics };
+    } catch (error) {
+      return { ok: false, error: error && error.message ? error.message : 'metrics failed' };
+    }
+  });
+
   ipcMain.on('session.close.terminal.ssh', (event, data) => {
     const registry = typeof sessionRegistry === 'function' ? sessionRegistry() : sessionRegistry;
     const entry = registry ? registry.get(data.id) : null;
