@@ -2,7 +2,6 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
-  HostListener,
   Input,
   OnChanges,
   OnDestroy,
@@ -35,49 +34,44 @@ export class VncComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   @ViewChild('vnc', { static: true }) vncContainer!: ElementRef;
 
-  private processingPaste = false;
+  private readonly onWindowKeyDown = (event: KeyboardEvent) => {
+    if (!this.canHandleClipboard(event.target)) return;
+    if (!(event.ctrlKey || event.metaKey) || event.key?.toLowerCase() !== 'v') return;
 
-  @HostListener('window:paste', ['$event'])
-  handlePaste(event: ClipboardEvent) {
-    console.log('VNC Component: Paste event received');
-    if (this.processingPaste) {
-      console.log('VNC Component: Ignoring paste event (already processing)');
-      event.preventDefault();
-      event.stopPropagation();
-      return;
-    }
+    // Capture phase: stop noVNC from forwarding Ctrl+V before we have pushed the
+    // local clipboard to the remote side, otherwise the remote app pastes stale text.
+    event.preventDefault();
+    event.stopPropagation();
+    void this.vncService.pasteFromLocalClipboard(this.session.id, true);
+  };
 
-    if (this.isViewInitialized) {
-      event.preventDefault();
-      event.stopPropagation();
+  private readonly onWindowPaste = (event: ClipboardEvent) => {
+    if (!this.canHandleClipboard(event.target)) return;
+    const text = event.clipboardData?.getData('text');
+    if (!text) return;
 
-      const text = event.clipboardData?.getData('text');
-      if (text) {
-        this.vncService.handleClipboardPaste(this.session.id, text);
-      }
-    }
+    // Reached via context-menu paste: Control is not held remotely, so send the
+    // full Ctrl+V shortcut after updating the remote clipboard.
+    event.preventDefault();
+    event.stopPropagation();
+    this.vncService.pasteText(this.session.id, text);
+  };
+
+  private canHandleClipboard(target: EventTarget | null): boolean {
+    if (!this.isViewInitialized || !this.vncService.isConnected(this.session.id)) return false;
+    // Only the visible VNC tab reacts, and never steal paste from a dialog/input.
+    if (this.tabService.getSelectedTab()?.id !== this.session.id) return false;
+    if (document.querySelector('.cdk-overlay-pane')) return false;
+    const el = target as HTMLElement | null;
+    const tag = el?.tagName;
+    return !(tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || !!el?.isContentEditable);
   }
 
-  @HostListener('window:keydown', ['$event'])
-  async handleKeyDownCapture(event: KeyboardEvent) {
-    if ((event.ctrlKey || event.metaKey) && (event.code === 'KeyV' || event.key === 'v' || event.key === 'V')) {
-      console.log('VNC Component: Intercepted Ctrl+V (KeyDown)', event);
-      if (this.isViewInitialized) {
-        try {
-          const text = await navigator.clipboard.readText();
-          console.log('VNC Component: Read clipboard text', text);
-          if (text) {
-            this.vncService.handleClipboardPaste(this.session.id, text);
-          }
-        } catch (err) {
-          console.error('Failed to read clipboard contents: ', err);
-        }
-      }
-    }
-  }
   ngAfterViewInit(): void {
     this.connect();
     this.isViewInitialized = true;
+    window.addEventListener('keydown', this.onWindowKeyDown, true);
+    window.addEventListener('paste', this.onWindowPaste, true);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -90,6 +84,8 @@ export class VncComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   ngOnDestroy() {
+    window.removeEventListener('keydown', this.onWindowKeyDown, true);
+    window.removeEventListener('paste', this.onWindowPaste, true);
     this.disconnect();
   }
 

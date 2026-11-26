@@ -7,6 +7,10 @@ import {ElectronRemoteDesktopService} from '../../../../src/app/services/electro
 import {LogService} from '../../../../src/app/services/log.service';
 import {SecretStorageService} from '../../../../src/app/services/secret-storage.service';
 import {SettingStorageService} from '../../../../src/app/services/setting-storage.service';
+import {TabService} from '../../../../src/app/services/tab.service';
+
+const XK_Control_L = 0xffe3;
+const XK_v = 0x76;
 
 
 // we use ws to proxy to the vnc server
@@ -26,18 +30,66 @@ export class VncService {
     private settingStorage: SettingStorageService,
     private secretStorage: SecretStorageService,
     private electron: ElectronRemoteDesktopService,
+    private tabService: TabService,
   ) {
   }
 
-  handleClipboardPaste(id: string, text: string) {
-    if (this.vncMap) {
-      let rfb = this.vncMap.get(id);
-      if (rfb) {
-        rfb.clipboardPasteFrom(text);
-        return true;
+  getRfb(id: string): RFB | undefined {
+    return this.vncMap.get(id);
+  }
+
+  isConnected(id: string): boolean {
+    return !!this.vncMap.get(id);
+  }
+
+  private isActive(id: string): boolean {
+    return this.tabService.getSelectedTab()?.id === id;
+  }
+
+  /**
+   * Push local text into the remote clipboard.
+   * With `ctrlAlreadyDown` the Control key is already held remotely (the real
+   * Ctrl keydown was forwarded by noVNC), so only V is sent afterwards.
+   */
+  private setRemoteClipboardAndPaste(id: string, text: string, ctrlAlreadyDown: boolean): boolean {
+    const rfb = this.vncMap.get(id);
+    if (!rfb) return false;
+    try {
+      rfb.clipboardPasteFrom(text);
+      if (ctrlAlreadyDown) {
+        rfb.sendKey(XK_v, 'KeyV', true);
+        rfb.sendKey(XK_v, 'KeyV', false);
+      } else {
+        rfb.sendKey(XK_Control_L, 'ControlLeft', true);
+        rfb.sendKey(XK_v, 'KeyV', true);
+        rfb.sendKey(XK_v, 'KeyV', false);
+        rfb.sendKey(XK_Control_L, 'ControlLeft', false);
       }
+      return true;
+    } catch (e) {
+      this.log.warn('Failed to paste into VNC session: ' + e);
+      return false;
     }
-    return false;
+  }
+
+  /** Read the local clipboard and paste it into the remote session. */
+  async pasteFromLocalClipboard(id: string, ctrlAlreadyDown: boolean): Promise<boolean> {
+    if (!this.vncMap.get(id)) return false;
+    let text: string;
+    try {
+      text = await navigator.clipboard.readText();
+    } catch (e) {
+      this.log.warn('Failed to read local clipboard: ' + e);
+      return false;
+    }
+    if (!text) return false;
+    return this.setRemoteClipboardAndPaste(id, text, ctrlAlreadyDown);
+  }
+
+  /** Paste a known text (e.g. from a paste event) into the remote session. */
+  pasteText(id: string, text: string): boolean {
+    if (!text) return false;
+    return this.setRemoteClipboardAndPaste(id, text, false);
   }
 
   async connect(id: string, vncProfile: VncProfile, vncCanvas: ElementRef) {
@@ -83,9 +135,17 @@ export class VncService {
           this.resizeHandlers.set(id, onResize);
 
           rfb.addEventListener('clipboard', async (event: any) => {
-            const serverClipboardText = event.detail.text;
-            this.log.info('Received clipboard data:' + serverClipboardText);
-            await navigator.clipboard.writeText(serverClipboardText); // Sync with browser clipboard
+            const serverClipboardText = event.detail?.text;
+            if (!serverClipboardText) return;
+            // Only mirror the clipboard of the visible session, so background
+            // sessions cannot silently clobber the local clipboard.
+            if (!this.isActive(id)) return;
+            this.log.debug('Received clipboard data, syncing local clipboard');
+            try {
+              await navigator.clipboard.writeText(serverClipboardText);
+            } catch (e) {
+              this.log.warn('Failed to write local clipboard: ' + e);
+            }
           });
           this.vncMap.set(id, rfb);
 
