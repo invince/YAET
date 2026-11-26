@@ -20,6 +20,9 @@ export const TERMINAL_INPUT = 'terminal.input';
 export const TERMINAL_OUTPUT = 'terminal.output';
 export const TERMINAL_RESIZE = 'terminal.resize';
 
+export const SESSION_OPEN_RDP_WASM = 'session.open.rd.rdp.wasm';
+export const SESSION_DISCONNECT_RDP = 'session.disconnect.rd.rdp';
+
 export const SESSION_OPEN_VNC = 'session.open.rd.vnc';
 export const SESSION_DISCONNECT_VNC = 'session.disconnect.rd.vnc';
 

@@ -1,5 +1,6 @@
 {
   "COMMON": {
+    "USERNAME": "Nom d'utilisateur",
     "SAVE": "Enregistrer",
     "SAVE_AND_CLOSE": "Enregistrer et fermer",
     "CANCEL": "Annuler",

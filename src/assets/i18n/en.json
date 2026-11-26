@@ -1,5 +1,6 @@
 {
   "COMMON": {
+    "USERNAME": "Username",
     "SAVE": "Save",
     "SAVE_AND_CLOSE": "Save & Close",
     "CANCEL": "Cancel",

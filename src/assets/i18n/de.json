@@ -1,5 +1,6 @@
 {
   "COMMON": {
+    "USERNAME": "Benutzername",
     "SAVE": "Speichern",
     "SAVE_AND_CLOSE": "Speichern & Schließen",
     "CANCEL": "Abbrechen",

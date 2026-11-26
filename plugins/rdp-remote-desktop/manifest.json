@@ -13,8 +13,8 @@
     "entry": "./frontend/rdp.plugin.ts"
   },
   "ipc": {
-    "send": ["session.open.rd.rdp"],
-    "invoke": [],
+    "send": ["session.open.rd.rdp", "session.disconnect.rd.rdp"],
+    "invoke": ["session.open.rd.rdp.wasm"],
     "on": []
   }
 }

@@ -29,6 +29,11 @@
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "/assets"
+              },
+              {
+                "glob": "rdp_client_bg.wasm",
+                "input": "node_modules/ironrdp-wasm/pkg",
+                "output": "/assets/ironrdp"
               }
             ],
             "styles": [

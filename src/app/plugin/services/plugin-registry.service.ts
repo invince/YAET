@@ -267,6 +267,12 @@ export class PluginRegistryService {
    */
   getProfileOpenNewTab(profileType: string): boolean {
     if (profileType === 'CUSTOM') return false;
+    // Windows RDP launches the native mstsc client (no tab); every other
+    // platform embeds IronRDP in a tab.
+    if (profileType === 'RDP_REMOTE_DESKTOP') {
+      const platform = typeof window !== 'undefined' ? (window as any).electronAPI?.platform : undefined;
+      return platform !== 'win32';
+    }
     const bundled = this.getBundledPlugin(profileType);
     if (bundled && bundled.openNewTab === false) return false;
     return true;
