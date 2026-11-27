@@ -1,14 +1,6 @@
-import {Component, forwardRef, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {
-  FormBuilder,
-  FormGroup,
-  FormsModule,
-  NG_VALIDATORS,
-  NG_VALUE_ACCESSOR,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
+import {ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
@@ -16,18 +8,25 @@ import {MatCheckbox} from '@angular/material/checkbox';
 import {MatIcon} from '@angular/material/icon';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {TranslateModule} from '@ngx-translate/core';
-import {ChildFormAsFormControl} from '../../../src/app/components/EnhancedFormMixin';
-import {MenuComponent} from '../../../src/app/components/menu/menu.component';
-import {ModelFormController} from '../../../src/app/utils/ModelFormController';
+import {ProfileFormBase, profileFormProviders} from '../../../src/app/components/forms/profile-form.base';
+import {FormModelBridge} from '../../../src/app/utils/model-form.bridge';
 
-declare const window: any;
+interface SerialProfileData {
+  path: string;
+  baudRate: number;
+  dataBits: number;
+  stopBits: number;
+  parity: string;
+  rtscts: boolean;
+  xon: boolean;
+  xoff: boolean;
+}
 
 @Component({
   selector: 'app-serial-profile-form',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     ReactiveFormsModule,
     TranslateModule,
     MatFormFieldModule,
@@ -38,18 +37,7 @@ declare const window: any;
     MatButton,
     MatIconButton
   ],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => SerialProfileFormComponent),
-      multi: true,
-    },
-    {
-      provide: NG_VALIDATORS,
-      useExisting: forwardRef(() => SerialProfileFormComponent),
-      multi: true,
-    },
-  ],
+  providers: profileFormProviders(() => SerialProfileFormComponent),
   template: `
     <div [formGroup]="form" class="serial-form-container">
       <mat-form-field class="field">
@@ -63,6 +51,9 @@ declare const window: any;
         <button matSuffix mat-icon-button type="button" (click)="refreshPorts(); $event.stopPropagation();" title="Scan Serial Ports">
           <mat-icon>refresh</mat-icon>
         </button>
+        @if (form.get('path')?.invalid && form.get('path')?.touched) {
+          <mat-error>{{ errorFor('path') | translate }}</mat-error>
+        }
       </mat-form-field>
 
       @if (availablePorts.length > 0) {
@@ -198,7 +189,7 @@ declare const window: any;
     }
   `]
 })
-export class SerialProfileFormComponent extends ChildFormAsFormControl(MenuComponent) implements OnInit {
+export class SerialProfileFormComponent extends ProfileFormBase<SerialProfileData> {
   availablePorts: { path: string; manufacturer?: string; friendlyName?: string }[] = [];
   baudRates = [110, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200, 128000, 256000, 460800, 921600, 1500000];
   dataBitsList = [5, 6, 7, 8];
@@ -211,24 +202,31 @@ export class SerialProfileFormComponent extends ChildFormAsFormControl(MenuCompo
     { value: 'space', label: 'Space' }
   ];
 
-  private modelFormController: ModelFormController<any>;
+  protected override readonly bridge = new FormModelBridge<SerialProfileData>([
+    {form: 'path', validators: [Validators.required], defaultValue: () => ''},
+    {form: 'baudRate', validators: [Validators.required], defaultValue: () => 9600},
+    {form: 'dataBits', validators: [Validators.required], defaultValue: () => 8},
+    {form: 'stopBits', validators: [Validators.required], defaultValue: () => 1},
+    {form: 'parity', validators: [Validators.required], defaultValue: () => 'none'},
+    {form: 'rtscts', defaultValue: () => false},
+    {form: 'xon', defaultValue: () => false},
+    {form: 'xoff', defaultValue: () => false},
+  ]);
 
-  constructor(private fb: FormBuilder) {
-    super();
-    const mappings = new Map<any, any>();
-    mappings.set('path', { name: 'path', formControlOption: ['', [Validators.required]] });
-    mappings.set('baudRate', { name: 'baudRate', formControlOption: [9600, [Validators.required]] });
-    mappings.set('dataBits', { name: 'dataBits', formControlOption: [8, [Validators.required]] });
-    mappings.set('stopBits', { name: 'stopBits', formControlOption: [1, [Validators.required]] });
-    mappings.set('parity', { name: 'parity', formControlOption: ['none', [Validators.required]] });
-    mappings.set('rtscts', { name: 'rtscts', formControlOption: [false] });
-    mappings.set('xon', { name: 'xon', formControlOption: [false] });
-    mappings.set('xoff', { name: 'xoff', formControlOption: [false] });
-
-    this.modelFormController = new ModelFormController<any>(mappings);
+  protected override createEmptyModel(): SerialProfileData {
+    return {
+      path: '',
+      baudRate: 9600,
+      dataBits: 8,
+      stopBits: 1,
+      parity: 'none',
+      rtscts: false,
+      xon: false,
+      xoff: false,
+    };
   }
 
-  override ngOnInit() {
+  override ngOnInit(): void {
     super.ngOnInit();
     this.refreshPorts();
   }
@@ -242,19 +240,5 @@ export class SerialProfileFormComponent extends ChildFormAsFormControl(MenuCompo
         console.error('Failed to scan serial ports:', err);
       }
     }
-  }
-
-  override onInitForm(): FormGroup {
-    return this.modelFormController.onInitForm(this.fb);
-  }
-
-  override refreshForm(data: any) {
-    if (this.form) {
-      this.modelFormController.refreshForm(data, this.form);
-    }
-  }
-
-  override formToModel(): any {
-    return this.modelFormController.formToModel({}, this.form);
   }
 }

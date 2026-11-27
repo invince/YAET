@@ -1,10 +1,14 @@
-import {Component, forwardRef, Input} from '@angular/core';
+import {Component, forwardRef, Input, OnChanges, SimpleChanges} from '@angular/core';
 import {
+  AbstractControl,
   ControlValueAccessor,
   FormBuilder,
   FormGroup,
+  NG_VALIDATORS,
   NG_VALUE_ACCESSOR,
   ReactiveFormsModule,
+  ValidationErrors,
+  Validator,
   Validators
 } from '@angular/forms';
 import {MatRadioModule} from '@angular/material/radio';
@@ -19,7 +23,16 @@ import {SecretStorageService} from '../../../services/secret-storage.service';
 import {SecretService} from '../../../services/secret.service';
 import {Secret, SecretType} from '../../../domain/Secret';
 import {MatDialog} from '@angular/material/dialog';
+import {ErrorStateMatcher} from '@angular/material/core';
 import {SecretQuickFormComponent} from '../../dialog/secret-quick-form/secret-quick-form.component';
+import {authRequiredValidator} from '../../../utils/AuthValidators';
+
+const authErrorMatcher = (code: string): ErrorStateMatcher => ({
+  isErrorState: (control, form) => {
+    const touched = !!control?.touched || !!control?.dirty || !!form?.form.touched;
+    return touched && !!form?.form.hasError(code);
+  },
+});
 
 @Component({
   selector: 'app-auth-form',
@@ -35,11 +48,18 @@ import {SecretQuickFormComponent} from '../../dialog/secret-quick-form/secret-qu
     MatIconButton,
     MatSelectModule,
   ],
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => AuthFormComponent),
-    multi: true,
-  }],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => AuthFormComponent),
+      multi: true,
+    },
+    {
+      provide: NG_VALIDATORS,
+      useExisting: forwardRef(() => AuthFormComponent),
+      multi: true,
+    },
+  ],
   template: `
     <div [formGroup]="form" class="auth-form">
       <mat-radio-group aria-label="Auth Type" formControlName="authType" required>
@@ -55,7 +75,10 @@ import {SecretQuickFormComponent} from '../../dialog/secret-quick-form/secret-qu
           @if (!hideLogin) {
           <mat-form-field class="field">
             <mat-label>{{ 'COMMON.LOGIN' | translate }}</mat-label>
-            <input matInput type="text" formControlName="login" />
+            <input matInput type="text" formControlName="login" [errorStateMatcher]="loginErrorStateMatcher" />
+            @if (form.hasError('loginRequired')) {
+              <mat-error>{{ 'VALIDATION.LOGIN_REQUIRED' | translate }}</mat-error>
+            }
             @if (form.get('login')?.value) {
               <button matSuffix mat-icon-button (click)="clear('login')"><mat-icon>close</mat-icon></button>
             }
@@ -64,9 +87,12 @@ import {SecretQuickFormComponent} from '../../dialog/secret-quick-form/secret-qu
 
           <mat-form-field class="field">
             <mat-label>{{ 'COMMON.PASSWORD' | translate }}</mat-label>
-            <input matInput type="password" formControlName="password" />
+            <input matInput type="password" formControlName="password" [errorStateMatcher]="passwordErrorStateMatcher" />
             @if (form.get('password')?.value) {
               <button matSuffix mat-icon-button (click)="clear('password')"><mat-icon>close</mat-icon></button>
+            }
+            @if (form.hasError('passwordRequired')) {
+              <mat-error>{{ 'VALIDATION.PASSWORD_REQUIRED' | translate }}</mat-error>
             }
           </mat-form-field>
         }
@@ -74,7 +100,7 @@ import {SecretQuickFormComponent} from '../../dialog/secret-quick-form/secret-qu
         @case ('secret') {
           <mat-form-field class="field">
             <mat-label>{{ 'COMMON.SECRET' | translate }}</mat-label>
-            <mat-select formControlName="secretId">
+            <mat-select formControlName="secretId" [errorStateMatcher]="secretErrorStateMatcher">
               <mat-option (click)="quickCreateSecret()">
                 <mat-icon>add</mat-icon>
                 {{ 'COMMON.ADD_NEW' | translate }}
@@ -89,6 +115,9 @@ import {SecretQuickFormComponent} from '../../dialog/secret-quick-form/secret-qu
             @if (form.get('secretId')?.value) {
               <button matSuffix mat-icon-button (click)="clear('secretId')"><mat-icon>close</mat-icon></button>
             }
+            @if (form.hasError('secretRequired')) {
+              <mat-error>{{ 'VALIDATION.SECRET_REQUIRED' | translate }}</mat-error>
+            }
           </mat-form-field>
         }
       }
@@ -100,13 +129,22 @@ import {SecretQuickFormComponent} from '../../dialog/secret-quick-form/secret-qu
     mat-radio-group { display:flex;gap:12px;padding:4px 0 }
   `]
 })
-export class AuthFormComponent implements ControlValueAccessor {
+export class AuthFormComponent implements ControlValueAccessor, Validator, OnChanges {
   @Input() supportedAuthTypes: string[] = ['N/A', 'login', 'secret'];
   @Input() secretTypes: SecretType[] = [SecretType.LOGIN_PASSWORD, SecretType.PASSWORD_ONLY];
   @Input() hideLogin = false;
+  @Input() authRequired = false;
+  @Input() requireLogin = false;
 
-  authOptions = this.supportedAuthTypes;
   form: FormGroup;
+
+  readonly loginErrorStateMatcher = authErrorMatcher('loginRequired');
+  readonly passwordErrorStateMatcher = authErrorMatcher('passwordRequired');
+  readonly secretErrorStateMatcher = authErrorMatcher('secretRequired');
+
+  get authOptions(): string[] {
+    return this.supportedAuthTypes;
+  }
 
   private _onChange: any = () => {};
   private _onTouched: any = () => {};
@@ -124,6 +162,24 @@ export class AuthFormComponent implements ControlValueAccessor {
       secretId: [''],
     });
     this.form.valueChanges.subscribe(() => this._onChange(this._getValue()));
+    this.updateAuthValidators();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['authRequired'] || changes['requireLogin']) {
+      this.updateAuthValidators();
+    }
+  }
+
+  validate(_control: AbstractControl): ValidationErrors | null {
+    return this.form.valid ? null : this.form.errors ?? {invalidAuthForm: true};
+  }
+
+  private updateAuthValidators(): void {
+    this.form.setValidators(
+      this.authRequired ? control => authRequiredValidator(control, this.requireLogin) : null,
+    );
+    this.form.updateValueAndValidity({emitEvent: false});
   }
 
   _getValue(): any {
@@ -141,7 +197,7 @@ export class AuthFormComponent implements ControlValueAccessor {
 
   writeValue(obj: any): void {
     if (!obj) {
-      this.form.reset({ authType: 'N/A', login: '', password: '', secretId: '' });
+      this.form.reset({ authType: 'N/A', login: '', password: '', secretId: '' }, { emitEvent: false });
       return;
     }
     this.form.patchValue({

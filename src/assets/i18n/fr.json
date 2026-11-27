@@ -30,6 +30,13 @@
     "PROXY_HOST": "Hôte proxy",
     "PROXY_PORT": "Port proxy"
   },
+  "VALIDATION": {
+    "REQUIRED": "Obligatoire",
+    "LOGIN_REQUIRED": "L'identifiant est obligatoire",
+    "PASSWORD_REQUIRED": "Le mot de passe est obligatoire",
+    "SECRET_REQUIRED": "Le secret est obligatoire",
+    "INVALID_CHILD_FORM": "Formulaire invalide"
+  },
   "SETTINGS": {
     "TITLE": "Paramètres",
     "GENERAL": "Général",

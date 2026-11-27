@@ -1,140 +1,54 @@
-import {Component, forwardRef, Input} from '@angular/core';
-import {
-  FormBuilder,
-  FormGroup,
-  FormsModule,
-  NG_VALIDATORS,
-  NG_VALUE_ACCESSOR,
-  ReactiveFormsModule,
-  Validators
-} from "@angular/forms";
-import {CommonModule} from "@angular/common";
+import {Component} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {MatFormFieldModule} from "@angular/material/form-field";
-import {MatIcon} from "@angular/material/icon";
-import {MatIconButton} from "@angular/material/button";
-import {MatInput} from "@angular/material/input";
-import {MatRadioModule} from "@angular/material/radio";
-import {MatSelectChange, MatSelectModule} from "@angular/material/select";
-import {ChildFormAsFormControl} from '../../../../src/app/components/EnhancedFormMixin';
-import {MenuComponent} from '../../../../src/app/components/menu/menu.component';
-import {AuthType, SecretType} from '../../../../src/app/domain/Secret';
-import {
-  FormFieldWithPrecondition,
-  ModelFieldWithPrecondition,
-  ModelFormController
-} from '../../../../src/app/utils/ModelFormController';
-import {SecretStorageService} from '../../../../src/app/services/secret-storage.service';
-import {SecretService} from '../../../../src/app/services/secret.service';
-import {SettingStorageService} from '../../../../src/app/services/setting-storage.service';
-import {MatDialog} from '@angular/material/dialog';
-import {
-  SecretQuickFormComponent
-} from '../../../../src/app/components/dialog/secret-quick-form/secret-quick-form.component';
-import {FTPProfile} from '../../../../src/app/domain/profile/FTPProfile';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatIcon} from '@angular/material/icon';
+import {MatIconButton} from '@angular/material/button';
+import {MatInput} from '@angular/material/input';
 import {MatSlideToggle} from '@angular/material/slide-toggle';
+import {AuthType, SecretType} from '../../../../src/app/domain/Secret';
+import {FTPProfile} from '../../../../src/app/domain/profile/FTPProfile';
+import {ProfileFormBase, profileFormProviders} from '../../../../src/app/components/forms/profile-form.base';
+import {FormModelBridge} from '../../../../src/app/utils/model-form.bridge';
+import {AuthValue, mergeAuth, pickAuth} from '../../../../src/app/utils/AuthValidators';
+import {AuthFormComponent} from '../../../../src/app/components/menu/profile-form/auth-form.component';
 
 @Component({
-    selector: 'app-ftp-profile-form',
-    imports: [
-        CommonModule,
-        FormsModule,
-        ReactiveFormsModule,
-        TranslateModule,
-        MatSelectModule,
-        MatRadioModule,
-        MatFormFieldModule,
-        MatInput,
-        MatIcon,
-        MatIconButton,
-        MatSlideToggle,
-    ],
-    providers: [
-        {
-            provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => FtpProfileFormComponent),
-            multi: true,
-        },
-        {
-            provide: NG_VALIDATORS,
-            useExisting: forwardRef(() => FtpProfileFormComponent),
-            multi: true,
-        },
-    ],
-    templateUrl: './ftp-profile-form.component.html',
-    styleUrl: './ftp-profile-form.component.scss'
+  selector: 'app-ftp-profile-form',
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TranslateModule,
+    MatFormFieldModule,
+    MatInput,
+    MatIcon,
+    MatIconButton,
+    MatSlideToggle,
+    AuthFormComponent,
+  ],
+  providers: profileFormProviders(() => FtpProfileFormComponent),
+  templateUrl: './ftp-profile-form.component.html',
+  styleUrl: './ftp-profile-form.component.scss'
 })
-export class FtpProfileFormComponent extends ChildFormAsFormControl(MenuComponent)  {
+export class FtpProfileFormComponent extends ProfileFormBase<FTPProfile> {
 
-  AUTH_OPTIONS = AuthType;
+  readonly AUTH_OPTIONS: AuthType[] = [AuthType.NA, AuthType.LOGIN, AuthType.SECRET];
+  readonly SECRET_TYPES: SecretType[] = [SecretType.LOGIN_PASSWORD, SecretType.PASSWORD_ONLY, SecretType.SSH_KEY];
 
-  @Input() type!: String;
-  private modelFormController : ModelFormController<FTPProfile>;
-  constructor(
-    private fb: FormBuilder,
-    public secretStorageService: SecretStorageService, // in html
+  protected override readonly bridge = new FormModelBridge<FTPProfile>([
+    {form: 'host', validators: [Validators.required], defaultValue: () => ''},
+    {form: 'port', validators: [Validators.required], defaultValue: () => 21},
+    {form: 'secured', defaultValue: () => false},
+    {form: 'path', model: 'initPath', defaultValue: () => ''},
+    {
+      form: 'auth',
+      fromModel: (_value, model) => pickAuth(model, AuthType.LOGIN),
+      toModel: (value, model) => mergeAuth(model, value as AuthValue),
+    },
+  ]);
 
-    public secretService: SecretService, // in html
-    public settingStorage: SettingStorageService,
-
-    public dialog: MatDialog,
-  ) {
-    super();
-
-    let mappings = new Map<string | ModelFieldWithPrecondition, string | FormFieldWithPrecondition>();
-    mappings.set('host' , {name: 'host', formControlOption:  ['', [Validators.required]]});
-    mappings.set('port' , {name: 'port', formControlOption:  ['', [Validators.required]]});
-    mappings.set('secured' ,'secured');
-    mappings.set('initPath' , 'path');
-    mappings.set('authType' , {name: 'authType', formControlOption:  ['', [Validators.required]]});
-    mappings.set({name: 'login', precondition: form => this.form.get('authType')?.value  == 'login'} , 'login');
-    mappings.set({name: 'password', precondition: form => this.form.get('authType')?.value  == 'login'} , 'password');
-    mappings.set({name: 'secretId', precondition: form => this.form.get('authType')?.value  == 'secret' } , 'secretId');
-
-    this.modelFormController = new ModelFormController<FTPProfile>(mappings);
-  }
-
-  onInitForm(): FormGroup {
-    return this.modelFormController.onInitForm(this.fb, {validators: [this.secretOrPasswordMatchValidator]});  // we shall avoid use ngModel and formControl at same time
-  }
-
-
-  secretOrPasswordMatchValidator(group: FormGroup) {
-    let authType = group.get('authType')?.value;
-    if (authType == AuthType.LOGIN) {
-      const password = group.get('password')?.value;
-      const login = group.get('login')?.value;
-      if (!password || !login) {
-        return {passwordRequired: true};
-      }
-      return null;
-    } else if (authType == AuthType.SECRET) {
-      return group.get('secretId')?.value ? null : {secretRequired: true};
-    } else {
-      return null;
-    }
-  }
-
-  onSelectSecret($event: MatSelectChange) {
-    this.form.get('password')?.setValue(null);
-  }
-
-  override refreshForm(ssh: any) {
-    if (this.form) {
-      this.modelFormController.refreshForm(ssh, this.form);
-    }
-  }
-
-  override formToModel(): FTPProfile {
-    return this.modelFormController.formToModel(new FTPProfile(), this.form);
-  }
-
-  quickCreateSecret() {
-    this.dialog.open(SecretQuickFormComponent, {
-      width: '650px',
-      data: {
-        secretTypes: [SecretType.LOGIN_PASSWORD, SecretType.PASSWORD_ONLY, SecretType.SSH_KEY]
-      }
-    });
+  protected override createEmptyModel(): FTPProfile {
+    return new FTPProfile();
   }
 }

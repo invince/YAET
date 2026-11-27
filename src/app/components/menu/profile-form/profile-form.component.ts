@@ -1,4 +1,5 @@
 import {COMMA, ENTER} from '@angular/cdk/keycodes';
+import cloneDeep from 'lodash/cloneDeep';
 import {CdkTextareaAutosize} from '@angular/cdk/text-field';
 import {CommonModule, KeyValuePipe} from '@angular/common';
 import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
@@ -60,6 +61,7 @@ import {AuthFormComponent} from './auth-form.component';
 export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements OnInit {
 
   private _profile!: Profile;
+  private addedPluginControlName: string | null = null;
 
   @Input() buttons = ['close', 'delete', 'save', 'connect'];
   @Input() saving = false;
@@ -103,15 +105,19 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
       category: [ProfileCategory.TERMINAL, Validators.required],
       profileType: [LOCAL_TERMINAL, Validators.required],
       remoteTerminalProfileForm: [null],
-      rdpProfileForm: [null],
-      vncProfileForm: [null],
-      ftpProfileForm: [null],
-      sambaProfileForm: [null],
       customProfileForm: [null],
       externalPluginForm: [null],
       externalPluginAuth: [null],
-      serialProfileForm: [null],
     });
+  }
+
+  override ngOnInit(): void {
+    super.ngOnInit();
+    const profileType = this.form.get('profileType');
+    if (profileType) {
+      this.subscriptions.push(profileType.valueChanges.subscribe(type => this.syncPluginControl(type)));
+      this.syncPluginControl(profileType.value);
+    }
   }
 
   override afterFormInitialization() {
@@ -152,6 +158,7 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     // Dynamic form field loading via plugin registry
     const meta = this.registry.getFormMetadata(profile.profileType);
     if (meta) {
+      this.syncPluginControl(profile.profileType);
       formValue[meta.formControlName] = profile.getProfile(meta.profileField) || null;
     } else if (profile.category === ProfileCategory.CUSTOM) {      formValue.customProfileForm = profile.getProfile('CUSTOM') || null;
     } else if (this.registry.hasExternalPlugin(profile.profileType)) {
@@ -204,7 +211,26 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     if (this.form.valid) {
       this.formToModel();
       this.onProfileSave.emit(this.profile);
+      this.resetChildControls();
       this.onSubmit(); // Reset the dirty form state
+    }
+  }
+
+  private resetChildControls(): void {
+    const names = [
+      'remoteTerminalProfileForm',
+      'customProfileForm',
+      'externalPluginForm',
+      'externalPluginAuth',
+      this.getPluginFormControlName(),
+    ];
+    for (const name of names) {
+      if (!name) continue;
+      const control = this.form.get(name);
+      if (!control) continue;
+      control.setValue(cloneDeep(control.value), {emitEvent: false});
+      control.markAsPristine();
+      control.markAsUntouched();
     }
   }
 
@@ -369,6 +395,27 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
     return '';
   }
 
+  private syncPluginControl(profileType: string | null | undefined): void {
+    if (!this.form) return;
+
+    const nextName = this.registry.getFormMetadata(profileType || '')?.formControlName ?? null;
+    if (this.addedPluginControlName && this.addedPluginControlName !== nextName) {
+      if (this.form.contains(this.addedPluginControlName)) {
+        this.form.removeControl(this.addedPluginControlName);
+      }
+      this.addedPluginControlName = null;
+    }
+
+    if (nextName && !this.form.contains(nextName)) {
+      this.form.addControl(nextName, new FormControl(null));
+      this.addedPluginControlName = nextName;
+    }
+
+    if (!nextName) {
+      this.addedPluginControlName = null;
+    }
+  }
+
   getPluginFormComponent(): any {
     const profileType = this.form?.get('profileType')?.value;
     return this.registry.getProfileFormComponent(profileType);
@@ -376,6 +423,9 @@ export class ProfileFormComponent extends IsAChildForm(MenuComponent) implements
 
   getPluginFormControl(): FormControl {
     const name = this.getPluginFormControlName();
+    if (name && !this.form.contains(name)) {
+      this.syncPluginControl(this.form.get('profileType')?.value);
+    }
     return this.form.get(name) as FormControl;
   }
 

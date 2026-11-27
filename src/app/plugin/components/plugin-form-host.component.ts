@@ -22,6 +22,9 @@ import {
   ValidationErrors,
   Validator
 } from '@angular/forms';
+import {Subscription} from 'rxjs';
+import cloneDeep from 'lodash/cloneDeep';
+import isEqual from 'lodash/isEqual';
 
 /**
  * Host component that dynamically renders a plugin form component
@@ -54,27 +57,25 @@ export class PluginFormHostComponent implements AfterViewInit, OnChanges, OnDest
 
   private innerComponent: any;
   private pendingValue: any;
+  private dirtySubscription?: Subscription;
+  private originalWrittenValue: unknown;
+  private readonly injector = inject(Injector);
   private onChange: (value: any) => void = () => {};
   private onTouched: () => void = () => {};
-  private _originalWrittenValue: any = undefined;
-  private _injector = inject(Injector);
 
-  private get _parentNgControl(): NgControl | null {
-    return this._injector.get(NgControl, null);
+  private get parentNgControl(): NgControl | null {
+    return this.injector.get(NgControl, null);
   }
 
   ngAfterViewInit() {
     if (this.componentType && this.host) {
-      this.createComponent();
-    } else if (this.pendingValue !== undefined) {
       this.createComponent();
     }
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['componentType'] && !changes['componentType'].firstChange && this.host) {
-      this.host.clear();
-      this.innerComponent = null;
+      this.destroyInnerComponent();
       this.createComponent();
     }
   }
@@ -84,43 +85,49 @@ export class PluginFormHostComponent implements AfterViewInit, OnChanges, OnDest
     if (!type || !this.host) return;
 
     const ref = this.host.createComponent(type);
-
     ref.changeDetectorRef.detectChanges();
     this.innerComponent = ref.instance;
 
     if (this.innerComponent.registerOnChange) {
       this.innerComponent.registerOnChange((value: any) => {
-        const isSame = JSON.stringify(value) === JSON.stringify(this._originalWrittenValue);
-        if (!isSame) {
+        if (!isEqual(value, this.originalWrittenValue)) {
           this.onChange(value);
-        } else if (this._parentNgControl?.control) {
-          this._parentNgControl.control.markAsPristine();
-          this._parentNgControl.control.markAsUntouched();
+        } else if (this.parentNgControl?.control) {
+          this.parentNgControl.control.markAsPristine();
+          this.parentNgControl.control.markAsUntouched();
         }
       });
     }
 
     if (this.innerComponent.registerOnTouched) {
-      this.innerComponent.registerOnTouched(() => {
-        this.onTouched();
-      });
+      this.innerComponent.registerOnTouched(() => this.onTouched());
     }
 
     if (this.innerComponent.dirtyStateChange) {
-      this.innerComponent.dirtyStateChange.subscribe((dirty: boolean) => {
+      this.dirtySubscription = this.innerComponent.dirtyStateChange.subscribe((dirty: boolean) => {
         this.dirtyStateChange.emit(dirty);
       });
     }
 
     if (this.pendingValue !== undefined) {
       this.innerComponent.writeValue(this.pendingValue);
-      this._originalWrittenValue = JSON.parse(JSON.stringify(this.pendingValue));
       this.pendingValue = undefined;
+    }
+
+    queueMicrotask(() => this.parentNgControl?.control?.updateValueAndValidity({emitEvent: false}));
+  }
+
+  private destroyInnerComponent() {
+    this.dirtySubscription?.unsubscribe();
+    this.dirtySubscription = undefined;
+    this.innerComponent = null;
+    if (this.host) {
+      this.host.clear();
     }
   }
 
   writeValue(value: any): void {
-    this._originalWrittenValue = JSON.parse(JSON.stringify(value));
+    this.originalWrittenValue = cloneDeep(value);
     if (this.innerComponent) {
       this.innerComponent.writeValue(value);
     } else {
@@ -150,8 +157,6 @@ export class PluginFormHostComponent implements AfterViewInit, OnChanges, OnDest
   }
 
   ngOnDestroy() {
-    if (this.host) {
-      this.host.clear();
-    }
+    this.destroyInnerComponent();
   }
 }

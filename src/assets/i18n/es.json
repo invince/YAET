@@ -30,6 +30,13 @@
     "PROXY_HOST": "Host del proxy",
     "PROXY_PORT": "Puerto del proxy"
   },
+  "VALIDATION": {
+    "REQUIRED": "Obligatorio",
+    "LOGIN_REQUIRED": "El usuario es obligatorio",
+    "PASSWORD_REQUIRED": "La contraseña es obligatoria",
+    "SECRET_REQUIRED": "El secreto es obligatorio",
+    "INVALID_CHILD_FORM": "Formulario no válido"
+  },
   "SETTINGS": {
     "TITLE": "Configuración",
     "GENERAL": "General",

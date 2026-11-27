@@ -30,6 +30,13 @@
     "PROXY_HOST": "代理主机",
     "PROXY_PORT": "代理端口"
   },
+  "VALIDATION": {
+    "REQUIRED": "必填",
+    "LOGIN_REQUIRED": "登录名不能为空",
+    "PASSWORD_REQUIRED": "密码不能为空",
+    "SECRET_REQUIRED": "密钥不能为空",
+    "INVALID_CHILD_FORM": "表单无效"
+  },
   "SETTINGS": {
     "TITLE": "设置",
     "GENERAL": "常规",

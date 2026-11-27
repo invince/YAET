@@ -20,10 +20,10 @@ async function fillSSHForm(mainWindow: any, name: string, host: string) {
   await mainWindow.waitForTimeout(200);
   await mainWindow.locator('app-remote-terminal-profile-form input[formControlName="host"]').fill(host);
   await mainWindow.locator('app-remote-terminal-profile-form input[formControlName="port"]').fill('22');
-  await mainWindow.locator('app-remote-terminal-profile-form mat-radio-group[formControlName="authType"] input[type="radio"]').nth(1).click({ force: true });
+  await mainWindow.locator('app-remote-terminal-profile-form app-auth-form mat-radio-group[formControlName="authType"] input[type="radio"]').nth(1).click({ force: true });
   await mainWindow.waitForTimeout(200);
-  await mainWindow.locator('app-remote-terminal-profile-form input[formControlName="login"]').fill('user');
-  await mainWindow.locator('app-remote-terminal-profile-form input[formControlName="password"]').fill('pass');
+  await mainWindow.locator('app-remote-terminal-profile-form app-auth-form input[formControlName="login"]').fill('user');
+  await mainWindow.locator('app-remote-terminal-profile-form app-auth-form input[formControlName="password"]').fill('pass');
 }
 
 test.describe('4. Profiles', () => {
@@ -77,7 +77,7 @@ test.describe('4. Profiles', () => {
       await mainWindow.locator('app-remote-terminal-profile-form input[formControlName="port"]').fill('2222');
       await mainWindow.locator('app-remote-terminal-profile-form input[formControlName="path"]').fill('/opt/start');
       await mainWindow.locator('app-remote-terminal-profile-form textarea[formControlName="cmd"]').fill('echo hello');
-      await mainWindow.locator('app-remote-terminal-profile-form input[formControlName="login"]').fill('fielduser');
+      await mainWindow.locator('app-remote-terminal-profile-form app-auth-form input[formControlName="login"]').fill('fielduser');
 
       await mainWindow.locator('app-profile-form .modal-footer button').filter({ hasText: 'Save' }).click();
       await mainWindow.waitForTimeout(500);
@@ -92,7 +92,7 @@ test.describe('4. Profiles', () => {
       expect(await mainWindow.locator('app-remote-terminal-profile-form input[formControlName="port"]').inputValue()).toBe('2222');
       expect(await mainWindow.locator('app-remote-terminal-profile-form input[formControlName="path"]').inputValue()).toBe('/opt/start');
       expect(await mainWindow.locator('app-remote-terminal-profile-form textarea[formControlName="cmd"]').inputValue()).toBe('echo hello');
-      expect(await mainWindow.locator('app-remote-terminal-profile-form input[formControlName="login"]').inputValue()).toBe('fielduser');
+      expect(await mainWindow.locator('app-remote-terminal-profile-form app-auth-form input[formControlName="login"]').inputValue()).toBe('fielduser');
     });
 
     test('clone profile creates a copy with Clone suffix', async ({ mainWindow }) => {
@@ -172,10 +172,10 @@ test.describe('4. Profiles', () => {
       await mainWindow.waitForTimeout(200);
       await mainWindow.locator('app-remote-terminal-profile-form input[formControlName="host"]').fill('10.0.0.2');
       await mainWindow.locator('app-remote-terminal-profile-form input[formControlName="port"]').fill('22');
-      await mainWindow.locator('app-remote-terminal-profile-form mat-radio-group[formControlName="authType"] input[type="radio"]').nth(1).click({ force: true });
+      await mainWindow.locator('app-remote-terminal-profile-form app-auth-form mat-radio-group[formControlName="authType"] input[type="radio"]').nth(1).click({ force: true });
       await mainWindow.waitForTimeout(200);
-      await mainWindow.locator('app-remote-terminal-profile-form input[formControlName="login"]').fill('user');
-      await mainWindow.locator('app-remote-terminal-profile-form input[formControlName="password"]').fill('secret');
+      await mainWindow.locator('app-remote-terminal-profile-form app-auth-form input[formControlName="login"]').fill('user');
+      await mainWindow.locator('app-remote-terminal-profile-form app-auth-form input[formControlName="password"]').fill('secret');
 
       await mainWindow.locator('app-profile-form .modal-footer button').filter({ hasText: 'Save' }).click();
       await mainWindow.waitForTimeout(500);
@@ -226,11 +226,11 @@ test.describe('4. Profiles', () => {
       await mainWindow.locator('app-remote-terminal-profile-form input[formControlName="port"]').fill('22');
 
       // Switch auth type to "secret" to reveal secret dropdown
-      await mainWindow.locator('app-remote-terminal-profile-form mat-radio-group[formControlName="authType"] input[type="radio"]').nth(2).click({ force: true });
+      await mainWindow.locator('app-remote-terminal-profile-form app-auth-form mat-radio-group[formControlName="authType"] input[type="radio"]').nth(2).click({ force: true });
       await mainWindow.waitForTimeout(300);
 
       // Open the secret select and click "Add New..."
-      await mainWindow.locator('app-remote-terminal-profile-form mat-select[formControlName="secretId"]').click();
+      await mainWindow.locator('app-remote-terminal-profile-form app-auth-form mat-select[formControlName="secretId"]').click();
       await mainWindow.waitForTimeout(300);
       await mainWindow.locator('mat-option').filter({ hasText: /Add New/i }).click();
       await mainWindow.waitForTimeout(500);
@@ -286,11 +286,11 @@ test.describe('4. Profiles', () => {
       await fillSSHForm(mainWindow, 'SecProf', 'sec-host');
 
       // Change auth type from 'login' (set by fillSSHForm) to 'secret'
-      await mainWindow.locator('app-remote-terminal-profile-form mat-radio-group[formControlName="authType"] input[type="radio"]').nth(2).click({ force: true });
+      await mainWindow.locator('app-remote-terminal-profile-form app-auth-form mat-radio-group[formControlName="authType"] input[type="radio"]').nth(2).click({ force: true });
       await mainWindow.waitForTimeout(300);
 
       // Select the secret in the dropdown
-      await mainWindow.locator('app-remote-terminal-profile-form mat-select[formControlName="secretId"]').click();
+      await mainWindow.locator('app-remote-terminal-profile-form app-auth-form mat-select[formControlName="secretId"]').click();
       await mainWindow.waitForTimeout(500);
       await mainWindow.locator('mat-option').filter({ hasText: /RefSecre/i }).click();
       await mainWindow.waitForTimeout(200);
@@ -326,11 +326,11 @@ test.describe('4. Profiles', () => {
       await mainWindow.waitForTimeout(300);
 
       // Switch auth type to 'secret' to check the secretId field
-      await mainWindow.locator('app-remote-terminal-profile-form mat-radio-group[formControlName="authType"] input[type="radio"]').nth(2).click({ force: true });
+      await mainWindow.locator('app-remote-terminal-profile-form app-auth-form mat-radio-group[formControlName="authType"] input[type="radio"]').nth(2).click({ force: true });
       await mainWindow.waitForTimeout(500);
 
       // Verify the secretId select is visible (secret was cleared)
-      await expect(mainWindow.locator('app-remote-terminal-profile-form mat-select[formControlName="secretId"]')).toBeVisible({ timeout: 3000 });
+      await expect(mainWindow.locator('app-remote-terminal-profile-form app-auth-form mat-select[formControlName="secretId"]')).toBeVisible({ timeout: 3000 });
     });
 
     test('delete tag clears profile tag reference', async ({ mainWindow }) => {
